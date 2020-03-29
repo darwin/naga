@@ -7,3 +7,8 @@ depot_tools
 v8
 *.pyc
 *.cmake
+
+env
+venv
+.idea
+cmake-build-debug
