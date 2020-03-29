@@ -263,6 +263,10 @@ CPythonObject::~CPythonObject()
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+  if (prop->IsSymbol()) {
+    // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
+    CALLBACK_RETURN(v8::Undefined(info.GetIsolate()));
+  }
   v8::HandleScope handle_scope(info.GetIsolate());
 
   TRY_HANDLE_EXCEPTION(v8::Undefined(info.GetIsolate()))
@@ -325,6 +329,10 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
 
 void CPythonObject::NamedSetter(v8::Local<v8::Name> prop, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+  if (prop->IsSymbol()) {
+    // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
+    CALLBACK_RETURN(v8::Undefined(info.GetIsolate()));
+  }
   v8::HandleScope handle_scope(info.GetIsolate());
 
   TRY_HANDLE_EXCEPTION(v8::Undefined(info.GetIsolate()))
@@ -385,6 +393,10 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop, v8::Local<v8::Value> v
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+  if (prop->IsSymbol()) {
+    // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
+    CALLBACK_RETURN(v8::Handle<v8::Integer>());
+  }
   v8::HandleScope handle_scope(info.GetIsolate());
 
   TRY_HANDLE_EXCEPTION(v8::Handle<v8::Integer>())
@@ -405,6 +417,10 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallb
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+  if (prop->IsSymbol()) {
+    // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
+    CALLBACK_RETURN(v8::Handle<v8::Boolean>());
+  }
   v8::HandleScope handle_scope(info.GetIsolate());
 
   TRY_HANDLE_EXCEPTION(v8::Handle<v8::Boolean>())
