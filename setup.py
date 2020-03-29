@@ -99,12 +99,12 @@ def checkout_v8():
 
 def build_v8():
     exec_cmd(os.path.join(DEPOT_HOME, 'gn'),
-             "gen out.gn/x64.release.sample --args='{}'".format(GN_ARGS),
+             "gen {} --args='{}'".format(v8_target_path, GN_ARGS),
              cwd = V8_HOME,
              msg = "Generate build scripts for V8 (v{})".format(V8_GIT_TAG))
 
     exec_cmd(os.path.join(DEPOT_HOME, 'ninja'),
-             "-C out.gn/x64.release.sample v8_monolith",
+             "-C {} v8_monolith".format(v8_target_path),
              cwd = V8_HOME,
              msg = "Build V8 with ninja")
 
@@ -158,7 +158,7 @@ class stpyv8_install(install):
 
         if icu_data_folder:
             os.makedirs(icu_data_folder, exist_ok = True)
-            shutil.copy(os.path.join(V8_HOME, "out.gn/x64.release.sample/icudtl.dat"),
+            shutil.copy(os.path.join(V8_HOME, "{}/icudtl.dat".format(v8_target_path)),
                         icu_data_folder)
 
         install.run(self)

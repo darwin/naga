@@ -2,9 +2,10 @@ import sys
 import os
 import platform
 
-STPYV8_HOME = os.path.dirname(os.path.realpath(__file__))
-DEPOT_HOME  = os.environ.get('DEPOT_HOME', os.path.join(STPYV8_HOME, 'depot_tools'))
-V8_HOME     = os.environ.get('V8_HOME', os.path.join(STPYV8_HOME, 'v8'))
+STPYV8_HOME  = os.path.dirname(os.path.realpath(__file__))
+DEPOT_HOME   = os.environ.get('DEPOT_HOME', os.path.join(STPYV8_HOME, 'depot_tools'))
+V8_HOME      = os.environ.get('V8_HOME', os.path.join(STPYV8_HOME, 'v8'))
+STPYV8_DEBUG = os.environ.get('STPYV8_DEBUG', False)
 
 V8_GIT_URL        = "https://chromium.googlesource.com/v8/v8.git"
 V8_GIT_TAG_STABLE = "7.9.317.33"
@@ -29,7 +30,7 @@ gn_args = {
   "v8_enable_disassembler"       : "false",
   "v8_enable_i18n_support"       : "true",
   "is_component_build"           : "false",
-  "is_debug"                     : "false",
+  "is_debug"                     : "true" if STPYV8_DEBUG else "false",
   "use_custom_libcxx"            : "false", 
   "v8_monolithic"                : "true", 
   "v8_use_external_startup_data" : "false"
@@ -57,7 +58,12 @@ extra_compile_args = []
 extra_link_args    = []
 
 include_dirs.append(os.path.join(V8_HOME, 'include'))
-library_dirs.append(os.path.join(V8_HOME, 'out.gn/x64.release.sample/obj/'))
+if not STPYV8_DEBUG:
+    v8_target_path = "out.gn/x64.release.sample"
+else:
+    v8_target_path = "out.gn/x64.debug.sample"
+
+library_dirs.append(os.path.join(V8_HOME, '{}/obj/'.format(v8_target_path)))
 
 def get_libboost_python_name():
     ubuntu_platforms = ('ubuntu', )
@@ -80,3 +86,6 @@ elif os.name in ("posix", ):
 
     if platform.system() in ('Linux', ):
         libraries.append("rt")
+
+if STPYV8_DEBUG:
+    extra_compile_args.append("-O0")
