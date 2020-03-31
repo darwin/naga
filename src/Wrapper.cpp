@@ -1164,14 +1164,12 @@ py::object CJavascriptObject::Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Obje
   if (wrapperHint != kWrapperHintNone) {
     if (wrapperHint == kWrapperHintCCLJSIIterableIterator) {
       auto o = new CCLJSIIterableIterator(obj);
-      std::cerr << "wrapping as CCLJSIIterableIterator" << obj << "\n" << o << "\n";
       return Wrap(o);
     }
   }
 
   if (isCLJSType(obj)) {
     auto o = new CCLJSType(obj);
-    std::cerr << "wrapping as CCLJSType type" << obj << "\n" << o << "\n";
     return Wrap(o);
   }
 
