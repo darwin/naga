@@ -137,14 +137,6 @@ class stpyv8_build(build):
         build.run(self)
 
 
-# TODO: develop task is no longer needed, it is effectively the same as build
-# noinspection PyPep8Naming
-class stpyv8_develop(build):
-    def run(self):
-        prepare_v8()
-        build.run(self)
-
-
 # noinspection PyPep8Naming
 class stpyv8_install_v8(build):
     def run(self):
@@ -210,7 +202,6 @@ setup(name="stpyv8",
       ],
       cmdclass=dict(
           build=stpyv8_build,
-          develop=stpyv8_develop,
           v8=stpyv8_install_v8,
           stpyv8=stpyv8_build_no_v8,
           install=stpyv8_install),
