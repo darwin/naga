@@ -1,3 +1,11 @@
+This experimental branch for [blender-clojure](https://github.com/darwin/blender-clojure).
+
+I want to add first-class support for [ClojureScript](https://github.com/clojure/clojurescript).
+
+Let's see how far I can get... 
+
+--- 
+
 # STPyV8
 
 STPyV8 allows interop between Python 3 and JavaScript running Google's V8 engine.  Use STPyV8 to embed JavaScript code directly into your Python project, or to call Python code from JavaScript.
