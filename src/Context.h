@@ -19,13 +19,13 @@ class CContext {
   v8::Persistent<v8::Context> m_context;
 
  public:
-  CContext(v8::Handle<v8::Context> context);
+  CContext(v8::Local<v8::Context> context);
   CContext(const CContext& context);
   CContext(py::object global);
 
   ~CContext() { m_context.Reset(); }
 
-  v8::Handle<v8::Context> Handle(void) const {
+  v8::Local<v8::Context> Handle(void) const {
     return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_context);
   }
 

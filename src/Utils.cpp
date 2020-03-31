@@ -9,7 +9,7 @@
 #include "utf8.h"
 //#include "Locker.h" //TODO port me
 
-v8::Handle<v8::String> ToString(const std::string& str) {
+v8::Local<v8::String> ToString(const std::string& str) {
   v8::EscapableHandleScope scope(v8::Isolate::GetCurrent());
 
   return scope.Escape(
@@ -17,7 +17,7 @@ v8::Handle<v8::String> ToString(const std::string& str) {
           .ToLocalChecked());
 }
 
-v8::Handle<v8::String> ToString(const std::wstring& str) {
+v8::Local<v8::String> ToString(const std::wstring& str) {
   v8::EscapableHandleScope scope(v8::Isolate::GetCurrent());
 
   if (sizeof(wchar_t) == sizeof(uint16_t)) {
@@ -40,7 +40,7 @@ v8::Handle<v8::String> ToString(const std::wstring& str) {
           .ToLocalChecked());
 }
 
-v8::Handle<v8::String> ToString(py::object str) {
+v8::Local<v8::String> ToString(py::object str) {
   v8::EscapableHandleScope scope(v8::Isolate::GetCurrent());
 
   if (PyBytes_CheckExact(str.ptr())) {
@@ -75,7 +75,7 @@ v8::Handle<v8::String> ToString(py::object str) {
   return ToString(py::object(py::handle<>(::PyObject_Str(str.ptr()))));
 }
 
-v8::Handle<v8::String> DecodeUtf8(const std::string& str) {
+v8::Local<v8::String> DecodeUtf8(const std::string& str) {
   v8::EscapableHandleScope scope(v8::Isolate::GetCurrent());
 
   std::vector<uint16_t> data;

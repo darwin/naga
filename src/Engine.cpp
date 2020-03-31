@@ -84,7 +84,7 @@ void CEngine::ReportFatalError(const char* location, const char* message) {
   std::cerr << "<" << location << "> " << message << std::endl;
 }
 
-void CEngine::ReportMessage(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data) {
+void CEngine::ReportMessage(v8::Local<v8::Message> message, v8::Local<v8::Value> data) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -128,8 +128,8 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
   v8::Isolate::GetCurrent()->SetStackLimit(stack_limit);
 }
 
-std::shared_ptr<CScript> CEngine::InternalCompile(v8::Handle<v8::String> src,
-                                                  v8::Handle<v8::Value> name,
+std::shared_ptr<CScript> CEngine::InternalCompile(v8::Local<v8::String> src,
+                                                  v8::Local<v8::Value> name,
                                                   int line,
                                                   int col) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -141,7 +141,7 @@ std::shared_ptr<CScript> CEngine::InternalCompile(v8::Handle<v8::String> src,
   v8::Persistent<v8::String> script_source(m_isolate, src);
 
   v8::MaybeLocal<v8::Script> script;
-  v8::Handle<v8::String> source = v8::Local<v8::String>::New(m_isolate, script_source);
+  v8::Local<v8::String> source = v8::Local<v8::String>::New(m_isolate, script_source);
 
   Py_BEGIN_ALLOW_THREADS
 
@@ -161,7 +161,7 @@ std::shared_ptr<CScript> CEngine::InternalCompile(v8::Handle<v8::String> src,
   return std::shared_ptr<CScript>(new CScript(m_isolate, *this, script_source, script.ToLocalChecked()));
 }
 
-py::object CEngine::ExecuteScript(v8::Handle<v8::Script> script) {
+py::object CEngine::ExecuteScript(v8::Local<v8::Script> script) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();

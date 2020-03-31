@@ -17,12 +17,12 @@ class CEngine {
   static uintptr_t CalcStackLimitSize(uintptr_t size);
 
  protected:
-  CScriptPtr InternalCompile(v8::Handle<v8::String> src, v8::Handle<v8::Value> name, int line, int col);
+  CScriptPtr InternalCompile(v8::Local<v8::String> src, v8::Local<v8::Value> name, int line, int col);
 
   static void TerminateAllThreads(void);
 
   static void ReportFatalError(const char* location, const char* message);
-  static void ReportMessage(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data);
+  static void ReportMessage(v8::Local<v8::Message> message, v8::Local<v8::Value> data);
 
  public:
   CEngine(v8::Isolate* isolate = NULL) : m_isolate(isolate ? isolate : v8::Isolate::GetCurrent()) {}
@@ -48,7 +48,7 @@ class CEngine {
   static bool SetMemoryLimit(int max_young_space_size, int max_old_space_size, int max_executable_size);
   static void SetStackLimit(uintptr_t stack_limit_size);
 
-  py::object ExecuteScript(v8::Handle<v8::Script> script);
+  py::object ExecuteScript(v8::Local<v8::Script> script);
 
   static void SetFlags(const std::string& flags) { v8::V8::SetFlagsFromString(flags.c_str(), flags.size()); }
 
@@ -68,7 +68,7 @@ class CScript {
   v8::Persistent<v8::Script> m_script;
 
  public:
-  CScript(v8::Isolate* isolate, CEngine& engine, v8::Persistent<v8::String>& source, v8::Handle<v8::Script> script)
+  CScript(v8::Isolate* isolate, CEngine& engine, v8::Persistent<v8::String>& source, v8::Local<v8::Script> script)
       : m_isolate(isolate), m_engine(engine), m_source(m_isolate, source), m_script(m_isolate, script) {}
 
   CScript(const CScript& script) : m_isolate(script.m_isolate), m_engine(script.m_engine) {
@@ -83,8 +83,8 @@ class CScript {
     m_script.Reset();
   }
 
-  v8::Handle<v8::String> Source() const { return v8::Local<v8::String>::New(m_isolate, m_source); }
-  v8::Handle<v8::Script> Script() const { return v8::Local<v8::Script>::New(m_isolate, m_script); }
+  v8::Local<v8::String> Source() const { return v8::Local<v8::String>::New(m_isolate, m_source); }
+  v8::Local<v8::Script> Script() const { return v8::Local<v8::Script>::New(m_isolate, m_script); }
 
   const std::string GetSource(void) const;
 

@@ -74,7 +74,7 @@ void CContext::Expose(void) {
       py::objects::make_ptr_instance<CContext, py::objects::pointer_holder<std::shared_ptr<CContext>, CContext> > >();
 }
 
-CContext::CContext(v8::Handle<v8::Context> context) {
+CContext::CContext(v8::Local<v8::Context> context) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   m_context.Reset(context->GetIsolate(), context);
@@ -90,7 +90,7 @@ CContext::CContext(py::object global) : m_global(global) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Context> context = v8::Context::New(isolate);
+  v8::Local<v8::Context> context = v8::Context::New(isolate);
 
   m_context.Reset(isolate, context);
 
@@ -117,7 +117,7 @@ py::str CContext::GetSecurityToken(void) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Value> token = Handle()->GetSecurityToken();
+  v8::Local<v8::Value> token = Handle()->GetSecurityToken();
 
   if (token.IsEmpty())
     return py::str();
@@ -142,7 +142,7 @@ py::object CContext::GetEntered(void) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Context> entered = isolate->GetEnteredContext();
+  v8::Local<v8::Context> entered = isolate->GetEnteredContext();
 
   return (!isolate->InContext() || entered.IsEmpty())
              ? py::object()
@@ -154,7 +154,7 @@ py::object CContext::GetCurrent(void) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Context> current = isolate->GetCurrentContext();
+  v8::Local<v8::Context> current = isolate->GetCurrentContext();
 
   return (current.IsEmpty()) ? py::object()
                              : py::object(py::handle<>(boost::python::converter::shared_ptr_to_python<CContext>(
@@ -165,7 +165,7 @@ py::object CContext::GetCalling(void) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Handle<v8::Context> calling = isolate->GetCurrentContext();
+  v8::Local<v8::Context> calling = isolate->GetCurrentContext();
 
   return (!isolate->InContext() || calling.IsEmpty())
              ? py::object()

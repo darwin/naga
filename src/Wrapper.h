@@ -49,15 +49,15 @@ class CPythonObject {
   static void DisposeCallback(v8::Persistent<v8::Value> object, void* parameter);
 #endif
 
-  static void SetupObjectTemplate(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> clazz);
-  static v8::Handle<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
+  static void SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz);
+  static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
 
-  static v8::Handle<v8::Value> WrapInternal(py::object obj);
+  static v8::Local<v8::Value> WrapInternal(py::object obj);
 
-  static bool IsWrapped(v8::Handle<v8::Object> obj);
-  static v8::Handle<v8::Value> Wrap(py::object obj);
-  static py::object Unwrap(v8::Handle<v8::Object> obj);
-  static void Dispose(v8::Handle<v8::Value> value);
+  static bool IsWrapped(v8::Local<v8::Object> obj);
+  static v8::Local<v8::Value> Wrap(py::object obj);
+  static py::object Unwrap(v8::Local<v8::Object> obj);
+  static void Dispose(v8::Local<v8::Value> value);
 
   static void ThrowIf(v8::Isolate* isolate);
 };
@@ -70,12 +70,12 @@ class CJavascriptObject : public CWrapper {
  protected:
   v8::Persistent<v8::Object> m_obj;
 
-  void CheckAttr(v8::Handle<v8::String> name) const;
+  void CheckAttr(v8::Local<v8::String> name) const;
 
   CJavascriptObject() {}
 
  public:
-  CJavascriptObject(v8::Handle<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
+  CJavascriptObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
 
   virtual ~CJavascriptObject() { m_obj.Reset(); }
 
@@ -101,8 +101,8 @@ class CJavascriptObject : public CWrapper {
   void Dump(std::ostream& os) const;
 
   static py::object Wrap(CJavascriptObject* obj);
-  static py::object Wrap(v8::Handle<v8::Value> value, v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
-  static py::object Wrap(v8::Handle<v8::Object> obj, v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
+  static py::object Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> self = v8::Local<v8::Object>());
+  static py::object Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self = v8::Local<v8::Object>());
 };
 
 class CJavascriptNull : public CJavascriptObject {
@@ -137,7 +137,7 @@ class CJavascriptArray : public CJavascriptObject, public ILazyObject {
     reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
   };
 
-  CJavascriptArray(v8::Handle<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
+  CJavascriptArray(v8::Local<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
 
   CJavascriptArray(py::object items) : m_items(items), m_size(0) {}
 
@@ -158,15 +158,15 @@ class CJavascriptArray : public CJavascriptObject, public ILazyObject {
 class CJavascriptFunction : public CJavascriptObject {
   v8::Persistent<v8::Object> m_self;
 
-  py::object Call(v8::Handle<v8::Object> self, py::list args, py::dict kwds);
+  py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
 
  public:
-  CJavascriptFunction(v8::Handle<v8::Object> self, v8::Handle<v8::Function> func)
+  CJavascriptFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
       : CJavascriptObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
 
   ~CJavascriptFunction() { m_self.Reset(); }
 
-  v8::Handle<v8::Object> Self(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
+  v8::Local<v8::Object> Self(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
 
   static py::object CallWithArgs(py::tuple args, py::dict kwds);
   static py::object CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds);
@@ -207,7 +207,7 @@ class ObjectTracer {
   static LivingMap* GetLivingMapping(void);
 
  public:
-  ObjectTracer(v8::Handle<v8::Value> handle, py::object* object);
+  ObjectTracer(v8::Local<v8::Value> handle, py::object* object);
   ~ObjectTracer(void);
 
   const v8::Persistent<v8::Value>& Handle(void) const { return m_handle; }
@@ -215,9 +215,9 @@ class ObjectTracer {
 
   void Dispose(void);
 
-  static ObjectTracer& Trace(v8::Handle<v8::Value> handle, py::object* object);
+  static ObjectTracer& Trace(v8::Local<v8::Value> handle, py::object* object);
 
-  static v8::Handle<v8::Value> FindCache(py::object obj);
+  static v8::Local<v8::Value> FindCache(py::object obj);
 };
 
 class ContextTracer {
@@ -229,12 +229,12 @@ class ContextTracer {
   static void WeakCallback(const v8::WeakCallbackInfo<ContextTracer>& info);
 
  public:
-  ContextTracer(v8::Handle<v8::Context> ctxt, LivingMap* living);
+  ContextTracer(v8::Local<v8::Context> ctxt, LivingMap* living);
   ~ContextTracer(void);
 
-  v8::Handle<v8::Context> Context(void) const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_ctxt); }
+  v8::Local<v8::Context> Context(void) const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_ctxt); }
 
-  static void Trace(v8::Handle<v8::Context> ctxt, LivingMap* living);
+  static void Trace(v8::Local<v8::Context> ctxt, LivingMap* living);
 };
 
 #endif

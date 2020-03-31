@@ -43,7 +43,7 @@ class CJavascriptStackTrace {
   v8::Persistent<v8::StackTrace> m_st;
 
  public:
-  CJavascriptStackTrace(v8::Isolate* isolate, v8::Handle<v8::StackTrace> st) : m_isolate(isolate), m_st(isolate, st) {}
+  CJavascriptStackTrace(v8::Isolate* isolate, v8::Local<v8::StackTrace> st) : m_isolate(isolate), m_st(isolate, st) {}
 
   CJavascriptStackTrace(const CJavascriptStackTrace& st) : m_isolate(st.m_isolate) {
     v8::HandleScope handle_scope(m_isolate);
@@ -51,7 +51,7 @@ class CJavascriptStackTrace {
     m_st.Reset(m_isolate, st.Handle());
   }
 
-  v8::Handle<v8::StackTrace> Handle() const { return v8::Local<v8::StackTrace>::New(m_isolate, m_st); }
+  v8::Local<v8::StackTrace> Handle() const { return v8::Local<v8::StackTrace>::New(m_isolate, m_st); }
 
   int GetFrameCount() const {
     v8::HandleScope handle_scope(m_isolate);
@@ -92,7 +92,7 @@ class CJavascriptStackFrame {
   v8::Persistent<v8::StackFrame> m_frame;
 
  public:
-  CJavascriptStackFrame(v8::Isolate* isolate, v8::Handle<v8::StackFrame> frame)
+  CJavascriptStackFrame(v8::Isolate* isolate, v8::Local<v8::StackFrame> frame)
       : m_isolate(isolate), m_frame(isolate, frame) {}
 
   CJavascriptStackFrame(const CJavascriptStackFrame& frame) : m_isolate(frame.m_isolate) {
@@ -101,7 +101,7 @@ class CJavascriptStackFrame {
     m_frame.Reset(m_isolate, frame.Handle());
   }
 
-  v8::Handle<v8::StackFrame> Handle() const { return v8::Local<v8::StackFrame>::New(m_isolate, m_frame); }
+  v8::Local<v8::StackFrame> Handle() const { return v8::Local<v8::StackFrame>::New(m_isolate, m_frame); }
 
   int GetLineNumber() const {
     v8::HandleScope handle_scope(m_isolate);
@@ -169,9 +169,9 @@ class CJavascriptException : public std::runtime_error {
       m_msg.Reset();
   }
 
-  v8::Handle<v8::Value> Exception() const { return v8::Local<v8::Value>::New(m_isolate, m_exc); }
-  v8::Handle<v8::Value> Stack() const { return v8::Local<v8::Value>::New(m_isolate, m_stack); }
-  v8::Handle<v8::Message> Message() const { return v8::Local<v8::Message>::New(m_isolate, m_msg); }
+  v8::Local<v8::Value> Exception() const { return v8::Local<v8::Value>::New(m_isolate, m_exc); }
+  v8::Local<v8::Value> Stack() const { return v8::Local<v8::Value>::New(m_isolate, m_stack); }
+  v8::Local<v8::Message> Message() const { return v8::Local<v8::Message>::New(m_isolate, m_msg); }
 
   const std::string GetName(void);
   const std::string GetMessage(void);
