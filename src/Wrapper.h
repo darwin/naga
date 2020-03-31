@@ -1,4 +1,3 @@
-// TODO make this an ifdef guard
 #pragma once
 
 #include <boost/iterator/iterator_facade.hpp>
@@ -6,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include "Exception.h"
 
@@ -18,7 +18,7 @@ typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
 class CJavascriptObject;
 
 struct CWrapper {
-  static void Expose(void);
+  static void Expose();
 };
 
 class CPythonObject {
@@ -45,10 +45,6 @@ class CPythonObject {
 
   static void Caller(const v8::FunctionCallbackInfo<v8::Value>& info);
 
-#ifdef SUPPORT_TRACE_LIFECYCLE
-  static void DisposeCallback(v8::Persistent<v8::Value> object, void* parameter);
-#endif
-
   static void SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz);
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
 
@@ -63,7 +59,7 @@ class CPythonObject {
 };
 
 struct ILazyObject {
-  virtual void LazyConstructor(void) = 0;
+  virtual void LazyConstructor() = 0;
 };
 
 class CJavascriptObject : public CWrapper {
@@ -72,31 +68,31 @@ class CJavascriptObject : public CWrapper {
 
   void CheckAttr(v8::Local<v8::String> name) const;
 
-  CJavascriptObject() {}
+  CJavascriptObject() = default;
 
  public:
-  CJavascriptObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
+  explicit CJavascriptObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
 
   virtual ~CJavascriptObject() { m_obj.Reset(); }
 
-  v8::Local<v8::Object> Object(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_obj); }
+  v8::Local<v8::Object> Object() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_obj); }
 
   py::object GetAttr(const std::string& name);
   void SetAttr(const std::string& name, py::object value);
   void DelAttr(const std::string& name);
 
-  py::list GetAttrList(void);
-  int GetIdentityHash(void);
-  CJavascriptObjectPtr Clone(void);
+  py::list GetAttrList();
+  int GetIdentityHash();
+  CJavascriptObjectPtr Clone();
 
   bool Contains(const std::string& name);
 
-  operator long() const;
-  operator double() const;
-  operator bool() const;
+  explicit operator long() const;
+  explicit operator double() const;
+  explicit operator bool() const;
 
   bool Equals(CJavascriptObjectPtr other) const;
-  bool Unequals(CJavascriptObjectPtr other) const { return !Equals(other); }
+  bool Unequals(CJavascriptObjectPtr other) const { return !Equals(std::move(other)); }
 
   void Dump(std::ostream& os) const;
 
@@ -107,14 +103,14 @@ class CJavascriptObject : public CWrapper {
 
 class CJavascriptNull : public CJavascriptObject {
  public:
-  bool nonzero(void) const { return false; }
-  const std::string str(void) const { return "null"; }
+  bool nonzero() const { return false; }
+  const std::string str() const { return "null"; }
 };
 
 class CJavascriptUndefined : public CJavascriptObject {
  public:
-  bool nonzero(void) const { return false; }
-  const std::string str(void) const { return "undefined"; }
+  bool nonzero() const { return false; }
+  const std::string str() const { return "undefined"; }
 };
 
 class CJavascriptArray : public CJavascriptObject, public ILazyObject {
@@ -137,22 +133,22 @@ class CJavascriptArray : public CJavascriptObject, public ILazyObject {
     reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
   };
 
-  CJavascriptArray(v8::Local<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
+  explicit CJavascriptArray(v8::Local<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
 
-  CJavascriptArray(py::object items) : m_items(items), m_size(0) {}
+  explicit CJavascriptArray(py::object items) : m_items(std::move(items)), m_size(0) {}
 
-  size_t Length(void);
+  size_t Length();
 
   py::object GetItem(py::object key);
   py::object SetItem(py::object key, py::object value);
   py::object DelItem(py::object key);
   bool Contains(py::object item);
 
-  ArrayIterator begin(void) { return ArrayIterator(this, 0); }
-  ArrayIterator end(void) { return ArrayIterator(this, Length()); }
+  ArrayIterator begin() { return {this, 0}; }
+  ArrayIterator end() { return {this, Length()}; }
 
   // ILazyObject
-  virtual void LazyConstructor(void);
+  void LazyConstructor() override;
 };
 
 class CJavascriptFunction : public CJavascriptObject {
@@ -164,9 +160,9 @@ class CJavascriptFunction : public CJavascriptObject {
   CJavascriptFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
       : CJavascriptObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
 
-  ~CJavascriptFunction() { m_self.Reset(); }
+  ~CJavascriptFunction() override { m_self.Reset(); }
 
-  v8::Local<v8::Object> Self(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
+  v8::Local<v8::Object> Self() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
 
   static py::object CallWithArgs(py::tuple args, py::dict kwds);
   static py::object CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds);
@@ -175,17 +171,17 @@ class CJavascriptFunction : public CJavascriptObject {
   py::object ApplyPython(py::object self, py::list args, py::dict kwds);
   py::object Invoke(py::list args, py::dict kwds);
 
-  const std::string GetName(void) const;
+  const std::string GetName() const;
   void SetName(const std::string& name);
 
-  int GetLineNumber(void) const;
-  int GetColumnNumber(void) const;
-  const std::string GetResourceName(void) const;
-  const std::string GetInferredName(void) const;
-  int GetLineOffset(void) const;
-  int GetColumnOffset(void) const;
+  int GetLineNumber() const;
+  int GetColumnNumber() const;
+  const std::string GetResourceName() const;
+  const std::string GetInferredName() const;
+  int GetLineOffset() const;
+  int GetColumnOffset() const;
 
-  py::object GetOwner(void) const;
+  py::object GetOwner() const;
 };
 
 #ifdef SUPPORT_TRACE_LIFECYCLE
@@ -200,20 +196,17 @@ class ObjectTracer {
 
   LivingMap* m_living;
 
-  void Trace(void);
+  void Trace();
 
-  static void WeakCallback(const v8::WeakCallbackInfo<ObjectTracer>& info);
-
-  static LivingMap* GetLivingMapping(void);
+  static LivingMap* GetLivingMapping();
 
  public:
   ObjectTracer(v8::Local<v8::Value> handle, py::object* object);
-  ~ObjectTracer(void);
+  ~ObjectTracer();
 
-  const v8::Persistent<v8::Value>& Handle(void) const { return m_handle; }
-  py::object* Object(void) const { return m_object.get(); }
+  py::object* Object() const { return m_object.get(); }
 
-  void Dispose(void);
+  void Dispose();
 
   static ObjectTracer& Trace(v8::Local<v8::Value> handle, py::object* object);
 
@@ -224,15 +217,15 @@ class ContextTracer {
   v8::Persistent<v8::Context> m_ctxt;
   std::unique_ptr<LivingMap> m_living;
 
-  void Trace(void);
+  void Trace();
 
   static void WeakCallback(const v8::WeakCallbackInfo<ContextTracer>& info);
 
  public:
   ContextTracer(v8::Local<v8::Context> ctxt, LivingMap* living);
-  ~ContextTracer(void);
+  ~ContextTracer();
 
-  v8::Local<v8::Context> Context(void) const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_ctxt); }
+  v8::Local<v8::Context> Context() const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_ctxt); }
 
   static void Trace(v8::Local<v8::Context> ctxt, LivingMap* living);
 };
