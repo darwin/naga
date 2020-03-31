@@ -3,6 +3,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <memory>
+#include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
 
@@ -138,12 +139,12 @@ protected:
     m_msg.Reset(m_isolate, try_catch.Message());
   }
 public:
-  CJavascriptException(const std::string& msg, PyObject *type = NULL)
+  CJavascriptException(const std::string& msg, PyObject *type = NULL) noexcept
     : std::runtime_error(msg), m_isolate(v8::Isolate::GetCurrent()), m_type(type)
   {
   }
 
-  CJavascriptException(const CJavascriptException& ex)
+  CJavascriptException(const CJavascriptException& ex) noexcept
     : std::runtime_error(ex.what()), m_isolate(ex.m_isolate), m_type(ex.m_type)
   {
     v8::HandleScope handle_scope(m_isolate);
@@ -153,7 +154,7 @@ public:
     m_msg.Reset(m_isolate, ex.Message());
   }
 
-  ~CJavascriptException() throw()
+  ~CJavascriptException() noexcept
   {
     if (!m_exc.IsEmpty()) m_exc.Reset();
     if (!m_msg.IsEmpty()) m_msg.Reset();
@@ -181,3 +182,5 @@ public:
   static void Expose(void);
 };
 
+static_assert(std::is_nothrow_copy_constructible<CJavascriptException>::value,
+              "CJavascriptException must be nothrow copy constructible");
