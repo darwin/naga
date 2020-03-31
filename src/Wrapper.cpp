@@ -1735,10 +1735,13 @@ LivingMap* ObjectTracer::GetLivingMapping(void) {
   v8::MaybeLocal<v8::Value> value = ctxt->Global()->GetPrivate(ctxt, privateKey);
 
   if (!value.IsEmpty()) {
-    LivingMap* living = (LivingMap*)v8::External::Cast(*value.ToLocalChecked())->Value();
+    auto val = value.ToLocalChecked();
+    if (val->IsExternal()) {
+      LivingMap* living = (LivingMap*)v8::External::Cast(*val)->Value();
 
-    if (living)
-      return living;
+      if (living)
+        return living;
+    }
   }
 
   std::unique_ptr<LivingMap> living(new LivingMap());
