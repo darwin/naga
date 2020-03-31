@@ -78,10 +78,8 @@ extra_compile_args = []
 extra_link_args = []
 
 include_dirs.append(os.path.join(V8_HOME, 'include'))
-if not STPYV8_DEBUG:
-    v8_target_path = "out.gn/x64.release.sample"
-else:
-    v8_target_path = "out.gn/x64.debug.sample"
+build_config = "debug" if STPYV8_DEBUG else "release"
+v8_target_path = "out.gn-{}/x64.{}.stpyv8".format(STPYV8_VERSION, build_config)
 
 library_dirs.append(os.path.join(V8_HOME, '{}/obj/'.format(v8_target_path)))
 
