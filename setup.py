@@ -46,6 +46,8 @@ def exec_cmd(cmdline, *args, **kwargs):
         if output:
             log.debug(stderr)
 
+        sys.exit(proc.returncode)
+
     return succeeded, stdout, stderr if output else succeeded
 
 
