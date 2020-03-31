@@ -96,5 +96,5 @@ elif os.name in ("posix",):
         libraries.append("rt")
 
 if STPYV8_DEBUG:
-    extra_compile_args.append("-O0")
     undef_macros += ['NDEBUG']
+    extra_compile_args += ["-g3", "-O0"]
