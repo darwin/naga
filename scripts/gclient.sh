@@ -6,10 +6,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$V8_HOME"
 
-source "$VENV_DIR/bin/activate"
-
-# force homebrew's python2 when working with depot
-export PATH=/usr/local/opt/python@2/bin:$DEPOT_HOME:$PATH
-
+# shellcheck disable=SC1090
+source "$VENV1_DIR/bin/activate"
 set -x
-exec gclient "$@"
+
+export GCLIENT_PY3=0
+exec vex --path "$VENV1_DIR" gclient "$@"

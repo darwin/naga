@@ -48,7 +48,7 @@ set -- "${POSITIONAL_OPTS[@]}" # restore positional parameters
 if [[ ! "$OSTYPE" == "darwin"* ]]; then
   echo "this v8 build script was tested under macOS only"
   echo "you will need to follow https://github.com/area1/stpyv8#building for your particular system"
-  echo "you should end up '$VENV_PACKAGES_DIR' containing something like:"
+  echo "you should end up '$VENV3_PACKAGES_DIR' containing something like:"
   echo ""
   cat <<HEREDOC
 > cd .build/stpyv8 && tree -ughsqD build/lib*
@@ -63,12 +63,17 @@ fi
 
 cd "$ROOT"
 
-if [[ ! -d "$VENV_PACKAGES_DIR" ]]; then
-  echo "directory '$VENV_PACKAGES_DIR' does not exist, you must successfully run ./scripts/install-deps.sh first"
+set -x
+
+# shellcheck disable=SC1090
+source "$VENV1_DIR/bin/activate"
+
+if [[ ! -d "$VENV3_PACKAGES_DIR" ]]; then
+  echo "directory '$VENV3_PACKAGES_DIR' does not exist, you must successfully run ./scripts/install-deps.sh first"
   exit 1
 fi
 
-set -x
+#set -xdir
 if [[ -n "$WANT_DEBUG" ]]; then
   STPYV8_EXTRA_OPTS+=("--debug")
   export STPYV8_DEBUG=1
@@ -78,20 +83,19 @@ if [[ -n "$DO_BREW" ]]; then
   brew install python@2 python3 boost-python3
 fi
 
+export GCLIENT_PY3=0
 if [[ -n "$DO_V8" ]]; then
   # force homebrew's python2 when working with depot
-  PREV_PATH=$PATH
-  export PATH=/usr/local/opt/python@2/bin:$PATH
-  python2 setup.py v8
-  export PATH=$PREV_PATH
+  vex --path "$VENV2_DIR" python --version
+  vex --path "$VENV2_DIR" python setup.py v8
 fi
 
 if [[ -n "$DO_STPYV8" ]]; then
-  source "$VENV_DIR/bin/activate"
-  python3 setup.py stpyv8 "${STPYV8_EXTRA_OPTS[@]}"
+  vex --path "$VENV3_DIR" python --version
+  vex --path "$VENV3_DIR" python setup.py stpyv8 "${STPYV8_EXTRA_OPTS[@]}"
 fi
 
-V8_PACKAGES_DIR_DIR="$VENV_PACKAGES_DIR"
+V8_PACKAGES_DIR_DIR="$VENV3_PACKAGES_DIR"
 
 # this is broken on my machine
 # python setup.py install --prefix "$V8_PACKAGES_DIR_DIR"
