@@ -12,6 +12,7 @@
 #include "Utils.h"
 #include "WrapperCLJS.h"
 #include "libplatform/libplatform.h"
+#include "Isolate.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
   if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \
@@ -689,6 +690,26 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(v8::Isolate* i
   return handle_scope.Escape(clazz);
 }
 
+v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(v8::Isolate* isolate) {
+  v8::EscapableHandleScope handle_scope(isolate);
+  // retrieve cached object template from the isolate
+  auto template_ptr = isolate->GetData(kJSObjectTemplate);
+  if (!template_ptr) {
+    // it hasn't been created yet = > go create it and cache it in the isolate
+    auto template_val = CreateObjectTemplate(isolate);
+    auto eternal_val_ptr = new v8::Eternal<v8::ObjectTemplate>(isolate, template_val);
+    assert(isolate->GetNumberOfDataSlots()>kJSObjectTemplate);
+    isolate->SetData(kJSObjectTemplate, eternal_val_ptr);
+    template_ptr = eternal_val_ptr;
+  }
+  // convert raw pointer to pointer to eternal handle
+  auto template_eternal_val = static_cast<v8::Eternal <v8::ObjectTemplate> *>(template_ptr);
+  assert(template_eternal_val);
+  // retrieve local handle from eternal handle
+  auto template_val = template_eternal_val->Get(isolate);
+  return handle_scope.Escape(template_val);
+}
+
 bool CPythonObject::IsWrapped(v8::Local<v8::Object> obj) {
   return obj->InternalFieldCount() == 1;
 }
@@ -840,11 +861,8 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
       ObjectTracer::Trace(result, object);
 #endif
   } else {
-    static v8::Persistent<v8::ObjectTemplate> s_template(isolate, CreateObjectTemplate(isolate));
-
-    v8::MaybeLocal<v8::Object> instance =
-        v8::Local<v8::ObjectTemplate>::New(isolate, s_template)->NewInstance(isolate->GetCurrentContext());
-
+    auto template_val = GetCachedObjectTemplateOrCreate(isolate);
+    auto instance = template_val->NewInstance(isolate->GetCurrentContext());
     if (!instance.IsEmpty()) {
       py::object* object = new py::object(obj);
 

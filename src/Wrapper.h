@@ -47,6 +47,7 @@ class CPythonObject {
 
   static void SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz);
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
+  static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(v8::Isolate* isolate);
 
   static v8::Local<v8::Value> WrapInternal(py::object obj);
 
