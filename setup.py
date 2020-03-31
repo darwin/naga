@@ -67,14 +67,18 @@ def install_depot():
                  msg="Found depot tools")
 
 
+# https://v8.dev/docs/source-code
 def checkout_v8():
     if STPYV8_SKIP_V8_CHECKOUT is not False:
         return
 
     if not os.path.exists(V8_HOME):
+        v8_parent_dir = os.path.abspath(os.path.join(V8_HOME, os.pardir))
+        if not os.path.exists(v8_parent_dir):
+            os.makedirs(v8_parent_dir)
         exec_cmd(os.path.join(DEPOT_HOME, 'fetch'),
                  'v8',
-                 cwd=os.path.dirname(V8_HOME),
+                 cwd=v8_parent_dir,
                  msg="Fetching Google V8 code")
 
     exec_cmd('git fetch --tags',

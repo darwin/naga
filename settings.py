@@ -8,6 +8,10 @@ V8_GIT_TAG_MASTER = "master"
 STPYV8_HOME = os.path.dirname(os.path.realpath(__file__))
 DEPOT_HOME = os.environ.get('DEPOT_HOME', os.path.join(STPYV8_HOME, 'depot_tools'))
 V8_HOME = os.environ.get('V8_HOME', os.path.join(STPYV8_HOME, 'v8'))
+
+if not os.path.basename(os.path.normpath(V8_HOME)) == "v8":
+    raise Exception("V8_HOME must have last path component 'v8'")
+
 STPYV8_DEBUG = os.environ.get('STPYV8_DEBUG', False)
 STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG', V8_GIT_TAG_STABLE)
 STPYV8_SKIP_DEPOT = os.environ.get('STPYV8_SKIP_DEPOT', False)
