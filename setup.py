@@ -22,7 +22,6 @@ log = logging.getLogger()
 def exec_cmd(cmdline, *args, **kwargs):
     msg = kwargs.get('msg')
     cwd = kwargs.get('cwd', '.')
-    output = kwargs.get('output')
 
     if msg:
         print(msg)
@@ -33,22 +32,17 @@ def exec_cmd(cmdline, *args, **kwargs):
                             shell=kwargs.get('shell', True),
                             cwd=cwd,
                             env=kwargs.get('env'),
-                            stdout=subprocess.PIPE if output else None,
-                            stderr=subprocess.PIPE if output else None)
-
-    stdout, stderr = proc.communicate()
-
-    succeeded = proc.returncode == 0
+                            stdout=sys.stdout,
+                            stderr=sys.stderr)
+    proc.wait()
+    exit_code = proc.returncode
+    succeeded = exit_code == 0
 
     if not succeeded:
-        log.error("%s failed: code = %d", msg or "Execute command", proc.returncode)
+        log.error("%s failed: code = %d", msg or "Execute command", exit_code)
+        sys.exit(exit_code)
 
-        if output:
-            log.debug(stderr)
-
-        sys.exit(proc.returncode)
-
-    return succeeded, stdout, stderr if output else succeeded
+    return succeeded
 
 
 def install_depot():
@@ -66,11 +60,10 @@ def install_depot():
 
     # depot_tools updates itself automatically when running gclient tool
     if os.path.isfile(os.path.join(DEPOT_HOME, 'gclient')):
-        _, stdout, _ = exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
-                                "--version",
-                                cwd=DEPOT_HOME,
-                                output=True,
-                                msg="Found depot tools")
+        exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
+                 "--version",
+                 cwd=DEPOT_HOME,
+                 msg="Found depot tools")
 
 
 def checkout_v8():
