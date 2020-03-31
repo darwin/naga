@@ -55,7 +55,8 @@ source_files = ["Exception.cpp",
                 "Utils.cpp",
                 "STPyV8.cpp"]
 
-macros = [("BOOST_PYTHON_STATIC_LIB", None)]
+define_macros = [("BOOST_PYTHON_STATIC_LIB", None)]
+undef_macros = []
 include_dirs = []
 library_dirs = []
 libraries = []
@@ -96,3 +97,4 @@ elif os.name in ("posix",):
 
 if STPYV8_DEBUG:
     extra_compile_args.append("-O0")
+    undef_macros += ['NDEBUG']

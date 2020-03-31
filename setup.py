@@ -167,7 +167,8 @@ class stpyv8_install(install):
 
 stpyv8 = Extension(name="_STPyV8",
                    sources=[os.path.join("src", source) for source in source_files],
-                   define_macros=macros,
+                   define_macros=define_macros,
+                   undef_macros=undef_macros,
                    include_dirs=include_dirs,
                    library_dirs=library_dirs,
                    libraries=libraries,
