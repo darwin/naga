@@ -110,3 +110,61 @@ elif os.name in ("posix",):
 if STPYV8_DEBUG:
     undef_macros += ['NDEBUG']
     extra_compile_args += ["-g3", "-O0"]
+
+# I took this from ninja files of the V8 debug build, we have to match them to prevent crashes in debug builds
+# It also helps with debugging
+debug_macros = [
+    ("_LIBCPP_HAS_NO_ALIGNED_ALLOCATION", None),
+    ("__STDC_CONSTANT_MACROS", None),
+    ("__STDC_FORMAT_MACROS", None),
+    ("__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES", "0"),
+    ("_DEBUG", None),
+    ("DYNAMIC_ANNOTATIONS_ENABLED", "1"),
+    ("V8_TYPED_ARRAY_MAX_SIZE_IN_HEAP", "64"),
+    ("ENABLE_GDB_JIT_INTERFACE", None),
+    ("ENABLE_MINOR_MC", None),
+    ("OBJECT_PRINT", None),
+    ("VERIFY_HEAP", None),
+    ("V8_TRACE_MAPS", None),
+    ("V8_ENABLE_ALLOCATION_TIMEOUT", None),
+    ("V8_ENABLE_FORCE_SLOW_PATH", None),
+    ("V8_ENABLE_DOUBLE_CONST_STORE_CHECK", None),
+    ("V8_INTL_SUPPORT", None),
+    ("ENABLE_HANDLE_ZAPPING", None),
+    ("V8_SNAPSHOT_NATIVE_CODE_COUNTERS", None),
+    ("V8_CONCURRENT_MARKING", None),
+    ("V8_ARRAY_BUFFER_EXTENSION", None),
+    ("V8_ENABLE_LAZY_SOURCE_POSITIONS", None),
+    ("V8_CHECK_MICROTASKS_SCOPES_CONSISTENCY", None),
+    ("V8_EMBEDDED_BUILTINS", None),
+    ("V8_WIN64_UNWINDING_INFO", None),
+    ("V8_ENABLE_REGEXP_INTERPRETER_THREADED_DISPATCH", None),
+    ("V8_SNAPSHOT_COMPRESSION", None),
+    ("V8_ENABLE_CHECKS", None),
+    ("V8_COMPRESS_POINTERS", None),
+    ("V8_31BIT_SMIS_ON_64BIT_ARCH", None),
+    ("V8_DEPRECATION_WARNINGS", None),
+    ("V8_IMMINENT_DEPRECATION_WARNINGS", None),
+    ("V8_TARGET_ARCH_X64", None),
+    ("V8_HAVE_TARGET_OS", None),
+    ("V8_TARGET_OS_MACOSX", None),
+    ("DEBUG", None),
+    ("ENABLE_SLOW_DCHECKS", None),
+    ("DISABLE_UNTRUSTED_CODE_MITIGATIONS", None),
+    ("U_USING_ICU_NAMESPACE", "0"),
+    ("U_ENABLE_DYLOAD", "0"),
+    ("USE_CHROMIUM_ICU", "1"),
+    ("U_ENABLE_TRACING", "1"),
+    ("U_ENABLE_RESOURCE_TRACING", "0"),
+    ("U_STATIC_IMPLEMENTATION", None),
+    #    ("ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE", None),
+    ("UCHAR_TYPE", "uint16_t"),
+    ("V8_ENABLE_CHECKS", None),
+    ("V8_COMPRESS_POINTERS", None),
+    ("V8_31BIT_SMIS_ON_64BIT_ARCH", None),
+    ("V8_DEPRECATION_WARNINGS", None),
+    ("V8_IMMINENT_DEPRECATION_WARNINGS", None)
+]
+
+if STPYV8_DEBUG:
+    define_macros += debug_macros;
