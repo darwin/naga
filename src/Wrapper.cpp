@@ -9,6 +9,7 @@
 #include "libplatform/libplatform.h"
 
 #include "Wrapper.h"
+#include "WrapperCLJS.h"
 #include "Context.h"
 #include "Utils.h"
 
@@ -128,6 +129,8 @@ void CWrapper::Expose(void)
     py::objects::class_value_wrapper<std::shared_ptr<CJavascriptObject>,
     py::objects::make_ptr_instance<CJavascriptObject,
     py::objects::pointer_holder<std::shared_ptr<CJavascriptObject>,CJavascriptObject> > >();
+
+  exposeCLJSTypes();
 }
 
 void CPythonObject::ThrowIf(v8::Isolate* isolate)
@@ -1283,17 +1286,35 @@ py::object CJavascriptObject::Wrap(v8::Handle<v8::Object> obj, v8::Handle<v8::Ob
   {
     return py::object();
   }
-  else if (obj->IsArray())
+
+  if (obj->IsArray())
   {
     v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(obj);
 
     return Wrap(new CJavascriptArray(array));
   }
-  else if (CPythonObject::IsWrapped(obj))
+
+  if (CPythonObject::IsWrapped(obj))
   {
     return CPythonObject::Unwrap(obj);
   }
-  else if (obj->IsFunction())
+
+  auto wrapperHint = getWrapperHint(obj);
+  if (wrapperHint != kWrapperHintNone) {
+    if (wrapperHint == kWrapperHintCCLJSIIterableIterator) {
+      auto o = new CCLJSIIterableIterator(obj);
+      std::cerr << "wrapping as CCLJSIIterableIterator" << obj << "\n" << o << "\n";
+      return Wrap(o);
+    }
+  }
+
+  if (isCLJSType(obj)) {
+    auto o = new CCLJSType(obj);
+    std::cerr << "wrapping as CCLJSType type" << obj << "\n" << o << "\n";
+    return Wrap(o);
+  }
+
+  if (obj->IsFunction())
   {
     return Wrap(new CJavascriptFunction(self, v8::Handle<v8::Function>::Cast(obj)));
   }

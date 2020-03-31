@@ -45,6 +45,7 @@ source_files = ["Exception.cpp",
                 "Context.cpp",
                 "Engine.cpp",
                 "Wrapper.cpp",
+                "WrapperCLJS.cpp",
                 "Locker.cpp",
                 "Utils.cpp",
                 "STPyV8.cpp"]
