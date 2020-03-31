@@ -36,11 +36,25 @@ gn_args = {
     "v8_enable_disassembler": "false",
     "v8_enable_i18n_support": "true",
     "is_component_build": "false",
-    "is_debug": "true" if STPYV8_DEBUG else "false",
+    "is_debug": "false",
     "use_custom_libcxx": "false",
     "v8_monolithic": "true",
     "v8_use_external_startup_data": "false"
 }
+
+debug_gn_args = {
+    "is_debug": "true",
+    "symbol_level": 2,
+    "use_goma": "false",
+    "goma_dir": "\"None\"",
+    "v8_enable_backtrace": "true",
+    "v8_enable_fast_mksnapshot": "true",
+    "v8_enable_slow_dchecks": "true",
+    "v8_optimized_debug": "false"
+}
+
+if STPYV8_DEBUG:
+    gn_args.update(debug_gn_args)
 
 GN_ARGS = ' '.join("{}={}".format(key, gn_args[key]) for key in gn_args)
 
