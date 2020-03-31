@@ -20,8 +20,8 @@ log = logging.getLogger()
 
 
 def exec_cmd(cmdline, *args, **kwargs):
-    msg    = kwargs.get('msg')
-    cwd    = kwargs.get('cwd', '.')
+    msg = kwargs.get('msg')
+    cwd = kwargs.get('cwd', '.')
     output = kwargs.get('output')
 
     if msg:
@@ -30,11 +30,11 @@ def exec_cmd(cmdline, *args, **kwargs):
     cmdline = ' '.join([cmdline] + list(args))
 
     proc = subprocess.Popen(cmdline,
-                            shell  = kwargs.get('shell', True),
-                            cwd    = cwd,
-                            env    = kwargs.get('env'),
-                            stdout = subprocess.PIPE if output else None,
-                            stderr = subprocess.PIPE if output else None)
+                            shell=kwargs.get('shell', True),
+                            cwd=cwd,
+                            env=kwargs.get('env'),
+                            stdout=subprocess.PIPE if output else None,
+                            stderr=subprocess.PIPE if output else None)
 
     stdout, stderr = proc.communicate()
 
@@ -54,8 +54,8 @@ def install_depot():
         exec_cmd("git clone",
                  DEPOT_GIT_URL,
                  DEPOT_HOME,
-                 cwd = os.path.dirname(DEPOT_HOME),
-                 msg = "Cloning depot tools")
+                 cwd=os.path.dirname(DEPOT_HOME),
+                 msg="Cloning depot tools")
 
         return
 
@@ -63,50 +63,51 @@ def install_depot():
     if os.path.isfile(os.path.join(DEPOT_HOME, 'gclient')):
         _, stdout, _ = exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
                                 "--version",
-                                cwd    = DEPOT_HOME,
-                                output = True,
-                                msg    = "Found depot tools")
+                                cwd=DEPOT_HOME,
+                                output=True,
+                                msg="Found depot tools")
 
 
 def checkout_v8():
     if not os.path.exists(V8_HOME):
         exec_cmd(os.path.join(DEPOT_HOME, 'fetch'),
                  'v8',
-                 cwd = os.path.dirname(V8_HOME),
-                 msg = "Fetching Google V8 code")
+                 cwd=os.path.dirname(V8_HOME),
+                 msg="Fetching Google V8 code")
 
     exec_cmd('git fetch --tags',
-             cwd = V8_HOME,
-             msg = "Fetching the release tag information")
+             cwd=V8_HOME,
+             msg="Fetching the release tag information")
 
     exec_cmd('git checkout',
              STPYV8_V8_GIT_TAG,
-             cwd = V8_HOME,
-             msg = "Checkout Google V8 v{}".format(STPYV8_V8_GIT_TAG))
+             cwd=V8_HOME,
+             msg="Checkout Google V8 v{}".format(STPYV8_V8_GIT_TAG))
 
     exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
              'sync',
              '-D',
-             cwd = os.path.dirname(V8_HOME),
-             msg = "Syncing Google V8 code")
+             cwd=os.path.dirname(V8_HOME),
+             msg="Syncing Google V8 code")
 
     # On Linux, install additional dependencies, per
     # https://v8.dev/docs/build step 4
-    if sys.platform in ("linux", "linux2", ) and v8_deps_linux:
+    if sys.platform in ("linux", "linux2",) and v8_deps_linux:
         exec_cmd('./v8/build/install-build-deps.sh',
-                 cwd = os.path.dirname(V8_HOME),
-                 msg = "Installing additional linux dependencies")
+                 cwd=os.path.dirname(V8_HOME),
+                 msg="Installing additional linux dependencies")
+
 
 def build_v8():
     exec_cmd(os.path.join(DEPOT_HOME, 'gn'),
              "gen {} --args='{}'".format(v8_target_path, GN_ARGS),
-             cwd = V8_HOME,
-             msg = "Generate build scripts for V8 (v{})".format(STPYV8_V8_GIT_TAG))
+             cwd=V8_HOME,
+             msg="Generate build scripts for V8 (v{})".format(STPYV8_V8_GIT_TAG))
 
     exec_cmd(os.path.join(DEPOT_HOME, 'ninja'),
              "-C {} v8_monolith".format(v8_target_path),
-             cwd = V8_HOME,
-             msg = "Build V8 with ninja")
+             cwd=V8_HOME,
+             msg="Build V8 with ninja")
 
 
 def clean_stpyv8():
@@ -126,6 +127,7 @@ def prepare_v8():
         log.error("Fail to checkout and build v8, %s", str(e))
 
 
+# noinspection PyPep8Naming
 class stpyv8_build(build):
     def run(self):
         prepare_v8()
@@ -133,74 +135,80 @@ class stpyv8_build(build):
 
 
 # TODO: develop task is no longer needed, it is effectively the same as build
+# noinspection PyPep8Naming
 class stpyv8_develop(build):
     def run(self):
         prepare_v8()
         build.run(self)
 
 
+# noinspection PyPep8Naming
 class stpyv8_install_v8(build):
     def run(self):
         prepare_v8()
 
 
+# noinspection PyPep8Naming
 class stpyv8_build_no_v8(build):
     def run(self):
         clean_stpyv8()
         build.run(self)
 
 
+# noinspection PyPep8Naming
 class stpyv8_install(install):
+    skip_build = False
+
     def run(self):
         self.skip_build = True
 
         if icu_data_folder:
-            os.makedirs(icu_data_folder, exist_ok = True)
+            os.makedirs(icu_data_folder, exist_ok=True)
             shutil.copy(os.path.join(V8_HOME, "{}/icudtl.dat".format(v8_target_path)),
                         icu_data_folder)
 
         install.run(self)
 
 
-stpyv8 = Extension(name               = "_STPyV8",
-                   sources            = [os.path.join("src", source) for source in source_files],
-                   define_macros      = macros,
-                   include_dirs       = include_dirs,
-                   library_dirs       = library_dirs,
-                   libraries          = libraries,
-                   extra_compile_args = extra_compile_args,
-                   extra_link_args    = extra_link_args,
+stpyv8 = Extension(name="_STPyV8",
+                   sources=[os.path.join("src", source) for source in source_files],
+                   define_macros=macros,
+                   include_dirs=include_dirs,
+                   library_dirs=library_dirs,
+                   libraries=libraries,
+                   extra_compile_args=extra_compile_args,
+                   extra_link_args=extra_link_args,
                    )
 
-setup(name         = "stpyv8",
-      version      = STPYV8_VERSION,
-      description  = "Python Wrapper for Google V8 Engine",
-      platforms    = "x86",
-      author       = "Philip Syme, Angelo Dell'Aera",
-      url          = "https://github.com/area1/stpyv8",
-      license      = "Apache License 2.0",
-      py_modules   = ["STPyV8"],
-      ext_modules  = [stpyv8],
-      classifiers  = [
-        "Development Status :: 4 - Beta",
-        "Environment :: Plugins",
-        "Intended Audience :: Developers",
-        "Intended Audience :: System Administrators",
-        "License :: OSI Approved :: Apache Software License",
-        "Natural Language :: English",
-        "Operating System :: POSIX",
-        "Programming Language :: C++",
-        "Programming Language :: Python",
-        "Topic :: Internet",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Software Development",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: Utilities",
+setup(name="stpyv8",
+      version=STPYV8_VERSION,
+      description="Python Wrapper for Google V8 Engine",
+      platforms="x86",
+      author="Philip Syme, Angelo Dell'Aera",
+      url="https://github.com/area1/stpyv8",
+      license="Apache License 2.0",
+      py_modules=["STPyV8"],
+      ext_modules=[stpyv8],
+      classifiers=[
+          "Development Status :: 4 - Beta",
+          "Environment :: Plugins",
+          "Intended Audience :: Developers",
+          "Intended Audience :: System Administrators",
+          "License :: OSI Approved :: Apache Software License",
+          "Natural Language :: English",
+          "Operating System :: POSIX",
+          "Programming Language :: C++",
+          "Programming Language :: Python",
+          "Topic :: Internet",
+          "Topic :: Internet :: WWW/HTTP",
+          "Topic :: Software Development",
+          "Topic :: Software Development :: Libraries :: Python Modules",
+          "Topic :: Utilities",
       ],
-      cmdclass = dict(
-          build   = stpyv8_build,
-          develop = stpyv8_develop,
-          v8      = stpyv8_install_v8,
-          stpyv8  = stpyv8_build_no_v8,
-          install = stpyv8_install),
-)
+      cmdclass=dict(
+          build=stpyv8_build,
+          develop=stpyv8_develop,
+          v8=stpyv8_install_v8,
+          stpyv8=stpyv8_build_no_v8,
+          install=stpyv8_install),
+      )
