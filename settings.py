@@ -2,7 +2,7 @@ import sys
 import os
 import platform
 
-V8_GIT_TAG_STABLE = "7.9.317.33"
+V8_GIT_TAG_STABLE = "8.3.104"
 V8_GIT_TAG_MASTER = "master"
 
 STPYV8_HOME = os.path.dirname(os.path.realpath(__file__))
