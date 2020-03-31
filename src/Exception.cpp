@@ -365,10 +365,18 @@ void ExceptionTranslator::Translate(CJavascriptException const& ex) {
       v8::MaybeLocal<v8::Value> exc_value = obj->GetPrivate(isolate->GetCurrentContext(), privateKey_value);
 
       if (!exc_type.IsEmpty() && !exc_value.IsEmpty()) {
-        std::unique_ptr<py::object> type(
-            static_cast<py::object*>(v8::Local<v8::External>::Cast(exc_type.ToLocalChecked())->Value()));
-        std::unique_ptr<py::object> value(
-            static_cast<py::object*>(v8::Local<v8::External>::Cast(exc_value.ToLocalChecked())->Value()));
+        auto exc_type_val = exc_type.ToLocalChecked();
+        std::unique_ptr<py::object> type;
+        if (exc_type_val->IsExternal()) {
+          auto type_val = v8::Local<v8::External>::Cast(exc_type_val)->Value();
+          type.reset(static_cast<py::object*>(type_val));
+        }
+        auto exc_value_val = exc_value.ToLocalChecked();
+        std::unique_ptr<py::object> value;
+        if (exc_value_val->IsExternal()) {
+          auto value_val = v8::Local<v8::External>::Cast(exc_value_val)->Value();
+          value.reset(static_cast<py::object*>(value_val));
+        }
 
         if (type != nullptr && value != nullptr) {
           ::PyErr_SetObject(type->ptr(), value->ptr());
