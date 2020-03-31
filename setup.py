@@ -80,9 +80,9 @@ def checkout_v8():
              msg = "Fetching the release tag information")
 
     exec_cmd('git checkout',
-             V8_GIT_TAG,
+             STPYV8_V8_GIT_TAG,
              cwd = V8_HOME,
-             msg = "Checkout Google V8 v{}".format(V8_GIT_TAG))
+             msg = "Checkout Google V8 v{}".format(STPYV8_V8_GIT_TAG))
 
     exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
              'sync',
@@ -101,7 +101,7 @@ def build_v8():
     exec_cmd(os.path.join(DEPOT_HOME, 'gn'),
              "gen {} --args='{}'".format(v8_target_path, GN_ARGS),
              cwd = V8_HOME,
-             msg = "Generate build scripts for V8 (v{})".format(V8_GIT_TAG))
+             msg = "Generate build scripts for V8 (v{})".format(STPYV8_V8_GIT_TAG))
 
     exec_cmd(os.path.join(DEPOT_HOME, 'ninja'),
              "-C {} v8_monolith".format(v8_target_path),
@@ -128,21 +128,19 @@ def prepare_v8():
 
 class stpyv8_build(build):
     def run(self):
-        V8_GIT_TAG = V8_GIT_TAG_STABLE
         prepare_v8()
         build.run(self)
 
 
+# TODO: develop task is no longer needed, it is effectively the same as build
 class stpyv8_develop(build):
     def run(self):
-        V8_GIT_TAG = V8_GIT_TAG_MASTER
         prepare_v8()
         build.run(self)
 
 
 class stpyv8_install_v8(build):
     def run(self):
-        V8_GIT_TAG = V8_GIT_TAG_MASTER
         prepare_v8()
 
 
