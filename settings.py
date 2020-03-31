@@ -27,7 +27,6 @@ os.environ['PATH'] = "{}:{}".format(os.environ['PATH'], DEPOT_HOME)
 
 gn_args = {
     # "v8_use_snapshot"              : "true",
-    "v8_use_external_startup_data": "true",
     "v8_enable_disassembler": "false",
     "v8_enable_i18n_support": "true",
     "is_component_build": "false",
