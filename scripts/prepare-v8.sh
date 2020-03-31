@@ -6,7 +6,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
-DO_BREW=1
 DO_V8=1
 DO_STPYV8=1
 
@@ -23,16 +22,11 @@ while [[ $# -gt 0 ]]; do
     WANT_DEBUG=1
     shift
     ;;
-  --no-brew)
-    DO_BREW=
-    shift
-    ;;
   --no-v8)
     DO_V8=
     shift
     ;;
   --only-stpyv8)
-    DO_BREW=
     DO_V8=
     DO_STPYV8=1
     shift
@@ -48,7 +42,7 @@ set -- "${POSITIONAL_OPTS[@]}" # restore positional parameters
 if [[ ! "$OSTYPE" == "darwin"* ]]; then
   echo "this v8 build script was tested under macOS only"
   echo "you will need to follow https://github.com/area1/stpyv8#building for your particular system"
-  echo "you should end up '$VENV3_PACKAGES_DIR' containing something like:"
+  echo "you should end up '$VENV_PACKAGES_DIR' containing something like:"
   echo ""
   cat <<HEREDOC
 > cd .build/stpyv8 && tree -ughsqD build/lib*
@@ -65,37 +59,36 @@ cd "$ROOT"
 
 set -x
 
-# shellcheck disable=SC1090
-source "$VENV1_DIR/bin/activate"
-
-if [[ ! -d "$VENV3_PACKAGES_DIR" ]]; then
-  echo "directory '$VENV3_PACKAGES_DIR' does not exist, you must successfully run ./scripts/install-deps.sh first"
+if [[ ! -d "$VENV_PACKAGES_DIR" ]]; then
+  echo "directory '$VENV_PACKAGES_DIR' does not exist, you must successfully run ./scripts/install-deps.sh first"
   exit 1
 fi
 
-#set -xdir
+#set -x
 if [[ -n "$WANT_DEBUG" ]]; then
   STPYV8_EXTRA_OPTS+=("--debug")
   export STPYV8_DEBUG=1
 fi
 
-if [[ -n "$DO_BREW" ]]; then
-  brew install python@2 python3 boost-python3
-fi
-
-export GCLIENT_PY3=0
+#export GCLIENT_PY3=0
 if [[ -n "$DO_V8" ]]; then
-  # force homebrew's python2 when working with depot
-  vex --path "$VENV2_DIR" python --version
-  vex --path "$VENV2_DIR" python setup.py v8
+  # force python2 when working with depot
+  # some tools like gn.py try to undo virtualenv and get back to system paths
+  PREV_PATH=$PATH
+  export PATH=$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+  python setup.py v8
+  export PATH=$PREV_PATH
 fi
 
 if [[ -n "$DO_STPYV8" ]]; then
-  vex --path "$VENV3_DIR" python --version
-  vex --path "$VENV3_DIR" python setup.py stpyv8 "${STPYV8_EXTRA_OPTS[@]}"
+  source "$VENV_DIR/bin/activate"
+  # this wil pick up boost files from homebrew
+  export CPPFLAGS=-I/usr/local/include
+  export LDFLAGS=-L/usr/local/lib
+  python setup.py stpyv8 "${STPYV8_EXTRA_OPTS[@]}"
 fi
 
-V8_PACKAGES_DIR_DIR="$VENV3_PACKAGES_DIR"
+V8_PACKAGES_DIR_DIR="$VENV_PACKAGES_DIR"
 
 # this is broken on my machine
 # python setup.py install --prefix "$V8_PACKAGES_DIR_DIR"

@@ -10,9 +10,8 @@ cd "$ROOT_DIR"
 
 ./scripts/create-venv.sh
 
-source "$VENV_DIR/bin/activate"
-
-
 set -x
 cd tests
+
+export PATH=$VENV_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 python -m unittest discover -p "$TEST_GLOB"

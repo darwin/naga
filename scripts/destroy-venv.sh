@@ -7,14 +7,10 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 cd "$ROOT_DIR"
 
 # delete old venv
-if [[ -d "$VENV1_DIR" ]]; then
-  rm -rf "$VENV1_DIR"
+if [[ -d "$VENV_DIR" ]]; then
+  rm -rf "$VENV_DIR"
 fi
 
 if [[ -d "$VENV2_DIR" ]]; then
   rm -rf "$VENV2_DIR"
-fi
-
-if [[ -d "$VENV3_DIR" ]]; then
-  rm -rf "$VENV3_DIR"
 fi
