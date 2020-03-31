@@ -19,4 +19,8 @@ BUILD_DIR="$ROOT_DIR/.build"
 VENV_DIR="$ROOT_DIR/.venv"
 VENV_PACKAGES_DIR="$VENV_DIR/lib/python3.7/site-packages"
 
+# note: this must be kept in sync with setting.py
+V8_HOME=${V8_HOME:-v8}
+DEPOT_HOME=${DEPOT_HOME:-depot_tools}
+
 popd >/dev/null || exit 11

@@ -6,6 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 KNOWN_PYTHON_DEPS=(
   six
+  setuptools
 )
 
 cd "$ROOT_DIR"

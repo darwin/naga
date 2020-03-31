@@ -23,6 +23,14 @@ while [[ $# -gt 0 ]]; do
     WANT_DEBUG=1
     shift
     ;;
+  --no-brew)
+    DO_BREW=
+    shift
+    ;;
+  --no-v8)
+    DO_V8=
+    shift
+    ;;
   --only-stpyv8)
     DO_BREW=
     DO_V8=
@@ -65,8 +73,6 @@ if [[ -n "$WANT_DEBUG" ]]; then
   STPYV8_EXTRA_OPTS+=("--debug")
   export STPYV8_DEBUG=1
 fi
-
-unset V8_HOME
 
 if [[ -n "$DO_BREW" ]]; then
   brew install python@2 python3 boost-python3
