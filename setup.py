@@ -124,13 +124,10 @@ def clean_stpyv8():
 
 
 def prepare_v8():
-    try:
-        install_depot()
-        checkout_v8()
-        build_v8()
-        clean_stpyv8()
-    except Exception as e:
-        log.error("Fail to checkout and build v8, %s", str(e))
+    install_depot()
+    checkout_v8()
+    build_v8()
+    clean_stpyv8()
 
 
 # noinspection PyPep8Naming
