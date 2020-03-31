@@ -10,5 +10,6 @@ v8
 
 env
 venv
+.venv
 .idea
 cmake-build-debug
