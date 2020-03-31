@@ -27,6 +27,7 @@ def exec_cmd(cmdline, *args, **kwargs):
         print(msg)
 
     cmdline = ' '.join([cmdline] + list(args))
+    print("> {}".format(cmdline))
 
     proc = subprocess.Popen(cmdline,
                             shell=kwargs.get('shell', True),
