@@ -1,19 +1,19 @@
+#include "WrapperCLJS.h"
+
+#include <datetime.h>
+#include <descrobject.h>
 #include <stdlib.h>
-#include <iostream>
-#include <vector>
-#include <memory>
-#include <string>
-#include <stdexcept>
 
 #include <boost/python/raw_function.hpp>
-#include <descrobject.h>
-#include <datetime.h>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
-#include "libplatform/libplatform.h"
-
-#include "WrapperCLJS.h"
 #include "Context.h"
 #include "Utils.h"
+#include "libplatform/libplatform.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
@@ -21,18 +21,20 @@
 static auto sentinel_name = "bcljs-bridge-sentinel";
 
 // https://stackoverflow.com/a/26221725/84283
-template<typename ... Args>
-std::string string_format(const std::string &format, Args ... args) {
-  size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1; // Extra space for '\0'
-  if (size <= 0) { throw std::runtime_error("Error during formatting."); }
+template <typename... Args>
+std::string string_format(const std::string& format, Args... args) {
+  size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;  // Extra space for '\0'
+  if (size <= 0) {
+    throw std::runtime_error("Error during formatting.");
+  }
   std::unique_ptr<char[]> buf(new char[size]);
-  snprintf(buf.get(), size, format.c_str(), args ...);
-  return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+  snprintf(buf.get(), size, format.c_str(), args...);
+  return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
 }
 
-std::ostream &operator<<(std::ostream &os, const CJavascriptObject &obj);
+std::ostream& operator<<(std::ostream& os, const CJavascriptObject& obj);
 
-std::ostream &operator<<(std::ostream &os, const v8::Local<v8::Object> &obj) {
+std::ostream& operator<<(std::ostream& os, const v8::Local<v8::Object>& obj) {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   auto context = isolate->GetCurrentContext();
@@ -48,7 +50,7 @@ static inline void checkContext() {
   }
 }
 
-static inline void validateBridgeResult(v8::Local<v8::Value> val, const char *fn_name) {
+static inline void validateBridgeResult(v8::Local<v8::Value> val, const char* fn_name) {
   if (val.IsEmpty()) {
     throw CJavascriptException(string_format("Unexpected: got empty result from bcljs.bridge.%s call", fn_name),
                                PyExc_UnboundLocalError);
@@ -88,13 +90,12 @@ uint32_t getWrapperHint(v8::Local<v8::Object> obj) {
 }
 
 bool isCLJSType(v8::Local<v8::Object> obj) {
-
   // early rejection
   if (obj.IsEmpty()) {
     return false;
   }
 
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -117,26 +118,22 @@ bool isCLJSType(v8::Local<v8::Object> obj) {
 }
 
 void exposeCLJSTypes() {
-  py::class_<CCLJSType,
-             py::bases<CJavascriptObject>, boost::noncopyable>
-      ("CLJSType", py::no_init)
+  py::class_<CCLJSType, py::bases<CJavascriptObject>, boost::noncopyable>("CLJSType", py::no_init)
       .def("__str__", &CCLJSType::Str)
       .def("__repr__", &CCLJSType::Repr)
       .def("__len__", &CCLJSType::Length)
       .def("__getitem__", &CCLJSType::GetItem)
       .def("__getattr__", &CCLJSType::GetAttr)
-          //.def("__contains__", &CCLJSType::Contains)
+      //.def("__contains__", &CCLJSType::Contains)
       .def("__iter__", &CCLJSType::Iter);
 
-  py::class_<CCLJSIIterableIterator,
-             py::bases<CJavascriptObject>,
-             boost::noncopyable>
-      ("CLJSIIterableIterator", py::no_init)
+  py::class_<CCLJSIIterableIterator, py::bases<CJavascriptObject>, boost::noncopyable>("CLJSIIterableIterator",
+                                                                                       py::no_init)
       .def("__next__", &CCLJSIIterableIterator::Next)
       .def("__iter__", boost::python::objects::identity_function());
 }
 
-v8::Local<v8::Function> lookup_bridge_fn(const char *name) {
+v8::Local<v8::Function> lookup_bridge_fn(const char* name) {
   // TODO: caching? review performance
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -190,10 +187,10 @@ v8::Local<v8::Function> lookup_bridge_fn(const char *name) {
   return fn_obj;
 }
 
-v8::Local<v8::Value> call_bridge(v8::Isolate *isolate,
-                                 const char *name,
+v8::Local<v8::Value> call_bridge(v8::Isolate* isolate,
+                                 const char* name,
                                  v8::Local<v8::Object> self,
-                                 std::vector<v8::Local<v8::Value> > params) {
+                                 std::vector<v8::Local<v8::Value>> params) {
   auto context = isolate->GetCurrentContext();
   v8::TryCatch try_catch(isolate);
   auto func = lookup_bridge_fn(name);
@@ -216,7 +213,7 @@ size_t CCLJSType::Length() {
 
   auto context = isolate->GetCurrentContext();
 
-  auto params = std::vector<v8::Local<v8::Value> >();
+  auto params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "len";
   auto res_val = call_bridge(isolate, fn_name, Object(), params);
 
@@ -237,7 +234,7 @@ py::object CCLJSType::Str() {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  auto params = std::vector<v8::Local<v8::Value> >();
+  auto params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "str";
   auto res_val = call_bridge(isolate, fn_name, Object(), params);
 
@@ -259,7 +256,7 @@ py::object CCLJSType::Repr() {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  auto params = std::vector<v8::Local<v8::Value> >();
+  auto params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "repr";
   auto res_val = call_bridge(isolate, fn_name, Object(), params);
 
@@ -288,7 +285,7 @@ bool is_sentinel(v8::Local<v8::Value> val) {
   return res_sym->SameValue(sentinel);
 }
 
-py::object CCLJSType::GetItemIndex(const py::object &py_index) {
+py::object CCLJSType::GetItemIndex(const py::object& py_index) {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -306,7 +303,7 @@ py::object CCLJSType::GetItemIndex(const py::object &py_index) {
   return CJavascriptObject::Wrap(res_val, Object());
 }
 
-py::object CCLJSType::GetItemSlice(const py::object &py_slice) {
+py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -354,7 +351,7 @@ py::object CCLJSType::GetItemSlice(const py::object &py_slice) {
   return std::move(py_res);
 }
 
-py::object CCLJSType::GetItemString(const py::object &py_string) {
+py::object CCLJSType::GetItemString(const py::object& py_string) {
   assert(PyUnicode_Check(py_string.ptr()));
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -387,7 +384,7 @@ py::object CCLJSType::GetItemString(const py::object &py_string) {
   return CJavascriptObject::Wrap(res_val, Object());
 }
 
-py::object CCLJSType::GetItem(const py::object &py_key) {
+py::object CCLJSType::GetItem(const py::object& py_key) {
   checkContext();
 
   if (PyLong_Check(py_key.ptr()) != 0) {
@@ -401,7 +398,7 @@ py::object CCLJSType::GetItem(const py::object &py_key) {
   throw CJavascriptException("indices must be integers or slices", ::PyExc_TypeError);
 }
 
-py::object CCLJSType::GetAttr(const py::object &py_key) {
+py::object CCLJSType::GetAttr(const py::object& py_key) {
   checkContext();
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {
@@ -419,7 +416,7 @@ py::object CCLJSType::Iter() {
 
   auto context = isolate->GetCurrentContext();
 
-  auto params = std::vector<v8::Local<v8::Value> >();
+  auto params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "iter";
   auto res_val = call_bridge(isolate, fn_name, Object(), params);
 
@@ -442,7 +439,7 @@ py::object CCLJSIIterableIterator::Next() {
 }
 
 // https://wiki.python.org/moin/boost.python/iterator
-py::object CCLJSIIterableIterator::Iter(const py::object &py_iter) {
+py::object CCLJSIIterableIterator::Iter(const py::object& py_iter) {
   // pass through
   return py_iter;
 }

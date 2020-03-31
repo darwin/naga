@@ -1,12 +1,11 @@
-//TODO make this an ifdef guard
+// TODO make this an ifdef guard
 #pragma once
 
-#include <memory>
+#include <boost/iterator/iterator_facade.hpp>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <sstream>
-
-#include <boost/iterator/iterator_facade.hpp>
 
 #include "Exception.h"
 
@@ -18,38 +17,40 @@ typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
 
 class CJavascriptObject;
 
-struct CWrapper
-{
+struct CWrapper {
   static void Expose(void);
 };
 
-class CPythonObject
-{
-  private:
+class CPythonObject {
+ private:
   CPythonObject();
   virtual ~CPythonObject();
 
-  public:
+ public:
   static void NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static void NamedSetter(v8::Local<v8::Name> prop, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static void NamedSetter(v8::Local<v8::Name> prop,
+                          v8::Local<v8::Value> value,
+                          const v8::PropertyCallbackInfo<v8::Value>& info);
   static void NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Integer>& info);
   static void NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Boolean>& info);
   static void NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info);
 
   static void IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static void IndexedSetter(uint32_t index, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info);
+  static void IndexedSetter(uint32_t index,
+                            v8::Local<v8::Value> value,
+                            const v8::PropertyCallbackInfo<v8::Value>& info);
   static void IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& info);
   static void IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info);
   static void IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info);
 
   static void Caller(const v8::FunctionCallbackInfo<v8::Value>& info);
 
-  #ifdef SUPPORT_TRACE_LIFECYCLE
-    static void DisposeCallback(v8::Persistent<v8::Value> object, void* parameter);
-  #endif
-  
-  static void SetupObjectTemplate(v8::Isolate *isolate, v8::Handle<v8::ObjectTemplate> clazz);
-  static v8::Handle<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate *isolate);
+#ifdef SUPPORT_TRACE_LIFECYCLE
+  static void DisposeCallback(v8::Persistent<v8::Value> object, void* parameter);
+#endif
+
+  static void SetupObjectTemplate(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> clazz);
+  static v8::Handle<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
 
   static v8::Handle<v8::Value> WrapInternal(py::object obj);
 
@@ -61,31 +62,22 @@ class CPythonObject
   static void ThrowIf(v8::Isolate* isolate);
 };
 
-struct ILazyObject
-{
+struct ILazyObject {
   virtual void LazyConstructor(void) = 0;
 };
 
-class CJavascriptObject : public CWrapper
-{
-protected:
+class CJavascriptObject : public CWrapper {
+ protected:
   v8::Persistent<v8::Object> m_obj;
 
   void CheckAttr(v8::Handle<v8::String> name) const;
 
-  CJavascriptObject()
-  {
-  }
-public:
-  CJavascriptObject(v8::Handle<v8::Object> obj)
-    : m_obj(v8::Isolate::GetCurrent(), obj)
-  {
-  }
+  CJavascriptObject() {}
 
-  virtual ~CJavascriptObject()
-  {
-    m_obj.Reset();
-  }
+ public:
+  CJavascriptObject(v8::Handle<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
+
+  virtual ~CJavascriptObject() { m_obj.Reset(); }
 
   v8::Local<v8::Object> Object(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_obj); }
 
@@ -108,42 +100,35 @@ public:
 
   void Dump(std::ostream& os) const;
 
-  static py::object Wrap(CJavascriptObject *obj);
-  static py::object Wrap(v8::Handle<v8::Value> value,
-    v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
-  static py::object Wrap(v8::Handle<v8::Object> obj,
-    v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
+  static py::object Wrap(CJavascriptObject* obj);
+  static py::object Wrap(v8::Handle<v8::Value> value, v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
+  static py::object Wrap(v8::Handle<v8::Object> obj, v8::Handle<v8::Object> self = v8::Handle<v8::Object>());
 };
 
-class CJavascriptNull : public CJavascriptObject
-{
-public:
+class CJavascriptNull : public CJavascriptObject {
+ public:
   bool nonzero(void) const { return false; }
   const std::string str(void) const { return "null"; }
 };
 
-class CJavascriptUndefined : public CJavascriptObject
-{
-public:
+class CJavascriptUndefined : public CJavascriptObject {
+ public:
   bool nonzero(void) const { return false; }
   const std::string str(void) const { return "undefined"; }
 };
 
-class CJavascriptArray : public CJavascriptObject, public ILazyObject
-{
+class CJavascriptArray : public CJavascriptObject, public ILazyObject {
   py::object m_items;
   size_t m_size;
-public:
+
+ public:
   class ArrayIterator
-    : public boost::iterator_facade<ArrayIterator, py::object const, boost::forward_traversal_tag, py::object>
-  {
-    CJavascriptArray *m_array;
+      : public boost::iterator_facade<ArrayIterator, py::object const, boost::forward_traversal_tag, py::object> {
+    CJavascriptArray* m_array;
     size_t m_idx;
-  public:
-    ArrayIterator(CJavascriptArray *array, size_t idx)
-      : m_array(array), m_idx(idx)
-    {
-    }
+
+   public:
+    ArrayIterator(CJavascriptArray* array, size_t idx) : m_array(array), m_idx(idx) {}
 
     void increment() { m_idx++; }
 
@@ -152,15 +137,9 @@ public:
     reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
   };
 
-  CJavascriptArray(v8::Handle<v8::Array> array)
-    : CJavascriptObject(array), m_size(array->Length())
-  {
-  }
+  CJavascriptArray(v8::Handle<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
 
-  CJavascriptArray(py::object items)
-    : m_items(items), m_size(0)
-  {
-  }
+  CJavascriptArray(py::object items) : m_items(items), m_size(0) {}
 
   size_t Length(void);
 
@@ -169,28 +148,23 @@ public:
   py::object DelItem(py::object key);
   bool Contains(py::object item);
 
-  ArrayIterator begin(void) { return ArrayIterator(this, 0);}
-  ArrayIterator end(void) { return ArrayIterator(this, Length());}
+  ArrayIterator begin(void) { return ArrayIterator(this, 0); }
+  ArrayIterator end(void) { return ArrayIterator(this, Length()); }
 
   // ILazyObject
   virtual void LazyConstructor(void);
 };
 
-class CJavascriptFunction : public CJavascriptObject
-{
+class CJavascriptFunction : public CJavascriptObject {
   v8::Persistent<v8::Object> m_self;
 
   py::object Call(v8::Handle<v8::Object> self, py::list args, py::dict kwds);
-public:
-  CJavascriptFunction(v8::Handle<v8::Object> self, v8::Handle<v8::Function> func)
-    : CJavascriptObject(func), m_self(v8::Isolate::GetCurrent(), self)
-  {
-  }
 
-  ~CJavascriptFunction()
-  {
-    m_self.Reset();
-  }
+ public:
+  CJavascriptFunction(v8::Handle<v8::Object> self, v8::Handle<v8::Function> func)
+      : CJavascriptObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
+
+  ~CJavascriptFunction() { m_self.Reset(); }
 
   v8::Handle<v8::Object> Self(void) const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
 
@@ -218,49 +192,49 @@ public:
 
 class ObjectTracer;
 
-typedef std::map<PyObject *, ObjectTracer *> LivingMap;
+typedef std::map<PyObject*, ObjectTracer*> LivingMap;
 
-class ObjectTracer
-{
+class ObjectTracer {
   v8::Persistent<v8::Value> m_handle;
   std::unique_ptr<py::object> m_object;
 
-  LivingMap *m_living;
+  LivingMap* m_living;
 
   void Trace(void);
 
   static void WeakCallback(const v8::WeakCallbackInfo<ObjectTracer>& info);
 
-  static LivingMap *GetLivingMapping(void);
-public:
-  ObjectTracer(v8::Handle<v8::Value> handle, py::object *object);
+  static LivingMap* GetLivingMapping(void);
+
+ public:
+  ObjectTracer(v8::Handle<v8::Value> handle, py::object* object);
   ~ObjectTracer(void);
 
   const v8::Persistent<v8::Value>& Handle(void) const { return m_handle; }
-  py::object *Object(void) const { return m_object.get(); }
+  py::object* Object(void) const { return m_object.get(); }
 
   void Dispose(void);
 
-  static ObjectTracer& Trace(v8::Handle<v8::Value> handle, py::object *object);
+  static ObjectTracer& Trace(v8::Handle<v8::Value> handle, py::object* object);
 
   static v8::Handle<v8::Value> FindCache(py::object obj);
 };
 
-class ContextTracer
-{
+class ContextTracer {
   v8::Persistent<v8::Context> m_ctxt;
   std::unique_ptr<LivingMap> m_living;
 
   void Trace(void);
 
   static void WeakCallback(const v8::WeakCallbackInfo<ContextTracer>& info);
-public:
-  ContextTracer(v8::Handle<v8::Context> ctxt, LivingMap *living);
+
+ public:
+  ContextTracer(v8::Handle<v8::Context> ctxt, LivingMap* living);
   ~ContextTracer(void);
 
   v8::Handle<v8::Context> Context(void) const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_ctxt); }
 
-  static void Trace(v8::Handle<v8::Context> ctxt, LivingMap *living);
+  static void Trace(v8::Handle<v8::Context> ctxt, LivingMap* living);
 };
 
 #endif

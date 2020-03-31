@@ -1,8 +1,8 @@
 #pragma once
 
-#include <memory>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <sstream>
 
 #include "Exception.h"
@@ -22,30 +22,26 @@ uint32_t getWrapperHint(v8::Local<v8::Object> obj);
 // see https://www.boost.org/doc/libs/1_63_0/libs/python/doc/html/reference/topics/indexing_support.html
 class CCLJSType : public CJavascriptObject {
  public:
-  explicit CCLJSType(v8::Local<v8::Object> o)
-      : CJavascriptObject(o) {
-  }
+  explicit CCLJSType(v8::Local<v8::Object> o) : CJavascriptObject(o) {}
 
   size_t Length();
   py::object Repr();
   py::object Str();
-  py::object GetItem(const py::object &py_key);
-  py::object GetAttr(const py::object &py_key);
+  py::object GetItem(const py::object& py_key);
+  py::object GetAttr(const py::object& py_key);
   py::object Iter();
-//  bool Contains(py::object item);
+  //  bool Contains(py::object item);
 
  private:
-  py::object GetItemSlice(const py::object &py_slice);
-  py::object GetItemIndex(const py::object &py_index);
-  py::object GetItemString(const py::object &py_string);
+  py::object GetItemSlice(const py::object& py_slice);
+  py::object GetItemIndex(const py::object& py_index);
+  py::object GetItemString(const py::object& py_string);
 };
 
 class CCLJSIIterableIterator : public CJavascriptObject {
  public:
-  explicit CCLJSIIterableIterator(v8::Local<v8::Object> o)
-      : CJavascriptObject(o) {
-  }
+  explicit CCLJSIIterableIterator(v8::Local<v8::Object> o) : CJavascriptObject(o) {}
 
   py::object Next();
-  py::object Iter(const py::object &py_iter);
+  py::object Iter(const py::object& py_iter);
 };

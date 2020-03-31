@@ -1,23 +1,23 @@
 #pragma once
 
 #include <v8.h>
+
 #include "Exception.h"
 
-class CIsolate
-{
-  v8::Isolate *m_isolate;
+class CIsolate {
+  v8::Isolate* m_isolate;
   bool m_owner;
   void Init(bool owner);
-public:
+
+ public:
   CIsolate();
   CIsolate(bool owner);
-  CIsolate(v8::Isolate *isolate);
+  CIsolate(v8::Isolate* isolate);
   ~CIsolate(void);
 
-  v8::Isolate *GetIsolate(void);
+  v8::Isolate* GetIsolate(void);
 
-  CJavascriptStackTracePtr GetCurrentStackTrace(int frame_limit,
-    v8::StackTrace::StackTraceOptions options);
+  CJavascriptStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions options);
 
   static py::object GetCurrent(void);
 
