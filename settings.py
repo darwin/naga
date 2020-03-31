@@ -10,6 +10,8 @@ DEPOT_HOME = os.environ.get('DEPOT_HOME', os.path.join(STPYV8_HOME, 'depot_tools
 V8_HOME = os.environ.get('V8_HOME', os.path.join(STPYV8_HOME, 'v8'))
 STPYV8_DEBUG = os.environ.get('STPYV8_DEBUG', False)
 STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG', V8_GIT_TAG_STABLE)
+STPYV8_SKIP_DEPOT = os.environ.get('STPYV8_SKIP_DEPOT', False)
+STPYV8_SKIP_V8_CHECKOUT = os.environ.get('STPYV8_SKIP_V8_CHECKOUT', False)
 
 V8_GIT_URL = "https://chromium.googlesource.com/v8/v8.git"
 DEPOT_GIT_URL = "https://chromium.googlesource.com/chromium/tools/depot_tools.git"

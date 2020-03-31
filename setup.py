@@ -50,6 +50,9 @@ def exec_cmd(cmdline, *args, **kwargs):
 
 
 def install_depot():
+    if STPYV8_SKIP_DEPOT is not False:
+        return
+
     if not os.path.exists(DEPOT_HOME):
         exec_cmd("git clone",
                  DEPOT_GIT_URL,
@@ -69,6 +72,9 @@ def install_depot():
 
 
 def checkout_v8():
+    if STPYV8_SKIP_V8_CHECKOUT is not False:
+        return
+
     if not os.path.exists(V8_HOME):
         exec_cmd(os.path.join(DEPOT_HOME, 'fetch'),
                  'v8',
