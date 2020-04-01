@@ -59,3 +59,12 @@ export_boost_built_settings() {
   export STPYV8_BOOST_INCLUDES=${STPYV8_BOOST_INCLUDES:-"-I/usr/local/include"}
   export STPYV8_BOOST_LDFLAGS=${STPYV8_BOOST_LDFLAGS:-"-L/usr/local/lib -lboost_system -lboost_python37"}
 }
+
+# https://stackoverflow.com/a/53400482/84283
+function ver()
+# Description: use for comparisons of version strings.
+# $1  : a version string of form 1.2.3.4
+# use: (( $(ver 1.2.3.4) >= $(ver 1.2.3.3) )) && echo "yes" || echo "no"
+{
+    printf "%02d%02d%02d%02d" ${1//./ }
+}
