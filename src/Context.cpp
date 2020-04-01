@@ -4,7 +4,7 @@
 #include "Wrapper.h"
 #include "libplatform/libplatform.h"
 
-void CContext::Expose(void) {
+void CContext::Expose() {
   py::class_<CPlatform, boost::noncopyable>("JSPlatform", "JSPlatform allows the V8 platform to be initialized",
                                             py::no_init)
       .def(py::init<std::string>((py::arg("argv") = std::string())))
@@ -86,7 +86,7 @@ CContext::CContext(const CContext& context) {
   m_context.Reset(context.Handle()->GetIsolate(), context.Handle());
 }
 
-CContext::CContext(py::object global) : m_global(global) {
+CContext::CContext(const py::object& global) : m_global(global) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -107,13 +107,13 @@ CContext::CContext(py::object global) : m_global(global) {
   }
 }
 
-py::object CContext::GetGlobal(void) {
+py::object CContext::GetGlobal() const {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
   return CJavascriptObject::Wrap(Handle()->Global());
 }
 
-py::str CContext::GetSecurityToken(void) {
+py::str CContext::GetSecurityToken() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -127,7 +127,7 @@ py::str CContext::GetSecurityToken(void) {
   return py::str(*str, str.length());
 }
 
-void CContext::SetSecurityToken(py::str token) {
+void CContext::SetSecurityToken(const py::str& token) const {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -138,7 +138,7 @@ void CContext::SetSecurityToken(py::str token) {
   }
 }
 
-py::object CContext::GetEntered(void) {
+py::object CContext::GetEntered() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -150,7 +150,7 @@ py::object CContext::GetEntered(void) {
                    boost::python::converter::shared_ptr_to_python<CContext>(CContextPtr(new CContext(entered)))));
 }
 
-py::object CContext::GetCurrent(void) {
+py::object CContext::GetCurrent() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -161,7 +161,7 @@ py::object CContext::GetCurrent(void) {
                                    CContextPtr(new CContext(current)))));
 }
 
-py::object CContext::GetCalling(void) {
+py::object CContext::GetCalling() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -173,7 +173,7 @@ py::object CContext::GetCalling(void) {
                    boost::python::converter::shared_ptr_to_python<CContext>(CContextPtr(new CContext(calling)))));
 }
 
-py::object CContext::Evaluate(const std::string& src, const std::string name, int line, int col) {
+py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
   CEngine engine(v8::Isolate::GetCurrent());
 
   CScriptPtr script = engine.Compile(src, name, line, col);
@@ -181,7 +181,7 @@ py::object CContext::Evaluate(const std::string& src, const std::string name, in
   return script->Run();
 }
 
-py::object CContext::EvaluateW(const std::wstring& src, const std::wstring name, int line, int col) {
+py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
   CEngine engine(v8::Isolate::GetCurrent());
 
   CScriptPtr script = engine.CompileW(src, name, line, col);
