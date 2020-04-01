@@ -39,6 +39,10 @@ echo_info() {
   echo_with_color "$COLOR_YELLOW" "$*"
 }
 
+echo_err() {
+  >&2 echo_with_color "$COLOR_RED" "$*"
+}
+
 export_python_build_settings() {
   # shellcheck disable=SC2155
   export STPYV8_PYTHON_INCLUDES=$(python-config --includes)

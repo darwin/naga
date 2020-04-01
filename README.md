@@ -97,6 +97,10 @@ Find more in the [tests](tests) directory.
 
 # Building
 
+TODO: outdated! => Look into [gn/README.md](gn/README.md).
+
+---
+
 GCC/clang or equivalent and Python3 headers are needed to build the main STPyV8 source code, as well as boost-python and some other boost dependencies. For a short while, Python 2.7 is still needed by Google's toolchain to build a local library version of V8.
 
 A Python3 virtual environment is recommended.  (Google's build tools will establish their own Python2 virtual environment during the compilation of V8, but this can be ignored.)
