@@ -102,6 +102,7 @@ exit
 ##### Run setup.py
 
 ```bash
+cd ext
 python setup.py build
 
 # or for debug build run:
@@ -113,7 +114,8 @@ python setup.py build
 Install final package into our Python3 environment
 
 ```bash
-python setup.py install --prefix .venv
+cd ext
+python setup.py install --prefix ../.venv
 ```
 
 ##### Run tests

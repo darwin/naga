@@ -24,11 +24,15 @@ class BuildExtCmd(build_ext):
 
     def get_input_path(self):
         build_config = "debug" if self.debug else "release"
-        return os.path.join("gn", "_out", STPYV8_VERSION, build_config, "libstpyv8.so")
+        return os.path.join("..", "gn", "_out", STPYV8_VERSION, build_config, "libstpyv8.so")
 
     def get_output_path(self):
         name = self.extensions[0].name
         return self.get_ext_fullpath(name)
+
+    def build_extension(self, ext):
+        # this is intentionally a no-op
+        return
 
     def run(self):
         # the extension has only name and should be empty so nothing should be happening here
