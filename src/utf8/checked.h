@@ -250,7 +250,7 @@ class iterator : public std::iterator<std::bidirectional_iterator_tag, uint32_t>
   octet_iterator range_end;
 
  public:
-  iterator(){}
+  iterator() {}
   explicit iterator(const octet_iterator& octet_it, const octet_iterator& range_start, const octet_iterator& range_end)
       : it(octet_it), range_start(range_start), range_end(range_end) {
     if (it < range_start || it > range_end)

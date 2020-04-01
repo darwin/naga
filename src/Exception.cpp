@@ -162,11 +162,11 @@ const std::string CJavascriptException::GetName(void) {
 
   v8::String::Utf8Value msg(
       m_isolate, v8::Local<v8::String>::Cast(Exception()
-                                                  ->ToObject(m_isolate->GetCurrentContext())
-                                                  .ToLocalChecked()
-                                                  ->Get(m_isolate->GetCurrentContext(),
-                                                        v8::String::NewFromUtf8(m_isolate, "name").ToLocalChecked())
-                                                  .ToLocalChecked()));
+                                                 ->ToObject(m_isolate->GetCurrentContext())
+                                                 .ToLocalChecked()
+                                                 ->Get(m_isolate->GetCurrentContext(),
+                                                       v8::String::NewFromUtf8(m_isolate, "name").ToLocalChecked())
+                                                 .ToLocalChecked()));
 
   return std::string(*msg, msg.length());
 }
@@ -181,11 +181,11 @@ const std::string CJavascriptException::GetMessage(void) {
 
   v8::String::Utf8Value msg(
       m_isolate, v8::Local<v8::String>::Cast(Exception()
-                                                  ->ToObject(m_isolate->GetCurrentContext())
-                                                  .ToLocalChecked()
-                                                  ->Get(m_isolate->GetCurrentContext(),
-                                                        v8::String::NewFromUtf8(m_isolate, "message").ToLocalChecked())
-                                                  .ToLocalChecked()));
+                                                 ->ToObject(m_isolate->GetCurrentContext())
+                                                 .ToLocalChecked()
+                                                 ->Get(m_isolate->GetCurrentContext(),
+                                                       v8::String::NewFromUtf8(m_isolate, "message").ToLocalChecked())
+                                                 .ToLocalChecked()));
 
   return std::string(*msg, msg.length());
 }

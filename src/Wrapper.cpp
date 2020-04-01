@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "Context.h"
+#include "Isolate.h"
 #include "Utils.h"
 #include "WrapperCLJS.h"
 #include "libplatform/libplatform.h"
-#include "Isolate.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
   if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \
@@ -698,12 +698,12 @@ v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(v8:
     // it hasn't been created yet = > go create it and cache it in the isolate
     auto template_val = CreateObjectTemplate(isolate);
     auto eternal_val_ptr = new v8::Eternal<v8::ObjectTemplate>(isolate, template_val);
-    assert(isolate->GetNumberOfDataSlots()>kJSObjectTemplate);
+    assert(isolate->GetNumberOfDataSlots() > kJSObjectTemplate);
     isolate->SetData(kJSObjectTemplate, eternal_val_ptr);
     template_ptr = eternal_val_ptr;
   }
   // convert raw pointer to pointer to eternal handle
-  auto template_eternal_val = static_cast<v8::Eternal <v8::ObjectTemplate> *>(template_ptr);
+  auto template_eternal_val = static_cast<v8::Eternal<v8::ObjectTemplate>*>(template_ptr);
   assert(template_eternal_val);
   // retrieve local handle from eternal handle
   auto template_val = template_eternal_val->Get(isolate);
