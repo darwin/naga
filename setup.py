@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-import sys
 import os
-import subprocess
 import shutil
-import logging
 
-from distutils.command.build import build
+from distutils.command.build_ext import build_ext
 from distutils.command.install import install
 
 try:
@@ -14,167 +11,61 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 
-from settings import *
+V8_GIT_TAG_STABLE = "8.3.104"
+V8_GIT_TAG_MASTER = "master"
 
-log = logging.getLogger()
-
-
-def exec_cmd(cmdline, *args, **kwargs):
-    msg = kwargs.get('msg')
-    cwd = kwargs.get('cwd', '.')
-
-    if msg:
-        print(msg)
-
-    cmdline = ' '.join([cmdline] + list(args))
-    print("> {}".format(cmdline))
-
-    proc = subprocess.Popen(cmdline,
-                            shell=kwargs.get('shell', True),
-                            cwd=cwd,
-                            env=kwargs.get('env'),
-                            stdout=sys.stdout,
-                            stderr=sys.stderr)
-    proc.wait()
-    exit_code = proc.returncode
-    succeeded = exit_code == 0
-
-    if not succeeded:
-        log.error("%s failed: code = %d", msg or "Execute command", exit_code)
-        sys.exit(exit_code)
-
-    return succeeded
+STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG', V8_GIT_TAG_STABLE)
+STPYV8_VERSION = STPYV8_V8_GIT_TAG
 
 
-def install_depot():
-    if STPYV8_SKIP_DEPOT is not False:
-        return
+# here we override standard Extension build,
+# to simply check for existence and copy existing pre-built binary
+class BuildExtCmd(build_ext):
 
-    if not os.path.exists(DEPOT_HOME):
-        exec_cmd("git clone",
-                 DEPOT_GIT_URL,
-                 DEPOT_HOME,
-                 cwd=os.path.dirname(DEPOT_HOME),
-                 msg="Cloning depot tools")
+    def get_input_path(self):
+        build_config = "debug" if self.debug else "release"
+        return os.path.join("gn", "_out", STPYV8_VERSION, build_config, "libstpyv8.so")
 
-        return
+    def get_output_path(self):
+        name = self.extensions[0].name
+        return self.get_ext_fullpath(name)
 
-    # depot_tools updates itself automatically when running gclient tool
-    if os.path.isfile(os.path.join(DEPOT_HOME, 'gclient')):
-        exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
-                 "--version",
-                 cwd=DEPOT_HOME,
-                 msg="Found depot tools")
-
-
-# https://v8.dev/docs/source-code
-def checkout_v8():
-    if STPYV8_SKIP_V8_CHECKOUT is not False:
-        return
-
-    if not os.path.exists(V8_HOME):
-        v8_parent_dir = os.path.abspath(os.path.join(V8_HOME, os.pardir))
-        if not os.path.exists(v8_parent_dir):
-            os.makedirs(v8_parent_dir)
-        exec_cmd(os.path.join(DEPOT_HOME, 'fetch'),
-                 'v8',
-                 cwd=v8_parent_dir,
-                 msg="Fetching Google V8 code")
-
-    exec_cmd('git fetch --tags',
-             cwd=V8_HOME,
-             msg="Fetching the release tag information")
-
-    exec_cmd('git checkout',
-             STPYV8_V8_GIT_TAG,
-             cwd=V8_HOME,
-             msg="Checkout Google V8 v{}".format(STPYV8_V8_GIT_TAG))
-
-    exec_cmd(os.path.join(DEPOT_HOME, 'gclient'),
-             'sync',
-             '-D',
-             cwd=os.path.dirname(V8_HOME),
-             msg="Syncing Google V8 code")
-
-    # On Linux, install additional dependencies, per
-    # https://v8.dev/docs/build step 4
-    if sys.platform in ("linux", "linux2",) and v8_deps_linux:
-        exec_cmd('./v8/build/install-build-deps.sh',
-                 cwd=os.path.dirname(V8_HOME),
-                 msg="Installing additional linux dependencies")
-
-
-def build_v8():
-    exec_cmd(os.path.join(DEPOT_HOME, 'gn'),
-             "gen {} --args='{}'".format(v8_target_path, GN_ARGS),
-             cwd=V8_HOME,
-             msg="Generate build scripts for V8 (v{})".format(STPYV8_V8_GIT_TAG))
-
-    exec_cmd(os.path.join(DEPOT_HOME, 'ninja'),
-             "-C {} v8_monolith".format(v8_target_path),
-             cwd=V8_HOME,
-             msg="Build V8 with ninja")
-
-
-def clean_stpyv8():
-    build_folder = os.path.join(STPYV8_HOME, 'build')
-
-    if os.path.exists(os.path.join(build_folder)):
-        shutil.rmtree(build_folder)
-
-
-def prepare_v8():
-    install_depot()
-    checkout_v8()
-    build_v8()
-    clean_stpyv8()
-
-
-# noinspection PyPep8Naming
-class stpyv8_build(build):
     def run(self):
-        prepare_v8()
-        build.run(self)
+        # the extension has only name and should be empty so nothing should be happening here
+        # anyways, we let normal build_ext run and then finish the work ourselves
+        build_ext.run(self)
+
+        input_binary = self.get_input_path()
+        output_binary = self.get_output_path()
+
+        if not os.path.isfile(input_binary):
+            msg = "Expected pre-compiled file '{}' does not exists. Follow build steps.".format(input_binary)
+            raise Exception(msg)
+
+        output_parent_dir = os.path.abspath(os.path.join(output_binary, os.pardir))
+        print(output_parent_dir)
+        os.makedirs(output_parent_dir, exist_ok=True)
+        assert (not os.path.isdir(output_binary))
+        shutil.copy2(input_binary, output_binary)
+        print("copied '{}' to '{}'\n".format(input_binary, output_binary))
 
 
-# noinspection PyPep8Naming
-class stpyv8_install_v8(build):
-    def run(self):
-        prepare_v8()
-
-
-# noinspection PyPep8Naming
-class stpyv8_build_no_v8(build):
-    def run(self):
-        clean_stpyv8()
-        build.run(self)
-
-
-# noinspection PyPep8Naming
-class stpyv8_install(install):
+class InstallCmd(install):
     skip_build = False
 
     def run(self):
         self.skip_build = True
 
-        if icu_data_folder:
-            os.makedirs(icu_data_folder, exist_ok=True)
-            shutil.copy(os.path.join(V8_HOME, "{}/icudtl.dat".format(v8_target_path)),
-                        icu_data_folder)
+        # TODO: figure out what to do about this ICU thing
+        # if icu_data_folder:
+        #     os.makedirs(icu_data_folder, exist_ok=True)
+        #     shutil.copy(os.path.join(V8_HOME, "{}/icudtl.dat".format(v8_target_path)),
+        #                 icu_data_folder)
 
         install.run(self)
 
 
-stpyv8 = Extension(name="_STPyV8",
-                   sources=[os.path.join("src", source) for source in source_files],
-                   define_macros=define_macros,
-                   undef_macros=undef_macros,
-                   include_dirs=include_dirs,
-                   library_dirs=library_dirs,
-                   libraries=libraries,
-                   extra_compile_args=extra_compile_args,
-                   extra_link_args=extra_link_args,
-                   )
+stpyv8_ext = Extension(name="_STPyV8", sources=[])
 
 setup(name="stpyv8",
       version=STPYV8_VERSION,
@@ -184,7 +75,7 @@ setup(name="stpyv8",
       url="https://github.com/area1/stpyv8",
       license="Apache License 2.0",
       py_modules=["STPyV8"],
-      ext_modules=[stpyv8],
+      ext_modules=[stpyv8_ext],
       classifiers=[
           "Development Status :: 4 - Beta",
           "Environment :: Plugins",
@@ -202,8 +93,6 @@ setup(name="stpyv8",
           "Topic :: Utilities",
       ],
       cmdclass=dict(
-          build=stpyv8_build,
-          v8=stpyv8_install_v8,
-          stpyv8=stpyv8_build_no_v8,
-          install=stpyv8_install),
+          build_ext=BuildExtCmd,
+          install=InstallCmd),
       )

@@ -1,0 +1,8 @@
+_out
+build
+build_overrides
+src
+testing
+third_party
+tools
+v8

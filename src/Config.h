@@ -9,8 +9,8 @@
 // ICU data file
 #define ICU_DATA_UNIX "/usr/share/stpyv8/icudtl.dat"
 
-#if defined(__linux) || defined(__APPLE)
-#define ICU_DATA ICU_DATA_UNIX;
-#else
+//#if defined(__linux) || defined(__APPLE)
+//#define ICU_DATA ICU_DATA_UNIX;
+//#else
 #define ICU_DATA nullptr;
-#endif
+//#endif

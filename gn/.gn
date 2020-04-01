@@ -1,0 +1,18 @@
+# This file is used by the GN meta build system to find the root of the source
+# tree and to set startup options. For documentation on the values set in this
+# file, run "gn help dotfile" at the command line.
+
+# These arguments override the default values for items in a declare_args
+# block. "gn args" in turn can override these.
+#
+# Important note for defining defaults: This file is executed before the
+# BUILDCONFIG.gn file. That file sets up the global variables like "is_ios".
+# This means that the default_args can not depend on the platform,
+# architecture, or other build parameters. If you really need that, the other
+# repo should define a flag that toggles on a behavior that implements the
+# additional logic required by Chrome to set the variables.
+default_args = {
+}
+
+# The location of the build configuration file.
+buildconfig = "//build/config/BUILDCONFIG.gn"

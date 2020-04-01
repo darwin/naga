@@ -1,0 +1,98 @@
+import("//v8/gni/snapshot_toolchain.gni")
+import("//v8/gni/v8.gni")
+
+declare_args() {
+  python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
+  python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
+  python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
+
+  boost_includes = string_split(getenv("STPYV8_BOOST_INCLUDES"), " ")
+  boost_libs = string_split(getenv("STPYV8_BOOST_LIBS"), " ")
+  boost_ldflags = string_split(getenv("STPYV8_BOOST_LDFLAGS"), " ")
+}
+
+stpyv8_source_files = [
+  "Config.h",
+  "Context.cpp",
+  "Context.h",
+  "Engine.cpp",
+  "Engine.h",
+  "Exception.cpp",
+  "Exception.h",
+  "Isolate.cpp",
+  "Isolate.h",
+  "Locker.cpp",
+  "Locker.h",
+  "Platform.cpp",
+  "Platform.h",
+  "STPyV8.cpp",
+  "Utils.cpp",
+  "Utils.h",
+  "Wrapper.cpp",
+  "Wrapper.h",
+  "WrapperCLJS.cpp",
+  "WrapperCLJS.h",
+  "utf8/checked.h",
+  "utf8/core.h",
+  "utf8/unchecked.h",
+  "utf8.h",
+]
+
+stpyv8_source_file_paths = []
+
+foreach(source, stpyv8_source_files) {
+  stpyv8_source_file_paths += [ "src/$source" ]
+}
+
+config("stpyv8_compiler_flags") {
+  cflags_cc = [
+    "-Wno-c++98-compat-extra-semi",
+    "-Wno-error=unused-variable",
+    # note CLion uses some unknown pragmas suppressing code hints
+    "-Wno-unknown-pragmas",
+  ]
+}
+
+config("stpyv8_python_compiler_flags") {
+  cflags = python_includes
+  ldflags = python_ldflags
+}
+
+config("stpyv8_boost_compiler_flags") {
+  defines = [ "BOOST_PYTHON_STATIC_LIB" ]
+  cflags = boost_includes
+  ldflags = boost_ldflags
+}
+
+shared_library("stpyv8") {
+  sources = stpyv8_source_file_paths
+
+  # don't use the default configs that BUILDCONFIG applied to us.
+  configs -= [
+    "//build/config/compiler:no_exceptions",
+    "//build/config/compiler:no_rtti",
+
+    # TODO: google's code conventions are quite strict
+    #       revisit this after we get rid of boost
+    "//build/config/clang:find_bad_constructs",
+  ]
+
+  # add some of our own settings...
+  configs += [
+    ":stpyv8_python_compiler_flags",
+    ":stpyv8_boost_compiler_flags",
+    ":stpyv8_compiler_flags",
+  ]
+
+  # this is very important
+  # this will ensure our build uses the same headers as V8 build
+  # see https://github.com/area1/stpyv8/issues/9
+  configs += [ "//v8:external_config" ]
+
+  output_extension = "so"
+
+  deps = [
+    "//v8:v8_libplatform",
+    "//v8:v8_monolith",
+  ]
+}

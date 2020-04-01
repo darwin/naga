@@ -1,0 +1,10 @@
+import("base.gn")
+
+is_debug = true
+dcheck_always_on = true
+symbol_level = 2
+use_goma= false
+goma_dir= "None"
+v8_enable_backtrace= true
+v8_enable_fast_mksnapshot= true
+v8_enable_slow_dchecks= true

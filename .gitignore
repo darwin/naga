@@ -3,6 +3,7 @@ build
 .cipd
 .gclient
 .gclient_entries
+.git_cache
 depot_tools
 v8
 *.pyc
@@ -13,3 +14,4 @@ venv
 .venv*
 .idea
 cmake-build-debug
+*.egg-info
