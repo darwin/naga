@@ -58,14 +58,8 @@ class InstallCmd(install):
     skip_build = False
 
     def run(self):
+        # TODO: why is this here? explain
         self.skip_build = True
-
-        # TODO: figure out what to do about this ICU thing
-        # if icu_data_folder:
-        #     os.makedirs(icu_data_folder, exist_ok=True)
-        #     shutil.copy(os.path.join(V8_HOME, "{}/icudtl.dat".format(v8_target_path)),
-        #                 icu_data_folder)
-
         install.run(self)
 
 
