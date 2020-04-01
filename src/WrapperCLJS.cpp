@@ -414,8 +414,6 @@ py::object CCLJSType::Iter() {
   auto isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  auto context = isolate->GetCurrentContext();
-
   auto params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "iter";
   auto res_val = call_bridge(isolate, fn_name, Object(), params);
