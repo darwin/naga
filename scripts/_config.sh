@@ -33,6 +33,8 @@ STPYV8_GN_EXTRA_ARGS=${STPYV8_GN_EXTRA_ARGS}
 # https://groups.google.com/a/chromium.org/forum/#!msg/chromium-dev/TXmL02apluA/5AkiLhNGCAAJ
 STPYV8_BUILDTOOLS_PATH=${STPYV8_BUILDTOOLS_PATH:-$V8_HOME/buildtools}
 
+STPYV8_CLANG_FORMAT_PATH=${STPYV8_CLANG_FORMAT_PATH:-clang-format}
+
 # git cache path could speedup depot checkouts/syncs
 # as suggested in https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md#git_cache_path
 STPYV8_GIT_CACHE_PATH=${STPYV8_GIT_CACHE_PATH:-$ROOT_DIR/.git_cache}
