@@ -20,4 +20,10 @@ done
 cd "$GN_DIR"
 # export Python2 path so that depot's gn can properly work
 export PATH=$DEPOT_HOME:$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-exec bash --rcfile <(echo "PS1='gn: ';env | sort | grep ^STPYV8_") -i
+
+if [[ $# == 0 ]]; then
+  exec bash --rcfile <(echo "PS1='gn: ';env | sort | grep ^STPYV8_") -i
+else
+  echo_info "in depot shell"
+  echo_cmd "$@"
+fi
