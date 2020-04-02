@@ -6,14 +6,6 @@ namespace py = boost::python;
 
 #include "v8.h"
 
-#if defined(__GNUC__)
-#define UNUSED_VAR(x) x __attribute__((unused))
-#elif defined(__APPLE__)
-#define UNUSED_VAR(x) x __unused
-#else
-#define UNUSED_VAR(x) x
-#endif
-
 #define PyInt_Check PyLong_Check
 #define PyInt_AsUnsignedLongMask PyLong_AsUnsignedLong
 #define PySlice_Cast(obj) obj

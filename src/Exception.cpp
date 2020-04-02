@@ -424,8 +424,7 @@ void ExceptionTranslator::Construct(PyObject* obj, py::converter::rvalue_from_py
 
   storage_t* the_storage = reinterpret_cast<storage_t*>(data);
   void* memory_chunk = the_storage->storage.bytes;
-  CJavascriptException* UNUSED_VAR(cpp_err) =
-      new (memory_chunk) CJavascriptException(py::extract<CJavascriptException>(impl));
+  new (memory_chunk) CJavascriptException(py::extract<CJavascriptException>(impl));
 
   data->convertible = memory_chunk;
 }
