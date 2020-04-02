@@ -2,8 +2,6 @@
 
 #include "Base.h"
 
-void initPythonDateTime();
-
 bool isExactTime(py::object obj);
 bool isExactDate(py::object obj);
 bool isExactDateTime(py::object obj);

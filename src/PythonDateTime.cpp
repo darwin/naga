@@ -1,9 +1,14 @@
 #include "PythonDateTime.h"
 #include <datetime.h>
 
-void initPythonDateTime() {
+static bool initPythonDateTime();
+
+[[maybe_unused]] static bool initialized = initPythonDateTime();
+
+static bool initPythonDateTime() {
   PyDateTime_IMPORT;
   assert(PyDateTimeAPI);
+  return PyDateTimeAPI;
 }
 
 bool isExactTime(py::object obj) {

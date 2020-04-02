@@ -4,11 +4,8 @@
 #include "Exception.h"
 #include "Locker.h"
 #include "Wrapper.h"
-#include "PythonDateTime.h"
 
 BOOST_PYTHON_MODULE(_STPyV8) {
-  initPythonDateTime();
-
   CJavascriptException::Expose();
   CJSObject::Expose();
   CContext::Expose();
