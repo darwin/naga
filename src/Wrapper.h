@@ -3,10 +3,10 @@
 #import "Base.h"
 #include "Exception.h"
 
-class CJavascriptObject;
+class CJSObject;
 class CJavascriptFunction;
 
-typedef std::shared_ptr<CJavascriptObject> CJavascriptObjectPtr;
+typedef std::shared_ptr<CJSObject> CJSObjectPtr;
 typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
 
 class CPythonObject {
@@ -51,17 +51,17 @@ struct ILazyObject {
   virtual void LazyConstructor() = 0;
 };
 
-class CJavascriptObject {
+class CJSObject {
  protected:
   v8::Persistent<v8::Object> m_obj;
 
   void CheckAttr(v8::Local<v8::String> name) const;
 
-  CJavascriptObject() = default;
+  CJSObject() = default;
 
  public:
-  explicit CJavascriptObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
-  virtual ~CJavascriptObject() { m_obj.Reset(); }
+  explicit CJSObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
+  virtual ~CJSObject() { m_obj.Reset(); }
 
   static void Expose();
 
@@ -73,7 +73,7 @@ class CJavascriptObject {
 
   py::list GetAttrList();
   int GetIdentityHash();
-  CJavascriptObjectPtr Clone();
+  CJSObjectPtr Clone();
 
   bool Contains(const std::string& name);
 
@@ -81,29 +81,29 @@ class CJavascriptObject {
   explicit operator double() const;
   explicit operator bool() const;
 
-  bool Equals(CJavascriptObjectPtr other) const;
-  bool Unequals(CJavascriptObjectPtr other) const { return !Equals(std::move(other)); }
+  bool Equals(CJSObjectPtr other) const;
+  bool Unequals(CJSObjectPtr other) const { return !Equals(std::move(other)); }
 
   void Dump(std::ostream& os) const;
 
-  static py::object Wrap(CJavascriptObject* obj);
+  static py::object Wrap(CJSObject* obj);
   static py::object Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> self = v8::Local<v8::Object>());
   static py::object Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self = v8::Local<v8::Object>());
 };
 
-class CJavascriptNull : public CJavascriptObject {
+class CJavascriptNull : public CJSObject {
  public:
   bool nonzero() const { return false; }
   const std::string str() const { return "null"; }
 };
 
-class CJavascriptUndefined : public CJavascriptObject {
+class CJavascriptUndefined : public CJSObject {
  public:
   bool nonzero() const { return false; }
   const std::string str() const { return "undefined"; }
 };
 
-class CJavascriptArray : public CJavascriptObject, public ILazyObject {
+class CJavascriptArray : public CJSObject, public ILazyObject {
   py::object m_items;
   size_t m_size;
 
@@ -123,7 +123,7 @@ class CJavascriptArray : public CJavascriptObject, public ILazyObject {
     reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
   };
 
-  explicit CJavascriptArray(v8::Local<v8::Array> array) : CJavascriptObject(array), m_size(array->Length()) {}
+  explicit CJavascriptArray(v8::Local<v8::Array> array) : CJSObject(array), m_size(array->Length()) {}
 
   explicit CJavascriptArray(py::object items) : m_items(std::move(items)), m_size(0) {}
 
@@ -141,14 +141,14 @@ class CJavascriptArray : public CJavascriptObject, public ILazyObject {
   void LazyConstructor() override;
 };
 
-class CJavascriptFunction : public CJavascriptObject {
+class CJavascriptFunction : public CJSObject {
   v8::Persistent<v8::Object> m_self;
 
   py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
 
  public:
   CJavascriptFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
-      : CJavascriptObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
+      : CJSObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
 
   ~CJavascriptFunction() override { m_self.Reset(); }
 
@@ -157,7 +157,7 @@ class CJavascriptFunction : public CJavascriptObject {
   static py::object CallWithArgs(py::tuple args, py::dict kwds);
   static py::object CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds);
 
-  py::object ApplyJavascript(CJavascriptObjectPtr self, py::list args, py::dict kwds);
+  py::object ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds);
   py::object ApplyPython(py::object self, py::list args, py::dict kwds);
   py::object Invoke(py::list args, py::dict kwds);
 

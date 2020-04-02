@@ -188,7 +188,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> script) {
     result = v8::Null(m_isolate);
   }
 
-  return CJavascriptObject::Wrap(result.ToLocalChecked());
+  return CJSObject::Wrap(result.ToLocalChecked());
 }
 
 const std::string CScript::GetSource(void) const {

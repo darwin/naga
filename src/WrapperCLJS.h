@@ -16,9 +16,9 @@ uint32_t getWrapperHint(v8::Local<v8::Object> obj);
 // this is a generic wrapper for all CLJS types
 // see https://docs.python.org/3/reference/datamodel.html?highlight=__iter__#emulating-container-types
 // see https://www.boost.org/doc/libs/1_63_0/libs/python/doc/html/reference/topics/indexing_support.html
-class CCLJSType : public CJavascriptObject {
+class CCLJSType : public CJSObject {
  public:
-  explicit CCLJSType(v8::Local<v8::Object> o) : CJavascriptObject(o) {}
+  explicit CCLJSType(v8::Local<v8::Object> o) : CJSObject(o) {}
 
   size_t Length();
   py::object Repr();
@@ -34,9 +34,9 @@ class CCLJSType : public CJavascriptObject {
   py::object GetItemString(const py::object& py_string);
 };
 
-class CCLJSIIterableIterator : public CJavascriptObject {
+class CCLJSIIterableIterator : public CJSObject {
  public:
-  explicit CCLJSIIterableIterator(v8::Local<v8::Object> o) : CJavascriptObject(o) {}
+  explicit CCLJSIIterableIterator(v8::Local<v8::Object> o) : CJSObject(o) {}
 
   py::object Next();
   py::object Iter(const py::object& py_iter);

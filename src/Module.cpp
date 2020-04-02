@@ -7,7 +7,7 @@
 
 BOOST_PYTHON_MODULE(_STPyV8) {
   CJavascriptException::Expose();
-  CJavascriptObject::Expose();
+  CJSObject::Expose();
   CContext::Expose();
   CEngine::Expose();
   CLocker::Expose();

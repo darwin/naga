@@ -110,7 +110,7 @@ CContext::CContext(const py::object& global) : m_global(global) {
 py::object CContext::GetGlobal() const {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 
-  return CJavascriptObject::Wrap(Handle()->Global());
+  return CJSObject::Wrap(Handle()->Global());
 }
 
 py::str CContext::GetSecurityToken() {

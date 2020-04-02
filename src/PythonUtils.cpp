@@ -1,6 +1,6 @@
 #include "PythonUtils.h"
 
-v8::Local<v8::String> pythonBytesObjectToString(PyObject *py_obj) {
+v8::Local<v8::String> pythonBytesObjectToString(PyObject* py_obj) {
   if (!py_obj) {
     return v8::Local<v8::String>();
   }

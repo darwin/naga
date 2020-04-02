@@ -32,7 +32,7 @@ std::string string_format(const std::string& format, Args... args) {
   return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
 }
 
-std::ostream& operator<<(std::ostream& os, const CJavascriptObject& obj);
+std::ostream& operator<<(std::ostream& os, const CJSObject& obj);
 
 std::ostream& operator<<(std::ostream& os, const v8::Local<v8::Object>& obj) {
   auto isolate = v8::Isolate::GetCurrent();
@@ -118,7 +118,7 @@ bool isCLJSType(v8::Local<v8::Object> obj) {
 }
 
 void exposeCLJSTypes() {
-  py::class_<CCLJSType, py::bases<CJavascriptObject>, boost::noncopyable>("CLJSType", py::no_init)
+  py::class_<CCLJSType, py::bases<CJSObject>, boost::noncopyable>("CLJSType", py::no_init)
       .def("__str__", &CCLJSType::Str)
       .def("__repr__", &CCLJSType::Repr)
       .def("__len__", &CCLJSType::Length)
@@ -127,8 +127,7 @@ void exposeCLJSTypes() {
       //.def("__contains__", &CCLJSType::Contains)
       .def("__iter__", &CCLJSType::Iter);
 
-  py::class_<CCLJSIIterableIterator, py::bases<CJavascriptObject>, boost::noncopyable>("CLJSIIterableIterator",
-                                                                                       py::no_init)
+  py::class_<CCLJSIIterableIterator, py::bases<CJSObject>, boost::noncopyable>("CLJSIIterableIterator", py::no_init)
       .def("__next__", &CCLJSIIterableIterator::Next)
       .def("__iter__", boost::python::objects::identity_function());
 }
@@ -300,7 +299,7 @@ py::object CCLJSType::GetItemIndex(const py::object& py_index) {
   if (is_sentinel(res_val)) {
     throw CJavascriptException("CLJSType index out of bounds", ::PyExc_IndexError);
   }
-  return CJavascriptObject::Wrap(res_val, Object());
+  return CJSObject::Wrap(res_val, Object());
 }
 
 py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
@@ -345,7 +344,7 @@ py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
       throw CJavascriptException(msg, PyExc_UnboundLocalError);
     }
 
-    py_res.append(CJavascriptObject::Wrap(item, Object()));
+    py_res.append(CJSObject::Wrap(item, Object()));
   }
 
   return std::move(py_res);
@@ -368,7 +367,7 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
                                *v8::String::Utf8Value(isolate, js_val));
       throw CJavascriptException(msg, PyExc_UnboundLocalError);
     }
-    return CJavascriptObject::Wrap(js_val, Object());
+    return CJSObject::Wrap(js_val, Object());
   }
 
   // CLJS lookup
@@ -381,7 +380,7 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
   if (is_sentinel(res_val)) {
     return py::object();
   }
-  return CJavascriptObject::Wrap(res_val, Object());
+  return CJSObject::Wrap(res_val, Object());
 }
 
 py::object CCLJSType::GetItem(const py::object& py_key) {
