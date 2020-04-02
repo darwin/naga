@@ -27,7 +27,7 @@ stpyv8_source_files = [
   "Locker.h",
   "Platform.cpp",
   "Platform.h",
-  "STPyV8.cpp",
+  "Module.cpp",
   "PythonUtils.cpp",
   "PythonUtils.h",
   "Utils.cpp",
