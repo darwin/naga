@@ -32,10 +32,6 @@ stpyv8_source_files = [
   "Wrapper.h",
   "WrapperCLJS.cpp",
   "WrapperCLJS.h",
-  "utf8/checked.h",
-  "utf8/core.h",
-  "utf8/unchecked.h",
-  "utf8.h",
 ]
 
 stpyv8_source_file_paths = []
