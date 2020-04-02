@@ -26,6 +26,8 @@ stpyv8_source_files = [
   "Platform.cpp",
   "Platform.h",
   "STPyV8.cpp",
+  "PythonUtils.cpp",
+  "PythonUtils.h",
   "Utils.cpp",
   "Utils.h",
   "Wrapper.cpp",
