@@ -59,7 +59,7 @@ message(STATUS "STPYV8_DEBUG = ${STPYV8_DEBUG}")
 include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE SOURCES src/*.cpp)

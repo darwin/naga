@@ -50,6 +50,7 @@ config("stpyv8_compiler_flags") {
     "-Wno-error=unused-variable",
     # note CLion uses some unknown pragmas suppressing code hints
     "-Wno-unknown-pragmas",
+    "-std=c++17"
   ]
 }
 
