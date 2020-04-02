@@ -34,6 +34,8 @@ stpyv8_source_files = [
   "PythonObjectWrapper.h",
   "PythonUtils.cpp",
   "PythonUtils.h",
+  "Tracer.cpp",
+  "Tracer.h",
   "Utils.cpp",
   "Utils.h",
   "Wrapper.cpp",

@@ -4,6 +4,7 @@
 #include "Isolate.h"
 #include "WrapperCLJS.h"
 #include "PythonDateTime.h"
+#include "Tracer.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
   if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \
