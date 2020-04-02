@@ -910,7 +910,7 @@ py::object CJavascriptObject::GetAttr(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = DecodeUtf8(name);
+  v8::Local<v8::String> attr_name = ToString(name);
 
   CheckAttr(attr_name);
 
@@ -932,7 +932,7 @@ void CJavascriptObject::SetAttr(const std::string& name, py::object value) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = DecodeUtf8(name);
+  v8::Local<v8::String> attr_name = ToString(name);
   v8::Local<v8::Value> attr_obj = CPythonObject::Wrap(value);
 
   if (Object()->Has(context, attr_name).FromMaybe(false)) {
@@ -953,7 +953,7 @@ void CJavascriptObject::DelAttr(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = DecodeUtf8(name);
+  v8::Local<v8::String> attr_name = ToString(name);
 
   CheckAttr(attr_name);
 
@@ -1013,7 +1013,7 @@ bool CJavascriptObject::Contains(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  bool found = Object()->Has(context, DecodeUtf8(name)).ToChecked();
+  bool found = Object()->Has(context, ToString(name)).ToChecked();
 
   if (try_catch.HasCaught())
     CJavascriptException::ThrowIf(isolate, try_catch);

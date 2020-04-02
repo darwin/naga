@@ -98,8 +98,6 @@ v8::Local<v8::String> ToString(const std::string& str);
 v8::Local<v8::String> ToString(const std::wstring& str);
 v8::Local<v8::String> ToString(py::object str);
 
-v8::Local<v8::String> DecodeUtf8(const std::string& str);
-
 struct CPythonGIL {
   PyGILState_STATE m_state;
 

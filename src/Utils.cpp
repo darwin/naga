@@ -71,11 +71,6 @@ v8::Local<v8::String> ToString(const std::wstring &str) {
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> DecodeUtf8(const std::string &str) {
-  auto isolate = v8::Isolate::GetCurrent();
-  return v8::String::NewFromUtf8(isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
-}
-
 CPythonGIL::CPythonGIL() {
   m_state = ::PyGILState_Ensure();
 }
