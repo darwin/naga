@@ -14,8 +14,6 @@ typedef std::shared_ptr<CScript> CScriptPtr;
 class CEngine {
   v8::Isolate* m_isolate;
 
-  static uintptr_t CalcStackLimitSize(uintptr_t size);
-
  protected:
   CScriptPtr InternalCompile(v8::Local<v8::String> src, v8::Local<v8::Value> name, int line, int col);
 
@@ -39,8 +37,6 @@ class CEngine {
     return InternalCompile(ToString(src), ToString(name), line, col);
   }
 
-  void RaiseError(v8::TryCatch& try_catch);
-
  public:
   static void Expose(void);
 
@@ -52,11 +48,6 @@ class CEngine {
 
   static void SetFlags(const std::string& flags) { v8::V8::SetFlagsFromString(flags.c_str(), flags.size()); }
 
-  static void SetSerializeEnable(bool value);
-  static bool IsSerializeEnabled(void);
-
-  static py::object Serialize(void);
-  static void Deserialize(py::object snapshot);
   static bool IsDead(void);
 };
 

@@ -5,8 +5,6 @@
 #include "Utils.h"
 
 class CLocker {
-  static bool s_preemption;
-
   std::unique_ptr<v8::Locker> m_locker;
   CIsolatePtr m_isolate;
 

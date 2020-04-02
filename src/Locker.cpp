@@ -1,7 +1,5 @@
 #include "Locker.h"
 
-bool CLocker::s_preemption = false;
-
 void CLocker::enter(void) {
   Py_BEGIN_ALLOW_THREADS
 
