@@ -935,12 +935,9 @@ void CJavascriptObject::SetAttr(const std::string& name, py::object value) {
   v8::Local<v8::String> attr_name = ToString(name);
   v8::Local<v8::Value> attr_obj = CPythonObject::Wrap(value);
 
-  if (Object()->Has(context, attr_name).FromMaybe(false)) {
-    v8::Local<v8::Value> UNUSED_VAR(attr_value) = Object()->Get(context, attr_name).ToLocalChecked();
-  }
-
-  if (!Object()->Set(context, attr_name, attr_obj).FromMaybe(false))
+  if (!Object()->Set(context, attr_name, attr_obj).FromMaybe(false)) {
     CJavascriptException::ThrowIf(isolate, try_catch);
+  }
 }
 
 void CJavascriptObject::DelAttr(const std::string& name) {
