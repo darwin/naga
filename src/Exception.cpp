@@ -333,7 +333,7 @@ void CJavascriptException::ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch
             isolate, v8::Local<v8::String>::Cast(exc->Get(isolate->GetCurrentContext(), name).ToLocalChecked()));
 
         for (size_t i = 0; i < std::size(SupportErrors); i++) {
-          if (strnicmp(SupportErrors[i].name, *s, s.length()) == 0) {
+          if (strncasecmp(SupportErrors[i].name, *s, s.length()) == 0) {
             type = SupportErrors[i].type;
           }
         }

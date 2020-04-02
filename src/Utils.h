@@ -6,9 +6,6 @@ namespace py = boost::python;
 
 #include "v8.h"
 
-#include <strings.h>
-#define strnicmp strncasecmp
-
 #if defined(__GNUC__)
 #define UNUSED_VAR(x) x __attribute__((unused))
 #elif defined(__APPLE__)
