@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& os, const CJavascriptObject& obj) {
   return os;
 }
 
-void CWrapper::Expose(void) {
+void CJavascriptObject::Expose(void) {
   PyDateTime_IMPORT;
 
   py::class_<CJavascriptObject, boost::noncopyable>("JSObject", py::no_init)

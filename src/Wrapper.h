@@ -9,12 +9,6 @@ class CJavascriptFunction;
 typedef std::shared_ptr<CJavascriptObject> CJavascriptObjectPtr;
 typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
 
-class CJavascriptObject;
-
-struct CWrapper {
-  static void Expose();
-};
-
 class CPythonObject {
  private:
   CPythonObject();
@@ -57,7 +51,7 @@ struct ILazyObject {
   virtual void LazyConstructor() = 0;
 };
 
-class CJavascriptObject : public CWrapper {
+class CJavascriptObject {
  protected:
   v8::Persistent<v8::Object> m_obj;
 
@@ -67,8 +61,9 @@ class CJavascriptObject : public CWrapper {
 
  public:
   explicit CJavascriptObject(v8::Local<v8::Object> obj) : m_obj(v8::Isolate::GetCurrent(), obj) {}
-
   virtual ~CJavascriptObject() { m_obj.Reset(); }
+
+  static void Expose();
 
   v8::Local<v8::Object> Object() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_obj); }
 
