@@ -178,7 +178,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> script) {
 
       if (result.IsEmpty()) {
     if (try_catch.HasCaught()) {
-      if (!try_catch.CanContinue() && PyErr_OCCURRED()) {
+      if (!try_catch.CanContinue() && PyErr_Occurred()) {
         throw py::error_already_set();
       }
 
