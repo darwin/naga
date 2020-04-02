@@ -4,13 +4,13 @@
 
 class CPlatform {
  private:
-  static bool inited;
-  static std::unique_ptr<v8::Platform> platform;
-  std::string argv;
+  static bool m_inited;
+  static std::unique_ptr<v8::Platform> m_platform;
+  std::string m_argv;
 
  public:
-  CPlatform() : argv(std::string()) {}
-  explicit CPlatform(std::string argv0) : argv(std::move(argv0)) {}
+  CPlatform() {}
+  explicit CPlatform(std::string argv) : m_argv(std::move(argv)) {}
   ~CPlatform() = default;
   void Init();
 };

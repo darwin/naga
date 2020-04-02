@@ -2,21 +2,21 @@
 
 #include "libplatform/libplatform.h"
 
-std::unique_ptr<v8::Platform> CPlatform::platform;
-bool CPlatform::inited = false;
+std::unique_ptr<v8::Platform> CPlatform::m_platform;
+bool CPlatform::m_inited = false;
 
 void CPlatform::Init() {
-  if (inited)
+  if (m_inited)
     return;
 
   // https://v8.dev/docs/i18n#embedding-v8
   v8::V8::InitializeICU();
-  v8::V8::InitializeExternalStartupData(argv.c_str());
+  v8::V8::InitializeExternalStartupData(m_argv.c_str());
 
-  platform = v8::platform::NewDefaultPlatform();
+  m_platform = v8::platform::NewDefaultPlatform();
 
-  v8::V8::InitializePlatform(platform.get());
+  v8::V8::InitializePlatform(m_platform.get());
   v8::V8::Initialize();
 
-  inited = true;
+  m_inited = true;
 }
