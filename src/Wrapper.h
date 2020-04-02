@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base.h"
-#include "Exception.h"
 
 class CJSObject;
 class CJavascriptFunction;

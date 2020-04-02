@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Base.h"
-#include "Isolate.h"
-#include "Platform.h"
-#include "Wrapper.h"
 
 class CContext;
 class CIsolate;

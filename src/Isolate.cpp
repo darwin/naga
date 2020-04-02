@@ -1,7 +1,6 @@
 #include "Context.h"
 #include "Engine.h"
-#include "Wrapper.h"
-#include "libplatform/libplatform.h"
+#include "Isolate.h"
 
 void CIsolate::Init(bool owner) {
   m_owner = owner;

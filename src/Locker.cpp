@@ -1,4 +1,5 @@
 #include "Locker.h"
+#include "Isolate.h"
 
 void CLocker::enter(void) {
   Py_BEGIN_ALLOW_THREADS

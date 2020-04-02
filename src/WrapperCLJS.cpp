@@ -1,6 +1,7 @@
 #include "WrapperCLJS.h"
 #include "PythonObject.h"
 #include "Context.h"
+#include "Exception.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"

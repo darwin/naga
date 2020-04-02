@@ -2,7 +2,6 @@
 
 #include "Base.h"
 #include "Context.h"
-#include "Exception.h"
 
 class CLocker {
   std::unique_ptr<v8::Locker> m_locker;

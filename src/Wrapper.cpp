@@ -2,6 +2,7 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 #include "WrapperCLJS.h"
+#include "Exception.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
   if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \

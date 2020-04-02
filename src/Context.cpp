@@ -1,5 +1,6 @@
 #include "Context.h"
-
+#include "Platform.h"
+#include "Isolate.h"
 #include "Engine.h"
 #include "Wrapper.h"
 #include "PythonObject.h"
