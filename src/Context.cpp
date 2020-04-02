@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 #include "Wrapper.h"
-#include "libplatform/libplatform.h"
+#include "PythonObjectWrapper.h"
 
 void CContext::Expose() {
   py::class_<CPlatform, boost::noncopyable>("JSPlatform", "JSPlatform allows the V8 platform to be initialized",

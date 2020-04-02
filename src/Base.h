@@ -17,8 +17,9 @@
 #include <utility>
 #include <vector>
 
-#include "Python.h"
-#include <boost/iterator/iterator_facade.hpp>
+#include <Python.h>
+
+#include <boost/python/raw_function.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/python.hpp>
 
@@ -26,5 +27,4 @@ namespace py = boost::python;
 
 #include "v8.h"
 
-#include "Config.h"
 #include "Utils.h"

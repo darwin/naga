@@ -1,19 +1,6 @@
 #include "WrapperCLJS.h"
-
-#include <datetime.h>
-#include <descrobject.h>
-#include <stdlib.h>
-
-#include <boost/python/raw_function.hpp>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
+#include "PythonObjectWrapper.h"
 #include "Context.h"
-#include "Utils.h"
-#include "libplatform/libplatform.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
