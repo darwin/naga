@@ -9,6 +9,8 @@ declare_args() {
   boost_includes = string_split(getenv("STPYV8_BOOST_INCLUDES"), " ")
   boost_libs = string_split(getenv("STPYV8_BOOST_LIBS"), " ")
   boost_ldflags = string_split(getenv("STPYV8_BOOST_LDFLAGS"), " ")
+
+  stpyv8_enable_precompiled_headers = true
 }
 
 stpyv8_source_files = [
@@ -42,13 +44,35 @@ foreach(source, stpyv8_source_files) {
   stpyv8_source_file_paths += [ "src/$source" ]
 }
 
+config("stpyv8_precompiled_headers") {
+  if (stpyv8_enable_precompiled_headers) {
+    if (is_win) {
+      # This is a string rather than a file GN knows about. It has to match
+      # exactly what's in the /FI flag below, and what might appear in the
+      # source code in quotes for an #include directive.
+      precompiled_header = "src/_precompile.h"
+
+      # This is a file that GN will compile with the above header. It will be
+      # implicitly added to the sources (potentially multiple times, with one
+      # variant for each language used in the target).
+      precompiled_source = "//src/_precompile.cpp"
+
+      # Force include the header.
+      cflags = [ "/FI$precompiled_header" ]
+    } else if (is_mac) {
+      precompiled_source = "//src/_precompile.h"
+    }
+  }
+}
+
 config("stpyv8_compiler_flags") {
   cflags_cc = [
     "-Wno-c++98-compat-extra-semi",
     "-Wno-error=unused-variable",
+
     # note CLion uses some unknown pragmas suppressing code hints
     "-Wno-unknown-pragmas",
-    "-std=c++17"
+    "-std=c++17",
   ]
 }
 
@@ -81,6 +105,7 @@ shared_library("stpyv8") {
     ":stpyv8_python_compiler_flags",
     ":stpyv8_boost_compiler_flags",
     ":stpyv8_compiler_flags",
+    ":stpyv8_precompiled_headers",
   ]
 
   # this is very important

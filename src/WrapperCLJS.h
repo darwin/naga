@@ -1,10 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-
+#include "Base.h"
 #include "Exception.h"
 #include "Wrapper.h"
 

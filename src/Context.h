@@ -1,11 +1,8 @@
 #pragma once
 
-#include <cassert>
-#include <memory>
-
+#include "Base.h"
 #include "Isolate.h"
 #include "Platform.h"
-#include "Utils.h"
 #include "Wrapper.h"
 
 class CContext;

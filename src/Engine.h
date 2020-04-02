@@ -1,11 +1,6 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <string>
-#include <vector>
-
-#include "Utils.h"
+#include "Base.h"
 
 class CScript;
 

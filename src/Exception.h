@@ -1,13 +1,6 @@
 #pragma once
 
-#include <boost/iterator/iterator_facade.hpp>
-#include <cassert>
-#include <memory>
-#include <stdexcept>
-#include <type_traits>
-
-#include "Config.h"
-#include "Utils.h"
+#include "Base.h"
 
 #define BEGIN_HANDLE_PYTHON_EXCEPTION try
 #define END_HANDLE_PYTHON_EXCEPTION                                                                            \

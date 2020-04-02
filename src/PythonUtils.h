@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Python.h"
-#include "v8.h"
+#import "Base.h"
 
 // these utils work with raw python objects
 

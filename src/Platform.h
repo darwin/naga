@@ -1,11 +1,6 @@
 #pragma once
 
-#include <v8.h>
-
-#include <fstream>
-#include <utility>
-
-#include "Config.h"
+#include "Base.h"
 
 class CPlatform {
  private:

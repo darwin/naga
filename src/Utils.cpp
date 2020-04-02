@@ -1,8 +1,5 @@
-#include <iterator>
-#include <optional>
-
+#include "Base.h"
 #include "PythonUtils.h"
-#include "Utils.h"
 
 std::optional<v8::Local<v8::String>> toStringDirectly(py::object obj) {
   if (PyUnicode_CheckExact(obj.ptr())) {

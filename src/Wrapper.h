@@ -1,12 +1,6 @@
 #pragma once
 
-#include <boost/iterator/iterator_facade.hpp>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <sstream>
-#include <utility>
-
+#import "Base.h"
 #include "Exception.h"
 
 class CJavascriptObject;
