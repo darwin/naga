@@ -1,5 +1,5 @@
 #include "Wrapper.h"
-#include "PythonObjectWrapper.h"
+#include "PythonObject.h"
 #include "PythonDateTime.h"
 #include "WrapperCLJS.h"
 

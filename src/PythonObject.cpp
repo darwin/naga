@@ -1,4 +1,4 @@
-#include "PythonObjectWrapper.h"
+#include "PythonObject.h"
 #include "Wrapper.h"
 #include "Context.h"
 #include "Isolate.h"

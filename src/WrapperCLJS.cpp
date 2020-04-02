@@ -1,5 +1,5 @@
 #include "WrapperCLJS.h"
-#include "PythonObjectWrapper.h"
+#include "PythonObject.h"
 #include "Context.h"
 
 #pragma clang diagnostic push
