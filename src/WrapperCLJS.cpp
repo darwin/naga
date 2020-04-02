@@ -309,7 +309,7 @@ py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
 
   Py_ssize_t length = Length();
   Py_ssize_t start, stop, step;
-  auto slice = PySlice_Cast(py_slice.ptr());
+  auto slice = py_slice.ptr();
 
   if (PySlice_Unpack(slice, &start, &stop, &step) < 0) {
     CPythonObject::ThrowIf(isolate);

@@ -1277,7 +1277,7 @@ py::object CJavascriptArray::GetItem(py::object key) {
     Py_ssize_t arrayLen = v8::Local<v8::Array>::Cast(Object())->Length();
     Py_ssize_t start, stop, step, sliceLen;
 
-    if (0 == PySlice_GetIndicesEx(PySlice_Cast(key.ptr()), arrayLen, &start, &stop, &step, &sliceLen)) {
+    if (0 == PySlice_GetIndicesEx(key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
       py::list slice;
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
@@ -1291,9 +1291,8 @@ py::object CJavascriptArray::GetItem(py::object key) {
 
       return std::move(slice);
     }
-  } else if (PyInt_Check(key.ptr()) || PyLong_Check(key.ptr())) {
-    uint32_t idx = PyInt_Check(key.ptr()) ? (uint32_t)::PyInt_AsUnsignedLongMask(key.ptr())
-                                          : (uint32_t)::PyLong_AsUnsignedLong(key.ptr());
+  } else if (PyLong_Check(key.ptr())) {
+    uint32_t idx = PyLong_AsUnsignedLong(key.ptr());
 
     if (!Object()->Has(context, idx).ToChecked())
       return py::object();
@@ -1331,7 +1330,7 @@ py::object CJavascriptArray::SetItem(py::object key, py::object value) {
       Py_ssize_t arrayLen = v8::Local<v8::Array>::Cast(Object())->Length();
       Py_ssize_t start, stop, step, sliceLen;
 
-      PySlice_Unpack(PySlice_Cast(key.ptr()), &start, &stop, &step);
+      PySlice_Unpack(key.ptr(), &start, &stop, &step);
 
       /*
        * If the slice start is greater than the array length we append null elements
@@ -1359,7 +1358,7 @@ py::object CJavascriptArray::SetItem(py::object key, py::object value) {
         arrayLen = v8::Local<v8::Array>::Cast(Object())->Length();
       }
 
-      if (0 == PySlice_GetIndicesEx(PySlice_Cast(key.ptr()), arrayLen, &start, &stop, &step, &sliceLen)) {
+      if (0 == PySlice_GetIndicesEx(key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
         if (itemSize != sliceLen) {
           if (itemSize < sliceLen) {
             Py_ssize_t diff = sliceLen - itemSize;
@@ -1385,9 +1384,8 @@ py::object CJavascriptArray::SetItem(py::object key, py::object value) {
         }
       }
     }
-  } else if (PyInt_Check(key.ptr()) || PyLong_Check(key.ptr())) {
-    uint32_t idx = PyInt_Check(key.ptr()) ? (uint32_t)::PyInt_AsUnsignedLongMask(key.ptr())
-                                          : (uint32_t)::PyLong_AsUnsignedLong(key.ptr());
+  } else if (PyLong_Check(key.ptr())) {
+    uint32_t idx = PyLong_AsUnsignedLong(key.ptr());
 
     if (!Object()->Set(context, v8::Integer::New(isolate, idx), CPythonObject::Wrap(value)).ToChecked())
       CJavascriptException::ThrowIf(isolate, try_catch);
@@ -1412,16 +1410,15 @@ py::object CJavascriptArray::DelItem(py::object key) {
     Py_ssize_t arrayLen = v8::Local<v8::Array>::Cast(Object())->Length();
     Py_ssize_t start, stop, step, sliceLen;
 
-    if (0 == PySlice_GetIndicesEx(PySlice_Cast(key.ptr()), arrayLen, &start, &stop, &step, &sliceLen)) {
+    if (0 == PySlice_GetIndicesEx(key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
         Object()->Delete(context, (uint32_t)idx);
       }
     }
 
     return py::object();
-  } else if (PyInt_Check(key.ptr()) || PyLong_Check(key.ptr())) {
-    uint32_t idx = PyInt_Check(key.ptr()) ? (uint32_t)::PyInt_AsUnsignedLongMask(key.ptr())
-                                          : (uint32_t)::PyLong_AsUnsignedLong(key.ptr());
+  } else if (PyLong_Check(key.ptr())) {
+    uint32_t idx = PyLong_AsUnsignedLong(key.ptr());
 
     py::object value;
 
