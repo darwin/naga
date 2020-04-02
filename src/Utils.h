@@ -9,8 +9,6 @@ namespace py = boost::python;
 #include <strings.h>
 #define strnicmp strncasecmp
 
-#define _countof(array) (sizeof(array) / sizeof(array[0]))
-
 #if defined(__GNUC__)
 #define UNUSED_VAR(x) x __attribute__((unused))
 #elif defined(__APPLE__)
