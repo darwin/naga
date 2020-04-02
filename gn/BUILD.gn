@@ -41,7 +41,7 @@ stpyv8_source_files = [
 stpyv8_source_file_paths = []
 
 foreach(source, stpyv8_source_files) {
-  stpyv8_source_file_paths += [ "src/$source" ]
+  stpyv8_source_file_paths += [ "../src/$source" ]
 }
 
 config("stpyv8_precompiled_headers") {
@@ -55,12 +55,12 @@ config("stpyv8_precompiled_headers") {
       # This is a file that GN will compile with the above header. It will be
       # implicitly added to the sources (potentially multiple times, with one
       # variant for each language used in the target).
-      precompiled_source = "//src/_precompile.cpp"
+      precompiled_source = "../src/_precompile.cpp"
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
-      precompiled_source = "//src/_precompile.h"
+      precompiled_source = "../src/_precompile.h"
     }
   }
 }
@@ -94,6 +94,8 @@ shared_library("stpyv8") {
   configs -= [
     "//build/config/compiler:no_exceptions",
     "//build/config/compiler:no_rtti",
+
+    #"//build/config/compiler:default_symbols",
 
     # TODO: google's code conventions are quite strict
     #       revisit this after we get rid of boost

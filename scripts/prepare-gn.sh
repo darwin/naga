@@ -30,10 +30,3 @@ symlink_v8_dir "third_party"
 symlink_v8_dir "testing"
 symlink_v8_dir "build"
 symlink_v8_dir "build_overrides"
-
-if [[ -L "src" ]]; then
-  rm "src"
-fi
-if [[ ! -e "src" ]]; then
-  echo_cmd ln -s "../src" "src"
-fi
