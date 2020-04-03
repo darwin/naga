@@ -107,6 +107,12 @@ config("stpyv8_boost_compiler_flags") {
   ldflags = boost_ldflags
 }
 
+config("stpyv8_pybind11_compiler_flags") {
+  include_dirs = [
+    "../vendor/pybind11/include",
+  ]
+}
+
 shared_library("stpyv8") {
   sources = stpyv8_source_file_paths
 
@@ -128,6 +134,7 @@ shared_library("stpyv8") {
     ":stpyv8_boost_compiler_flags",
     ":stpyv8_compiler_flags",
     ":stpyv8_precompiled_headers",
+    ":stpyv8_pybind11_compiler_flags",
   ]
 
   # this is very important

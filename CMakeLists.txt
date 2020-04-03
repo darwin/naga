@@ -65,6 +65,7 @@ file(GLOB_RECURSE HEADERS src/*.h)
 file(GLOB_RECURSE SOURCES src/*.cpp)
 
 include_directories(${V8_HOME}/include)
+include_directories(vendor/pybind11/include)
 link_directories(${V8_HOME}/out.gn-${STPYV8_V8_GIT_TAG}/x64.${STPYV8_CONFIG_NAME}.stpyv8/obj)
 link_libraries(v8_monolith)
 
