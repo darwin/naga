@@ -35,11 +35,11 @@ void CJSObject::Expose(void) {
 
       .def("__contains__", &CJSObject::Contains)
 
-      .def(int_(py::self))
-      .def(float_(py::self))
-      .def(str(py::self))
+      .def("__int__", &CJSObject::ToPythonInt)
+      .def("__float__", &CJSObject::ToPythonFloat)
+      .def("__str__", &CJSObject::ToPythonStr)
 
-      .def("__bool__", &CJSObject::operator bool)
+      .def("__bool__", &CJSObject::ToPythonBool)
       .def("__eq__", &CJSObject::Equals)
       .def("__ne__", &CJSObject::Unequals)
 
@@ -280,41 +280,57 @@ void CJSObject::Dump(std::ostream& os) const {
   }
 }
 
-CJSObject::operator long() const {
+py::object CJSObject::ToPythonInt() const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  if (m_obj.IsEmpty())
+  if (m_obj.IsEmpty()) {
     throw CJavascriptException("argument must be a string or a number, not 'NoneType'", ::PyExc_TypeError);
+  }
 
-  return Object()->Int32Value(context).ToChecked();
+  auto val = Object()->Int32Value(context).ToChecked();
+  return py::object(val);
 }
 
-CJSObject::operator double() const {
+py::object CJSObject::ToPythonFloat() const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  if (m_obj.IsEmpty())
+  if (m_obj.IsEmpty()) {
     throw CJavascriptException("argument must be a string or a number, not 'NoneType'", ::PyExc_TypeError);
+  }
 
-  return Object()->NumberValue(context).ToChecked();
+  auto val = Object()->NumberValue(context).ToChecked();
+  return py::object(val);
 }
 
-CJSObject::operator bool() const {
+py::object CJSObject::ToPythonBool() const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
-  if (m_obj.IsEmpty())
-    return false;
+  bool val = false;
+  if (!m_obj.IsEmpty()) {
+    val = Object()->BooleanValue(isolate);
+  }
 
-  return Object()->BooleanValue(isolate);
+  if (val) {
+    return py::object(py::handle<>(py::borrowed(Py_False)));
+  } else {
+    return py::object(py::handle<>(py::borrowed(Py_True)));
+  }
+}
+
+py::object CJSObject::ToPythonStr() const {
+  std::stringstream ss;
+  Dump(ss);
+  return py::object(ss.str());
 }
 
 py::object CJSObject::Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> self) {

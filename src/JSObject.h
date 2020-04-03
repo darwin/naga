@@ -32,9 +32,10 @@ class CJSObject {
 
   bool Contains(const std::string& name);
 
-  explicit operator long() const;
-  explicit operator double() const;
-  explicit operator bool() const;
+  py::object ToPythonInt() const;
+  py::object ToPythonFloat() const;
+  py::object ToPythonBool() const;
+  py::object ToPythonStr() const;
 
   bool Equals(CJSObjectPtr other) const;
   bool Unequals(CJSObjectPtr other) const { return !Equals(std::move(other)); }
