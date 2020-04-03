@@ -3,7 +3,7 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJSObjectArray : public CJSObject, public ILazyObject {
+class CJSObjectArray : public CJSObject {
   py::object m_items;
   size_t m_size;
 
@@ -37,6 +37,5 @@ class CJSObjectArray : public CJSObject, public ILazyObject {
   ArrayIterator begin() { return {this, 0}; }
   ArrayIterator end() { return {this, Length()}; }
 
-  // ILazyObject
-  void LazyConstructor() override;
+  void LazyConstructor();
 };

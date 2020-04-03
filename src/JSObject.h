@@ -6,10 +6,6 @@ class CJSObject;
 
 typedef std::shared_ptr<CJSObject> CJSObjectPtr;
 
-struct ILazyObject {
-  virtual void LazyConstructor() = 0;
-};
-
 class CJSObject {
  protected:
   v8::Persistent<v8::Object> m_obj;

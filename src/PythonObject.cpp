@@ -2,6 +2,7 @@
 #include "JSObject.h"
 #include "JSObjectNull.h"
 #include "JSObjectUndefined.h"
+#include "JSObjectArray.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
@@ -811,10 +812,10 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
       return v8::Undefined(isolate);
 
     if (jsobj.Object().IsEmpty()) {
-      ILazyObject* pLazyObject = dynamic_cast<ILazyObject*>(&jsobj);
-
-      if (pLazyObject)
-        pLazyObject->LazyConstructor();
+      auto pLazyArray = dynamic_cast<CJSObjectArray*>(&jsobj);
+      if (pLazyArray) {
+        pLazyArray->LazyConstructor();
+      }
     }
 
     if (jsobj.Object().IsEmpty()) {
