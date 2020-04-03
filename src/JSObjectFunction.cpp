@@ -4,14 +4,14 @@
 #include "JSObjectCLJS.h"
 #include "Exception.h"
 
-py::object CJavascriptFunction::CallWithArgs(py::tuple args, py::dict kwds) {
+py::object CJSObjectFunction::CallWithArgs(py::tuple args, py::dict kwds) {
   size_t argc = ::PyTuple_Size(args.ptr());
 
   if (argc == 0)
     throw CJavascriptException("missed self argument", ::PyExc_TypeError);
 
   py::object self = args[0];
-  py::extract<CJavascriptFunction&> extractor(self);
+  py::extract<CJSObjectFunction&> extractor(self);
 
   if (!extractor.check())
     throw CJavascriptException("missed self argument", ::PyExc_TypeError);
@@ -22,13 +22,13 @@ py::object CJavascriptFunction::CallWithArgs(py::tuple args, py::dict kwds) {
 
   v8::TryCatch try_catch(isolate);
 
-  CJavascriptFunction& func = extractor();
+  CJSObjectFunction& func = extractor();
   py::list argv(args.slice(1, py::_));
 
   return func.Call(func.Self(), argv, kwds);
 }
 
-py::object CJavascriptFunction::Call(v8::Local<v8::Object> self, py::list args, py::dict kwds) {
+py::object CJSObjectFunction::Call(v8::Local<v8::Object> self, py::list args, py::dict kwds) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -67,7 +67,7 @@ py::object CJavascriptFunction::Call(v8::Local<v8::Object> self, py::list args, 
   return CJSObject::Wrap(result.ToLocalChecked());
 }
 
-py::object CJavascriptFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds) {
+py::object CJSObjectFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -114,7 +114,7 @@ py::object CJavascriptFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py:
   return CJSObject::Wrap(result);
 }
 
-py::object CJavascriptFunction::ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds) {
+py::object CJSObjectFunction::ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -122,7 +122,7 @@ py::object CJavascriptFunction::ApplyJavascript(CJSObjectPtr self, py::list args
   return Call(self->Object(), args, kwds);
 }
 
-py::object CJavascriptFunction::ApplyPython(py::object self, py::list args, py::dict kwds) {
+py::object CJSObjectFunction::ApplyPython(py::object self, py::list args, py::dict kwds) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -133,7 +133,7 @@ py::object CJavascriptFunction::ApplyPython(py::object self, py::list args, py::
   return Call(CPythonObject::Wrap(self)->ToObject(context).ToLocalChecked(), args, kwds);
 }
 
-py::object CJavascriptFunction::Invoke(py::list args, py::dict kwds) {
+py::object CJSObjectFunction::Invoke(py::list args, py::dict kwds) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -141,7 +141,7 @@ py::object CJavascriptFunction::Invoke(py::list args, py::dict kwds) {
   return Call(Self(), args, kwds);
 }
 
-const std::string CJavascriptFunction::GetName(void) const {
+const std::string CJSObjectFunction::GetName(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -153,7 +153,7 @@ const std::string CJavascriptFunction::GetName(void) const {
   return std::string(*name, name.length());
 }
 
-void CJavascriptFunction::SetName(const std::string& name) {
+void CJSObjectFunction::SetName(const std::string& name) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -164,7 +164,7 @@ void CJavascriptFunction::SetName(const std::string& name) {
       v8::String::NewFromUtf8(isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
 }
 
-int CJavascriptFunction::GetLineNumber(void) const {
+int CJSObjectFunction::GetLineNumber(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -174,7 +174,7 @@ int CJavascriptFunction::GetLineNumber(void) const {
   return func->GetScriptLineNumber();
 }
 
-int CJavascriptFunction::GetColumnNumber(void) const {
+int CJSObjectFunction::GetColumnNumber(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -184,7 +184,7 @@ int CJavascriptFunction::GetColumnNumber(void) const {
   return func->GetScriptColumnNumber();
 }
 
-const std::string CJavascriptFunction::GetResourceName(void) const {
+const std::string CJSObjectFunction::GetResourceName(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -196,7 +196,7 @@ const std::string CJavascriptFunction::GetResourceName(void) const {
   return std::string(*name, name.length());
 }
 
-const std::string CJavascriptFunction::GetInferredName(void) const {
+const std::string CJSObjectFunction::GetInferredName(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -208,7 +208,7 @@ const std::string CJavascriptFunction::GetInferredName(void) const {
   return std::string(*name, name.length());
 }
 
-int CJavascriptFunction::GetLineOffset(void) const {
+int CJSObjectFunction::GetLineOffset(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -218,7 +218,7 @@ int CJavascriptFunction::GetLineOffset(void) const {
   return func->GetScriptOrigin().ResourceLineOffset()->Value();
 }
 
-int CJavascriptFunction::GetColumnOffset(void) const {
+int CJSObjectFunction::GetColumnOffset(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -228,7 +228,7 @@ int CJavascriptFunction::GetColumnOffset(void) const {
   return func->GetScriptOrigin().ResourceColumnOffset()->Value();
 }
 
-py::object CJavascriptFunction::GetOwner(void) const {
+py::object CJSObjectFunction::GetOwner(void) const {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);

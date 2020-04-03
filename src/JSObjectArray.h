@@ -3,18 +3,18 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJavascriptArray : public CJSObject, public ILazyObject {
+class CJSObjectArray : public CJSObject, public ILazyObject {
   py::object m_items;
   size_t m_size;
 
  public:
   class ArrayIterator
       : public boost::iterator_facade<ArrayIterator, py::object const, boost::forward_traversal_tag, py::object> {
-    CJavascriptArray* m_array;
+    CJSObjectArray* m_array;
     size_t m_idx;
 
    public:
-    ArrayIterator(CJavascriptArray* array, size_t idx) : m_array(array), m_idx(idx) {}
+    ArrayIterator(CJSObjectArray* array, size_t idx) : m_array(array), m_idx(idx) {}
 
     void increment() { m_idx++; }
 
@@ -23,9 +23,9 @@ class CJavascriptArray : public CJSObject, public ILazyObject {
     reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
   };
 
-  explicit CJavascriptArray(v8::Local<v8::Array> array) : CJSObject(array), m_size(array->Length()) {}
+  explicit CJSObjectArray(v8::Local<v8::Array> array) : CJSObject(array), m_size(array->Length()) {}
 
-  explicit CJavascriptArray(py::object items) : m_items(std::move(items)), m_size(0) {}
+  explicit CJSObjectArray(py::object items) : m_items(std::move(items)), m_size(0) {}
 
   size_t Length();
 

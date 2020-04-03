@@ -805,9 +805,9 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
   if (extractor.check()) {
     CJSObject& jsobj = extractor();
 
-    if (dynamic_cast<CJavascriptNull*>(&jsobj))
+    if (dynamic_cast<CJSObjectNull*>(&jsobj))
       return v8::Null(isolate);
-    if (dynamic_cast<CJavascriptUndefined*>(&jsobj))
+    if (dynamic_cast<CJSObjectUndefined*>(&jsobj))
       return v8::Undefined(isolate);
 
     if (jsobj.Object().IsEmpty()) {

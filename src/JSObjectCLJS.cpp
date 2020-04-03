@@ -99,14 +99,14 @@ bool isCLJSType(v8::Local<v8::Object> obj) {
 }
 
 void exposeCLJSTypes() {
-  py::class_<CCLJSType, py::bases<CJSObject>, boost::noncopyable>("CLJSType", py::no_init)
-      .def("__str__", &CCLJSType::Str)
-      .def("__repr__", &CCLJSType::Repr)
-      .def("__len__", &CCLJSType::Length)
-      .def("__getitem__", &CCLJSType::GetItem)
-      .def("__getattr__", &CCLJSType::GetAttr)
+  py::class_<CJSObjectCLJS, py::bases<CJSObject>, boost::noncopyable>("CLJSType", py::no_init)
+      .def("__str__", &CJSObjectCLJS::Str)
+      .def("__repr__", &CJSObjectCLJS::Repr)
+      .def("__len__", &CJSObjectCLJS::Length)
+      .def("__getitem__", &CJSObjectCLJS::GetItem)
+      .def("__getattr__", &CJSObjectCLJS::GetAttr)
       //.def("__contains__", &CCLJSType::Contains)
-      .def("__iter__", &CCLJSType::Iter);
+      .def("__iter__", &CJSObjectCLJS::Iter);
 
   py::class_<CCLJSIIterableIterator, py::bases<CJSObject>, boost::noncopyable>("CLJSIIterableIterator", py::no_init)
       .def("__next__", &CCLJSIIterableIterator::Next)
@@ -185,7 +185,7 @@ v8::Local<v8::Value> call_bridge(v8::Isolate* isolate,
   return result.ToLocalChecked();
 }
 
-size_t CCLJSType::Length() {
+size_t CJSObjectCLJS::Length() {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -207,7 +207,7 @@ size_t CCLJSType::Length() {
   return val.ToChecked();
 }
 
-py::object CCLJSType::Str() {
+py::object CJSObjectCLJS::Str() {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -228,7 +228,7 @@ py::object CCLJSType::Str() {
   return py::object(py::handle<>(py_str));
 }
 
-py::object CCLJSType::Repr() {
+py::object CJSObjectCLJS::Repr() {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -263,7 +263,7 @@ bool is_sentinel(v8::Local<v8::Value> val) {
   return res_sym->SameValue(sentinel);
 }
 
-py::object CCLJSType::GetItemIndex(const py::object& py_index) {
+py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -282,7 +282,7 @@ py::object CCLJSType::GetItemIndex(const py::object& py_index) {
   return CJSObject::Wrap(res_val, Object());
 }
 
-py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
+py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
@@ -331,7 +331,7 @@ py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
   return std::move(py_res);
 }
 
-py::object CCLJSType::GetItemString(const py::object& py_string) {
+py::object CJSObjectCLJS::GetItemString(const py::object& py_string) {
   assert(PyUnicode_Check(py_string.ptr()));
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -365,7 +365,7 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
   return CJSObject::Wrap(res_val, Object());
 }
 
-py::object CCLJSType::GetItem(const py::object& py_key) {
+py::object CJSObjectCLJS::GetItem(const py::object& py_key) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
 
@@ -380,7 +380,7 @@ py::object CCLJSType::GetItem(const py::object& py_key) {
   throw CJavascriptException("indices must be integers or slices", ::PyExc_TypeError);
 }
 
-py::object CCLJSType::GetAttr(const py::object& py_key) {
+py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
 
@@ -391,7 +391,7 @@ py::object CCLJSType::GetAttr(const py::object& py_key) {
   throw CJavascriptException("attr names must be strings", ::PyExc_TypeError);
 }
 
-py::object CCLJSType::Iter() {
+py::object CJSObjectCLJS::Iter() {
   auto isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);

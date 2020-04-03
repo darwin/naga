@@ -43,56 +43,56 @@ void CJSObject::Expose(void) {
       .def("__eq__", &CJSObject::Equals)
       .def("__ne__", &CJSObject::Unequals)
 
-      .def("create", &CJavascriptFunction::CreateWithArgs,
+      .def("create", &CJSObjectFunction::CreateWithArgs,
            (py::arg("constructor"), py::arg("arguments") = py::tuple(), py::arg("propertiesObject") = py::dict()),
            "Creates a new object with the specified prototype object and properties.")
       .staticmethod("create");
 
-  py::class_<CJavascriptNull, py::bases<CJSObject>, boost::noncopyable>("JSNull")
-      .def("__bool__", &CJavascriptNull::nonzero)
-      .def("__str__", &CJavascriptNull::str);
+  py::class_<CJSObjectNull, py::bases<CJSObject>, boost::noncopyable>("JSNull")
+      .def("__bool__", &CJSObjectNull::nonzero)
+      .def("__str__", &CJSObjectNull::str);
 
-  py::class_<CJavascriptUndefined, py::bases<CJSObject>, boost::noncopyable>("JSUndefined")
-      .def("__bool__", &CJavascriptUndefined::nonzero)
-      .def("__str__", &CJavascriptUndefined::str);
+  py::class_<CJSObjectUndefined, py::bases<CJSObject>, boost::noncopyable>("JSUndefined")
+      .def("__bool__", &CJSObjectUndefined::nonzero)
+      .def("__str__", &CJSObjectUndefined::str);
 
-  py::class_<CJavascriptArray, py::bases<CJSObject>, boost::noncopyable>("JSArray", py::no_init)
+  py::class_<CJSObjectArray, py::bases<CJSObject>, boost::noncopyable>("JSArray", py::no_init)
       .def(py::init<py::object>())
 
-      .def("__len__", &CJavascriptArray::Length)
+      .def("__len__", &CJSObjectArray::Length)
 
-      .def("__getitem__", &CJavascriptArray::GetItem)
-      .def("__setitem__", &CJavascriptArray::SetItem)
-      .def("__delitem__", &CJavascriptArray::DelItem)
+      .def("__getitem__", &CJSObjectArray::GetItem)
+      .def("__setitem__", &CJSObjectArray::SetItem)
+      .def("__delitem__", &CJSObjectArray::DelItem)
 
-      .def("__iter__", py::range(&CJavascriptArray::begin, &CJavascriptArray::end))
+      .def("__iter__", py::range(&CJSObjectArray::begin, &CJSObjectArray::end))
 
-      .def("__contains__", &CJavascriptArray::Contains);
+      .def("__contains__", &CJSObjectArray::Contains);
 
-  py::class_<CJavascriptFunction, py::bases<CJSObject>, boost::noncopyable>("JSFunction", py::no_init)
-      .def("__call__", py::raw_function(&CJavascriptFunction::CallWithArgs))
+  py::class_<CJSObjectFunction, py::bases<CJSObject>, boost::noncopyable>("JSFunction", py::no_init)
+      .def("__call__", py::raw_function(&CJSObjectFunction::CallWithArgs))
 
-      .def("apply", &CJavascriptFunction::ApplyJavascript,
+      .def("apply", &CJSObjectFunction::ApplyJavascript,
            (py::arg("self"), py::arg("args") = py::list(), py::arg("kwds") = py::dict()),
            "Performs a function call using the parameters.")
-      .def("apply", &CJavascriptFunction::ApplyPython,
+      .def("apply", &CJSObjectFunction::ApplyPython,
            (py::arg("self"), py::arg("args") = py::list(), py::arg("kwds") = py::dict()),
            "Performs a function call using the parameters.")
-      .def("invoke", &CJavascriptFunction::Invoke, (py::arg("args") = py::list(), py::arg("kwds") = py::dict()),
+      .def("invoke", &CJSObjectFunction::Invoke, (py::arg("args") = py::list(), py::arg("kwds") = py::dict()),
            "Performs a binding method call using the parameters.")
 
-      .def("setName", &CJavascriptFunction::SetName)
+      .def("setName", &CJSObjectFunction::SetName)
 
-      .add_property("name", &CJavascriptFunction::GetName, &CJavascriptFunction::SetName, "The name of function")
-      .add_property("owner", &CJavascriptFunction::GetOwner)
+      .add_property("name", &CJSObjectFunction::GetName, &CJSObjectFunction::SetName, "The name of function")
+      .add_property("owner", &CJSObjectFunction::GetOwner)
 
-      .add_property("linenum", &CJavascriptFunction::GetLineNumber, "The line number of function in the script")
-      .add_property("colnum", &CJavascriptFunction::GetColumnNumber, "The column number of function in the script")
-      .add_property("resname", &CJavascriptFunction::GetResourceName, "The resource name of script")
-      .add_property("inferredname", &CJavascriptFunction::GetInferredName,
+      .add_property("linenum", &CJSObjectFunction::GetLineNumber, "The line number of function in the script")
+      .add_property("colnum", &CJSObjectFunction::GetColumnNumber, "The column number of function in the script")
+      .add_property("resname", &CJSObjectFunction::GetResourceName, "The resource name of script")
+      .add_property("inferredname", &CJSObjectFunction::GetInferredName,
                     "Name inferred from variable or property assignment of this function")
-      .add_property("lineoff", &CJavascriptFunction::GetLineOffset, "The line offset of function in the script")
-      .add_property("coloff", &CJavascriptFunction::GetColumnOffset, "The column offset of function in the script");
+      .add_property("lineoff", &CJSObjectFunction::GetLineOffset, "The line offset of function in the script")
+      .add_property("coloff", &CJSObjectFunction::GetColumnOffset, "The column offset of function in the script");
   py::objects::class_value_wrapper<
       std::shared_ptr<CJSObject>,
       py::objects::make_ptr_instance<CJSObject,
@@ -383,7 +383,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self
   if (obj->IsArray()) {
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(obj);
 
-    return Wrap(new CJavascriptArray(array));
+    return Wrap(new CJSObjectArray(array));
   }
 
   if (CPythonObject::IsWrapped(obj)) {
@@ -399,12 +399,12 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self
   }
 
   if (isCLJSType(obj)) {
-    auto o = new CCLJSType(obj);
+    auto o = new CJSObjectCLJS(obj);
     return Wrap(o);
   }
 
   if (obj->IsFunction()) {
-    return Wrap(new CJavascriptFunction(self, v8::Local<v8::Function>::Cast(obj)));
+    return Wrap(new CJSObjectFunction(self, v8::Local<v8::Function>::Cast(obj)));
   }
 
   return Wrap(new CJSObject(obj));

@@ -4,7 +4,7 @@
 #include "JSObjectCLJS.h"
 #include "Exception.h"
 
-void CJavascriptArray::LazyConstructor(void) {
+void CJSObjectArray::LazyConstructor(void) {
   if (!m_obj.IsEmpty())
     return;
 
@@ -35,7 +35,7 @@ void CJavascriptArray::LazyConstructor(void) {
     for (Py_ssize_t i = 0; i < (Py_ssize_t)m_size; i++) {
       auto py_obj = py::object(py::handle<>(py::borrowed(PyTuple_GET_ITEM(m_items.ptr(), i))));
       auto wrapped_obj = CPythonObject::Wrap(py_obj);
-      array->Set(context, v8::Uint32::New(isolate, i),wrapped_obj).Check();
+      array->Set(context, v8::Uint32::New(isolate, i), wrapped_obj).Check();
     }
   } else if (PyGen_Check(m_items.ptr())) {
     array = v8::Array::New(isolate);
@@ -55,7 +55,7 @@ void CJavascriptArray::LazyConstructor(void) {
   m_obj.Reset(isolate, array);
 }
 
-size_t CJavascriptArray::Length(void) {
+size_t CJSObjectArray::Length(void) {
   LazyConstructor();
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -65,7 +65,7 @@ size_t CJavascriptArray::Length(void) {
   return v8::Local<v8::Array>::Cast(Object())->Length();
 }
 
-py::object CJavascriptArray::GetItem(py::object key) {
+py::object CJSObjectArray::GetItem(py::object key) {
   LazyConstructor();
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -111,7 +111,7 @@ py::object CJavascriptArray::GetItem(py::object key) {
   throw CJavascriptException("list indices must be integers", ::PyExc_TypeError);
 }
 
-py::object CJavascriptArray::SetItem(py::object key, py::object value) {
+py::object CJSObjectArray::SetItem(py::object key, py::object value) {
   LazyConstructor();
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -199,7 +199,7 @@ py::object CJavascriptArray::SetItem(py::object key, py::object value) {
   return value;
 }
 
-py::object CJavascriptArray::DelItem(py::object key) {
+py::object CJSObjectArray::DelItem(py::object key) {
   LazyConstructor();
 
   auto isolate = v8::Isolate::GetCurrent();
@@ -238,7 +238,7 @@ py::object CJavascriptArray::DelItem(py::object key) {
   throw CJavascriptException("list indices must be integers", ::PyExc_TypeError);
 }
 
-bool CJavascriptArray::Contains(py::object item) {
+bool CJSObjectArray::Contains(py::object item) {
   LazyConstructor();
 
   auto isolate = v8::Isolate::GetCurrent();

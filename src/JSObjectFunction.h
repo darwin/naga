@@ -3,20 +3,20 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJavascriptFunction;
+class CJSObjectFunction;
 
-typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
+typedef std::shared_ptr<CJSObjectFunction> CJavascriptFunctionPtr;
 
-class CJavascriptFunction : public CJSObject {
+class CJSObjectFunction : public CJSObject {
   v8::Persistent<v8::Object> m_self;
 
   py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
 
  public:
-  CJavascriptFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
+  CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
       : CJSObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
 
-  ~CJavascriptFunction() override { m_self.Reset(); }
+  ~CJSObjectFunction() override { m_self.Reset(); }
 
   v8::Local<v8::Object> Self() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
 
