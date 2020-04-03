@@ -568,22 +568,6 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
   info.GetReturnValue().Set(result_handle);
 }
 
-#define GEN_ARG(z, n, data) CJSObject::Wrap(info[n])
-#define GEN_ARGS(count) BOOST_PP_ENUM(count, GEN_ARG, NULL)
-
-#define GEN_CASE_PRED(r, state)                                                                        \
-  BOOST_PP_NOT_EQUAL(BOOST_PP_TUPLE_ELEM(2, 0, state), BOOST_PP_INC(BOOST_PP_TUPLE_ELEM(2, 1, state))) \
-  /**/
-
-#define GEN_CASE_OP(r, state) (BOOST_PP_INC(BOOST_PP_TUPLE_ELEM(2, 0, state)), BOOST_PP_TUPLE_ELEM(2, 1, state)) /**/
-
-#define GEN_CASE_MACRO(r, state)                               \
-  case BOOST_PP_TUPLE_ELEM(2, 0, state): {                     \
-    result = self(GEN_ARGS(BOOST_PP_TUPLE_ELEM(2, 0, state))); \
-    break;                                                     \
-  }                                                            \
-    /**/
-
 void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
   auto isolate = info.GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -609,12 +593,102 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
     py::object result;
 
     switch (info.Length()) {
-      BOOST_PP_FOR((0, 10), GEN_CASE_PRED, GEN_CASE_OP, GEN_CASE_MACRO)
-      default:
-        isolate->ThrowException(
-            v8::Exception::Error(v8::String::NewFromUtf8(isolate, "too many arguments").ToLocalChecked()));
-
+      // clang-format off
+      case 0: {
+        result = self();
+        break;
+      }
+      case 1: {
+        result = self(CJSObject::Wrap(info[0]));
+        break;
+      }
+      case 2: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]));
+        break;
+      }
+      case 3: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]));
+        break;
+      }
+      case 4: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]));
+        break;
+      }
+      case 5: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]));
+        break;
+      }
+      case 6: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]),
+                      CJSObject::Wrap(info[5]));
+        break;
+      }
+      case 7: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]),
+                      CJSObject::Wrap(info[5]),
+                      CJSObject::Wrap(info[6]));
+        break;
+      }
+      case 8: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]),
+                      CJSObject::Wrap(info[5]),
+                      CJSObject::Wrap(info[6]),
+                      CJSObject::Wrap(info[7]));
+        break;
+      }
+      case 9: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]),
+                      CJSObject::Wrap(info[5]),
+                      CJSObject::Wrap(info[6]),
+                      CJSObject::Wrap(info[7]),
+                      CJSObject::Wrap(info[8]));
+        break;
+      }
+      case 10: {
+        result = self(CJSObject::Wrap(info[0]),
+                      CJSObject::Wrap(info[1]),
+                      CJSObject::Wrap(info[2]),
+                      CJSObject::Wrap(info[3]),
+                      CJSObject::Wrap(info[4]),
+                      CJSObject::Wrap(info[5]),
+                      CJSObject::Wrap(info[6]),
+                      CJSObject::Wrap(info[7]),
+                      CJSObject::Wrap(info[8]),
+                      CJSObject::Wrap(info[9]));
+        break;
+      }
+      // clang-format on
+      default: {
+        auto msg = v8::String::NewFromUtf8(isolate, "too many arguments").ToLocalChecked();
+        isolate->ThrowException(v8::Exception::Error(msg));
         return v8::Undefined(isolate).As<v8::Value>();
+      }
     }
 
     return Wrap(result);
