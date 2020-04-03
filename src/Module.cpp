@@ -12,6 +12,3 @@ BOOST_PYTHON_MODULE(_STPyV8) {
   CEngine::Expose();
   CLocker::Expose();
 }
-
-#define INIT_MODULE PyInit__STPyV8
-extern "C" PyObject* INIT_MODULE();
