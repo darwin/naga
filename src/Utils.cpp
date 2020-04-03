@@ -1,4 +1,3 @@
-#include "Base.h"
 #include "PythonUtils.h"
 
 std::optional<v8::Local<v8::String>> toStringDirectly(py::object obj) {
@@ -52,12 +51,4 @@ v8::Local<v8::String> ToString(const std::wstring& str) {
 
   // all attempts failed, return empty value
   return v8::Local<v8::String>();
-}
-
-CPythonGIL::CPythonGIL() {
-  m_state = ::PyGILState_Ensure();
-}
-
-CPythonGIL::~CPythonGIL() {
-  ::PyGILState_Release(m_state);
 }

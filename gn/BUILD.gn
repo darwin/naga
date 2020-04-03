@@ -42,6 +42,8 @@ stpyv8_source_files = [
   "Platform.h",
   "PythonDateTime.cpp",
   "PythonDateTime.h",
+  "PythonGIL.cpp",
+  "PythonGIL.h",
   "PythonObject.cpp",
   "PythonObject.h",
   "PythonUtils.cpp",

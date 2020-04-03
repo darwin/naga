@@ -2,11 +2,10 @@
 #include "JSObject.h"
 #include "JSObjectNull.h"
 #include "JSObjectUndefined.h"
-#include "JSObjectCLJS.h"
-#include "Context.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
+#include "PythonGIL.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
   if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \

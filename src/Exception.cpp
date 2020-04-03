@@ -1,6 +1,5 @@
 #include "Exception.h"
-
-#include <sstream>
+#include "PythonGIL.h"
 
 std::ostream& operator<<(std::ostream& os, const CJavascriptException& ex) {
   os << "JSError: " << ex.what();

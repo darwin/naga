@@ -7,6 +7,7 @@
 
 #include "PythonObject.h"
 #include "PythonDateTime.h"
+#include "PythonGIL.h"
 #include "Exception.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \
