@@ -140,7 +140,7 @@ py::object CJSObject::GetAttr(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = ToString(name);
+  v8::Local<v8::String> attr_name = v8u::toString(name);
 
   CheckAttr(attr_name);
 
@@ -162,7 +162,7 @@ void CJSObject::SetAttr(const std::string& name, py::object value) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = ToString(name);
+  v8::Local<v8::String> attr_name = v8u::toString(name);
   v8::Local<v8::Value> attr_obj = CPythonObject::Wrap(value);
 
   if (!Object()->Set(context, attr_name, attr_obj).FromMaybe(false)) {
@@ -180,7 +180,7 @@ void CJSObject::DelAttr(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  v8::Local<v8::String> attr_name = ToString(name);
+  v8::Local<v8::String> attr_name = v8u::toString(name);
 
   CheckAttr(attr_name);
 
@@ -240,7 +240,7 @@ bool CJSObject::Contains(const std::string& name) {
 
   v8::TryCatch try_catch(isolate);
 
-  bool found = Object()->Has(context, ToString(name)).ToChecked();
+  bool found = Object()->Has(context, v8u::toString(name)).ToChecked();
 
   if (try_catch.HasCaught())
     CJavascriptException::ThrowIf(isolate, try_catch);

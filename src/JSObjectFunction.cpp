@@ -115,7 +115,7 @@ py::object CJavascriptFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py:
     py::str key(item[0]);
     py::object value = item[1];
 
-    result->Set(context, ToString(key), CPythonObject::Wrap(value)).Check();
+    result->Set(context, v8u::toString(key), CPythonObject::Wrap(value)).Check();
   }
 
   return CJSObject::Wrap(result);

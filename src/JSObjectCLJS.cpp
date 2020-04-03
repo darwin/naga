@@ -345,7 +345,7 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
   v8::HandleScope handle_scope(isolate);
   auto context = isolate->GetCurrentContext();
 
-  auto key_val = ToString(py_string);
+  auto key_val = v8u::toString(py_string);
 
   // JS object lookup
   if (Object()->Has(context, key_val).FromMaybe(false)) {

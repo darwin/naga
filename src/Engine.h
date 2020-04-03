@@ -23,13 +23,13 @@ class CEngine {
   CScriptPtr Compile(const std::string& src, const std::string name = std::string(), int line = -1, int col = -1) {
     v8::HandleScope scope(m_isolate);
 
-    return InternalCompile(ToString(src), ToString(name), line, col);
+    return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
   }
 
   CScriptPtr CompileW(const std::wstring& src, const std::wstring name = std::wstring(), int line = -1, int col = -1) {
     v8::HandleScope scope(m_isolate);
 
-    return InternalCompile(ToString(src), ToString(name), line, col);
+    return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
   }
 
  public:

@@ -688,7 +688,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
   } else if (PyBool_Check(obj.ptr())) {
     result = v8::Boolean::New(isolate, py::extract<bool>(obj));
   } else if (PyBytes_CheckExact(obj.ptr()) || PyUnicode_CheckExact(obj.ptr())) {
-    result = ToString(obj);
+    result = v8u::toString(obj);
   } else if (PyFloat_CheckExact(obj.ptr())) {
     result = v8::Number::New(isolate, py::extract<double>(obj));
   } else if (isExactDateTime(obj) || isExactDate(obj)) {
