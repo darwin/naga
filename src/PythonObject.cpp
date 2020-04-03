@@ -1,8 +1,10 @@
 #include "PythonObject.h"
 #include "JSObject.h"
+#include "JSObjectNull.h"
+#include "JSObjectUndefined.h"
+#include "JSObjectCLJS.h"
 #include "Context.h"
 #include "Isolate.h"
-#include "JSObjectCLJS.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
 

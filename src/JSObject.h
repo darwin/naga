@@ -3,10 +3,8 @@
 #include "Base.h"
 
 class CJSObject;
-class CJavascriptFunction;
 
 typedef std::shared_ptr<CJSObject> CJSObjectPtr;
-typedef std::shared_ptr<CJavascriptFunction> CJavascriptFunctionPtr;
 
 struct ILazyObject {
   virtual void LazyConstructor() = 0;
@@ -50,87 +48,4 @@ class CJSObject {
   static py::object Wrap(CJSObject* obj);
   static py::object Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> self = v8::Local<v8::Object>());
   static py::object Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self = v8::Local<v8::Object>());
-};
-
-class CJavascriptNull : public CJSObject {
- public:
-  bool nonzero() const { return false; }
-  const std::string str() const { return "null"; }
-};
-
-class CJavascriptUndefined : public CJSObject {
- public:
-  bool nonzero() const { return false; }
-  const std::string str() const { return "undefined"; }
-};
-
-class CJavascriptArray : public CJSObject, public ILazyObject {
-  py::object m_items;
-  size_t m_size;
-
- public:
-  class ArrayIterator
-      : public boost::iterator_facade<ArrayIterator, py::object const, boost::forward_traversal_tag, py::object> {
-    CJavascriptArray* m_array;
-    size_t m_idx;
-
-   public:
-    ArrayIterator(CJavascriptArray* array, size_t idx) : m_array(array), m_idx(idx) {}
-
-    void increment() { m_idx++; }
-
-    bool equal(ArrayIterator const& other) const { return m_array == other.m_array && m_idx == other.m_idx; }
-
-    reference dereference() const { return m_array->GetItem(py::long_(m_idx)); }
-  };
-
-  explicit CJavascriptArray(v8::Local<v8::Array> array) : CJSObject(array), m_size(array->Length()) {}
-
-  explicit CJavascriptArray(py::object items) : m_items(std::move(items)), m_size(0) {}
-
-  size_t Length();
-
-  py::object GetItem(py::object key);
-  py::object SetItem(py::object key, py::object value);
-  py::object DelItem(py::object key);
-  bool Contains(py::object item);
-
-  ArrayIterator begin() { return {this, 0}; }
-  ArrayIterator end() { return {this, Length()}; }
-
-  // ILazyObject
-  void LazyConstructor() override;
-};
-
-class CJavascriptFunction : public CJSObject {
-  v8::Persistent<v8::Object> m_self;
-
-  py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
-
- public:
-  CJavascriptFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
-      : CJSObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
-
-  ~CJavascriptFunction() override { m_self.Reset(); }
-
-  v8::Local<v8::Object> Self() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
-
-  static py::object CallWithArgs(py::tuple args, py::dict kwds);
-  static py::object CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds);
-
-  py::object ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds);
-  py::object ApplyPython(py::object self, py::list args, py::dict kwds);
-  py::object Invoke(py::list args, py::dict kwds);
-
-  const std::string GetName() const;
-  void SetName(const std::string& name);
-
-  int GetLineNumber() const;
-  int GetColumnNumber() const;
-  const std::string GetResourceName() const;
-  const std::string GetInferredName() const;
-  int GetLineOffset() const;
-  int GetColumnOffset() const;
-
-  py::object GetOwner() const;
 };
