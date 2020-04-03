@@ -1,6 +1,5 @@
 #include "JSObjectCLJS.h"
 #include "PythonObject.h"
-#include "Context.h"
 #include "Exception.h"
 
 #pragma clang diagnostic push
@@ -30,12 +29,6 @@ std::ostream& operator<<(std::ostream& os, const v8::Local<v8::Object>& obj) {
   os << " ctor=" << *v8::String::Utf8Value(isolate, obj->GetConstructorName()) << "\n";
   os << " str=" << *v8::String::Utf8Value(isolate, obj->ToString(context).ToLocalChecked()) << "\n";
   return os;
-}
-
-static inline void checkContext() {
-  if (v8::Isolate::GetCurrent()->GetCurrentContext().IsEmpty()) {
-    throw CJavascriptException("Javascript object out of context", PyExc_UnboundLocalError);
-  }
 }
 
 static inline void validateBridgeResult(v8::Local<v8::Value> val, const char* fn_name) {
@@ -193,9 +186,8 @@ v8::Local<v8::Value> call_bridge(v8::Isolate* isolate,
 }
 
 size_t CCLJSType::Length() {
-  checkContext();
-
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   auto context = isolate->GetCurrentContext();
@@ -216,9 +208,8 @@ size_t CCLJSType::Length() {
 }
 
 py::object CCLJSType::Str() {
-  checkContext();
-
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   auto params = std::vector<v8::Local<v8::Value>>();
@@ -238,9 +229,8 @@ py::object CCLJSType::Str() {
 }
 
 py::object CCLJSType::Repr() {
-  checkContext();
-
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   auto params = std::vector<v8::Local<v8::Value>>();
@@ -265,6 +255,7 @@ bool is_sentinel(v8::Local<v8::Value> val) {
   }
 
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
   auto res_sym = v8::Local<v8::Symbol>::Cast(val);
   auto sentinel_name_key = v8::String::NewFromUtf8(isolate, sentinel_name).ToLocalChecked();
@@ -274,6 +265,7 @@ bool is_sentinel(v8::Local<v8::Value> val) {
 
 py::object CCLJSType::GetItemIndex(const py::object& py_index) {
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   uint32_t idx = PyLong_AsUnsignedLong(py_index.ptr());
@@ -292,6 +284,7 @@ py::object CCLJSType::GetItemIndex(const py::object& py_index) {
 
 py::object CCLJSType::GetItemSlice(const py::object& py_slice) {
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   Py_ssize_t length = Length();
@@ -342,6 +335,7 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
   assert(PyUnicode_Check(py_string.ptr()));
 
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
   auto context = isolate->GetCurrentContext();
 
@@ -372,7 +366,8 @@ py::object CCLJSType::GetItemString(const py::object& py_string) {
 }
 
 py::object CCLJSType::GetItem(const py::object& py_key) {
-  checkContext();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
 
   if (PyLong_Check(py_key.ptr()) != 0) {
     return GetItemIndex(py_key);
@@ -386,7 +381,8 @@ py::object CCLJSType::GetItem(const py::object& py_key) {
 }
 
 py::object CCLJSType::GetAttr(const py::object& py_key) {
-  checkContext();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {
     return GetItemString(py_key);
@@ -396,9 +392,8 @@ py::object CCLJSType::GetAttr(const py::object& py_key) {
 }
 
 py::object CCLJSType::Iter() {
-  checkContext();
-
   auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
 
   auto params = std::vector<v8::Local<v8::Value>>();

@@ -4,11 +4,6 @@
 #include "JSObjectCLJS.h"
 #include "Exception.h"
 
-#define CHECK_V8_CONTEXT()                                                                   \
-  if (v8::Isolate::GetCurrent()->GetCurrentContext().IsEmpty()) {                            \
-    throw CJavascriptException("Javascript object out of context", PyExc_UnboundLocalError); \
-  }
-
 py::object CJavascriptFunction::CallWithArgs(py::tuple args, py::dict kwds) {
   size_t argc = ::PyTuple_Size(args.ptr());
 
@@ -21,9 +16,9 @@ py::object CJavascriptFunction::CallWithArgs(py::tuple args, py::dict kwds) {
   if (!extractor.check())
     throw CJavascriptException("missed self argument", ::PyExc_TypeError);
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-  CHECK_V8_CONTEXT();
 
   v8::TryCatch try_catch(isolate);
 
@@ -34,10 +29,9 @@ py::object CJavascriptFunction::CallWithArgs(py::tuple args, py::dict kwds) {
 }
 
 py::object CJavascriptFunction::Call(v8::Local<v8::Object> self, py::list args, py::dict kwds) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -74,10 +68,9 @@ py::object CJavascriptFunction::Call(v8::Local<v8::Object> self, py::list args, 
 }
 
 py::object CJavascriptFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py::tuple args, py::dict kwds) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   if (proto->Object().IsEmpty())
     throw CJavascriptException("Object prototype may only be an Object", ::PyExc_TypeError);
@@ -122,8 +115,9 @@ py::object CJavascriptFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py:
 }
 
 py::object CJavascriptFunction::ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   return Call(self->Object(), args, kwds);
 }
@@ -132,7 +126,7 @@ py::object CJavascriptFunction::ApplyPython(py::object self, py::list args, py::
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  CHECK_V8_CONTEXT();
+  v8u::checkContext(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -140,17 +134,17 @@ py::object CJavascriptFunction::ApplyPython(py::object self, py::list args, py::
 }
 
 py::object CJavascriptFunction::Invoke(py::list args, py::dict kwds) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   return Call(Self(), args, kwds);
 }
 
 const std::string CJavascriptFunction::GetName(void) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -160,10 +154,9 @@ const std::string CJavascriptFunction::GetName(void) const {
 }
 
 void CJavascriptFunction::SetName(const std::string& name) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -172,8 +165,9 @@ void CJavascriptFunction::SetName(const std::string& name) {
 }
 
 int CJavascriptFunction::GetLineNumber(void) const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -181,8 +175,9 @@ int CJavascriptFunction::GetLineNumber(void) const {
 }
 
 int CJavascriptFunction::GetColumnNumber(void) const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -190,9 +185,9 @@ int CJavascriptFunction::GetColumnNumber(void) const {
 }
 
 const std::string CJavascriptFunction::GetResourceName(void) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -202,9 +197,9 @@ const std::string CJavascriptFunction::GetResourceName(void) const {
 }
 
 const std::string CJavascriptFunction::GetInferredName(void) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -214,8 +209,9 @@ const std::string CJavascriptFunction::GetInferredName(void) const {
 }
 
 int CJavascriptFunction::GetLineOffset(void) const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -223,8 +219,9 @@ int CJavascriptFunction::GetLineOffset(void) const {
 }
 
 int CJavascriptFunction::GetColumnOffset(void) const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -232,8 +229,9 @@ int CJavascriptFunction::GetColumnOffset(void) const {
 }
 
 py::object CJavascriptFunction::GetOwner(void) const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   return CJSObject::Wrap(Self());
 }

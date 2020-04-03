@@ -143,6 +143,9 @@ class CJavascriptException : public std::runtime_error {
   }
 
  public:
+  CJavascriptException(v8::Isolate* isolate, const std::string& msg, PyObject* type = NULL) noexcept
+      : std::runtime_error(msg), m_isolate(isolate), m_type(type) {}
+
   CJavascriptException(const std::string& msg, PyObject* type = NULL) noexcept
       : std::runtime_error(msg), m_isolate(v8::Isolate::GetCurrent()), m_type(type) {}
 

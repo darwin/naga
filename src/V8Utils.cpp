@@ -1,4 +1,5 @@
 #include "PythonUtils.h"
+#include "Exception.h"
 
 namespace v8u {
 
@@ -53,6 +54,13 @@ v8::Local<v8::String> toString(const std::wstring& str) {
 
   // all attempts failed, return empty value
   return v8::Local<v8::String>();
+}
+
+void checkContext(v8::Isolate* isolate) {
+  v8::HandleScope handle_scope(isolate);
+  if (isolate->GetCurrentContext().IsEmpty()) {
+    throw CJavascriptException(isolate, "Javascript object out of context", PyExc_UnboundLocalError);
+  }
 }
 
 }  // namespace v8u

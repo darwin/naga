@@ -17,11 +17,6 @@
     return returnValue;                                                \
   }
 
-#define CHECK_V8_CONTEXT()                                                                   \
-  if (v8::Isolate::GetCurrent()->GetCurrentContext().IsEmpty()) {                            \
-    throw CJavascriptException("Javascript object out of context", PyExc_UnboundLocalError); \
-  }
-
 std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
   obj.Dump(os);
 
@@ -134,7 +129,7 @@ py::object CJSObject::GetAttr(const std::string& name) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  CHECK_V8_CONTEXT();
+  v8u::checkContext(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -156,7 +151,7 @@ void CJSObject::SetAttr(const std::string& name, py::object value) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  CHECK_V8_CONTEXT();
+  v8u::checkContext(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -174,7 +169,7 @@ void CJSObject::DelAttr(const std::string& name) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  CHECK_V8_CONTEXT();
+  v8u::checkContext(isolate);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -192,7 +187,7 @@ py::list CJSObject::GetAttrList(void) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  CHECK_V8_CONTEXT();
+  v8u::checkContext(isolate);
 
   CPythonGIL python_gil;
 
@@ -217,24 +212,25 @@ py::list CJSObject::GetAttrList(void) {
 }
 
 int CJSObject::GetIdentityHash(void) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   return Object()->GetIdentityHash();
 }
 
 CJSObjectPtr CJSObject::Clone(void) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
+  v8::HandleScope handle_scope(isolate);
 
   return CJSObjectPtr(new CJSObject(Object()->Clone()));
 }
 
 bool CJSObject::Contains(const std::string& name) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -249,10 +245,9 @@ bool CJSObject::Contains(const std::string& name) {
 }
 
 bool CJSObject::Equals(CJSObjectPtr other) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -260,10 +255,9 @@ bool CJSObject::Equals(CJSObjectPtr other) const {
 }
 
 void CJSObject::Dump(std::ostream& os) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -292,10 +286,9 @@ void CJSObject::Dump(std::ostream& os) const {
 }
 
 CJSObject::operator long() const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -306,10 +299,9 @@ CJSObject::operator long() const {
 }
 
 CJSObject::operator double() const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -320,10 +312,9 @@ CJSObject::operator double() const {
 }
 
 CJSObject::operator bool() const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   if (m_obj.IsEmpty())
     return false;
@@ -332,7 +323,7 @@ CJSObject::operator bool() const {
 }
 
 py::object CJSObject::Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> self) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
   assert(isolate->InContext());
 
   v8::HandleScope handle_scope(isolate);

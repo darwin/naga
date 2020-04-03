@@ -4,11 +4,6 @@
 #include "JSObjectCLJS.h"
 #include "Exception.h"
 
-#define CHECK_V8_CONTEXT()                                                                   \
-  if (v8::Isolate::GetCurrent()->GetCurrentContext().IsEmpty()) {                            \
-    throw CJavascriptException("Javascript object out of context", PyExc_UnboundLocalError); \
-  }
-
 void CJavascriptArray::LazyConstructor(void) {
   if (!m_obj.IsEmpty())
     return;
@@ -63,8 +58,9 @@ void CJavascriptArray::LazyConstructor(void) {
 size_t CJavascriptArray::Length(void) {
   LazyConstructor();
 
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  CHECK_V8_CONTEXT();
 
   return v8::Local<v8::Array>::Cast(Object())->Length();
 }
@@ -72,10 +68,9 @@ size_t CJavascriptArray::Length(void) {
 py::object CJavascriptArray::GetItem(py::object key) {
   LazyConstructor();
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -119,10 +114,9 @@ py::object CJavascriptArray::GetItem(py::object key) {
 py::object CJavascriptArray::SetItem(py::object key, py::object value) {
   LazyConstructor();
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -208,10 +202,9 @@ py::object CJavascriptArray::SetItem(py::object key, py::object value) {
 py::object CJavascriptArray::DelItem(py::object key) {
   LazyConstructor();
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -248,10 +241,9 @@ py::object CJavascriptArray::DelItem(py::object key) {
 bool CJavascriptArray::Contains(py::object item) {
   LazyConstructor();
 
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  auto isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(isolate);
   v8::HandleScope handle_scope(isolate);
-
-  CHECK_V8_CONTEXT();
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
