@@ -50,8 +50,8 @@ stpyv8_source_files = [
   "PythonUtils.h",
   "Tracer.cpp",
   "Tracer.h",
-  "Utils.cpp",
-  "Utils.h",
+  "V8Utils.cpp",
+  "V8Utils.h",
 ]
 
 stpyv8_source_file_paths = []
