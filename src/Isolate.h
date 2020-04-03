@@ -5,6 +5,10 @@
 
 enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 
+class CIsolate;
+
+typedef std::shared_ptr<CIsolate> CIsolatePtr;
+
 class CIsolate {
   v8::Isolate* m_isolate;
   bool m_owner;

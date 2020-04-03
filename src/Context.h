@@ -6,7 +6,6 @@ class CContext;
 class CIsolate;
 
 typedef std::shared_ptr<CContext> CContextPtr;
-typedef std::shared_ptr<CIsolate> CIsolatePtr;
 
 class CContext {
   py::object m_global;

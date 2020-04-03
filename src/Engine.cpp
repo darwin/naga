@@ -1,12 +1,7 @@
 #include "Engine.h"
-
-#include <boost/preprocessor.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/mutex.hpp>
-#include <iostream>
-
 #include "Exception.h"
 #include "JSObject.h"
+#include "PythonAllowThreadsGuard.h"
 
 void CEngine::Expose(void) {
   py::class_<CEngine, boost::noncopyable>("JSEngine", "JSEngine is a backend Javascript engine.")
@@ -143,20 +138,18 @@ std::shared_ptr<CScript> CEngine::InternalCompile(v8::Local<v8::String> src,
   v8::MaybeLocal<v8::Script> script;
   v8::Local<v8::String> source = v8::Local<v8::String>::New(m_isolate, script_source);
 
-  Py_BEGIN_ALLOW_THREADS
+  withPythonAllowThreadsGuard([&]() {
+    if (line >= 0 && col >= 0) {
+      v8::ScriptOrigin script_origin(name, v8::Integer::New(m_isolate, line), v8::Integer::New(m_isolate, col));
+      script = v8::Script::Compile(context, source, &script_origin);
+    } else {
+      v8::ScriptOrigin script_origin(name);
+      script = v8::Script::Compile(context, source, &script_origin);
+    }
+  });
 
-      if (line >= 0 && col >= 0) {
-    v8::ScriptOrigin script_origin(name, v8::Integer::New(m_isolate, line), v8::Integer::New(m_isolate, col));
-    script = v8::Script::Compile(context, source, &script_origin);
-  }
-  else {
-    v8::ScriptOrigin script_origin(name);
-    script = v8::Script::Compile(context, source, &script_origin);
-  }
-
-  Py_END_ALLOW_THREADS
-
-      if (script.IsEmpty()) CJavascriptException::ThrowIf(m_isolate, try_catch);
+  if (script.IsEmpty())
+    CJavascriptException::ThrowIf(m_isolate, try_catch);
 
   return std::shared_ptr<CScript>(new CScript(m_isolate, *this, script_source, script.ToLocalChecked()));
 }
@@ -170,13 +163,9 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> script) {
 
   v8::MaybeLocal<v8::Value> result;
 
-  Py_BEGIN_ALLOW_THREADS
+  withPythonAllowThreadsGuard([&]() { result = script->Run(context); });
 
-      result = script->Run(context);
-
-  Py_END_ALLOW_THREADS
-
-      if (result.IsEmpty()) {
+  if (result.IsEmpty()) {
     if (try_catch.HasCaught()) {
       if (!try_catch.CanContinue() && PyErr_Occurred()) {
         throw py::error_already_set();

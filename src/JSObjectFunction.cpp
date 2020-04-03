@@ -3,6 +3,7 @@
 #include "PythonDateTime.h"
 #include "JSObjectCLJS.h"
 #include "Exception.h"
+#include "PythonAllowThreadsGuard.h"
 
 py::object CJSObjectFunction::CallWithArgs(py::tuple args, py::dict kwds) {
   size_t argc = ::PyTuple_Size(args.ptr());
@@ -55,14 +56,13 @@ py::object CJSObjectFunction::Call(v8::Local<v8::Object> self, py::list args, py
 
   v8::MaybeLocal<v8::Value> result;
 
-  Py_BEGIN_ALLOW_THREADS
+  withPythonAllowThreadsGuard([&]() {
+    result = func->Call(context, self.IsEmpty() ? isolate->GetCurrentContext()->Global() : self, params.size(),
+                        params.empty() ? NULL : &params[0]);
+  });
 
-      result = func->Call(context, self.IsEmpty() ? isolate->GetCurrentContext()->Global() : self, params.size(),
-                          params.empty() ? NULL : &params[0]);
-
-  Py_END_ALLOW_THREADS
-
-      if (result.IsEmpty()) CJavascriptException::ThrowIf(isolate, try_catch);
+  if (result.IsEmpty())
+    CJavascriptException::ThrowIf(isolate, try_catch);
 
   return CJSObject::Wrap(result.ToLocalChecked());
 }
@@ -91,13 +91,12 @@ py::object CJSObjectFunction::CreateWithArgs(CJavascriptFunctionPtr proto, py::t
 
   v8::Local<v8::Object> result;
 
-  Py_BEGIN_ALLOW_THREADS
+  withPythonAllowThreadsGuard([&]() {
+    result = func->NewInstance(context, params.size(), params.empty() ? NULL : &params[0]).ToLocalChecked();
+  });
 
-      result = func->NewInstance(context, params.size(), params.empty() ? NULL : &params[0]).ToLocalChecked();
-
-  Py_END_ALLOW_THREADS
-
-      if (result.IsEmpty()) CJavascriptException::ThrowIf(isolate, try_catch);
+  if (result.IsEmpty())
+    CJavascriptException::ThrowIf(isolate, try_catch);
 
   size_t kwds_count = ::PyMapping_Size(kwds.ptr());
   py::list items = kwds.items();

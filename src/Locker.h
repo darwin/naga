@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-#include "Context.h"
+#include "Isolate.h"
 
 class CLocker {
   std::unique_ptr<v8::Locker> m_locker;
@@ -10,35 +10,21 @@ class CLocker {
  public:
   CLocker() {}
   CLocker(CIsolatePtr isolate) : m_isolate(isolate) {}
-  bool entered(void) { return NULL != m_locker.get(); }
+  bool entered() { return m_locker.get(); }
 
-  void enter(void);
-  void leave(void);
+  void enter();
+  void leave();
 
   static bool IsLocked();
-
-  static void Expose(void);
+  static void Expose();
 };
 
 class CUnlocker {
   std::unique_ptr<v8::Unlocker> m_unlocker;
 
  public:
-  bool entered(void) { return NULL != m_unlocker.get(); }
+  bool entered() { return m_unlocker.get(); }
 
-  void enter(void) {
-    Py_BEGIN_ALLOW_THREADS
-
-        m_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent()));
-
-    Py_END_ALLOW_THREADS
-  }
-
-  void leave(void) {
-    Py_BEGIN_ALLOW_THREADS
-
-        m_unlocker.reset();
-
-    Py_END_ALLOW_THREADS
-  }
+  void enter();
+  void leave();
 };
