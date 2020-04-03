@@ -113,7 +113,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, [&]() {
     CPythonGIL python_gil;
 
     py::object obj = CJSObject::Wrap(info.Holder());
@@ -165,7 +165,8 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
     return Wrap(attr);
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Undefined(isolate); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
@@ -184,7 +185,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, [&]() {
     CPythonGIL python_gil;
 
     py::object obj = CJSObject::Wrap(info.Holder());
@@ -227,7 +228,8 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
     return value;
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Undefined(isolate); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Integer>& info) {
@@ -261,7 +263,8 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallb
     }
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Integer>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
@@ -304,7 +307,8 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCal
     }
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Boolean>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -362,7 +366,9 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     }
     return result;
   });
-  info.GetReturnValue().Set(result);
+
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Array>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -374,7 +380,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, [&]() {
     CPythonGIL python_gil;
 
     py::object obj = CJSObject::Wrap(info.Holder());
@@ -415,7 +421,9 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
     return v8::Undefined(isolate).As<v8::Value>();
   });
-  info.GetReturnValue().Set(result);
+
+  auto result_handle = value_or(result, [&]() { return v8::Undefined(isolate); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::IndexedSetter(uint32_t index,
@@ -429,7 +437,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, [&]() {
     CPythonGIL python_gil;
 
     py::object obj = CJSObject::Wrap(info.Holder());
@@ -451,7 +459,8 @@ void CPythonObject::IndexedSetter(uint32_t index,
     return value;
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Undefined(isolate); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& info) {
@@ -494,7 +503,9 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
     return v8::Local<v8::Integer>();
   });
-  info.GetReturnValue().Set(result);
+
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Integer>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
@@ -525,7 +536,8 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
     return v8::Local<v8::Boolean>();
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Boolean>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -552,7 +564,8 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     return result;
   });
 
-  info.GetReturnValue().Set(result);
+  auto result_handle = value_or(result, [&]() { return v8::Local<v8::Array>(); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 #define GEN_ARG(z, n, data) CJSObject::Wrap(info[n])
@@ -580,7 +593,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, [&]() {
     CPythonGIL python_gil;
 
     py::object self;
@@ -606,7 +619,9 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
     return Wrap(result);
   });
-  info.GetReturnValue().Set(result);
+
+  auto result_handle = value_or(result, [&]() { return v8::Undefined(isolate); });
+  info.GetReturnValue().Set(result_handle);
 }
 
 void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz) {

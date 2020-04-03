@@ -4,7 +4,7 @@
 #include "PythonObject.h"
 
 template <typename T>
-T withPythonExceptionGuard(v8::Isolate* isolate, T ex, std::function<T()> fn) {
+std::optional<T> withPythonExceptionGuard(v8::Isolate* isolate, std::function<T()> fn) {
   try {
     return fn();
   } catch (const std::exception& ex) {
@@ -16,12 +16,7 @@ T withPythonExceptionGuard(v8::Isolate* isolate, T ex, std::function<T()> fn) {
     auto msg = v8::String::NewFromUtf8(isolate, "unknown exception").ToLocalChecked();
     isolate->ThrowException(v8::Exception::Error(msg));
   }
-  return ex;
-}
-
-template <typename T>
-T withPythonExceptionGuard(v8::Isolate* isolate, std::function<T()> fn) {
-  return withPythonExceptionGuard(isolate, T(), fn);
+  return std::nullopt;
 }
 
 void withPythonExceptionGuard(v8::Isolate* isolate, std::function<void()> fn);
