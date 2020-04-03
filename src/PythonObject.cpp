@@ -7,13 +7,6 @@
 #include "Tracer.h"
 #include "PythonGIL.h"
 
-#define TERMINATE_EXECUTION_CHECK(returnValue)                         \
-  if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \
-    ::PyErr_Clear();                                                   \
-    ::PyErr_SetString(PyExc_RuntimeError, "execution is terminating"); \
-    return returnValue;                                                \
-  }
-
 void CPythonObject::ThrowIf(v8::Isolate* isolate) {
   CPythonGIL python_gil;
 
@@ -644,7 +637,9 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
 
   CPythonGIL python_gil;
 
-  TERMINATE_EXECUTION_CHECK(v8::Undefined(isolate))
+  if (v8u::executionTerminating(isolate)) {
+    return v8::Undefined(isolate);
+  }
 
   if (obj.is_none())
     return v8::Null(isolate);

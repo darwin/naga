@@ -63,4 +63,14 @@ void checkContext(v8::Isolate* isolate) {
   }
 }
 
+bool executionTerminating(v8::Isolate* isolate) {
+  if (!isolate->IsExecutionTerminating()) {
+    return false;
+  }
+
+  PyErr_Clear();
+  PyErr_SetString(PyExc_RuntimeError, "execution is terminating");
+  return true;
+}
+
 }  // namespace v8u

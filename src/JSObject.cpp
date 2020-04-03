@@ -10,13 +10,6 @@
 #include "PythonGIL.h"
 #include "Exception.h"
 
-#define TERMINATE_EXECUTION_CHECK(returnValue)                         \
-  if (v8::Isolate::GetCurrent()->IsExecutionTerminating()) {           \
-    ::PyErr_Clear();                                                   \
-    ::PyErr_SetString(PyExc_RuntimeError, "execution is terminating"); \
-    return returnValue;                                                \
-  }
-
 std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
   obj.Dump(os);
 
@@ -193,7 +186,9 @@ py::list CJSObject::GetAttrList(void) {
 
   py::list attrs;
 
-  TERMINATE_EXECUTION_CHECK(attrs);
+  if (v8u::executionTerminating(isolate)) {
+    return attrs;
+  }
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
@@ -371,8 +366,8 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> value, v8::Local<v8::Object> sel
 
     tm* t = localtime(&ts);
 
-    return pythonFromDateAndTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
-                                                  t->tm_sec, ((long long)floor(n)) % 1000 * 1000);
+    return pythonFromDateAndTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec,
+                                 ((long long)floor(n)) % 1000 * 1000);
   }
 
   return Wrap(value->ToObject(isolate->GetCurrentContext()).ToLocalChecked(), self);
@@ -417,8 +412,11 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> obj, v8::Local<v8::Object> self
 
 py::object CJSObject::Wrap(CJSObject* obj) {
   CPythonGIL python_gil;
+  auto isolate = v8::Isolate::GetCurrent();
 
-  TERMINATE_EXECUTION_CHECK(py::object())
+  if (v8u::executionTerminating(isolate)) {
+    return py::object();
+  }
 
   return py::object(py::handle<>(boost::python::converter::shared_ptr_to_python<CJSObject>(CJSObjectPtr(obj))));
 }

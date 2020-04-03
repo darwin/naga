@@ -9,5 +9,6 @@ v8::Local<v8::String> toString(const std::wstring& str);
 v8::Local<v8::String> toString(py::object str);
 
 void checkContext(v8::Isolate* isolate);
+bool executionTerminating(v8::Isolate* isolate);
 
 }  // namespace v8u
