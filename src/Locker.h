@@ -8,7 +8,7 @@ class CLocker {
   CIsolatePtr m_isolate;
 
  public:
-  CLocker() {}
+  CLocker() = default;
   CLocker(CIsolatePtr isolate) : m_isolate(isolate) {}
   bool entered() { return m_locker.get(); }
 
@@ -16,7 +16,8 @@ class CLocker {
   void leave();
 
   static bool IsLocked();
-  static void Expose();
+  static bool IsActive();
+  static void Expose(pb::module& m);
 };
 
 class CUnlocker {
@@ -27,4 +28,6 @@ class CUnlocker {
 
   void enter();
   void leave();
+
+  static void Expose(pb::module& m);
 };
