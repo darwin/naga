@@ -2,20 +2,6 @@
 
 #include "Base.h"
 
-#define BEGIN_HANDLE_PYTHON_EXCEPTION try
-#define END_HANDLE_PYTHON_EXCEPTION                                                                            \
-  catch (const std::exception& ex) {                                                                           \
-    v8::Isolate::GetCurrent()->ThrowException(                                                                 \
-        v8::Exception::Error(v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), ex.what()).ToLocalChecked())); \
-  }                                                                                                            \
-  catch (const py::error_already_set&) {                                                                       \
-    CPythonObject::ThrowIf(v8::Isolate::GetCurrent());                                                         \
-  }                                                                                                            \
-  catch (...) {                                                                                                \
-    v8::Isolate::GetCurrent()->ThrowException(v8::Exception::Error(                                            \
-        v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), "unknown exception").ToLocalChecked()));            \
-  }
-
 class CJavascriptException;
 
 struct ExceptionTranslator {

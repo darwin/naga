@@ -6,6 +6,7 @@
 #include "PythonDateTime.h"
 #include "Tracer.h"
 #include "PythonGIL.h"
+#include "PythonExceptionGuard.h"
 
 void CPythonObject::ThrowIf(v8::Isolate* isolate) {
   CPythonGIL python_gil;
@@ -94,12 +95,6 @@ void CPythonObject::ThrowIf(v8::Isolate* isolate) {
   isolate->ThrowException(error);
 }
 
-#define TRY_HANDLE_EXCEPTION(value) BEGIN_HANDLE_PYTHON_EXCEPTION {
-#define END_HANDLE_EXCEPTION(value) \
-  }                                 \
-  END_HANDLE_PYTHON_EXCEPTION       \
-  info.GetReturnValue().Set(value);
-
 CPythonObject::CPythonObject() {}
 
 CPythonObject::~CPythonObject() {}
@@ -117,63 +112,60 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
     info.GetReturnValue().Set(v8::Undefined(isolate));
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Undefined(isolate))
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(prop));
+    v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(prop));
 
-  if (PyGen_Check(obj.ptr())) {
-    info.GetReturnValue().Set(v8::Undefined(isolate));
-    return;
-  }
-
-  if (*name == nullptr) {
-    info.GetReturnValue().Set(v8::Undefined(isolate));
-    return;
-  }
-
-  PyObject* value = ::PyObject_GetAttrString(obj.ptr(), *name);
-
-  if (!value) {
-    if (PyErr_Occurred()) {
-      if (::PyErr_ExceptionMatches(::PyExc_AttributeError)) {
-        ::PyErr_Clear();
-      } else {
-        py::throw_error_already_set();
-      }
+    if (PyGen_Check(obj.ptr())) {
+      return v8::Undefined(isolate).As<v8::Value>();
     }
 
-    if (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name)) {
-      py::object result(py::handle<>(::PyMapping_GetItemString(obj.ptr(), *name)));
-
-      if (!result.is_none()) {
-        info.GetReturnValue().Set(Wrap(result));
-        return;
-      }
+    if (*name == nullptr) {
+      return v8::Undefined(isolate).As<v8::Value>();
     }
 
-    info.GetReturnValue().Set(v8::Local<v8::Value>());
-    return;
-  }
+    PyObject* value = ::PyObject_GetAttrString(obj.ptr(), *name);
 
-  py::object attr = py::object(py::handle<>(value));
+    if (!value) {
+      if (PyErr_Occurred()) {
+        if (::PyErr_ExceptionMatches(::PyExc_AttributeError)) {
+          ::PyErr_Clear();
+        } else {
+          py::throw_error_already_set();
+        }
+      }
 
-  if (PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
-    py::object getter = attr.attr("fget");
+      if (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name)) {
+        py::object result(py::handle<>(::PyMapping_GetItemString(obj.ptr(), *name)));
 
-    if (getter.is_none())
-      throw CJavascriptException("unreadable attribute", ::PyExc_AttributeError);
+        if (!result.is_none()) {
+          return Wrap(result);
+        }
+      }
 
-    attr = getter();
-  }
+      return v8::Local<v8::Value>();
+    }
 
-  info.GetReturnValue().Set(Wrap(attr));
-  return;
+    py::object attr = py::object(py::handle<>(value));
 
-  END_HANDLE_EXCEPTION(v8::Undefined(isolate))
+    if (PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
+      py::object getter = attr.attr("fget");
+
+      if (getter.is_none()) {
+        throw CJavascriptException("unreadable attribute", ::PyExc_AttributeError);
+      }
+
+      attr = getter();
+    }
+
+    return Wrap(attr);
+  });
+
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
@@ -191,53 +183,51 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
     info.GetReturnValue().Set(v8::Undefined(isolate));
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Undefined(isolate))
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  v8::String::Utf8Value name(isolate, prop);
-  py::object newval = CJSObject::Wrap(value);
+    v8::String::Utf8Value name(isolate, prop);
+    py::object newval = CJSObject::Wrap(value);
 
-  bool found = 1 == ::PyObject_HasAttrString(obj.ptr(), *name);
+    bool found = 1 == ::PyObject_HasAttrString(obj.ptr(), *name);
 
-  if (::PyObject_HasAttrString(obj.ptr(), "__watchpoints__")) {
-    py::dict watchpoints(obj.attr("__watchpoints__"));
-    py::str propname(*name, name.length());
+    if (::PyObject_HasAttrString(obj.ptr(), "__watchpoints__")) {
+      py::dict watchpoints(obj.attr("__watchpoints__"));
+      py::str propname(*name, name.length());
 
-    if (watchpoints.has_key(propname)) {
-      py::object watchhandler = watchpoints.get(propname);
-
-      newval = watchhandler(propname, found ? obj.attr(propname) : py::object(), newval);
-    }
-  }
-
-  if (!found && ::PyMapping_Check(obj.ptr())) {
-    ::PyMapping_SetItemString(obj.ptr(), *name, newval.ptr());
-  } else {
-    if (found) {
-      py::object attr = obj.attr(*name);
-
-      if (PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
-        py::object setter = attr.attr("fset");
-
-        if (setter.is_none())
-          throw CJavascriptException("can't set attribute", ::PyExc_AttributeError);
-
-        setter(newval);
-
-        info.GetReturnValue().Set(value);
-        return;
+      if (watchpoints.has_key(propname)) {
+        py::object watchhandler = watchpoints.get(propname);
+        newval = watchhandler(propname, found ? obj.attr(propname) : py::object(), newval);
       }
     }
-    obj.attr(*name) = newval;
-  }
 
-  info.GetReturnValue().Set(value);
-  return;
+    if (!found && ::PyMapping_Check(obj.ptr())) {
+      ::PyMapping_SetItemString(obj.ptr(), *name, newval.ptr());
+    } else {
+      if (found) {
+        py::object attr = obj.attr(*name);
 
-  END_HANDLE_EXCEPTION(v8::Undefined(isolate));
+        if (PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
+          py::object setter = attr.attr("fset");
+
+          if (setter.is_none()) {
+            throw CJavascriptException("can't set attribute", ::PyExc_AttributeError);
+          }
+
+          setter(newval);
+          return value;
+        }
+      }
+      obj.attr(*name) = newval;
+    }
+
+    return value;
+  });
+
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Integer>& info) {
@@ -253,23 +243,25 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallb
     info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Integer>())
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Integer>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  v8::String::Utf8Value name(isolate, prop);
+    v8::String::Utf8Value name(isolate, prop);
 
-  bool exists = PyGen_Check(obj.ptr()) || ::PyObject_HasAttrString(obj.ptr(), *name) ||
-                (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name));
+    bool exists = PyGen_Check(obj.ptr()) || ::PyObject_HasAttrString(obj.ptr(), *name) ||
+                  (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name));
 
-  if (exists) {
-    info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
-    return;
-  }
+    if (exists) {
+      return v8::Integer::New(isolate, v8::None);
+    } else {
+      return v8::Local<v8::Integer>();
+    }
+  });
 
-  END_HANDLE_EXCEPTION(v8::Local<v8::Integer>())
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
@@ -285,38 +277,34 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCal
     info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Boolean>())
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  v8::String::Utf8Value name(isolate, prop);
+    v8::String::Utf8Value name(isolate, prop);
 
-  if (!::PyObject_HasAttrString(obj.ptr(), *name) && ::PyMapping_Check(obj.ptr()) &&
-      ::PyMapping_HasKeyString(obj.ptr(), *name)) {
-    auto result = -1 != ::PyMapping_DelItemString(obj.ptr(), *name);
-    info.GetReturnValue().Set(result);
-    return;
-  } else {
-    py::object attr = obj.attr(*name);
-
-    if (::PyObject_HasAttrString(obj.ptr(), *name) && PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
-      py::object deleter = attr.attr("fdel");
-
-      if (deleter.is_none())
-        throw CJavascriptException("can't delete attribute", ::PyExc_AttributeError);
-
-      info.GetReturnValue().Set(py::extract<bool>(deleter()));
-      return;
+    if (!::PyObject_HasAttrString(obj.ptr(), *name) && ::PyMapping_Check(obj.ptr()) &&
+        ::PyMapping_HasKeyString(obj.ptr(), *name)) {
+      return v8::Boolean::New(isolate, -1 != ::PyMapping_DelItemString(obj.ptr(), *name));
     } else {
-      auto result = -1 != ::PyObject_DelAttrString(obj.ptr(), *name);
-      info.GetReturnValue().Set(result);
-      return;
-    }
-  }
+      py::object attr = obj.attr(*name);
 
-  END_HANDLE_EXCEPTION(v8::Local<v8::Boolean>())
+      if (::PyObject_HasAttrString(obj.ptr(), *name) && PyObject_TypeCheck(attr.ptr(), &::PyProperty_Type)) {
+        py::object deleter = attr.attr("fdel");
+
+        if (deleter.is_none())
+          throw CJavascriptException("can't delete attribute", ::PyExc_AttributeError);
+
+        return v8::Boolean::New(isolate, py::extract<bool>(deleter()));
+      } else {
+        return v8::Boolean::New(isolate, -1 != ::PyObject_DelAttrString(obj.ptr(), *name));
+      }
+    }
+  });
+
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -327,37 +315,34 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     info.GetReturnValue().Set(v8::Local<v8::Array>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Array>())
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Array>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  py::list keys;
-  bool filter_name = false;
+    py::list keys;
+    bool filter_name = false;
 
-  if (::PySequence_Check(obj.ptr())) {
-    info.GetReturnValue().Set(v8::Local<v8::Array>());
-    return;
-  } else if (::PyMapping_Check(obj.ptr())) {
-    keys = py::list(py::handle<>(PyMapping_Keys(obj.ptr())));
-  } else if (PyGen_CheckExact(obj.ptr())) {
-    py::object iter(py::handle<>(::PyObject_GetIter(obj.ptr())));
+    if (::PySequence_Check(obj.ptr())) {
+      return v8::Local<v8::Array>();
+    } else if (::PyMapping_Check(obj.ptr())) {
+      keys = py::list(py::handle<>(PyMapping_Keys(obj.ptr())));
+    } else if (PyGen_CheckExact(obj.ptr())) {
+      py::object iter(py::handle<>(::PyObject_GetIter(obj.ptr())));
 
-    PyObject* item = NULL;
+      PyObject* item = NULL;
 
-    while (NULL != (item = ::PyIter_Next(iter.ptr()))) {
-      keys.append(py::object(py::handle<>(item)));
+      while (NULL != (item = ::PyIter_Next(iter.ptr()))) {
+        keys.append(py::object(py::handle<>(item)));
+      }
+    } else {
+      keys = py::list(py::handle<>(::PyObject_Dir(obj.ptr())));
+      filter_name = true;
     }
-  } else {
-    keys = py::list(py::handle<>(::PyObject_Dir(obj.ptr())));
-    filter_name = true;
-  }
 
-  Py_ssize_t len = PyList_GET_SIZE(keys.ptr());
-  v8::Local<v8::Array> result = v8::Array::New(isolate, len);
-
-  if (len > 0) {
+    Py_ssize_t len = PyList_GET_SIZE(keys.ptr());
+    v8::Local<v8::Array> result = v8::Array::New(isolate, len);
     for (Py_ssize_t i = 0; i < len; i++) {
       PyObject* item = PyList_GET_ITEM(keys.ptr(), i);
 
@@ -366,20 +351,18 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 
         // FIXME Are there any methods to avoid such a dirty work?
 
-        if (name.startswith("__") && name.endswith("__"))
+        if (name.startswith("__") && name.endswith("__")) {
           continue;
+        }
       }
 
       auto res = result->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), v8::Uint32::New(isolate, i),
                              Wrap(py::object(py::handle<>(py::borrowed(item)))));
       res.Check();
     }
-
-    info.GetReturnValue().Set(result);
-    return;
-  }
-
-  END_HANDLE_EXCEPTION(v8::Local<v8::Array>())
+    return result;
+  });
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -390,44 +373,49 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     info.GetReturnValue().Set(v8::Undefined(isolate));
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Undefined(isolate));
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (PyGen_Check(obj.ptr())) {
-    info.GetReturnValue().Set(v8::Undefined(isolate));
-    return;
-  }
-
-  if (::PySequence_Check(obj.ptr())) {
-    if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
-      py::object ret(py::handle<>(::PySequence_GetItem(obj.ptr(), index)));
-
-      info.GetReturnValue().Set(Wrap(ret));
-      return;
-    }
-  } else if (::PyMapping_Check(obj.ptr())) {
-    char buf[65];
-
-    snprintf(buf, sizeof(buf), "%d", index);
-
-    PyObject* value = ::PyMapping_GetItemString(obj.ptr(), buf);
-
-    if (!value) {
-      py::long_ key(index);
-
-      value = ::PyObject_GetItem(obj.ptr(), key.ptr());
+    if (PyGen_Check(obj.ptr())) {
+      return v8::Undefined(isolate).As<v8::Value>();
     }
 
-    if (value) {
-      info.GetReturnValue().Set(Wrap(py::object(py::handle<>(value))));
-      return;
-    }
-  }
+    if (::PySequence_Check(obj.ptr())) {
+      if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
+        py::object ret(py::handle<>(::PySequence_GetItem(obj.ptr(), index)));
 
-  END_HANDLE_EXCEPTION(v8::Undefined(isolate))
+        return Wrap(ret);
+      } else {
+        return v8::Undefined(isolate).As<v8::Value>();
+      }
+    }
+
+    if (::PyMapping_Check(obj.ptr())) {
+      char buf[65];
+
+      snprintf(buf, sizeof(buf), "%d", index);
+
+      PyObject* value = ::PyMapping_GetItemString(obj.ptr(), buf);
+
+      if (!value) {
+        py::long_ key(index);
+
+        value = ::PyObject_GetItem(obj.ptr(), key.ptr());
+      }
+
+      if (value) {
+        return Wrap(py::object(py::handle<>(value)));
+      } else {
+        return v8::Undefined(isolate).As<v8::Value>();
+      }
+    }
+
+    return v8::Undefined(isolate).As<v8::Value>();
+  });
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::IndexedSetter(uint32_t index,
@@ -440,30 +428,30 @@ void CPythonObject::IndexedSetter(uint32_t index,
     info.GetReturnValue().Set(v8::Undefined(isolate));
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Undefined(isolate));
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (::PySequence_Check(obj.ptr())) {
-    if (::PySequence_SetItem(obj.ptr(), index, CJSObject::Wrap(value).ptr()) < 0)
-      isolate->ThrowException(
-          v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set indexed value").ToLocalChecked()));
-  } else if (::PyMapping_Check(obj.ptr())) {
-    char buf[65];
+    if (::PySequence_Check(obj.ptr())) {
+      if (::PySequence_SetItem(obj.ptr(), index, CJSObject::Wrap(value).ptr()) < 0)
+        isolate->ThrowException(
+            v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set indexed value").ToLocalChecked()));
+    } else if (::PyMapping_Check(obj.ptr())) {
+      char buf[65];
 
-    snprintf(buf, sizeof(buf), "%d", index);
+      snprintf(buf, sizeof(buf), "%d", index);
 
-    if (::PyMapping_SetItemString(obj.ptr(), buf, CJSObject::Wrap(value).ptr()) < 0)
-      isolate->ThrowException(
-          v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set named value").ToLocalChecked()));
-  }
+      if (::PyMapping_SetItemString(obj.ptr(), buf, CJSObject::Wrap(value).ptr()) < 0)
+        isolate->ThrowException(
+            v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set named value").ToLocalChecked()));
+    }
 
-  info.GetReturnValue().Set(value);
-  return;
+    return value;
+  });
 
-  END_HANDLE_EXCEPTION(v8::Undefined(isolate))
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& info) {
@@ -474,34 +462,39 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
     info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Integer>());
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Integer>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (PyGen_Check(obj.ptr())) {
-    info.GetReturnValue().Set(v8::Integer::New(isolate, v8::ReadOnly));
-    return;
-  }
-
-  if (::PySequence_Check(obj.ptr())) {
-    if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
-      info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
-      return;
+    if (PyGen_Check(obj.ptr())) {
+      return v8::Integer::New(isolate, v8::ReadOnly);
     }
-  } else if (::PyMapping_Check(obj.ptr())) {
-    // TODO: revisit this
-    char buf[65];
-    snprintf(buf, sizeof(buf), "%d", index);
 
-    if (::PyMapping_HasKeyString(obj.ptr(), buf) || ::PyMapping_HasKey(obj.ptr(), py::long_(index).ptr())) {
-      info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
-      return;
+    if (::PySequence_Check(obj.ptr())) {
+      if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
+        return v8::Integer::New(isolate, v8::None);
+      } else {
+        return v8::Local<v8::Integer>();
+      }
     }
-  }
 
-  END_HANDLE_EXCEPTION(v8::Local<v8::Integer>())
+    if (::PyMapping_Check(obj.ptr())) {
+      // TODO: revisit this
+      char buf[65];
+      snprintf(buf, sizeof(buf), "%d", index);
+
+      if (::PyMapping_HasKeyString(obj.ptr(), buf) || ::PyMapping_HasKey(obj.ptr(), py::long_(index).ptr())) {
+        return v8::Integer::New(isolate, v8::None);
+      } else {
+        return v8::Local<v8::Integer>();
+      }
+    }
+
+    return v8::Local<v8::Integer>();
+  });
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
@@ -512,26 +505,27 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
     info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Boolean>());
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (::PySequence_Check(obj.ptr()) && (Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
-    auto result = 0 <= ::PySequence_DelItem(obj.ptr(), index);
-    info.GetReturnValue().Set(result);
-    return;
-  } else if (::PyMapping_Check(obj.ptr())) {
-    char buf[65];
+    if (::PySequence_Check(obj.ptr()) && (Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
+      auto result = 0 <= ::PySequence_DelItem(obj.ptr(), index);
+      return v8::Boolean::New(isolate, result);
+    }
+    if (::PyMapping_Check(obj.ptr())) {
+      char buf[65];
 
-    snprintf(buf, sizeof(buf), "%d", index);
-    auto result = PyMapping_DelItemString(obj.ptr(), buf) == 0;
-    info.GetReturnValue().Set(result);
-    return;
-  }
+      snprintf(buf, sizeof(buf), "%d", index);
+      auto result = PyMapping_DelItemString(obj.ptr(), buf) == 0;
+      return v8::Boolean::New(isolate, result);
+    }
+    return v8::Local<v8::Boolean>();
+  });
 
-  END_HANDLE_EXCEPTION(v8::Local<v8::Boolean>())
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
@@ -542,26 +536,23 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     info.GetReturnValue().Set(v8::Local<v8::Array>());
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Local<v8::Array>());
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Array>>(isolate, [&]() {
+    CPythonGIL python_gil;
 
-  py::object obj = CJSObject::Wrap(info.Holder());
+    py::object obj = CJSObject::Wrap(info.Holder());
+    Py_ssize_t len = ::PySequence_Check(obj.ptr()) ? ::PySequence_Size(obj.ptr()) : 0;
+    v8::Local<v8::Array> result = v8::Array::New(isolate, len);
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
-  Py_ssize_t len = ::PySequence_Check(obj.ptr()) ? ::PySequence_Size(obj.ptr()) : 0;
+    for (Py_ssize_t i = 0; i < len; i++) {
+      result->Set(context, v8::Integer::New(isolate, i), v8::Integer::New(isolate, i)).Check();
+    }
 
-  v8::Local<v8::Array> result = v8::Array::New(isolate, len);
-
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
-
-  for (Py_ssize_t i = 0; i < len; i++) {
-    result->Set(context, v8::Integer::New(isolate, i), v8::Integer::New(isolate, i)).Check();
-  }
+    return result;
+  });
 
   info.GetReturnValue().Set(result);
-  return;
-
-  END_HANDLE_EXCEPTION(v8::Local<v8::Array>())
 }
 
 #define GEN_ARG(z, n, data) CJSObject::Wrap(info[n])
@@ -588,36 +579,34 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
     info.GetReturnValue().Set(v8::Undefined(isolate));
     return;
   }
-  TRY_HANDLE_EXCEPTION(v8::Undefined(isolate));
 
-  CPythonGIL python_gil;
+  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(isolate, v8::Undefined(isolate), [&]() {
+    CPythonGIL python_gil;
 
-  py::object self;
+    py::object self;
 
-  if (!info.Data().IsEmpty() && info.Data()->IsExternal()) {
-    v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
+    if (!info.Data().IsEmpty() && info.Data()->IsExternal()) {
+      v8::Local<v8::External> field = v8::Local<v8::External>::Cast(info.Data());
 
-    self = *static_cast<py::object*>(field->Value());
-  } else {
-    self = CJSObject::Wrap(info.This());
-  }
+      self = *static_cast<py::object*>(field->Value());
+    } else {
+      self = CJSObject::Wrap(info.This());
+    }
 
-  py::object result;
+    py::object result;
 
-  switch (info.Length()) {
-    BOOST_PP_FOR((0, 10), GEN_CASE_PRED, GEN_CASE_OP, GEN_CASE_MACRO)
-    default:
-      isolate->ThrowException(
-          v8::Exception::Error(v8::String::NewFromUtf8(isolate, "too many arguments").ToLocalChecked()));
+    switch (info.Length()) {
+      BOOST_PP_FOR((0, 10), GEN_CASE_PRED, GEN_CASE_OP, GEN_CASE_MACRO)
+      default:
+        isolate->ThrowException(
+            v8::Exception::Error(v8::String::NewFromUtf8(isolate, "too many arguments").ToLocalChecked()));
 
-      info.GetReturnValue().Set(v8::Undefined(isolate));
-      return;
-  }
+        return v8::Undefined(isolate).As<v8::Value>();
+    }
 
-  info.GetReturnValue().Set(Wrap(result));
-  return;
-
-  END_HANDLE_EXCEPTION(v8::Undefined(isolate))
+    return Wrap(result);
+  });
+  info.GetReturnValue().Set(result);
 }
 
 void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz) {

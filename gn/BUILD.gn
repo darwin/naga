@@ -40,6 +40,8 @@ stpyv8_source_files = [
   "Module.cpp",
   "Platform.cpp",
   "Platform.h",
+  "PythonExceptionGuard.cpp",
+  "PythonExceptionGuard.h",
   "PythonDateTime.cpp",
   "PythonDateTime.h",
   "PythonGIL.cpp",
