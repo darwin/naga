@@ -1,4 +1,4 @@
-#include "WrapperCLJS.h"
+#include "JSObjectCLJS.h"
 #include "PythonObject.h"
 #include "Context.h"
 #include "Exception.h"

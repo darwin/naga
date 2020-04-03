@@ -2,7 +2,7 @@
 #include "Platform.h"
 #include "Isolate.h"
 #include "Engine.h"
-#include "Wrapper.h"
+#include "JSObject.h"
 #include "PythonObject.h"
 
 void CContext::Expose() {

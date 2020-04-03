@@ -1,8 +1,8 @@
 #include "PythonObject.h"
-#include "Wrapper.h"
+#include "JSObject.h"
 #include "Context.h"
 #include "Isolate.h"
-#include "WrapperCLJS.h"
+#include "JSObjectCLJS.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
 

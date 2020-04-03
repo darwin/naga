@@ -23,6 +23,10 @@ stpyv8_source_files = [
   "Exception.h",
   "Isolate.cpp",
   "Isolate.h",
+  "JSObject.cpp",
+  "JSObject.h",
+  "JSObjectCLJS.cpp",
+  "JSObjectCLJS.h",
   "Locker.cpp",
   "Locker.h",
   "Module.cpp",
@@ -38,10 +42,6 @@ stpyv8_source_files = [
   "Tracer.h",
   "Utils.cpp",
   "Utils.h",
-  "Wrapper.cpp",
-  "Wrapper.h",
-  "WrapperCLJS.cpp",
-  "WrapperCLJS.h",
 ]
 
 stpyv8_source_file_paths = []

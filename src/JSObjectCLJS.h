@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-#include "Wrapper.h"
+#include "JSObject.h"
 
 void exposeCLJSTypes();
 bool isCLJSType(v8::Local<v8::Object> obj);

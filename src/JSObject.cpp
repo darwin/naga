@@ -1,7 +1,7 @@
-#include "Wrapper.h"
+#include "JSObject.h"
 #include "PythonObject.h"
 #include "PythonDateTime.h"
-#include "WrapperCLJS.h"
+#include "JSObjectCLJS.h"
 #include "Exception.h"
 
 #define TERMINATE_EXECUTION_CHECK(returnValue)                         \

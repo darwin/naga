@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "Exception.h"
-#include "Wrapper.h"
+#include "JSObject.h"
 
 void CEngine::Expose(void) {
   py::class_<CEngine, boost::noncopyable>("JSEngine", "JSEngine is a backend Javascript engine.")

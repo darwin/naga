@@ -3,7 +3,7 @@
 #include "Engine.h"
 #include "Exception.h"
 #include "Locker.h"
-#include "Wrapper.h"
+#include "JSObject.h"
 
 BOOST_PYTHON_MODULE(_STPyV8) {
   CJavascriptException::Expose();
