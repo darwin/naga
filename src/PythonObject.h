@@ -3,10 +3,6 @@
 #include "Base.h"
 
 class CPythonObject {
- private:
-  CPythonObject();
-  virtual ~CPythonObject();
-
  public:
   static void NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Value>& info);
   static void NamedSetter(v8::Local<v8::Name> prop,

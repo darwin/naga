@@ -95,10 +95,6 @@ void CPythonObject::ThrowIf(v8::Isolate* isolate) {
   isolate->ThrowException(error);
 }
 
-CPythonObject::CPythonObject() {}
-
-CPythonObject::~CPythonObject() {}
-
 void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCallbackInfo<v8::Value>& info) {
   auto isolate = info.GetIsolate();
   if (prop->IsSymbol()) {
