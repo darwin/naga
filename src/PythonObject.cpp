@@ -94,18 +94,11 @@ void CPythonObject::ThrowIf(v8::Isolate* isolate) {
   isolate->ThrowException(error);
 }
 
-#define TRY_HANDLE_EXCEPTION(value)          \
-  BEGIN_HANDLE_PYTHON_EXCEPTION {
+#define TRY_HANDLE_EXCEPTION(value) BEGIN_HANDLE_PYTHON_EXCEPTION {
 #define END_HANDLE_EXCEPTION(value) \
   }                                 \
   END_HANDLE_PYTHON_EXCEPTION       \
   info.GetReturnValue().Set(value);
-
-#define CALLBACK_RETURN(value)        \
-  do {                                \
-    info.GetReturnValue().Set(value); \
-    return;                           \
-  } while (0);
 
 CPythonObject::CPythonObject() {}
 
@@ -115,7 +108,8 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
   auto isolate = info.GetIsolate();
   if (prop->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
-    CALLBACK_RETURN(v8::Undefined(isolate));
+    info.GetReturnValue().Set(v8::Undefined(isolate));
+    return;
   }
   v8::HandleScope handle_scope(isolate);
 
@@ -130,11 +124,16 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
   py::object obj = CJSObject::Wrap(info.Holder());
 
   v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(prop));
-  if (PyGen_Check(obj.ptr()))
-    CALLBACK_RETURN(v8::Undefined(isolate));
 
-  if (*name == nullptr)
-    CALLBACK_RETURN(v8::Undefined(isolate));
+  if (PyGen_Check(obj.ptr())) {
+    info.GetReturnValue().Set(v8::Undefined(isolate));
+    return;
+  }
+
+  if (*name == nullptr) {
+    info.GetReturnValue().Set(v8::Undefined(isolate));
+    return;
+  }
 
   PyObject* value = ::PyObject_GetAttrString(obj.ptr(), *name);
 
@@ -150,11 +149,14 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
     if (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name)) {
       py::object result(py::handle<>(::PyMapping_GetItemString(obj.ptr(), *name)));
 
-      if (!result.is_none())
-        CALLBACK_RETURN(Wrap(result));
+      if (!result.is_none()) {
+        info.GetReturnValue().Set(Wrap(result));
+        return;
+      }
     }
 
-    CALLBACK_RETURN(v8::Local<v8::Value>());
+    info.GetReturnValue().Set(v8::Local<v8::Value>());
+    return;
   }
 
   py::object attr = py::object(py::handle<>(value));
@@ -168,7 +170,8 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> prop, const v8::PropertyCall
     attr = getter();
   }
 
-  CALLBACK_RETURN(Wrap(attr));
+  info.GetReturnValue().Set(Wrap(attr));
+  return;
 
   END_HANDLE_EXCEPTION(v8::Undefined(isolate))
 }
@@ -179,7 +182,8 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
   auto isolate = info.GetIsolate();
   if (prop->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
-    CALLBACK_RETURN(v8::Undefined(isolate));
+    info.GetReturnValue().Set(v8::Undefined(isolate));
+    return;
   }
   v8::HandleScope handle_scope(isolate);
 
@@ -223,13 +227,15 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> prop,
 
         setter(newval);
 
-        CALLBACK_RETURN(value);
+        info.GetReturnValue().Set(value);
+        return;
       }
     }
     obj.attr(*name) = newval;
   }
 
-  CALLBACK_RETURN(value);
+  info.GetReturnValue().Set(value);
+  return;
 
   END_HANDLE_EXCEPTION(v8::Undefined(isolate));
 }
@@ -238,7 +244,8 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallb
   auto isolate = info.GetIsolate();
   if (prop->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
-    CALLBACK_RETURN(v8::Local<v8::Integer>());
+    info.GetReturnValue().Set(v8::Local<v8::Integer>());
+    return;
   }
   v8::HandleScope handle_scope(isolate);
 
@@ -248,17 +255,19 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> prop, const v8::PropertyCallb
   }
   TRY_HANDLE_EXCEPTION(v8::Local<v8::Integer>())
 
-    CPythonGIL python_gil;
+  CPythonGIL python_gil;
 
-    py::object obj = CJSObject::Wrap(info.Holder());
+  py::object obj = CJSObject::Wrap(info.Holder());
 
-    v8::String::Utf8Value name(isolate, prop);
+  v8::String::Utf8Value name(isolate, prop);
 
-    bool exists = PyGen_Check(obj.ptr()) || ::PyObject_HasAttrString(obj.ptr(), *name) ||
-        (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name));
+  bool exists = PyGen_Check(obj.ptr()) || ::PyObject_HasAttrString(obj.ptr(), *name) ||
+                (::PyMapping_Check(obj.ptr()) && ::PyMapping_HasKeyString(obj.ptr(), *name));
 
-    if (exists)
-      CALLBACK_RETURN(v8::Integer::New(isolate, v8::None));
+  if (exists) {
+    info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
+    return;
+  }
 
   END_HANDLE_EXCEPTION(v8::Local<v8::Integer>())
 }
@@ -267,7 +276,8 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCal
   auto isolate = info.GetIsolate();
   if (prop->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
-    CALLBACK_RETURN(v8::Local<v8::Boolean>());
+    info.GetReturnValue().Set(v8::Local<v8::Boolean>());
+    return;
   }
   v8::HandleScope handle_scope(isolate);
 
@@ -285,7 +295,9 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCal
 
   if (!::PyObject_HasAttrString(obj.ptr(), *name) && ::PyMapping_Check(obj.ptr()) &&
       ::PyMapping_HasKeyString(obj.ptr(), *name)) {
-    CALLBACK_RETURN(-1 != ::PyMapping_DelItemString(obj.ptr(), *name));
+    auto result = -1 != ::PyMapping_DelItemString(obj.ptr(), *name);
+    info.GetReturnValue().Set(result);
+    return;
   } else {
     py::object attr = obj.attr(*name);
 
@@ -295,9 +307,12 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> prop, const v8::PropertyCal
       if (deleter.is_none())
         throw CJavascriptException("can't delete attribute", ::PyExc_AttributeError);
 
-      CALLBACK_RETURN(py::extract<bool>(deleter()));
+      info.GetReturnValue().Set(py::extract<bool>(deleter()));
+      return;
     } else {
-      CALLBACK_RETURN(-1 != ::PyObject_DelAttrString(obj.ptr(), *name));
+      auto result = -1 != ::PyObject_DelAttrString(obj.ptr(), *name);
+      info.GetReturnValue().Set(result);
+      return;
     }
   }
 
@@ -322,7 +337,8 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
   bool filter_name = false;
 
   if (::PySequence_Check(obj.ptr())) {
-    CALLBACK_RETURN(v8::Local<v8::Array>());
+    info.GetReturnValue().Set(v8::Local<v8::Array>());
+    return;
   } else if (::PyMapping_Check(obj.ptr())) {
     keys = py::list(py::handle<>(PyMapping_Keys(obj.ptr())));
   } else if (PyGen_CheckExact(obj.ptr())) {
@@ -359,7 +375,8 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
       res.Check();
     }
 
-    CALLBACK_RETURN(result);
+    info.GetReturnValue().Set(result);
+    return;
   }
 
   END_HANDLE_EXCEPTION(v8::Local<v8::Array>())
@@ -379,14 +396,17 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
   py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (PyGen_Check(obj.ptr()))
-    CALLBACK_RETURN(v8::Undefined(isolate));
+  if (PyGen_Check(obj.ptr())) {
+    info.GetReturnValue().Set(v8::Undefined(isolate));
+    return;
+  }
 
   if (::PySequence_Check(obj.ptr())) {
     if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
       py::object ret(py::handle<>(::PySequence_GetItem(obj.ptr(), index)));
 
-      CALLBACK_RETURN(Wrap(ret));
+      info.GetReturnValue().Set(Wrap(ret));
+      return;
     }
   } else if (::PyMapping_Check(obj.ptr())) {
     char buf[65];
@@ -402,7 +422,8 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     }
 
     if (value) {
-      CALLBACK_RETURN(Wrap(py::object(py::handle<>(value))));
+      info.GetReturnValue().Set(Wrap(py::object(py::handle<>(value))));
+      return;
     }
   }
 
@@ -427,8 +448,8 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
   if (::PySequence_Check(obj.ptr())) {
     if (::PySequence_SetItem(obj.ptr(), index, CJSObject::Wrap(value).ptr()) < 0)
-      isolate->ThrowException(v8::Exception::Error(
-          v8::String::NewFromUtf8(isolate, "fail to set indexed value").ToLocalChecked()));
+      isolate->ThrowException(
+          v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set indexed value").ToLocalChecked()));
   } else if (::PyMapping_Check(obj.ptr())) {
     char buf[65];
 
@@ -439,7 +460,8 @@ void CPythonObject::IndexedSetter(uint32_t index,
           v8::Exception::Error(v8::String::NewFromUtf8(isolate, "fail to set named value").ToLocalChecked()));
   }
 
-  CALLBACK_RETURN(value);
+  info.GetReturnValue().Set(value);
+  return;
 
   END_HANDLE_EXCEPTION(v8::Undefined(isolate))
 }
@@ -458,20 +480,24 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
   py::object obj = CJSObject::Wrap(info.Holder());
 
-  if (PyGen_Check(obj.ptr()))
-    CALLBACK_RETURN(v8::Integer::New(isolate, v8::ReadOnly));
+  if (PyGen_Check(obj.ptr())) {
+    info.GetReturnValue().Set(v8::Integer::New(isolate, v8::ReadOnly));
+    return;
+  }
 
   if (::PySequence_Check(obj.ptr())) {
     if ((Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
-      CALLBACK_RETURN(v8::Integer::New(isolate, v8::None));
+      info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
+      return;
     }
   } else if (::PyMapping_Check(obj.ptr())) {
+    // TODO: revisit this
     char buf[65];
-
     snprintf(buf, sizeof(buf), "%d", index);
 
     if (::PyMapping_HasKeyString(obj.ptr(), buf) || ::PyMapping_HasKey(obj.ptr(), py::long_(index).ptr())) {
-      CALLBACK_RETURN(v8::Integer::New(isolate, v8::None));
+      info.GetReturnValue().Set(v8::Integer::New(isolate, v8::None));
+      return;
     }
   }
 
@@ -493,13 +519,16 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
   py::object obj = CJSObject::Wrap(info.Holder());
 
   if (::PySequence_Check(obj.ptr()) && (Py_ssize_t)index < ::PySequence_Size(obj.ptr())) {
-    CALLBACK_RETURN(0 <= ::PySequence_DelItem(obj.ptr(), index));
+    auto result = 0 <= ::PySequence_DelItem(obj.ptr(), index);
+    info.GetReturnValue().Set(result);
+    return;
   } else if (::PyMapping_Check(obj.ptr())) {
     char buf[65];
 
     snprintf(buf, sizeof(buf), "%d", index);
-
-    CALLBACK_RETURN(PyMapping_DelItemString(obj.ptr(), buf) == 0);
+    auto result = PyMapping_DelItemString(obj.ptr(), buf) == 0;
+    info.GetReturnValue().Set(result);
+    return;
   }
 
   END_HANDLE_EXCEPTION(v8::Local<v8::Boolean>())
@@ -529,7 +558,8 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     result->Set(context, v8::Integer::New(isolate, i), v8::Integer::New(isolate, i)).Check();
   }
 
-  CALLBACK_RETURN(result);
+  info.GetReturnValue().Set(result);
+  return;
 
   END_HANDLE_EXCEPTION(v8::Local<v8::Array>())
 }
@@ -580,10 +610,12 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
       isolate->ThrowException(
           v8::Exception::Error(v8::String::NewFromUtf8(isolate, "too many arguments").ToLocalChecked()));
 
-      CALLBACK_RETURN(v8::Undefined(isolate));
+      info.GetReturnValue().Set(v8::Undefined(isolate));
+      return;
   }
 
-  CALLBACK_RETURN(Wrap(result));
+  info.GetReturnValue().Set(Wrap(result));
+  return;
 
   END_HANDLE_EXCEPTION(v8::Undefined(isolate))
 }
