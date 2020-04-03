@@ -122,6 +122,9 @@ shared_library("stpyv8") {
   configs -= [
     "//build/config/compiler:no_exceptions",
     "//build/config/compiler:no_rtti",
+    # TODO: this was causing issues with pybind11 in debug mode, revisit this
+    # https://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings
+    "//build/config/gcc:symbol_visibility_hidden",
 
     #"//build/config/compiler:default_symbols",
 
