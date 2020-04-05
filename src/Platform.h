@@ -2,6 +2,10 @@
 
 #include "Base.h"
 
+class CPlatform;
+
+typedef std::shared_ptr<CPlatform> CPlatformPtr;
+
 class CPlatform {
  private:
   static bool m_inited;

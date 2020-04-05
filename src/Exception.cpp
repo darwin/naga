@@ -14,7 +14,7 @@ std::ostream& operator<<(std::ostream& os, const CJavascriptStackTrace& obj) {
   return os;
 }
 
-void CJavascriptException::Expose(void) {
+void CJavascriptException::Expose(pb::module& m) {
   py::class_<CJavascriptStackTrace>("JSStackTrace", py::no_init)
       .def("__len__", &CJavascriptStackTrace::GetFrameCount)
       .def("__getitem__", &CJavascriptStackTrace::GetFrame)
@@ -312,10 +312,10 @@ const std::string CJavascriptException::Extract(v8::Isolate* isolate, v8::TryCat
 static struct {
   const char* name;
   PyObject* type;
-} SupportErrors[] = {{"RangeError", ::PyExc_IndexError},
-                     {"ReferenceError", ::PyExc_ReferenceError},
-                     {"SyntaxError", ::PyExc_SyntaxError},
-                     {"TypeError", ::PyExc_TypeError}};
+} SupportErrors[] = {{"RangeError", PyExc_IndexError},
+                     {"ReferenceError", PyExc_ReferenceError},
+                     {"SyntaxError", PyExc_SyntaxError},
+                     {"TypeError", PyExc_TypeError}};
 
 void CJavascriptException::ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch) {
   if (try_catch.HasCaught() && try_catch.CanContinue()) {
@@ -344,6 +344,34 @@ void CJavascriptException::ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch
   }
 }
 
+void CJavascriptException::ThrowIf2(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch) {
+  if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
+    return;
+  }
+  auto v8_scope = v8u::getScope(v8_isolate);
+
+  PyObject* raw_type = nullptr;
+  auto v8_ex = v8_try_catch.Exception();
+
+  if (v8_ex->IsObject()) {
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_exc_obj = v8_ex->ToObject(v8_context).ToLocalChecked();
+    auto v8_name = v8::String::NewFromUtf8(v8_isolate, "name").ToLocalChecked();
+
+    if (v8_exc_obj->Has(v8_context, v8_name).ToChecked()) {
+      auto v8_name_val = v8_exc_obj->Get(v8_isolate->GetCurrentContext(), v8_name).ToLocalChecked();
+      auto v8_uft = v8u::toUtf8Value(v8_isolate, v8_name_val.As<v8::String>());
+
+      for (size_t i = 0; i < std::size(SupportErrors); i++) {
+        if (strncasecmp(SupportErrors[i].name, *v8_uft, v8_uft.length()) == 0) {
+          raw_type = SupportErrors[i].type;
+        }
+      }
+    }
+  }
+
+  throw CJavascriptException(v8_isolate, v8_try_catch, raw_type);
+}
 void ExceptionTranslator::Translate(CJavascriptException const& ex) {
   CPythonGIL python_gil;
 

@@ -8,8 +8,15 @@ class CLocker {
   CIsolatePtr m_isolate;
 
  public:
-  CLocker() = default;
-  CLocker(CIsolatePtr isolate) : m_isolate(isolate) {}
+  CLocker() {
+//    std::cerr << "LOCKER ALLOC1 " << this << "\n";
+  }
+  CLocker(CIsolatePtr isolate) : m_isolate(isolate) {
+//    std::cerr << "LOCKER ALLOC2 " << this << "\n";
+  }
+  ~CLocker() {
+//    std::cerr << "LOCKER DEALLOC " << this << "\n";
+  }
   bool entered() { return m_locker.get(); }
 
   void enter();
@@ -24,6 +31,12 @@ class CUnlocker {
   std::unique_ptr<v8::Unlocker> m_unlocker;
 
  public:
+  CUnlocker() {
+//    std::cerr << "UNLOCKER ALLOC1 " << this << "\n";
+  }
+  ~CUnlocker() {
+//    std::cerr << "UNLOCKER DEALLOC " << this << "\n";
+  }
   bool entered() { return m_unlocker.get(); }
 
   void enter();

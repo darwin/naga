@@ -9,28 +9,36 @@ typedef std::shared_ptr<CContext> CContextPtr;
 
 class CContext {
   py::object m_global;
+  pb::object m_global2;
   v8::Persistent<v8::Context> m_context;
 
  public:
   explicit CContext(v8::Local<v8::Context> context);
   CContext(const CContext& context);
   explicit CContext(const py::object& global);
+  explicit CContext(const pb::object& global);
+  //bool test(pb::object global);
 
   ~CContext() { m_context.Reset(); }
 
   v8::Local<v8::Context> Handle() const { return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_context); }
 
   py::object GetGlobal() const;
+  pb::object GetGlobal2() const;
 
   py::str GetSecurityToken();
+  pb::str GetSecurityToken2();
   void SetSecurityToken(const py::str& token) const;
+  void SetSecurityToken2(const pb::str& py_token) const;
 
   bool IsEntered() { return !m_context.IsEmpty(); }
   void Enter() const {
+//    std::cerr << "CONTEXT ENTER " << this << "\n";
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     Handle()->Enter();
   }
   void Leave() const {
+//    std::cerr << "CONTEXT LEAVE " << this << "\n";
     v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     Handle()->Exit();
   }
@@ -43,5 +51,12 @@ class CContext {
   static py::object GetCalling();
   static bool InContext() { return v8::Isolate::GetCurrent()->InContext(); }
 
-  static void Expose();
+  static pb::object GetEntered2();
+  static pb::object GetCurrent2();
+  static pb::object GetCalling2();
+
+  pb::object Evaluate2(const std::string& src, const std::string& name = std::string(), int line = -1, int col = -1);
+  pb::object EvaluateW2(const std::wstring& src, const std::wstring& name = std::wstring(), int line = -1, int col = -1);
+
+  static void Expose(pb::module& m);
 };

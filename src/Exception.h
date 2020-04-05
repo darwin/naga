@@ -169,8 +169,9 @@ class CJavascriptException : public std::runtime_error {
   void PrintCallStack(py::object file);
 
   static void ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch);
+  static void ThrowIf2(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch);
 
-  static void Expose(void);
+  static void Expose(pb::module& m);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJavascriptException>::value,

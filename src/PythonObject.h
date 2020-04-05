@@ -26,12 +26,17 @@ class CPythonObject {
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
   static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(v8::Isolate* isolate);
 
-  static v8::Local<v8::Value> WrapInternal(py::object obj);
+  static v8::Local<v8::Value> WrapInternal(py::object py_obj);
+  static v8::Local<v8::Value> WrapInternal2(pb::handle py_obj);
 
-  static bool IsWrapped(v8::Local<v8::Object> obj);
-  static v8::Local<v8::Value> Wrap(py::object obj);
-  static py::object Unwrap(v8::Local<v8::Object> obj);
-  static void Dispose(v8::Local<v8::Value> value);
+  static bool IsWrapped(v8::Local<v8::Object> v8_obj);
+  static bool IsWrapped2(v8::Local<v8::Object> v8_obj);
+  static v8::Local<v8::Value> Wrap(py::object py_obj);
+  static v8::Local<v8::Value> Wrap2(pb::handle py_obj);
+  static py::object GetWrapper(v8::Local<v8::Object> v8_obj);
+  static pb::object GetWrapper2(v8::Local<v8::Object> v8_obj);
 
-  static void ThrowIf(v8::Isolate* isolate);
+  static void Dispose(v8::Local<v8::Value> v8_val);
+
+  static void ThrowIf(v8::Isolate* v8_isolate);
 };

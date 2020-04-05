@@ -26,6 +26,8 @@
 namespace py = boost::python;
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
 namespace pb = pybind11;
 
 #include "v8.h"

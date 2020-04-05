@@ -12,10 +12,10 @@ BOOST_PYTHON_MODULE(_STPyV8) {
   assert(pm);
   auto m = pb::reinterpret_borrow<pb::module>(pm);
 
-  CJavascriptException::Expose();
-  CJSObject::Expose();
-  CContext::Expose();
-  CEngine::Expose();
+  CJavascriptException::Expose(m);
+  CJSObject::Expose(m);
+  CContext::Expose(m);
+  CEngine::Expose(m);
   CLocker::Expose(m);
   CUnlocker::Expose(m);
 }

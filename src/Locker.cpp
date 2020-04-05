@@ -4,13 +4,17 @@
 
 void CLocker::enter() {
   withPythonAllowThreadsGuard([&]() {
+//    std::cerr << "LOCKER ENTER " << this << "\n";
     auto isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8::Isolate::GetCurrent();
     m_locker.reset(new v8::Locker(isolate));
   });
 }
 
 void CLocker::leave() {
-  withPythonAllowThreadsGuard([&]() { m_locker.reset(); });
+  withPythonAllowThreadsGuard([&]() {
+//    std::cerr << "LOCKER LEAVE " << this << "\n";
+    m_locker.reset();
+  });
 }
 
 bool CLocker::IsLocked() {
@@ -41,11 +45,17 @@ void CLocker::Expose(pb::module& m) {
 }
 
 void CUnlocker::enter() {
-  withPythonAllowThreadsGuard([&]() { m_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent())); });
+  withPythonAllowThreadsGuard([&]() {
+//    std::cerr << "UNLOCKER ENTER " << this << "\n";
+    m_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent()));
+  });
 }
 
 void CUnlocker::leave() {
-  withPythonAllowThreadsGuard([&]() { m_unlocker.reset(); });
+  withPythonAllowThreadsGuard([&]() {
+//    std::cerr << "UNLOCKER LEAVE " << this << "\n";
+    m_unlocker.reset();
+  });
 }
 
 void CUnlocker::Expose(pb::module& m) {

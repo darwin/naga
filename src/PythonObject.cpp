@@ -698,7 +698,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& info) {
 void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz) {
   v8::HandleScope handle_scope(isolate);
 
-  clazz->SetInternalFieldCount(1);
+  clazz->SetInternalFieldCount(2);
   clazz->SetHandler(
       v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator));
   clazz->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter, IndexedEnumerator);
@@ -735,17 +735,42 @@ v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(v8:
   return handle_scope.Escape(template_val);
 }
 
-bool CPythonObject::IsWrapped(v8::Local<v8::Object> obj) {
-  return obj->InternalFieldCount() == 1;
+bool CPythonObject::IsWrapped(v8::Local<v8::Object> v8_obj) {
+  if (v8_obj->InternalFieldCount() > 0) {
+    auto f = v8_obj->GetInternalField(0);
+    std::cerr << "IS WRAPPED1? " << f << "\n";
+    return !f.IsEmpty() && !f->IsUndefined();
+  }
+  return false;
 }
 
-py::object CPythonObject::Unwrap(v8::Local<v8::Object> obj) {
+bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
+  if (v8_obj->InternalFieldCount() > 0) {
+    auto f = v8_obj->GetInternalField(1);
+    std::cerr << "IS WRAPPED2? " << f << "\n";
+    return !f.IsEmpty() && !f->IsUndefined();
+  }
+  return false;
+}
+
+py::object CPythonObject::GetWrapper(v8::Local<v8::Object> v8_obj) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
-  v8::Local<v8::External> payload = v8::Local<v8::External>::Cast(obj->GetInternalField(0));
+  v8::Local<v8::External> payload = v8::Local<v8::External>::Cast(v8_obj->GetInternalField(0));
 
   return *static_cast<py::object*>(payload->Value());
+}
+
+pb::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
+  // note: we temporarily put pybind objects into slot 1
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::getScope(v8_isolate);
+  // TODO: change this field 0 after removing python boost
+  auto v8_val = v8_obj->GetInternalField(1);
+  assert(!v8_val.IsEmpty());
+  auto v8_payload = v8_val.As<v8::External>();
+  return *static_cast<pb::object*>(v8_payload->Value());
 }
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
@@ -762,7 +787,10 @@ void CPythonObject::Dispose(v8::Local<v8::Value> value) {
     v8::Local<v8::Object> obj = objMaybe.ToLocalChecked();
 
     if (IsWrapped(obj)) {
-      Py_DECREF(CPythonObject::Unwrap(obj).ptr());
+      Py_DECREF(CPythonObject::GetWrapper(obj).ptr());
+    } else if (IsWrapped2(obj)) {
+      // TODO: REVISIT!
+      Py_DECREF(CPythonObject::GetWrapper2(obj).ptr());
     }
   }
 }
@@ -779,6 +807,17 @@ v8::Local<v8::Value> CPythonObject::Wrap(py::object obj) {
     value = WrapInternal(obj);
 
   return handle_scope.Escape(value);
+}
+
+v8::Local<v8::Value> CPythonObject::Wrap2(pb::handle py_obj) {
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+
+  auto value = ObjectTracer2::FindCache(py_obj);
+  if (value.IsEmpty()) {
+    value = WrapInternal2(py_obj);
+  }
+  return v8_scope.Escape(value);
 }
 
 v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
@@ -806,17 +845,19 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
   if (extractor.check()) {
     CJSObject& jsobj = extractor();
 
-    if (dynamic_cast<CJSObjectNull*>(&jsobj))
-      return v8::Null(isolate);
-    if (dynamic_cast<CJSObjectUndefined*>(&jsobj))
-      return v8::Undefined(isolate);
+    assert(0);
 
-    if (jsobj.Object().IsEmpty()) {
-      auto pLazyArray = dynamic_cast<CJSObjectArray*>(&jsobj);
-      if (pLazyArray) {
-        pLazyArray->LazyConstructor();
-      }
-    }
+//    if (dynamic_cast<CJSObjectNull*>(&jsobj))
+//      return v8::Null(isolate);
+//    if (dynamic_cast<CJSObjectUndefined*>(&jsobj))
+//      return v8::Undefined(isolate);
+//
+//    if (jsobj.Object().IsEmpty()) {
+//      auto pLazyArray = dynamic_cast<CJSObjectArray*>(&jsobj);
+//      if (pLazyArray) {
+//        pLazyArray->LazyConstructor();
+//      }
+//    }
 
     if (jsobj.Object().IsEmpty()) {
       throw CJavascriptException("Refer to a null object", ::PyExc_AttributeError);
@@ -874,6 +915,8 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
       py::object* object = new py::object(obj);
 
       v8::Local<v8::Object> realInstance = instance.ToLocalChecked();
+
+      std::cerr << "WRAPPING1 " << object << "\n";
       realInstance->SetInternalField(0, v8::External::New(isolate, object));
 
       ObjectTracer::Trace(instance.ToLocalChecked(), object);
@@ -886,4 +929,120 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::object obj) {
     CJavascriptException::ThrowIf(isolate, try_catch);
 
   return handle_scope.Escape(result);
+}
+
+v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  assert(v8_isolate->InContext());
+  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+
+  CPythonGIL python_gil;
+
+  if (v8u::executionTerminating(v8_isolate)) {
+    return v8::Undefined(v8_isolate);
+  }
+
+  if (py_obj.is_none()) {
+    return v8::Null(v8_isolate);
+  }
+  if (pb::isinstance<pb::bool_>(py_obj)) {
+    auto py_bool = pb::cast<pb::bool_>(py_obj);
+    if (py_bool) {
+      return v8::True(v8_isolate);
+    } else {
+      return v8::False(v8_isolate);
+    }
+  }
+
+  if (pb::isinstance<CJSObjectNull>(py_obj)) {
+    return v8::Null(v8_isolate);
+  }
+
+  if (pb::isinstance<CJSObjectUndefined>(py_obj)) {
+    return v8::Undefined(v8_isolate);
+  }
+
+  if (pb::isinstance<CJSObject>(py_obj)) {
+    // special case, think about removing this
+    if (pb::isinstance<CJSObjectArray>(py_obj)) {
+      auto array = pb::cast<CJSObjectArray>(py_obj);
+      array.LazyConstructor();
+    }
+
+    auto obj = pb::cast<CJSObject>(py_obj);
+
+    if (obj.Object().IsEmpty()) {
+      throw CJavascriptException("Refer to a null object", PyExc_AttributeError);
+    }
+
+    pb::object* py_obj_ptr = new pb::object();
+    *py_obj_ptr = pb::reinterpret_borrow<pb::object>(py_obj);
+    ObjectTracer2::Trace(obj.Object(), py_obj_ptr);
+    return v8_scope.Escape(obj.Object());
+  }
+
+  v8::Local<v8::Value> v8_result;
+
+  // TODO: replace this with pybind code
+  if (PyLong_CheckExact(py_obj.ptr())) {
+    v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_obj.ptr()));
+  } else if (PyBool_Check(py_obj.ptr())) {
+    v8_result = v8::Boolean::New(v8_isolate, pb::cast<pb::bool_>(py_obj));
+  } else if (PyBytes_CheckExact(py_obj.ptr()) || PyUnicode_CheckExact(py_obj.ptr())) {
+    v8_result = v8u::toString(py_obj);
+  } else if (PyFloat_CheckExact(py_obj.ptr())) {
+    v8_result = v8::Number::New(v8_isolate, pb::cast<pb::float_>(py_obj));
+  } else if (isExactDateTime(py_obj) || isExactDate(py_obj)) {
+    tm ts = {0};
+    int ms = 0;
+    getPythonDateTime(py_obj, ts, ms);
+    v8_result =
+        v8::Date::New(v8_isolate->GetCurrentContext(), ((double)mktime(&ts)) * 1000 + ms / 1000).ToLocalChecked();
+  } else if (isExactTime(py_obj)) {
+    tm ts = {0};
+    int ms = 0;
+    getPythonTime(py_obj, ts, ms);
+    v8_result =
+        v8::Date::New(v8_isolate->GetCurrentContext(), ((double)mktime(&ts)) * 1000 + ms / 1000).ToLocalChecked();
+  } else if (PyCFunction_Check(py_obj.ptr()) || PyFunction_Check(py_obj.ptr()) || PyMethod_Check(py_obj.ptr()) ||
+             PyType_CheckExact(py_obj.ptr())) {
+    std::cerr << "creating function";
+    auto func_tmpl = v8::FunctionTemplate::New(v8_isolate);
+    auto py_obj_ptr = new pb::object();
+    *py_obj_ptr = pb::reinterpret_borrow<pb::object>(py_obj);
+
+    func_tmpl->SetCallHandler(Caller, v8::External::New(v8_isolate, py_obj_ptr));
+
+    if (PyType_Check(py_obj.ptr())) {
+      auto py_name_attr = py_obj.attr("__name__");
+      // TODO: we should do it safer here, if __name__ is not string
+      auto v8_cls_name = v8u::toString(py_name_attr);
+      func_tmpl->SetClassName(v8_cls_name);
+    }
+
+    v8_result = func_tmpl->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
+
+    if (!v8_result.IsEmpty()) {
+      ObjectTracer2::Trace(v8_result, py_obj_ptr);
+    }
+  } else {
+    auto template_val = GetCachedObjectTemplateOrCreate(v8_isolate);
+    auto instance = template_val->NewInstance(v8_isolate->GetCurrentContext());
+    if (!instance.IsEmpty()) {
+      auto py_obj_ptr = new pb::object();
+      *py_obj_ptr = pb::reinterpret_borrow<pb::object>(py_obj);
+      auto realInstance = instance.ToLocalChecked();
+      std::cerr << "WRAPPING2 " << py_obj_ptr << "\n";
+      realInstance->SetInternalField(1, v8::External::New(v8_isolate, py_obj_ptr));
+      ObjectTracer2::Trace(instance.ToLocalChecked(), py_obj_ptr);
+      v8_result = realInstance;
+    }
+  }
+
+  if (v8_result.IsEmpty()) {
+    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+  }
+
+  return v8_scope.Escape(v8_result);
 }
