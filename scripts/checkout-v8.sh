@@ -18,7 +18,7 @@ fi
 echo_cmd cd "$V8_HOME"
 echo_cmd git fetch --tags
 echo_cmd git checkout "$STPYV8_V8_GIT_TAG"
-#echo_cmd gclient sync -D
+echo_cmd gclient sync -D
 
 if [[ "$OSTYPE" == "linux"* ]]; then
   echo_info "note: you might want to install V8 build dependencies"
