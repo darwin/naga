@@ -17,6 +17,8 @@ stpyv8_source_files = [
   "Config.h",
   "Context.cpp",
   "Context.h",
+  "Debug.cpp",
+  "Debug.h",
   "Engine.cpp",
   "Engine.h",
   "Exception.cpp",
@@ -101,6 +103,11 @@ config("stpyv8_compiler_flags") {
 config("stpyv8_python_compiler_flags") {
   cflags = python_includes
   ldflags = python_ldflags
+  defines = [
+    #"Py_DEBUG",
+    #"Py_REF_DEBUG",
+    #"Py_TRACE_REFS",
+  ]
 }
 
 config("stpyv8_boost_compiler_flags") {
