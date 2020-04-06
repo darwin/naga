@@ -210,7 +210,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> name) const {
     msg << "'" << *v8::String::Utf8Value(isolate, Object()->ObjectProtoToString(context).ToLocalChecked())
         << "' object has no attribute '" << *v8::String::Utf8Value(isolate, name) << "'";
 
-    throw CJavascriptException(msg.str(), ::PyExc_AttributeError);
+    throw CJSException(msg.str(), ::PyExc_AttributeError);
   }
 }
 
@@ -248,7 +248,7 @@ pb::object CJSObject::GetAttr2(const std::string& name) {
 
   auto v8_attr_value = Object()->Get(v8_context, v8_attr_name).ToLocalChecked();
   if (v8_attr_value.IsEmpty()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   return CJSObject::Wrap(v8_attr_value, Object());
@@ -283,7 +283,7 @@ void CJSObject::SetAttr2(const std::string& name, pb::object py_obj) {
   auto v8_attr_obj = CPythonObject::Wrap(py_obj);
 
   if (!Object()->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 }
 
@@ -316,7 +316,7 @@ void CJSObject::DelAttr2(const std::string& name) {
   CheckAttr(v8_attr_name);
 
   if (!Object()->Delete(v8_context, v8_attr_name).FromMaybe(false)) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 }
 
@@ -375,7 +375,7 @@ pb::list CJSObject::GetAttrList2() {
   }
 
   if (v8_try_catch.HasCaught()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   return attrs;
@@ -409,7 +409,7 @@ bool CJSObject::Contains(const std::string& name) {
   bool found = Object()->Has(context, v8u::toString(name)).ToChecked();
 
   if (try_catch.HasCaught())
-    CJavascriptException::ThrowIf(isolate, try_catch);
+    CJSException::ThrowIf(isolate, try_catch);
 
   return found;
 }
@@ -477,7 +477,7 @@ pb::object CJSObject::ToPythonInt2() const {
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (m_obj.IsEmpty()) {
-    throw CJavascriptException("argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
+    throw CJSException("argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
   }
 
   auto val = Object()->Int32Value(v8_context).ToChecked();
@@ -506,7 +506,7 @@ pb::object CJSObject::ToPythonFloat2() const {
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (m_obj.IsEmpty()) {
-    throw CJavascriptException("argument must be a string or a number, not 'NoneType'", ::PyExc_TypeError);
+    throw CJSException("argument must be a string or a number, not 'NoneType'", ::PyExc_TypeError);
   }
 
   auto val = Object()->NumberValue(v8_context).ToChecked();

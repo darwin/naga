@@ -100,7 +100,7 @@ v8::String::Utf8Value toUtf8Value(v8::Isolate* v8_isolate, v8::Local<v8::String>
 void checkContext(v8::Isolate* v8_isolate) {
   auto scope = getScope(v8_isolate);
   if (v8_isolate->GetCurrentContext().IsEmpty()) {
-    throw CJavascriptException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
+    throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }
 }
 

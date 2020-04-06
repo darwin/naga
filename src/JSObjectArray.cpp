@@ -154,7 +154,7 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
         auto v8_value = Object()->Get(v8_context, idx).ToLocalChecked();
 
         if (v8_value.IsEmpty()) {
-          CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+          CJSException::ThrowIf(v8_isolate, v8_try_catch);
         }
 
         slice.append(CJSObject::Wrap(v8_value, Object()));
@@ -166,7 +166,7 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
     auto idx = PyLong_AsUnsignedLong(py_key.ptr());
 
     if (idx >= m_size) {
-      throw CJavascriptException("index of of range", PyExc_IndexError);
+      throw CJSException("index of of range", PyExc_IndexError);
     }
 
     if (!Object()->Has(v8_context, idx).ToChecked()) {
@@ -176,13 +176,13 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
     auto v8_value = Object()->Get(v8_context, idx).ToLocalChecked();
 
     if (v8_value.IsEmpty()) {
-      CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::ThrowIf(v8_isolate, v8_try_catch);
     }
 
     return CJSObject::Wrap(v8_value, Object());
   }
 
-  throw CJavascriptException("list indices must be integers", PyExc_TypeError);
+  throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
 // pb::object CJSObjectArray::GetItem(pb::object key) {
@@ -312,7 +312,7 @@ pb::object CJSObjectArray::SetItem(pb::object py_key, pb::object py_value) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
     if (!Object()->Set(v8_context, v8::Integer::New(v8_isolate, idx), CPythonObject::Wrap(py_value)).ToChecked()) {
-      CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::ThrowIf(v8_isolate, v8_try_catch);
     }
   }
 
@@ -442,7 +442,7 @@ pb::object CJSObjectArray::DelItem(pb::object py_key) {
     }
 
     if (!Object()->Delete(v8_context, idx).ToChecked()) {
-      CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::ThrowIf(v8_isolate, v8_try_catch);
     }
 
     if (py_result) {
@@ -452,7 +452,7 @@ pb::object CJSObjectArray::DelItem(pb::object py_key) {
     }
   }
 
-  throw CJavascriptException("list indices must be integers", PyExc_TypeError);
+  throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
 // pb::object CJSObjectArray::DelItem(pb::object key) {
@@ -509,7 +509,7 @@ bool CJSObjectArray::Contains(pb::object py_key) {
       auto v8_val = Object()->Get(v8_context, v8_i).ToLocalChecked();
 
       if (v8_try_catch.HasCaught()) {
-        CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+        CJSException::ThrowIf(v8_isolate, v8_try_catch);
       }
 
       // TODO: could this be optimized without wrapping?
@@ -520,7 +520,7 @@ bool CJSObjectArray::Contains(pb::object py_key) {
   }
 
   if (v8_try_catch.HasCaught()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   return false;

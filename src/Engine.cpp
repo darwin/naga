@@ -101,7 +101,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   });
 
   if (script.IsEmpty()) {
-    CJavascriptException::ThrowIf(m_v8_isolate, try_catch);
+    CJSException::ThrowIf(m_v8_isolate, try_catch);
   }
 
   return CScriptPtr(new CScript(m_v8_isolate, *this, script_source, script.ToLocalChecked()));
@@ -125,7 +125,7 @@ pb::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
         throw pb::error_already_set();
       }
 
-      CJavascriptException::ThrowIf(m_v8_isolate, v8_try_catch);
+      CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
     }
     v8_result = v8::Null(m_v8_isolate);
   }

@@ -12,11 +12,11 @@ typedef std::shared_ptr<CIsolate> CIsolatePtr;
 class CScript;
 typedef std::shared_ptr<CScript> CScriptPtr;
 
-class CJavascriptStackTrace;
-typedef std::shared_ptr<CJavascriptStackTrace> CJavascriptStackTracePtr;
+class CJSStackTrace;
+typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
 
-class CJavascriptStackFrame;
-typedef std::shared_ptr<CJavascriptStackFrame> CJavascriptStackFramePtr;
+class CJSStackFrame;
+typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
 
 class CJSObject;
 typedef std::shared_ptr<CJSObject> CJSObjectPtr;

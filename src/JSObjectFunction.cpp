@@ -33,12 +33,12 @@ pb::object CJSObjectFunction::CallWithArgs2(pb::args py_args, pb::kwargs py_kwar
   auto args_count = py_args.size();
 
   if (args_count == 0) {
-    throw CJavascriptException("missed self argument", PyExc_TypeError);
+    throw CJSException("missed self argument", PyExc_TypeError);
   }
 
   auto self = py_args[0];
   if (!pb::isinstance<CJSObjectFunction>(self)) {
-    throw CJavascriptException("self argument must be a js function", PyExc_TypeError);
+    throw CJSException("self argument must be a js function", PyExc_TypeError);
   }
 
   auto v8_isolate = v8::Isolate::GetCurrent();
@@ -127,7 +127,7 @@ pb::object CJSObjectFunction::Call2(v8::Local<v8::Object> v8_self, pb::list py_a
   });
 
   if (v8_result.IsEmpty()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   return CJSObject::Wrap(v8_result.ToLocalChecked());
@@ -185,7 +185,7 @@ pb::object CJSObjectFunction::CreateWithArgs2(CJSObjectFunctionPtr proto, pb::tu
   auto v8_scope = v8u::getScope(v8_isolate);
 
   if (proto->Object().IsEmpty()) {
-    throw CJavascriptException("Object prototype may only be an Object", PyExc_TypeError);
+    throw CJSException("Object prototype may only be an Object", PyExc_TypeError);
   }
 
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -205,7 +205,7 @@ pb::object CJSObjectFunction::CreateWithArgs2(CJSObjectFunctionPtr proto, pb::tu
       [&]() { v8_result = fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
 
   if (v8_result.IsEmpty()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   auto it = py_kwds.begin();

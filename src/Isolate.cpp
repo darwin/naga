@@ -58,10 +58,10 @@ v8::Isolate* CIsolate::GetIsolate() {
   return m_v8_isolate;
 }
 
-CJavascriptStackTracePtr CIsolate::GetCurrentStackTrace(
+CJSStackTracePtr CIsolate::GetCurrentStackTrace(
     int frame_limit,
     v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview) {
-  return CJavascriptStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
+  return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
 
 pb::object CIsolate::GetCurrent() {

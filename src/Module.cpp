@@ -11,7 +11,7 @@
 PYBIND11_MODULE(_STPyV8, m) {
   CPlatform::Expose(m);
   CIsolate::Expose(m);
-  CJavascriptException::Expose(m);
+  CJSException::Expose(m);
   CJSObject::Expose(m);
   CContext::Expose(m);
   CScript::Expose(m);

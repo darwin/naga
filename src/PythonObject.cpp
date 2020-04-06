@@ -271,7 +271,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
       auto getter = py_val.attr("fget");
 
       if (getter.is_none()) {
-        throw CJavascriptException("unreadable attribute", PyExc_AttributeError);
+        throw CJSException("unreadable attribute", PyExc_AttributeError);
       }
 
       py_val = getter();
@@ -402,7 +402,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
           auto setter = py_name_attr.attr("fset");
 
           if (setter.is_none()) {
-            throw CJavascriptException("can't set attribute", PyExc_AttributeError);
+            throw CJSException("can't set attribute", PyExc_AttributeError);
           }
 
           setter(py_val);
@@ -585,7 +585,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
         auto py_deleter = py_name_attr.attr("fdel");
 
         if (py_deleter.is_none()) {
-          throw CJavascriptException("can't delete attribute", PyExc_AttributeError);
+          throw CJSException("can't delete attribute", PyExc_AttributeError);
         }
         auto py_result = py_deleter();
         auto py_bool_result = pb::cast<pb::bool_>(py_result);
@@ -1558,7 +1558,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
     obj->LazyInit();
 
     if (obj->Object().IsEmpty()) {
-      throw CJavascriptException("Refer to a null object", PyExc_AttributeError);
+      throw CJSException("Refer to a null object", PyExc_AttributeError);
     }
 
     //ObjectTracer2::Trace(obj->Object(), py_obj.ptr());
@@ -1621,7 +1621,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
   }
 
   if (v8_result.IsEmpty()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
   return v8_scope.Escape(v8_result);

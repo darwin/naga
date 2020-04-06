@@ -19,7 +19,7 @@ class CIsolate {
 
   v8::Isolate* GetIsolate();
 
-  CJavascriptStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options);
+  CJSStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options);
 
   static pb::object GetCurrent();
 

@@ -1,19 +1,19 @@
 #include "Exception.h"
 #include "PythonGIL.h"
 
-std::ostream& operator<<(std::ostream& os, const CJavascriptException& ex) {
+std::ostream& operator<<(std::ostream& os, const CJSException& ex) {
   os << "JSError: " << ex.what();
 
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CJavascriptStackTrace& obj) {
+std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj) {
   obj.Dump(os);
 
   return os;
 }
 
-void translateJavascriptException(const CJavascriptException& e) {
+void translateJavascriptException(const CJSException& e) {
   CPythonGIL python_gil;
 
   if (e.GetType()) {
@@ -86,23 +86,23 @@ void translateException(std::exception_ptr p) {
     if (p) {
       std::rethrow_exception(p);
     }
-  } catch (const CJavascriptException& e) {
+  } catch (const CJSException& e) {
     translateJavascriptException(e);
   }
 }
 #pragma clang diagnostic pop
 
-void CJavascriptException::Expose(const pb::module& m) {
+void CJSException::Expose(const pb::module& m) {
   pb::register_exception_translator(&translateException);
 
   // clang-format off
-  pb::class_<CJavascriptStackTrace, CJavascriptStackTracePtr>(m, "JSStackTrace")
-      .def("__len__", &CJavascriptStackTrace::GetFrameCount)
-      .def("__getitem__", &CJavascriptStackTrace::GetFrame)
+  pb::class_<CJSStackTrace, CJSStackTracePtr>(m, "JSStackTrace")
+      .def("__len__", &CJSStackTrace::GetFrameCount)
+      .def("__getitem__", &CJSStackTrace::GetFrame)
 
           // TODO: .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
 
-      .def("__str__", &CJavascriptStackTrace::ToPythonStr);
+      .def("__str__", &CJSStackTrace::ToPythonStr);
 
   pb::enum_<v8::StackTrace::StackTraceOptions>(m, "JSStackTraceOptions")
       .value("LineNumber", v8::StackTrace::kLineNumber)
@@ -115,49 +115,49 @@ void CJavascriptException::Expose(const pb::module& m) {
       .value("Detailed", v8::StackTrace::kDetailed)
       .export_values();
 
-  pb::class_<CJavascriptStackFrame, CJavascriptStackFramePtr>(m, "JSStackFrame")
-      .def_property_readonly("lineNum", &CJavascriptStackFrame::GetLineNumber)
-      .def_property_readonly("column", &CJavascriptStackFrame::GetColumn)
-      .def_property_readonly("scriptName", &CJavascriptStackFrame::GetScriptName)
-      .def_property_readonly("funcName", &CJavascriptStackFrame::GetFunctionName)
-      .def_property_readonly("isEval", &CJavascriptStackFrame::IsEval)
-      .def_property_readonly("isConstructor", &CJavascriptStackFrame::IsConstructor);
+  pb::class_<CJSStackFrame, CJSStackFramePtr>(m, "JSStackFrame")
+      .def_property_readonly("lineNum", &CJSStackFrame::GetLineNumber)
+      .def_property_readonly("column", &CJSStackFrame::GetColumn)
+      .def_property_readonly("scriptName", &CJSStackFrame::GetScriptName)
+      .def_property_readonly("funcName", &CJSStackFrame::GetFunctionName)
+      .def_property_readonly("isEval", &CJSStackFrame::IsEval)
+      .def_property_readonly("isConstructor", &CJSStackFrame::IsConstructor);
 
-  pb::class_<CJavascriptException>(m, "_JSError")
-      .def("__str__", &CJavascriptException::ToPythonStr)
+  pb::class_<CJSException>(m, "_JSError")
+      .def("__str__", &CJSException::ToPythonStr)
 
-      .def_property_readonly("name", &CJavascriptException::GetName,
+      .def_property_readonly("name", &CJSException::GetName,
                              "The exception name.")
-      .def_property_readonly("message", &CJavascriptException::GetMessage,
+      .def_property_readonly("message", &CJSException::GetMessage,
                              "The exception message.")
-      .def_property_readonly("scriptName", &CJavascriptException::GetScriptName,
+      .def_property_readonly("scriptName", &CJSException::GetScriptName,
                              "The script name which throw the exception.")
-      .def_property_readonly("lineNum", &CJavascriptException::GetLineNumber, "The line number of error statement.")
-      .def_property_readonly("startPos", &CJavascriptException::GetStartPosition,
+      .def_property_readonly("lineNum", &CJSException::GetLineNumber, "The line number of error statement.")
+      .def_property_readonly("startPos", &CJSException::GetStartPosition,
                              "The start position of error statement in the script.")
-      .def_property_readonly("endPos", &CJavascriptException::GetEndPosition,
+      .def_property_readonly("endPos", &CJSException::GetEndPosition,
                              "The end position of error statement in the script.")
-      .def_property_readonly("startCol", &CJavascriptException::GetStartColumn,
+      .def_property_readonly("startCol", &CJSException::GetStartColumn,
                              "The start column of error statement in the script.")
-      .def_property_readonly("endCol", &CJavascriptException::GetEndColumn,
+      .def_property_readonly("endCol", &CJSException::GetEndColumn,
                              "The end column of error statement in the script.")
-      .def_property_readonly("sourceLine", &CJavascriptException::GetSourceLine,
+      .def_property_readonly("sourceLine", &CJSException::GetSourceLine,
                              "The source line of error statement.")
-      .def_property_readonly("stackTrace", &CJavascriptException::GetStackTrace,
+      .def_property_readonly("stackTrace", &CJSException::GetStackTrace,
                              "The stack trace of error statement.")
-      .def("print_tb", &CJavascriptException::PrintCallStack,
+      .def("print_tb", &CJSException::PrintCallStack,
            pb::arg("file") = pb::none(),
            "Print the stack trace of error statement.");
   // clang-format on
 }
 
-pb::object CJavascriptStackTrace::ToPythonStr() const {
+pb::object CJSStackTrace::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
   return pb::cast(ss.str());
 }
 
-CJavascriptStackTracePtr CJavascriptStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
+CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
                                                                      int frame_limit,
                                                                      v8::StackTrace::StackTraceOptions v8_options) {
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -165,33 +165,33 @@ CJavascriptStackTracePtr CJavascriptStackTrace::GetCurrentStackTrace(v8::Isolate
 
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
   if (v8_stack_trace.IsEmpty()) {
-    CJavascriptException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  return CJavascriptStackTracePtr(new CJavascriptStackTrace(v8_isolate, v8_stack_trace));
+  return CJSStackTracePtr(new CJSStackTrace(v8_isolate, v8_stack_trace));
 }
 
-int CJavascriptStackTrace::GetFrameCount() const {
+int CJSStackTrace::GetFrameCount() const {
   auto v8_scope = v8u::getScope(m_v8_isolate);
   return Handle()->GetFrameCount();
 }
 
-CJavascriptStackFramePtr CJavascriptStackTrace::GetFrame(int idx) const {
+CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
   auto v8_scope = v8u::getScope(m_v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(m_v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
-    throw CJavascriptException("index of of range", PyExc_IndexError);
+    throw CJSException("index of of range", PyExc_IndexError);
   }
   auto v8_stack_frame = Handle()->GetFrame(m_v8_isolate, idx);
 
   if (v8_stack_frame.IsEmpty()) {
-    CJavascriptException::ThrowIf(m_v8_isolate, v8_try_catch);
+    CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return CJavascriptStackFramePtr(new CJavascriptStackFrame(m_v8_isolate, v8_stack_frame));
+  return CJSStackFramePtr(new CJSStackFrame(m_v8_isolate, v8_stack_frame));
 }
 
-void CJavascriptStackTrace::Dump(std::ostream& os) const {
+void CJSStackTrace::Dump(std::ostream& os) const {
   v8::HandleScope handle_scope(m_v8_isolate);
 
   v8::TryCatch try_catch(m_v8_isolate);
@@ -224,7 +224,7 @@ void CJavascriptStackTrace::Dump(std::ostream& os) const {
   }
 }
 
-std::string CJavascriptStackFrame::GetScriptName() const {
+std::string CJSStackFrame::GetScriptName() const {
   v8::HandleScope handle_scope(m_v8_isolate);
 
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetScriptName());
@@ -232,7 +232,7 @@ std::string CJavascriptStackFrame::GetScriptName() const {
   return std::string(*name, name.length());
 }
 
-std::string CJavascriptStackFrame::GetFunctionName() const {
+std::string CJSStackFrame::GetFunctionName() const {
   v8::HandleScope handle_scope(m_v8_isolate);
 
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetFunctionName());
@@ -240,7 +240,7 @@ std::string CJavascriptStackFrame::GetFunctionName() const {
   return std::string(*name, name.length());
 }
 
-std::string CJavascriptException::GetName() {
+std::string CJSException::GetName() {
   if (m_v8_exc.IsEmpty()) {
     return std::string();
   }
@@ -260,7 +260,7 @@ std::string CJavascriptException::GetName() {
   return std::string(*msg, msg.length());
 }
 
-std::string CJavascriptException::GetMessage() {
+std::string CJSException::GetMessage() {
   if (m_v8_exc.IsEmpty()) {
     return std::string();
   }
@@ -281,7 +281,7 @@ std::string CJavascriptException::GetMessage() {
   return std::string(*msg, msg.length());
 }
 
-std::string CJavascriptException::GetScriptName() {
+std::string CJSException::GetScriptName() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -296,7 +296,7 @@ std::string CJavascriptException::GetScriptName() {
   return std::string();
 }
 
-int CJavascriptException::GetLineNumber() {
+int CJSException::GetLineNumber() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -304,7 +304,7 @@ int CJavascriptException::GetLineNumber() {
   return m_v8_msg.IsEmpty() ? 1 : Message()->GetLineNumber(m_v8_isolate->GetCurrentContext()).ToChecked();
 }
 
-int CJavascriptException::GetStartPosition() {
+int CJSException::GetStartPosition() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -312,7 +312,7 @@ int CJavascriptException::GetStartPosition() {
   return m_v8_msg.IsEmpty() ? 1 : Message()->GetStartPosition();
 }
 
-int CJavascriptException::GetEndPosition() {
+int CJSException::GetEndPosition() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -320,7 +320,7 @@ int CJavascriptException::GetEndPosition() {
   return m_v8_msg.IsEmpty() ? 1 : Message()->GetEndPosition();
 }
 
-int CJavascriptException::GetStartColumn() {
+int CJSException::GetStartColumn() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -328,7 +328,7 @@ int CJavascriptException::GetStartColumn() {
   return m_v8_msg.IsEmpty() ? 1 : Message()->GetStartColumn();
 }
 
-int CJavascriptException::GetEndColumn() {
+int CJSException::GetEndColumn() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -336,7 +336,7 @@ int CJavascriptException::GetEndColumn() {
   return m_v8_msg.IsEmpty() ? 1 : Message()->GetEndColumn();
 }
 
-std::string CJavascriptException::GetSourceLine() {
+std::string CJSException::GetSourceLine() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -351,7 +351,7 @@ std::string CJavascriptException::GetSourceLine() {
   return std::string();
 }
 
-std::string CJavascriptException::GetStackTrace() {
+std::string CJSException::GetStackTrace() {
   assert(m_v8_isolate->InContext());
 
   v8::HandleScope handle_scope(m_v8_isolate);
@@ -365,7 +365,7 @@ std::string CJavascriptException::GetStackTrace() {
   return std::string();
 }
 
-std::string CJavascriptException::Extract(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
+std::string CJSException::Extract(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
   assert(v8_isolate->InContext());
 
   v8::HandleScope handle_scope(v8_isolate);
@@ -410,7 +410,7 @@ static struct {
                      {"SyntaxError", PyExc_SyntaxError},
                      {"TypeError", PyExc_TypeError}};
 
-void CJavascriptException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
+void CJSException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
   auto v8_scope = v8u::getScope(v8_isolate);
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
@@ -436,10 +436,10 @@ void CJavascriptException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& 
     }
   }
 
-  throw CJavascriptException(v8_isolate, v8_try_catch, raw_type);
+  throw CJSException(v8_isolate, v8_try_catch, raw_type);
 }
 
-void CJavascriptException::PrintCallStack(pb::object py_file) {
+void CJSException::PrintCallStack(pb::object py_file) {
   CPythonGIL python_gil;
 
   // TODO: move this into utility function
@@ -449,7 +449,7 @@ void CJavascriptException::PrintCallStack(pb::object py_file) {
   Message()->PrintCurrentStackTrace(m_v8_isolate, fdopen(fd, "w+"));
 }
 
-pb::object CJavascriptException::ToPythonStr() const {
+pb::object CJSException::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
   return pb::cast(ss.str());
