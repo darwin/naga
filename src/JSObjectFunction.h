@@ -3,10 +3,6 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJSObjectFunction;
-
-typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
-
 class CJSObjectFunction : public CJSObject {
   // we need to have CJSObject copyable for pybind
   // credit: https://stackoverflow.com/a/22648552/84283

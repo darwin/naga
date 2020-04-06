@@ -51,6 +51,8 @@ stpyv8_source_files = [
   "PythonObject.h",
   "PythonUtils.cpp",
   "PythonUtils.h",
+  "Script.cpp",
+  "Script.h",
   "Tracer.cpp",
   "Tracer.h",
   "Utils.cpp",
@@ -147,18 +149,14 @@ source_set("stpyv8_src") {
   # see https://github.com/area1/stpyv8/issues/9
   configs += [ "//v8:external_config" ]
 
-  deps = [
-    "//v8:v8_headers",
-  ]
+  deps = [ "//v8:v8_headers" ]
 }
 
 shared_library("stpyv8") {
   output_extension = "so"
 
   # add some of our own settings...
-  configs += [
-    ":stpyv8_python_linker_flags",
-  ]
+  configs += [ ":stpyv8_python_linker_flags" ]
 
   deps = [
     ":stpyv8_src",

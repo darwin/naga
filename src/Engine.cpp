@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Script.h"
 #include "Exception.h"
 #include "JSObject.h"
 #include "PythonAllowThreadsGuard.h"
@@ -47,13 +48,6 @@ void CEngine::Expose(const pb::module& m) {
            pb::arg("name") = std::wstring(),
            pb::arg("line") = -1,
            pb::arg("col") = -1);
-
-  pb::class_<CScript, CScriptPtr>(m, "JSScript", "JSScript is a compiled JavaScript script.")
-      .def_property_readonly("source", &CScript::GetSource,
-                             "the source code")
-
-      .def("run", &CScript::Run,
-           "Execute the compiled code.");
   // clang-format on
 }
 
@@ -161,17 +155,4 @@ CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int
 CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
   auto v8_scope = v8u::getScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
-}
-
-std::string CScript::GetSource() const {
-  v8::HandleScope handle_scope(m_isolate);
-
-  v8::String::Utf8Value source(m_isolate, Source());
-
-  return std::string(*source, source.length());
-}
-
-pb::object CScript::Run() {
-  auto v8_scope = v8u::getScope(m_isolate);
-  return m_engine.ExecuteScript(Script());
 }

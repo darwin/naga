@@ -11,12 +11,6 @@ class CJavascriptException;
 //  static void Construct(PyObject* obj, py::converter::rvalue_from_python_stage1_data* data);
 //};
 
-class CJavascriptStackTrace;
-class CJavascriptStackFrame;
-
-typedef std::shared_ptr<CJavascriptStackTrace> CJavascriptStackTracePtr;
-typedef std::shared_ptr<CJavascriptStackFrame> CJavascriptStackFramePtr;
-
 class CJavascriptStackTrace {
   v8::Isolate* m_isolate;
   v8::Persistent<v8::StackTrace> m_st;

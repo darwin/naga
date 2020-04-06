@@ -2,10 +2,6 @@
 
 #include "Base.h"
 
-class CJSObject;
-
-typedef std::shared_ptr<CJSObject> CJSObjectPtr;
-
 // https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html#std-shared-ptr
 class CJSObject {
  protected:

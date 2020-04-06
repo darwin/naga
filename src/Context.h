@@ -2,10 +2,6 @@
 
 #include "Base.h"
 
-class CContext;
-
-typedef std::shared_ptr<CContext> CContextPtr;
-
 class CContext {
   pb::object m_py_global;
   v8::Persistent<v8::Context> m_v8_context;

@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "JSObject.h"
 #include "PythonObject.h"
+#include "Script.h"
 
 void CContext::Expose(const pb::module& m) {
   // clang-format off

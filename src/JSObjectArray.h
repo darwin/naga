@@ -3,10 +3,6 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJSObjectArray;
-
-typedef std::shared_ptr<CJSObjectArray> CJSObjectArrayPtr;
-
 class CJSObjectArray : public CJSObject {
   pb::object m_items;
   size_t m_size;
