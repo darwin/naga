@@ -18,7 +18,9 @@ BUILD_DIR=${2:-"_out/$STPYV8_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
 export PATH=$DEPOT_HOME:$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 echo_cmd gn gen --verbose "$BUILD_DIR" \
-  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $STPYV8_GN_EXTRA_ARGS"
+  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $STPYV8_GN_EXTRA_ARGS" $STPYV8_GN_GEN_EXTRA_ARGS
 
-echo_info "in depot shell, you may now use following commands:"
-echo_info "> ninja -C $BUILD_DIR stpyv8"
+if [[ -z "$STPYV8_GN_GEN_EXTRA_ARGS" ]]; then
+  echo_info "in depot shell, you may now use following commands:"
+  echo_info "> ninja -C $BUILD_DIR stpyv8"
+fi

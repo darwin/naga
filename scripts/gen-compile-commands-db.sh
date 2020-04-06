@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e -o pipefail
+# shellcheck source=_config.sh
+source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
+
+cd "$ROOT_DIR"
+
+TARGETS=${1:-stpyv8_src}
+
+STPYV8_GN_GEN_EXTRA_ARGS=--export-compile-commands="$TARGETS"
+export STPYV8_GN_GEN_EXTRA_ARGS
+
+STPYV8_GN_EXTRA_ARGS="stpyv8_enable_precompiled_headers=false"
+export STPYV8_GN_EXTRA_ARGS
+
+echo_cmd ./scripts/gen-build.sh debug _out/ccdb
+
+# the above command should produce "$GN_DIR/_out/ccdb/compile_commands.json"
+
+GEN_CC_JSON="$GN_DIR/_out/ccdb/compile_commands.json"
+
+if [[ ! -f "$GEN_CC_JSON" ]]; then
+  echo_err "expected file '$GEN_CC_JSON' not found"
+  exit 1
+fi
+
+# move the file to the root
+# it contains mostly absolute paths, we just need to fix some relative ones
+REAL_CC_JSON="$ROOT_DIR/compile_commands.json"
+
+# shellcheck disable=SC2002
+cat "$GEN_CC_JSON" |
+  sed 's#../../third_party#gn/third_party#' |
+  sed 's#/gn/_out/ccdb##' \
+    >"$REAL_CC_JSON"
