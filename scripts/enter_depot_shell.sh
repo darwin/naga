@@ -7,6 +7,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 cd "$ROOT_DIR"
 
 # activate Python3, we should capture build settings from Python3.7
+# shellcheck disable=SC1090
 source "$VENV_DIR/bin/activate"
 export_python_build_settings
 

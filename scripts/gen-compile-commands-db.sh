@@ -17,7 +17,6 @@ export STPYV8_GN_EXTRA_ARGS
 echo_cmd ./scripts/gen-build.sh debug _out/ccdb
 
 # the above command should produce "$GN_DIR/_out/ccdb/compile_commands.json"
-
 GEN_CC_JSON="$GN_DIR/_out/ccdb/compile_commands.json"
 
 if [[ ! -f "$GEN_CC_JSON" ]]; then
@@ -26,11 +25,7 @@ if [[ ! -f "$GEN_CC_JSON" ]]; then
 fi
 
 # move the file to the root
-# it contains mostly absolute paths, we just need to fix some relative ones
 REAL_CC_JSON="$ROOT_DIR/compile_commands.json"
 
-# shellcheck disable=SC2002
-cat "$GEN_CC_JSON" |
-  sed 's#../../third_party#gn/third_party#' |
-  sed 's#/gn/_out/ccdb##' \
-    >"$REAL_CC_JSON"
+sed "s#-Wno-non-c-typedef-for-linkage##" \
+  <"$GEN_CC_JSON" >"$REAL_CC_JSON"

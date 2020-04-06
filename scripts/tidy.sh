@@ -8,7 +8,10 @@ cd "$ROOT_DIR"
 
 ./scripts/gen-compile-commands-db.sh
 
-COMPILE_COMMANDS_PATH=
-
 COMMAND="$STPYV8_CLANG_TIDY_PATH"
-find src -type f -print | grep -E ".*\.(cpp|h)" | xargs "$COMMAND"
+
+if [[ $# == 0 ]]; then
+  find src -type f -print | grep -E ".*\.(cpp|h)" | xargs "$COMMAND" "$@"
+else
+  "$COMMAND" "$@"
+fi
