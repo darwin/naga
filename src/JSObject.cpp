@@ -45,7 +45,7 @@ void CJSObject::Expose(const pb::module& py_module) {
       .def("__eq__", &CJSObject::Equals)
       .def("__ne__", &CJSObject::Unequals)
 
-      .def_static("create", &CJSObjectFunction::CreateWithArgs2,
+      .def_static("create", &CJSObjectFunction::CreateWithArgs,
                   pb::arg("constructor"),
                   pb::arg("arguments") = pb::tuple(),
                   pb::arg("propertiesObject") = pb::dict(),
@@ -75,19 +75,19 @@ void CJSObject::Expose(const pb::module& py_module) {
       .def("__contains__", &CJSObjectArray::Contains);
 
   pb::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
-      .def("__call__", &CJSObjectFunction::CallWithArgs2)
+      .def("__call__", &CJSObjectFunction::CallWithArgs)
 
-      .def("apply", &CJSObjectFunction::ApplyJavascript2,
+      .def("apply", &CJSObjectFunction::ApplyJavascript,
            pb::arg("self"),
            pb::arg("args") = pb::list(),
            pb::arg("kwds") = pb::dict(),
            "Performs a function call using the parameters.")
-      .def("apply", &CJSObjectFunction::ApplyPython2,
+      .def("apply", &CJSObjectFunction::ApplyPython,
            pb::arg("self"),
            pb::arg("args") = pb::list(),
            pb::arg("kwds") = pb::dict(),
            "Performs a function call using the parameters.")
-      .def("invoke", &CJSObjectFunction::Invoke2,
+      .def("invoke", &CJSObjectFunction::Invoke,
            pb::arg("args") = pb::list(),
            pb::arg("kwds") = pb::dict(),
            "Performs a binding method call using the parameters.")
