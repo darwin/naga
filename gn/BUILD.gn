@@ -6,10 +6,6 @@ declare_args() {
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
 
-  boost_includes = string_split(getenv("STPYV8_BOOST_INCLUDES"), " ")
-  boost_libs = string_split(getenv("STPYV8_BOOST_LIBS"), " ")
-  boost_ldflags = string_split(getenv("STPYV8_BOOST_LDFLAGS"), " ")
-
   stpyv8_enable_precompiled_headers = true
 }
 
@@ -112,16 +108,8 @@ config("stpyv8_python_compiler_flags") {
   ]
 }
 
-config("stpyv8_boost_compiler_flags") {
-  defines = [ "BOOST_PYTHON_STATIC_LIB" ]
-  cflags = boost_includes
-  ldflags = boost_ldflags
-}
-
 config("stpyv8_pybind11_compiler_flags") {
-  include_dirs = [
-    "../vendor/pybind11/include",
-  ]
+  include_dirs = [ "../vendor/pybind11/include" ]
 }
 
 shared_library("stpyv8") {
@@ -131,6 +119,7 @@ shared_library("stpyv8") {
   configs -= [
     "//build/config/compiler:no_exceptions",
     "//build/config/compiler:no_rtti",
+
     # TODO: this was causing issues with pybind11 in debug mode, revisit this
     # https://stackoverflow.com/questions/8685045/xcode-with-boost-linkerid-warning-about-visibility-settings
     # "//build/config/gcc:symbol_visibility_hidden",
@@ -146,7 +135,6 @@ shared_library("stpyv8") {
   configs += [
     ":stpyv8_precompiled_headers",
     ":stpyv8_python_compiler_flags",
-    ":stpyv8_boost_compiler_flags",
     ":stpyv8_compiler_flags",
     ":stpyv8_pybind11_compiler_flags",
   ]
