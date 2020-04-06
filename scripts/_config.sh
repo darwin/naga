@@ -36,6 +36,7 @@ STPYV8_BUILDTOOLS_PATH=${STPYV8_BUILDTOOLS_PATH:-$V8_HOME/buildtools}
 
 STPYV8_CLANG_FORMAT_PATH=${STPYV8_CLANG_FORMAT_PATH:-clang-format}
 STPYV8_CLANG_TIDY_PATH=${STPYV8_CLANG_TIDY_PATH:-clang-tidy}
+STPYV8_CLANG_TIDY_EXTRA_ARGS=${STPYV8_CLANG_TIDY_EXTRA_ARGS}
 
 # git cache path could speedup depot checkouts/syncs
 # as suggested in https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md#git_cache_path

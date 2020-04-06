@@ -11,7 +11,9 @@ cd "$ROOT_DIR"
 COMMAND="$STPYV8_CLANG_TIDY_PATH"
 
 if [[ $# == 0 ]]; then
-  find src -type f -print | grep -E ".*\.(cpp|h)" | xargs "$COMMAND" "$@"
+  # shellcheck disable=SC2086
+  find src -type f -print | grep -E ".*\.(cpp|h)" | xargs "$COMMAND" $STPYV8_CLANG_TIDY_EXTRA_ARGS "$@"
 else
-  "$COMMAND" "$@"
+  # shellcheck disable=SC2086
+  "$COMMAND" $STPYV8_CLANG_TIDY_EXTRA_ARGS "$@"
 fi
