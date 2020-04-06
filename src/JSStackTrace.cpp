@@ -103,3 +103,14 @@ void CJSStackTrace::Dump(std::ostream& os) const {
     os << std::endl;
   }
 }
+CJSStackTrace::CJSStackTrace(v8::Isolate* v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+    : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {}
+
+CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
+  auto v8_scope = v8u::getScope(m_v8_isolate);
+  m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
+}
+
+v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
+  return v8::Local<v8::StackTrace>::New(m_v8_isolate, m_v8_stack_trace);
+}

@@ -7,18 +7,10 @@ class CJSStackTrace {
   v8::Persistent<v8::StackTrace> m_v8_stack_trace;
 
  public:
-  CJSStackTrace(v8::Isolate* isolate, v8::Local<v8::StackTrace> st)
-      : m_v8_isolate(isolate), m_v8_stack_trace(isolate, st) {}
+  CJSStackTrace(v8::Isolate* v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
+  CJSStackTrace(const CJSStackTrace& stack_trace);
 
-  CJSStackTrace(const CJSStackTrace& st) : m_v8_isolate(st.m_v8_isolate) {
-    auto v8_scope = v8u::getScope(m_v8_isolate);
-    m_v8_stack_trace.Reset(m_v8_isolate, st.Handle());
-  }
-
-  [[nodiscard]] v8::Local<v8::StackTrace> Handle() const {
-    return v8::Local<v8::StackTrace>::New(m_v8_isolate, m_v8_stack_trace);
-  }
-
+  [[nodiscard]] v8::Local<v8::StackTrace> Handle() const;
   [[nodiscard]] int GetFrameCount() const;
   [[nodiscard]] CJSStackFramePtr GetFrame(int idx) const;
 
@@ -30,15 +22,17 @@ class CJSStackTrace {
   void Dump(std::ostream& os) const;
 
   class FrameIterator {
-    CJSStackTrace* m_st;
+    CJSStackTrace* m_stack_trace_ptr;
     size_t m_idx;
 
    public:
-    FrameIterator(CJSStackTrace* st, size_t idx) : m_st(st), m_idx(idx) {}
+    FrameIterator(CJSStackTrace* stack_trace_ptr, size_t idx) : m_stack_trace_ptr(stack_trace_ptr), m_idx(idx) {}
 
     void increment() { m_idx++; }
-    [[nodiscard]] bool equal(FrameIterator const& other) const { return m_st == other.m_st && m_idx == other.m_idx; }
-    [[nodiscard]] CJSStackFramePtr dereference() const { return m_st->GetFrame(m_idx); }
+    [[nodiscard]] bool equal(FrameIterator const& other) const {
+      return m_stack_trace_ptr == other.m_stack_trace_ptr && m_idx == other.m_idx;
+    }
+    [[nodiscard]] CJSStackFramePtr dereference() const { return m_stack_trace_ptr->GetFrame(m_idx); }
   };
 
   FrameIterator begin() { return FrameIterator(this, 0); }
