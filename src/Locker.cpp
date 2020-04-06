@@ -5,14 +5,12 @@
 void CLocker::enter() {
   withPythonAllowThreadsGuard([&]() {
     auto isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8::Isolate::GetCurrent();
-    m_locker.reset(new v8::Locker(isolate));
+    m_v8_locker.reset(new v8::Locker(isolate));
   });
 }
 
 void CLocker::leave() {
-  withPythonAllowThreadsGuard([&]() {
-    m_locker.reset();
-  });
+  withPythonAllowThreadsGuard([&]() { m_v8_locker.reset(); });
 }
 
 bool CLocker::IsLocked() {
@@ -23,9 +21,9 @@ bool CLocker::IsActive() {
   return v8::Locker::IsActive();
 }
 
-void CLocker::Expose(pb::module& m) {
+void CLocker::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CLocker>(m, "JSLocker")
+  pb::class_<CLocker>(py_module, "JSLocker")
       .def(pb::init<>())
       .def(pb::init<CIsolatePtr>(), pb::arg("isolate"))
 
@@ -43,20 +41,16 @@ void CLocker::Expose(pb::module& m) {
 }
 
 void CUnlocker::enter() {
-  withPythonAllowThreadsGuard([&]() {
-    m_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent()));
-  });
+  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent())); });
 }
 
 void CUnlocker::leave() {
-  withPythonAllowThreadsGuard([&]() {
-    m_unlocker.reset();
-  });
+  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(); });
 }
 
-void CUnlocker::Expose(pb::module& m) {
+void CUnlocker::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CUnlocker>(m, "JSUnlocker")
+  pb::class_<CUnlocker>(py_module, "JSUnlocker")
       .def(pb::init<>())
       .def("entered", &CUnlocker::entered)
       .def("enter", &CUnlocker::enter)

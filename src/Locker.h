@@ -1,41 +1,36 @@
 #pragma once
 
 #include "Base.h"
-#include "Isolate.h"
 
 class CLocker {
-  std::unique_ptr<v8::Locker> m_locker;
+  std::unique_ptr<v8::Locker> m_v8_locker;
   CIsolatePtr m_isolate;
 
  public:
-  CLocker() {
-  }
-  CLocker(CIsolatePtr isolate) : m_isolate(isolate) {
-  }
-  ~CLocker() {
-  }
-  bool entered() { return m_locker.get(); }
+  CLocker() = default;
+  explicit CLocker(CIsolatePtr isolate) : m_isolate(std::move(isolate)) {}
+  ~CLocker() = default;
+  bool entered() { return m_v8_locker.get(); }
 
   void enter();
   void leave();
 
   static bool IsLocked();
   static bool IsActive();
-  static void Expose(pb::module& m);
+
+  static void Expose(const pb::module& py_module);
 };
 
 class CUnlocker {
-  std::unique_ptr<v8::Unlocker> m_unlocker;
+  std::unique_ptr<v8::Unlocker> m_v8_unlocker;
 
  public:
-  CUnlocker() {
-  }
-  ~CUnlocker() {
-  }
-  bool entered() { return m_unlocker.get(); }
+  CUnlocker() = default;
+  ~CUnlocker() = default;
 
+  bool entered() { return m_v8_unlocker.get(); }
   void enter();
   void leave();
 
-  static void Expose(pb::module& m);
+  static void Expose(const pb::module& py_module);
 };
