@@ -3,8 +3,8 @@
 #include "Base.h"
 #include "JSObject.h"
 
-class CJSObjectNull : public CJSObject{
+class CJSObjectNull : public CJSObject {
  public:
-  bool nonzero() const { return false; }
-  std::string str() const { return "null"; }
+  [[nodiscard]] bool nonzero() const { return false; }
+  [[nodiscard]] std::string str() const { return "null"; }
 };
