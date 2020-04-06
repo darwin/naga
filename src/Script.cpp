@@ -1,7 +1,5 @@
 #include "Script.h"
 #include "Exception.h"
-#include "JSObject.h"
-#include "PythonAllowThreadsGuard.h"
 
 void CScript::Expose(const pb::module& m) {
   // clang-format off
