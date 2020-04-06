@@ -3,7 +3,7 @@
 #include "JSObject.h"
 #include "PythonObject.h"
 
-void CContext::Expose(pb::module& m) {
+void CContext::Expose(const pb::module& m) {
   // clang-format off
   pb::class_<CContext, CContextPtr>(m, "JSContext", "JSContext is an execution context.")
       .def(pb::init<const CContext &>(),
@@ -15,29 +15,25 @@ void CContext::Expose(pb::module& m) {
       .def_property_readonly("locals", &CContext::GetGlobal,
                              "Local variables within context")
 
-      .def_property_readonly_static(
-          "entered", [](pb::object) { return CContext::GetEntered(); },
-          "The last entered context.")
-      .def_property_readonly_static(
-          "current", [](pb::object) { return CContext::GetCurrent(); },
-          "The context that is on the top of the stack.")
-      .def_property_readonly_static(
-          "calling", [](pb::object) { return CContext::GetCalling(); },
-          "The context of the calling JavaScript code.")
-      .def_property_readonly_static(
-          "inContext", [](pb::object) { return CContext::InContext(); },
-          "Returns true if V8 has a current context.")
+      .def_property_readonly_static("entered", [](const pb::object &) { return CContext::GetEntered(); },
+                                    "The last entered context.")
+      .def_property_readonly_static("current", [](const pb::object &) { return CContext::GetCurrent(); },
+                                    "The context that is on the top of the stack.")
+      .def_property_readonly_static("calling", [](const pb::object &) { return CContext::GetCalling(); },
+                                    "The context of the calling JavaScript code.")
+      .def_property_readonly_static("inContext", [](const pb::object &) { return CContext::InContext(); },
+                                    "Returns true if V8 has a current context.")
 
-      .def("eval", &CContext::Evaluate,
-           pb::arg("source"),
-           pb::arg("name") = std::string(),
-           pb::arg("line") = -1,
-           pb::arg("col") = -1)
-      .def("eval", &CContext::EvaluateW,
-           pb::arg("source"),
-           pb::arg("name") = std::wstring(),
-           pb::arg("line") = -1,
-           pb::arg("col") = -1)
+      .def_static("eval", &CContext::Evaluate,
+                  pb::arg("source"),
+                  pb::arg("name") = std::string(),
+                  pb::arg("line") = -1,
+                  pb::arg("col") = -1)
+      .def_static("eval", &CContext::EvaluateW,
+                  pb::arg("source"),
+                  pb::arg("name") = std::wstring(),
+                  pb::arg("line") = -1,
+                  pb::arg("col") = -1)
 
       .def("enter", &CContext::Enter,
            "Enter this context. "
@@ -78,8 +74,8 @@ CContext::CContext(const pb::object& py_global) : m_py_global(py_global) {
   if (!py_global.is_none()) {
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto global = CPythonObject::Wrap(py_global);
-    auto retcode = Handle()->Global()->Set(v8_context, v8_proto_key, global);
-    if (retcode.IsNothing()) {
+    auto result = Handle()->Global()->Set(v8_context, v8_proto_key, global);
+    if (result.IsNothing()) {
       // TODO we need to do something if the set call failed
     }
 
