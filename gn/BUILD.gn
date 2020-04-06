@@ -100,7 +100,6 @@ config("stpyv8_compiler_flags") {
 
 config("stpyv8_python_compiler_flags") {
   cflags = python_includes
-  ldflags = python_ldflags
   defines = [
     #"Py_DEBUG",
     #"Py_REF_DEBUG",
@@ -108,11 +107,15 @@ config("stpyv8_python_compiler_flags") {
   ]
 }
 
+config("stpyv8_python_linker_flags") {
+  ldflags = python_ldflags
+}
+
 config("stpyv8_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
 
-shared_library("stpyv8") {
+source_set("stpyv8_src") {
   sources = stpyv8_source_file_paths
 
   # don't use the default configs that BUILDCONFIG applied to us.
@@ -144,9 +147,21 @@ shared_library("stpyv8") {
   # see https://github.com/area1/stpyv8/issues/9
   configs += [ "//v8:external_config" ]
 
+  deps = [
+    "//v8:v8_headers",
+  ]
+}
+
+shared_library("stpyv8") {
   output_extension = "so"
 
+  # add some of our own settings...
+  configs += [
+    ":stpyv8_python_linker_flags",
+  ]
+
   deps = [
+    ":stpyv8_src",
     "//v8:v8_libplatform",
     "//v8:v8_monolith",
   ]
