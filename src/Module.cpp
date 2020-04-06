@@ -3,12 +3,13 @@
 #include "Isolate.h"
 #include "Context.h"
 #include "Engine.h"
+#include "Script.h"
 #include "JSStackFrame.h"
 #include "JSStackTrace.h"
 #include "JSException.h"
-#include "Locker.h"
 #include "JSObject.h"
-#include "Script.h"
+#include "Locker.h"
+#include "Unlocker.h"
 
 PYBIND11_MODULE(_STPyV8, m) {
   CPlatform::Expose(m);

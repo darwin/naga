@@ -59,6 +59,8 @@ stpyv8_source_files = [
   "Script.h",
   "Tracer.cpp",
   "Tracer.h",
+  "Unlocker.cpp",
+  "Unlocker.h",
   "Utils.cpp",
   "Utils.h",
   "V8Utils.cpp",

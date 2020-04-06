@@ -1,11 +1,13 @@
 #include "Locker.h"
+
+#include <memory>
 #include "Isolate.h"
 #include "PythonAllowThreadsGuard.h"
 
 void CLocker::enter() {
   withPythonAllowThreadsGuard([&]() {
-    auto isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8::Isolate::GetCurrent();
-    m_v8_locker.reset(new v8::Locker(isolate));
+    auto v8_isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8::Isolate::GetCurrent();
+    m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
   });
 }
 
@@ -28,32 +30,14 @@ void CLocker::Expose(const pb::module& py_module) {
       .def(pb::init<CIsolatePtr>(), pb::arg("isolate"))
 
       .def_property_readonly_static(
-          "active", [](pb::object) { return CLocker::IsActive(); },
+          "active", [](const pb::object&) { return CLocker::IsActive(); },
           "whether Locker is being used by this V8 instance.")
       .def_property_readonly_static(
-          "locked", [](pb::object) { return CLocker::IsLocked(); },
+          "locked", [](const pb::object&) { return CLocker::IsLocked(); },
           "whether or not the locker is locked by the current thread.")
 
       .def("entered", &CLocker::entered)
       .def("enter", &CLocker::enter)
       .def("leave", &CLocker::leave);
-  // clang-format on
-}
-
-void CUnlocker::enter() {
-  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent())); });
-}
-
-void CUnlocker::leave() {
-  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(); });
-}
-
-void CUnlocker::Expose(const pb::module& py_module) {
-  // clang-format off
-  pb::class_<CUnlocker>(py_module, "JSUnlocker")
-      .def(pb::init<>())
-      .def("entered", &CUnlocker::entered)
-      .def("enter", &CUnlocker::enter)
-      .def("leave", &CUnlocker::leave);
   // clang-format on
 }
