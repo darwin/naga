@@ -54,12 +54,6 @@ export_python_build_settings() {
   export STPYV8_PYTHON_LDFLAGS=$(python-config --ldflags)
 }
 
-export_boost_built_settings() {
-  # I don't know how to detect boost presence on the system => hard-code it for now
-  export STPYV8_BOOST_INCLUDES=${STPYV8_BOOST_INCLUDES:-"-I/usr/local/include"}
-  export STPYV8_BOOST_LDFLAGS=${STPYV8_BOOST_LDFLAGS:-"-L/usr/local/lib -lboost_system -lboost_python37"}
-}
-
 # https://stackoverflow.com/a/53400482/84283
 function ver()
 # Description: use for comparisons of version strings.

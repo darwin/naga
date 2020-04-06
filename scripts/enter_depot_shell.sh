@@ -9,7 +9,6 @@ cd "$ROOT_DIR"
 # activate Python3, we should capture build settings from Python3.7
 source "$VENV_DIR/bin/activate"
 export_python_build_settings
-export_boost_built_settings
 
 # export variables with our prefix
 for name in "${!STPYV8_@}"; do
