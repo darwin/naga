@@ -118,6 +118,44 @@ void CJSException::Expose(const pb::module& m) {
   // clang-format on
 }
 
+CJSException::CJSException(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
+    : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
+  auto v8_scope = v8u::getScope(m_v8_isolate);
+
+  m_v8_exc.Reset(m_v8_isolate, v8_try_catch.Exception());
+
+  auto stack_trace = v8_try_catch.StackTrace(v8::Isolate::GetCurrent()->GetCurrentContext());
+  if (!stack_trace.IsEmpty()) {
+    m_v8_stack.Reset(m_v8_isolate, stack_trace.ToLocalChecked());
+  }
+
+  m_v8_msg.Reset(m_v8_isolate, v8_try_catch.Message());
+}
+
+CJSException::CJSException(v8::Isolate* isolate, const std::string& msg, PyObject* type) noexcept
+    : std::runtime_error(msg), m_v8_isolate(isolate), m_raw_type(type) {}
+
+CJSException::CJSException(const std::string& msg, PyObject* type) noexcept
+    : std::runtime_error(msg), m_v8_isolate(v8::Isolate::GetCurrent()), m_raw_type(type) {}
+
+CJSException::CJSException(const CJSException& ex) noexcept
+    : std::runtime_error(ex.what()), m_v8_isolate(ex.m_v8_isolate), m_raw_type(ex.m_raw_type) {
+  v8::HandleScope handle_scope(m_v8_isolate);
+
+  m_v8_exc.Reset(m_v8_isolate, ex.Exception());
+  m_v8_stack.Reset(m_v8_isolate, ex.Stack());
+  m_v8_msg.Reset(m_v8_isolate, ex.Message());
+}
+
+CJSException::~CJSException() noexcept {
+  if (!m_v8_exc.IsEmpty()) {
+    m_v8_exc.Reset();
+  }
+  if (!m_v8_msg.IsEmpty()) {
+    m_v8_msg.Reset();
+  }
+}
+
 std::string CJSException::GetName() {
   if (m_v8_exc.IsEmpty()) {
     return std::string();
@@ -331,4 +369,20 @@ pb::object CJSException::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
   return pb::cast(ss.str());
+}
+
+v8::Local<v8::Value> CJSException::Exception() const {
+  return v8::Local<v8::Value>::New(m_v8_isolate, m_v8_exc);
+}
+
+v8::Local<v8::Value> CJSException::Stack() const {
+  return v8::Local<v8::Value>::New(m_v8_isolate, m_v8_stack);
+}
+
+v8::Local<v8::Message> CJSException::Message() const {
+  return v8::Local<v8::Message>::New(m_v8_isolate, m_v8_msg);
+}
+
+PyObject* CJSException::GetType() const {
+  return m_raw_type;
 }
