@@ -94,6 +94,7 @@ config("stpyv8_compiler_flags") {
   cflags_cc = [
     "-Wno-c++98-compat-extra-semi",
     "-Wno-error=unused-variable",
+    "-Wno-error=unused-function",
 
     # note CLion uses some unknown pragmas suppressing code hints
     "-Wno-unknown-pragmas",
