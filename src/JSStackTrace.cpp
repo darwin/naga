@@ -8,9 +8,9 @@ std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj) {
   return os;
 }
 
-void CJSStackTrace::Expose(const pb::module& m) {
+void CJSStackTrace::Expose(const py::module& m) {
   // clang-format off
-  pb::class_<CJSStackTrace, CJSStackTracePtr>(m, "JSStackTrace")
+  py::class_<CJSStackTrace, CJSStackTracePtr>(m, "JSStackTrace")
       .def("__len__", &CJSStackTrace::GetFrameCount)
       .def("__getitem__", &CJSStackTrace::GetFrame)
 
@@ -18,7 +18,7 @@ void CJSStackTrace::Expose(const pb::module& m) {
 
       .def("__str__", &CJSStackTrace::ToPythonStr);
 
-  pb::enum_<v8::StackTrace::StackTraceOptions>(m, "JSStackTraceOptions")
+  py::enum_<v8::StackTrace::StackTraceOptions>(m, "JSStackTraceOptions")
       .value("LineNumber", v8::StackTrace::kLineNumber)
       .value("ColumnOffset", v8::StackTrace::kColumnOffset)
       .value("ScriptName", v8::StackTrace::kScriptName)
@@ -31,10 +31,10 @@ void CJSStackTrace::Expose(const pb::module& m) {
   // clang-format on
 }
 
-pb::object CJSStackTrace::ToPythonStr() const {
+py::object CJSStackTrace::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
-  return pb::cast(ss.str());
+  return py::cast(ss.str());
 }
 
 CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,

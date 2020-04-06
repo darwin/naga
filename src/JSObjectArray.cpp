@@ -29,7 +29,7 @@ void CJSObjectArray::LazyInit() {
 
     for (Py_ssize_t i = 0; i < static_cast<Py_ssize_t>(m_size); i++) {
       auto raw_item = PyList_GET_ITEM(m_py_items.ptr(), i);
-      auto py_item = pb::object(pb::reinterpret_borrow<pb::object>(raw_item));
+      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
       auto item = CPythonObject::Wrap(py_item);
       auto v8_i = v8::Uint32::New(v8_isolate, i);
       v8_array->Set(v8_context, v8_i, item).Check();
@@ -40,19 +40,19 @@ void CJSObjectArray::LazyInit() {
 
     for (Py_ssize_t i = 0; i < static_cast<Py_ssize_t>(m_size); i++) {
       auto raw_item = PyTuple_GET_ITEM(m_py_items.ptr(), i);
-      auto py_item = pb::object(pb::reinterpret_borrow<pb::object>(raw_item));
+      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
       auto item = CPythonObject::Wrap(py_item);
       auto v8_i = v8::Uint32::New(v8_isolate, i);
       v8_array->Set(v8_context, v8_i, item).Check();
     }
   } else if (PyGen_Check(m_py_items.ptr())) {
     v8_array = v8::Array::New(v8_isolate);
-    auto py_iter(pb::reinterpret_steal<pb::object>(PyObject_GetIter(m_py_items.ptr())));
+    auto py_iter(py::reinterpret_steal<py::object>(PyObject_GetIter(m_py_items.ptr())));
 
     m_size = 0;
     PyObject* raw_item;
     while (nullptr != (raw_item = PyIter_Next(py_iter.ptr()))) {
-      auto py_item = pb::object(pb::reinterpret_borrow<pb::object>(raw_item));
+      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
       auto item = CPythonObject::Wrap(py_item);
       auto v8_i = v8::Uint32::New(v8_isolate, m_size++);
       v8_array->Set(v8_context, v8_i, item).Check();
@@ -72,7 +72,7 @@ size_t CJSObjectArray::Length() {
   return result;
 }
 
-pb::object CJSObjectArray::GetItem(pb::object py_key) {
+py::object CJSObjectArray::GetItem(py::object py_key) {
   LazyInit();
 
   auto v8_isolate = v8::Isolate::GetCurrent();
@@ -90,7 +90,7 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
     Py_ssize_t sliceLen;
 
     if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
-      pb::list slice;
+      py::list slice;
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
         auto v8_value = Object()->Get(v8_context, idx).ToLocalChecked();
@@ -112,7 +112,7 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
     }
 
     if (!Object()->Has(v8_context, idx).ToChecked()) {
-      return pb::none();
+      return py::none();
     }
 
     auto v8_value = Object()->Get(v8_context, idx).ToLocalChecked();
@@ -127,7 +127,7 @@ pb::object CJSObjectArray::GetItem(pb::object py_key) {
   throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
-pb::object CJSObjectArray::SetItem(pb::object py_key, pb::object py_value) {
+py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
   LazyInit();
 
   auto v8_isolate = v8::Isolate::GetCurrent();
@@ -197,7 +197,7 @@ pb::object CJSObjectArray::SetItem(pb::object py_key, pb::object py_value) {
         }
 
         for (Py_ssize_t idx = 0; idx < itemSize; idx++) {
-          auto py_item(pb::reinterpret_borrow<pb::object>(items[idx]));
+          auto py_item(py::reinterpret_borrow<py::object>(items[idx]));
           auto item = CPythonObject::Wrap(py_item);
           Object()->Set(v8_context, static_cast<uint32_t>(start + idx * step), item).Check();
         }
@@ -214,7 +214,7 @@ pb::object CJSObjectArray::SetItem(pb::object py_key, pb::object py_value) {
   return py_value;
 }
 
-pb::object CJSObjectArray::DelItem(pb::object py_key) {
+py::object CJSObjectArray::DelItem(py::object py_key) {
   LazyInit();
 
   auto v8_isolate = v8::Isolate::GetCurrent();
@@ -236,11 +236,11 @@ pb::object CJSObjectArray::DelItem(pb::object py_key) {
       }
     }
 
-    return pb::none();
+    return py::none();
   } else if (PyLong_Check(py_key.ptr())) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    pb::object py_result;
+    py::object py_result;
 
     if (Object()->Has(v8_context, idx).ToChecked()) {
       auto v8_idx = v8::Integer::New(v8_isolate, idx);
@@ -255,14 +255,14 @@ pb::object CJSObjectArray::DelItem(pb::object py_key) {
     if (py_result) {
       return py_result;
     } else {
-      return pb::none();
+      return py::none();
     }
   }
 
   throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
-bool CJSObjectArray::Contains(const pb::object& py_key) {
+bool CJSObjectArray::Contains(const py::object& py_key) {
   LazyInit();
 
   auto v8_isolate = v8::Isolate::GetCurrent();

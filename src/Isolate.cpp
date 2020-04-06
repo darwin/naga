@@ -2,14 +2,14 @@
 #include "Context.h"
 #include "JSStackTrace.h"
 
-void CIsolate::Expose(const pb::module& py_module) {
+void CIsolate::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
-      .def(pb::init<bool>(),
-           pb::arg("owner") = false)
+  py::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
+      .def(py::init<bool>(),
+           py::arg("owner") = false)
 
       .def_property_readonly_static(
-          "current", [](const pb::object&) { return CIsolate::GetCurrent(); },
+          "current", [](const py::object&) { return CIsolate::GetCurrent(); },
           "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")
 
       .def_property_readonly("locked", &CIsolate::IsLocked)
@@ -65,12 +65,12 @@ CJSStackTracePtr CIsolate::GetCurrentStackTrace(
   return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
 
-pb::object CIsolate::GetCurrent() {
+py::object CIsolate::GetCurrent() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   if (!v8_isolate || !v8_isolate->IsInUse()) {
-    return pb::none();
+    return py::none();
   }
 
   auto v8_scope = v8u::getScope(v8_isolate);
-  return pb::cast(CIsolatePtr(new CIsolate(v8_isolate)));
+  return py::cast(CIsolatePtr(new CIsolate(v8_isolate)));
 }

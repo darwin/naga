@@ -22,13 +22,13 @@ static std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
   return os;
 }
 
-void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const pb::error_already_set& e) {
+void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e) {
   CPythonGIL python_gil;
 
   auto v8_scope = v8u::getScope(v8_isolate);
 
-  pb::object py_type(e.type());
-  pb::object py_value(e.value());
+  py::object py_type(e.type());
+  py::object py_value(e.value());
 
   PyObject* raw_val = py_value.ptr();
 
@@ -37,23 +37,23 @@ void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const pb::error_already_set
 
   std::string msg;
 
-  if (pb::hasattr(py_value, "args")) {
+  if (py::hasattr(py_value, "args")) {
     auto py_args = py_value.attr("args");
-    if (pb::isinstance<pb::tuple>(py_args)) {
-      auto py_args_tuple = pb::cast<pb::tuple>(py_args);
+    if (py::isinstance<py::tuple>(py_args)) {
+      auto py_args_tuple = py::cast<py::tuple>(py_args);
       auto it = py_args_tuple.begin();
       while (it != py_args_tuple.end()) {
         auto py_arg = *it;
-        if (pb::isinstance<pb::str>(py_arg)) {
-          msg += pb::cast<pb::str>(py_arg);
+        if (py::isinstance<py::str>(py_arg)) {
+          msg += py::cast<py::str>(py_arg);
         }
         it++;
       }
     }
-  } else if (pb::hasattr(py_value, "message")) {
+  } else if (py::hasattr(py_value, "message")) {
     auto py_msg = py_value.attr("message");
-    if (pb::isinstance<pb::str>(py_msg)) {
-      msg += pb::cast<pb::str>(py_msg);
+    if (py::isinstance<py::str>(py_msg)) {
+      msg += py::cast<py::str>(py_msg);
     }
   } else if (raw_val) {
     // TODO: use pybind
@@ -149,15 +149,15 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
       return v8::Undefined(v8_isolate).As<v8::Value>();
     }
 
-    pb::object py_val;
+    py::object py_val;
     try {
-      py_val = pb::getattr(py_obj, *v8_utf_name);
-    } catch (const pb::error_already_set& e) {
+      py_val = py::getattr(py_obj, *v8_utf_name);
+    } catch (const py::error_already_set& e) {
       if (e.matches(PyExc_AttributeError)) {
         // TODO: revisit this, what is the difference between mapping and hasattr?
         if (PyMapping_Check(py_obj.ptr()) && PyMapping_HasKeyString(py_obj.ptr(), *v8_utf_name)) {
           auto raw_item = PyMapping_GetItemString(py_obj.ptr(), *v8_utf_name);
-          auto py_result(pb::reinterpret_steal<pb::object>(raw_item));
+          auto py_result(py::reinterpret_steal<py::object>(raw_item));
           return Wrap(py_result);
         }
         return v8::Local<v8::Value>();
@@ -206,15 +206,15 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
 
     v8::String::Utf8Value v8_utf_name(v8_isolate, v8_prop_name);
     auto py_val = CJSObject::Wrap(v8_value);
-    bool found = pb::hasattr(py_obj, *v8_utf_name);
+    bool found = py::hasattr(py_obj, *v8_utf_name);
 
     // TODO: review this after learning about __watchpoints__
-    if (pb::hasattr(py_obj, "__watchpoints__")) {
-      pb::dict py_watch_points(py_obj.attr("__watchpoints__"));
-      pb::str py_prop_name(*v8_utf_name, v8_utf_name.length());
+    if (py::hasattr(py_obj, "__watchpoints__")) {
+      py::dict py_watch_points(py_obj.attr("__watchpoints__"));
+      py::str py_prop_name(*v8_utf_name, v8_utf_name.length());
       if (py_watch_points.contains(py_prop_name)) {
         auto py_watch_handler = py_watch_points[py_prop_name];
-        auto py_attr = found ? pb::object(py_obj.attr(*v8_utf_name)) : pb::none();
+        auto py_attr = found ? py::object(py_obj.attr(*v8_utf_name)) : py::none();
         py_val = py_watch_handler(py_prop_name, py_attr, py_val);
       }
     }
@@ -318,7 +318,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
           throw CJSException("can't delete attribute", PyExc_AttributeError);
         }
         auto py_result = py_deleter();
-        auto py_bool_result = pb::cast<pb::bool_>(py_result);
+        auto py_bool_result = py::cast<py::bool_>(py_result);
         return v8::Boolean::New(v8_isolate, py_bool_result);
       } else {
         auto result = -1 != PyObject_DelAttrString(py_obj.ptr(), *name);
@@ -347,23 +347,23 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
-    pb::list keys;
+    py::list keys;
     bool filter_name = false;
 
     if (PySequence_Check(py_obj.ptr())) {
       return v8::Local<v8::Array>();
     } else if (PyMapping_Check(py_obj.ptr())) {
-      keys = pb::reinterpret_steal<pb::list>(PyMapping_Keys(py_obj.ptr()));
+      keys = py::reinterpret_steal<py::list>(PyMapping_Keys(py_obj.ptr()));
     } else if (PyGen_CheckExact(py_obj.ptr())) {
-      auto py_iter(pb::reinterpret_steal<pb::object>(PyObject_GetIter(py_obj.ptr())));
+      auto py_iter(py::reinterpret_steal<py::object>(PyObject_GetIter(py_obj.ptr())));
 
       PyObject* raw_item = nullptr;
 
       while (nullptr != (raw_item = PyIter_Next(py_iter.ptr()))) {
-        keys.append(pb::reinterpret_steal<pb::object>(raw_item));
+        keys.append(py::reinterpret_steal<py::object>(raw_item));
       }
     } else {
-      keys = pb::reinterpret_steal<pb::list>(PyObject_Dir(py_obj.ptr()));
+      keys = py::reinterpret_steal<py::list>(PyObject_Dir(py_obj.ptr()));
       filter_name = true;
     }
 
@@ -373,7 +373,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
       PyObject* raw_item = PyList_GET_ITEM(keys.ptr(), i);
 
       if (filter_name && PyBytes_CheckExact(raw_item)) {
-        std::string name(pb::reinterpret_borrow<pb::str>(raw_item));
+        std::string name(py::reinterpret_borrow<py::str>(raw_item));
 
         // FIXME: Are there any methods to avoid such a dirty work?
         if (name.find("__", 0) == 0 && name.rfind("__", name.size() - 2)) {
@@ -381,7 +381,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
         }
       }
 
-      auto py_item = Wrap(pb::reinterpret_borrow<pb::object>(raw_item));
+      auto py_item = Wrap(py::reinterpret_borrow<py::object>(raw_item));
       auto v8_i = v8::Uint32::New(v8_isolate, i);
       auto res = v8_array->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), v8_i, py_item);
       res.Check();
@@ -414,7 +414,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
     if (PySequence_Check(py_obj.ptr())) {
       if (static_cast<Py_ssize_t>(index) < PySequence_Size(py_obj.ptr())) {
-        auto ret(pb::reinterpret_steal<pb::object>(PySequence_GetItem(py_obj.ptr(), index)));
+        auto ret(py::reinterpret_steal<py::object>(PySequence_GetItem(py_obj.ptr(), index)));
         return Wrap(ret);
       } else {
         return v8::Undefined(v8_isolate).As<v8::Value>();
@@ -429,12 +429,12 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
       PyObject* raw_value = PyMapping_GetItemString(py_obj.ptr(), buf);
 
       if (!raw_value) {
-        pb::int_ py_index(index);
+        py::int_ py_index(index);
         raw_value = PyObject_GetItem(py_obj.ptr(), py_index.ptr());
       }
 
       if (raw_value) {
-        return Wrap(pb::reinterpret_steal<pb::object>(raw_value));
+        return Wrap(py::reinterpret_steal<py::object>(raw_value));
       } else {
         return v8::Undefined(v8_isolate).As<v8::Value>();
       }
@@ -519,7 +519,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
       char buf[65];
       snprintf(buf, sizeof(buf), "%d", index);
 
-      auto py_index = pb::int_(index);
+      auto py_index = py::int_(index);
       if (PyMapping_HasKeyString(py_obj.ptr(), buf) || PyMapping_HasKey(py_obj.ptr(), py_index.ptr())) {
         return v8::Integer::New(v8_isolate, v8::None);
       } else {
@@ -606,17 +606,17 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     CPythonGIL python_gil;
 
-    pb::object py_self;
+    py::object py_self;
 
     if (!v8_info.Data().IsEmpty() && v8_info.Data()->IsExternal()) {
       auto v8_field = v8_info.Data().As<v8::External>();
       auto raw_self = static_cast<PyObject*>(v8_field->Value());
-      py_self = pb::reinterpret_borrow<pb::object>(raw_self);
+      py_self = py::reinterpret_borrow<py::object>(raw_self);
     } else {
       py_self = CJSObject::Wrap(v8_info.This());
     }
 
-    pb::object py_result;
+    py::object py_result;
 
     switch (v8_info.Length()) {
       // clang-format off
@@ -768,14 +768,14 @@ bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
   return v8_obj->InternalFieldCount() > 0;
 }
 
-pb::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
+py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_val = v8_obj->GetInternalField(0);
   assert(!v8_val.IsEmpty());
   auto v8_payload = v8_val.As<v8::External>();
   auto raw_obj = static_cast<PyObject*>(v8_payload->Value());
-  return pb::reinterpret_borrow<pb::object>(raw_obj);
+  return py::reinterpret_borrow<py::object>(raw_obj);
 }
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
@@ -798,7 +798,7 @@ void CPythonObject::Dispose(v8::Local<v8::Value> value) {
   }
 }
 
-v8::Local<v8::Value> CPythonObject::Wrap(pb::handle py_obj) {
+v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
@@ -809,7 +809,7 @@ v8::Local<v8::Value> CPythonObject::Wrap(pb::handle py_obj) {
   return v8_scope.Escape(value);
 }
 
-v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
+v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
@@ -824,8 +824,8 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
   if (py_obj.is_none()) {
     return v8::Null(v8_isolate);
   }
-  if (pb::isinstance<pb::bool_>(py_obj)) {
-    auto py_bool = pb::cast<pb::bool_>(py_obj);
+  if (py::isinstance<py::bool_>(py_obj)) {
+    auto py_bool = py::cast<py::bool_>(py_obj);
     if (py_bool) {
       return v8::True(v8_isolate);
     } else {
@@ -833,16 +833,16 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
     }
   }
 
-  if (pb::isinstance<CJSObjectNull>(py_obj)) {
+  if (py::isinstance<CJSObjectNull>(py_obj)) {
     return v8::Null(v8_isolate);
   }
 
-  if (pb::isinstance<CJSObjectUndefined>(py_obj)) {
+  if (py::isinstance<CJSObjectUndefined>(py_obj)) {
     return v8::Undefined(v8_isolate);
   }
 
-  if (pb::isinstance<CJSObject>(py_obj)) {
-    auto obj = pb::cast<CJSObjectPtr>(py_obj);
+  if (py::isinstance<CJSObject>(py_obj)) {
+    auto obj = py::cast<CJSObjectPtr>(py_obj);
     assert(obj.get());
     obj->LazyInit();
 
@@ -860,11 +860,11 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
   if (PyLong_CheckExact(py_obj.ptr())) {
     v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_obj.ptr()));
   } else if (PyBool_Check(py_obj.ptr())) {
-    v8_result = v8::Boolean::New(v8_isolate, pb::cast<pb::bool_>(py_obj));
+    v8_result = v8::Boolean::New(v8_isolate, py::cast<py::bool_>(py_obj));
   } else if (PyBytes_CheckExact(py_obj.ptr()) || PyUnicode_CheckExact(py_obj.ptr())) {
     v8_result = v8u::toString(py_obj);
   } else if (PyFloat_CheckExact(py_obj.ptr())) {
-    v8_result = v8::Number::New(v8_isolate, pb::cast<pb::float_>(py_obj));
+    v8_result = v8::Number::New(v8_isolate, py::cast<py::float_>(py_obj));
   } else if (isExactDateTime(py_obj) || isExactDate(py_obj)) {
     tm ts = {0};
     int ms = 0;

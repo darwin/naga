@@ -19,31 +19,31 @@ class CJSObject {
 
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
-  pb::object GetAttr(const std::string& name);
-  void SetAttr(const std::string& name, pb::object py_obj) const;
+  py::object GetAttr(const std::string& name);
+  void SetAttr(const std::string& name, py::object py_obj) const;
   void DelAttr(const std::string& name);
 
-  [[nodiscard]] pb::list GetAttrList() const;
+  [[nodiscard]] py::list GetAttrList() const;
   [[nodiscard]] int GetIdentityHash() const;
   [[nodiscard]] CJSObjectPtr Clone() const;
 
   [[nodiscard]] bool Contains(const std::string& name) const;
 
-  [[nodiscard]] pb::object ToPythonInt() const;
-  [[nodiscard]] pb::object ToPythonFloat() const;
-  [[nodiscard]] pb::object ToPythonBool() const;
-  [[nodiscard]] pb::object ToPythonStr() const;
+  [[nodiscard]] py::object ToPythonInt() const;
+  [[nodiscard]] py::object ToPythonFloat() const;
+  [[nodiscard]] py::object ToPythonBool() const;
+  [[nodiscard]] py::object ToPythonStr() const;
 
   [[nodiscard]] bool Equals(const CJSObjectPtr& other) const;
   [[nodiscard]] bool Unequals(const CJSObjectPtr& other) const { return !Equals(other); }
 
   void Dump(std::ostream& os) const;
 
-  static pb::object Wrap(const CJSObjectPtr& obj);
-  static pb::object Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
-  static pb::object Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
+  static py::object Wrap(const CJSObjectPtr& obj);
+  static py::object Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
+  static py::object Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
 
-  static void Expose(const pb::module& py_module);
+  static void Expose(const py::module& py_module);
 
  protected:
   void CheckAttr(v8::Local<v8::String> v8_name) const;

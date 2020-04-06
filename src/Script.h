@@ -22,7 +22,7 @@ class CScript {
   [[nodiscard]] v8::Local<v8::Script> Script() const { return v8::Local<v8::Script>::New(m_v8_isolate, m_v8_script); }
 
   [[nodiscard]] std::string GetSource() const;
-  pb::object Run();
+  py::object Run();
 
-  static void Expose(const pb::module& py_module);
+  static void Expose(const py::module& py_module);
 };

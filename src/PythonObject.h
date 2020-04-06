@@ -26,13 +26,13 @@ class CPythonObject {
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
   static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(v8::Isolate* isolate);
 
-  static v8::Local<v8::Value> WrapInternal2(pb::handle py_obj);
+  static v8::Local<v8::Value> WrapInternal2(py::handle py_obj);
 
   static bool IsWrapped2(v8::Local<v8::Object> v8_obj);
-  static v8::Local<v8::Value> Wrap(pb::handle py_obj);
-  static pb::object GetWrapper2(v8::Local<v8::Object> v8_obj);
+  static v8::Local<v8::Value> Wrap(py::handle py_obj);
+  static py::object GetWrapper2(v8::Local<v8::Object> v8_obj);
 
   static void Dispose(v8::Local<v8::Value> v8_val);
 
-  static void ThrowIf(v8::Isolate* v8_isolate, const pb::error_already_set& e);
+  static void ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e);
 };

@@ -19,5 +19,5 @@ class CJSStackFrame {
   [[nodiscard]] bool IsEval() const;
   [[nodiscard]] bool IsConstructor() const;
 
-  static void Expose(const pb::module& m);
+  static void Expose(const py::module& m);
 };

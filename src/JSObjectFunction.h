@@ -8,7 +8,7 @@ class CJSObjectFunction : public CJSObject {
   // credit: https://stackoverflow.com/a/22648552/84283
   v8::Persistent<v8::Object, v8::CopyablePersistentTraits<v8::Object>> m_self;
 
-  pb::object Call(v8::Local<v8::Object> v8_self, const pb::list& py_args, const pb::dict& py_kwargs);
+  py::object Call(v8::Local<v8::Object> v8_self, const py::list& py_args, const py::dict& py_kwargs);
 
  public:
   CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func);
@@ -16,14 +16,14 @@ class CJSObjectFunction : public CJSObject {
 
   [[nodiscard]] v8::Local<v8::Object> Self() const;
 
-  static pb::object CallWithArgs(pb::args py_args, const pb::kwargs& py_kwargs);
-  static pb::object CreateWithArgs(const CJSObjectFunctionPtr& proto,
-                                   const pb::tuple& py_args,
-                                   const pb::dict& py_kwds);
+  static py::object CallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
+  static py::object CreateWithArgs(const CJSObjectFunctionPtr& proto,
+                                   const py::tuple& py_args,
+                                   const py::dict& py_kwds);
 
-  pb::object ApplyJavascript(const CJSObjectPtr& self, const pb::list& py_args, const pb::dict& py_kwds);
-  pb::object ApplyPython(pb::object py_self, const pb::list& py_args, const pb::dict& py_kwds);
-  pb::object Invoke(const pb::list& py_args, const pb::dict& py_kwds);
+  py::object ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds);
+  py::object ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
+  py::object Invoke(const py::list& py_args, const py::dict& py_kwds);
 
   [[nodiscard]] std::string GetName() const;
   void SetName(const std::string& name);
@@ -35,5 +35,5 @@ class CJSObjectFunction : public CJSObject {
   [[nodiscard]] int GetLineOffset() const;
   [[nodiscard]] int GetColumnOffset() const;
 
-  [[nodiscard]] pb::object GetOwner2() const;
+  [[nodiscard]] py::object GetOwner2() const;
 };

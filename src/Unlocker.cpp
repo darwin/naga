@@ -9,10 +9,10 @@ void CUnlocker::leave() {
   withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(); });
 }
 
-void CUnlocker::Expose(const pb::module& py_module) {
+void CUnlocker::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CUnlocker>(py_module, "JSUnlocker")
-      .def(pb::init<>())
+  py::class_<CUnlocker>(py_module, "JSUnlocker")
+      .def(py::init<>())
       .def("entered", &CUnlocker::entered)
       .def("enter", &CUnlocker::enter)
       .def("leave", &CUnlocker::leave);

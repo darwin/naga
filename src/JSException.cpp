@@ -63,7 +63,7 @@ void translateJavascriptException(const CJSException& e) {
     //
     // http://www.language-binding.net/pyplusplus/troubleshooting_guide/exceptions/exceptions.html
 
-    auto m = pb::module::import("_STPyV8");
+    auto m = py::module::import("_STPyV8");
     auto py_error_class = m.attr("JSError");
     auto py_error_instance = py_error_class(e);
     py_error_instance.inc_ref();
@@ -86,11 +86,11 @@ void translateException(std::exception_ptr p) {
 }
 #pragma clang diagnostic pop
 
-void CJSException::Expose(const pb::module& py_module) {
-  pb::register_exception_translator(&translateException);
+void CJSException::Expose(const py::module& py_module) {
+  py::register_exception_translator(&translateException);
 
   // clang-format off
-  pb::class_<CJSException>(py_module, "_JSError")
+  py::class_<CJSException>(py_module, "_JSError")
       .def("__str__", &CJSException::ToPythonStr)
 
       .def_property_readonly("name", &CJSException::GetName,
@@ -113,7 +113,7 @@ void CJSException::Expose(const pb::module& py_module) {
       .def_property_readonly("stackTrace", &CJSException::GetStackTrace,
                              "The stack trace of error statement.")
       .def("print_tb", &CJSException::PrintCallStack,
-           pb::arg("file") = pb::none(),
+           py::arg("file") = py::none(),
            "Print the stack trace of error statement.");
   // clang-format on
 }
@@ -357,7 +357,7 @@ void CJSException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_c
   throw CJSException(v8_isolate, v8_try_catch, raw_type);
 }
 
-void CJSException::PrintCallStack(pb::object py_file) {
+void CJSException::PrintCallStack(py::object py_file) {
   CPythonGIL python_gil;
 
   // TODO: move this into utility function
@@ -367,10 +367,10 @@ void CJSException::PrintCallStack(pb::object py_file) {
   Message()->PrintCurrentStackTrace(m_v8_isolate, fdopen(fd, "w+"));
 }
 
-pb::object CJSException::ToPythonStr() const {
+py::object CJSException::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
-  return pb::cast(ss.str());
+  return py::cast(ss.str());
 }
 
 v8::Local<v8::Value> CJSException::Exception() const {

@@ -72,8 +72,8 @@ v8::Local<v8::Value> ObjectTracer::FindCache(PyObject* raw_object) {
 
   return v8::Local<v8::Value>();
 }
-pb::object ObjectTracer::Object() const {
-  return pb::reinterpret_borrow<pb::object>(m_raw_object);
+py::object ObjectTracer::Object() const {
+  return py::reinterpret_borrow<py::object>(m_raw_object);
 }
 
 ContextTracer::ContextTracer(v8::Local<v8::Context> v8_context, LivingMap2* living)

@@ -19,11 +19,11 @@ class CEngine {
   static const char* GetVersion();
   static void SetStackLimit(uintptr_t stack_limit_size);
 
-  [[nodiscard]] pb::object ExecuteScript(v8::Local<v8::Script> v8_script) const;
+  [[nodiscard]] py::object ExecuteScript(v8::Local<v8::Script> v8_script) const;
 
   static void SetFlags(const std::string& flags);
 
   static bool IsDead();
 
-  static void Expose(const pb::module& py_module);
+  static void Expose(const py::module& py_module);
 };

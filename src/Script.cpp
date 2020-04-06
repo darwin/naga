@@ -1,9 +1,9 @@
 #include "Script.h"
 #include "JSException.h"
 
-void CScript::Expose(const pb::module& py_module) {
+void CScript::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
+  py::class_<CScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
       .def_property_readonly("source", &CScript::GetSource,
                              "the source code")
 
@@ -19,7 +19,7 @@ std::string CScript::GetSource() const {
   return std::string(*source, source.length());
 }
 
-pb::object CScript::Run() {
+py::object CScript::Run() {
   auto v8_scope = v8u::getScope(m_v8_isolate);
   return m_engine.ExecuteScript(Script());
 }

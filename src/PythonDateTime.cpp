@@ -21,25 +21,25 @@ static bool initPythonDateTime() noexcept {
   }
 }
 
-bool isExactTime(pb::handle py_obj) {
+bool isExactTime(py::handle py_obj) {
   assert(PyDateTimeAPI);
   auto raw_obj = py_obj.ptr();
   return PyTime_CheckExact(raw_obj);
 }
 
-bool isExactDate(pb::handle py_obj) {
+bool isExactDate(py::handle py_obj) {
   assert(PyDateTimeAPI);
   auto raw_obj = py_obj.ptr();
   return PyDate_CheckExact(raw_obj);
 }
 
-bool isExactDateTime(pb::handle py_obj) {
+bool isExactDateTime(py::handle py_obj) {
   assert(PyDateTimeAPI);
   auto raw_obj = py_obj.ptr();
   return PyDateTime_CheckExact(raw_obj);
 }
 
-void getPythonDateTime(pb::handle py_obj, tm& ts, int& ms) {
+void getPythonDateTime(py::handle py_obj, tm& ts, int& ms) {
   assert(PyDateTimeAPI);
   auto raw_obj = py_obj.ptr();
   ts.tm_year = PyDateTime_GET_YEAR(raw_obj) - 1900;
@@ -53,7 +53,7 @@ void getPythonDateTime(pb::handle py_obj, tm& ts, int& ms) {
   ms = PyDateTime_DATE_GET_MICROSECOND(raw_obj);
 }
 
-void getPythonTime(pb::handle py_obj, tm& ts, int& ms) {
+void getPythonTime(py::handle py_obj, tm& ts, int& ms) {
   assert(PyDateTimeAPI);
   auto raw_obj = py_obj.ptr();
   ts.tm_hour = PyDateTime_TIME_GET_HOUR(raw_obj) - 1;
@@ -63,10 +63,10 @@ void getPythonTime(pb::handle py_obj, tm& ts, int& ms) {
   ms = PyDateTime_TIME_GET_MICROSECOND(raw_obj);
 }
 
-pb::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond) {
+py::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond) {
   assert(PyDateTimeAPI);
   auto raw_obj = PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
-  return pb::reinterpret_steal<pb::object>(raw_obj);
+  return py::reinterpret_steal<py::object>(raw_obj);
 }
 
 #pragma clang diagnostic pop

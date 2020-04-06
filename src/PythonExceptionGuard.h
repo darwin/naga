@@ -7,7 +7,7 @@ template <typename T>
 std::optional<T> withPythonExceptionGuard(v8::Isolate* v8_isolate, std::function<T()> fn) {
   try {
     return fn();
-  } catch (const pb::error_already_set& e) {
+  } catch (const py::error_already_set& e) {
     CPythonObject::ThrowIf(v8_isolate, e);
   } catch (const std::exception& e) {
     auto v8_msg = v8::String::NewFromUtf8(v8_isolate, e.what()).ToLocalChecked();

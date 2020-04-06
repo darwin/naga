@@ -1,8 +1,8 @@
 #include "JSStackFrame.h"
 
-void CJSStackFrame::Expose(const pb::module& m) {
+void CJSStackFrame::Expose(const py::module& m) {
   // clang-format off
-  pb::class_<CJSStackFrame, CJSStackFramePtr>(m, "JSStackFrame")
+  py::class_<CJSStackFrame, CJSStackFramePtr>(m, "JSStackFrame")
       .def_property_readonly("lineNum", &CJSStackFrame::GetLineNumber)
       .def_property_readonly("column", &CJSStackFrame::GetColumn)
       .def_property_readonly("scriptName", &CJSStackFrame::GetScriptName)

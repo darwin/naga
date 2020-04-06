@@ -2,11 +2,11 @@
 
 #include "Base.h"
 
-bool isExactTime(pb::handle py_obj);
-bool isExactDate(pb::handle py_obj);
-bool isExactDateTime(pb::handle py_obj);
+bool isExactTime(py::handle py_obj);
+bool isExactDate(py::handle py_obj);
+bool isExactDateTime(py::handle py_obj);
 
-void getPythonDateTime(pb::handle py_obj, tm& ts, int& ms);
-void getPythonTime(pb::handle py_obj, tm& ts, int& ms);
+void getPythonDateTime(py::handle py_obj, tm& ts, int& ms);
+void getPythonTime(py::handle py_obj, tm& ts, int& ms);
 
-pb::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond);
+py::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond);

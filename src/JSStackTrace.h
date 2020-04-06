@@ -38,7 +38,7 @@ class CJSStackTrace {
   FrameIterator begin() { return FrameIterator(this, 0); }
   FrameIterator end() { return FrameIterator(this, GetFrameCount()); }
 
-  [[nodiscard]] pb::object ToPythonStr() const;
+  [[nodiscard]] py::object ToPythonStr() const;
 
-  static void Expose(const pb::module& m);
+  static void Expose(const py::module& m);
 };

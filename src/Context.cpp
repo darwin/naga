@@ -4,37 +4,37 @@
 #include "PythonObject.h"
 #include "Script.h"
 
-void CContext::Expose(const pb::module& py_module) {
+void CContext::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
-      .def(pb::init<const CContext &>(),
+  py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
+      .def(py::init<const CContext &>(),
            "Create a new context based on a existing context")
-      .def(pb::init<pb::object>())
+      .def(py::init<py::object>())
 
       .def_property("securityToken", &CContext::GetSecurityToken, &CContext::SetSecurityToken)
 
       .def_property_readonly("locals", &CContext::GetGlobal,
                              "Local variables within context")
 
-      .def_property_readonly_static("entered", [](const pb::object &) { return CContext::GetEntered(); },
+      .def_property_readonly_static("entered", [](const py::object &) { return CContext::GetEntered(); },
                                     "The last entered context.")
-      .def_property_readonly_static("current", [](const pb::object &) { return CContext::GetCurrent(); },
+      .def_property_readonly_static("current", [](const py::object &) { return CContext::GetCurrent(); },
                                     "The context that is on the top of the stack.")
-      .def_property_readonly_static("calling", [](const pb::object &) { return CContext::GetCalling(); },
+      .def_property_readonly_static("calling", [](const py::object &) { return CContext::GetCalling(); },
                                     "The context of the calling JavaScript code.")
-      .def_property_readonly_static("inContext", [](const pb::object &) { return CContext::InContext(); },
+      .def_property_readonly_static("inContext", [](const py::object &) { return CContext::InContext(); },
                                     "Returns true if V8 has a current context.")
 
       .def_static("eval", &CContext::Evaluate,
-                  pb::arg("source"),
-                  pb::arg("name") = std::string(),
-                  pb::arg("line") = -1,
-                  pb::arg("col") = -1)
+                  py::arg("source"),
+                  py::arg("name") = std::string(),
+                  py::arg("line") = -1,
+                  py::arg("col") = -1)
       .def_static("eval", &CContext::EvaluateW,
-                  pb::arg("source"),
-                  pb::arg("name") = std::wstring(),
-                  pb::arg("line") = -1,
-                  pb::arg("col") = -1)
+                  py::arg("source"),
+                  py::arg("name") = std::wstring(),
+                  py::arg("line") = -1,
+                  py::arg("col") = -1)
 
       .def("enter", &CContext::Enter,
            "Enter this context. "
@@ -64,7 +64,7 @@ CContext::CContext(const CContext& context) {
   m_v8_context.Reset(context.Handle()->GetIsolate(), context.Handle());
 }
 
-CContext::CContext(const pb::object& py_global) : m_py_global(py_global) {
+CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
@@ -85,87 +85,87 @@ CContext::CContext(const pb::object& py_global) : m_py_global(py_global) {
   }
 }
 
-pb::object CContext::GetGlobal() const {
+py::object CContext::GetGlobal() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   return CJSObject::Wrap(Handle()->Global());
 }
 
-pb::str CContext::GetSecurityToken() {
+py::str CContext::GetSecurityToken() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_token = Handle()->GetSecurityToken();
 
   if (v8_token.IsEmpty()) {
-    return pb::str();
+    return py::str();
   }
 
   auto v8_token_string = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
   auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_token_string);
-  return pb::str(*v8_utf, v8_utf.length());
+  return py::str(*v8_utf, v8_utf.length());
 }
 
-void CContext::SetSecurityToken(const pb::str& py_token) const {
+void CContext::SetSecurityToken(const py::str& py_token) const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
 
   if (py_token.is_none()) {
     Handle()->UseDefaultSecurityToken();
   } else {
-    std::string str = pb::cast<pb::str>(py_token);
+    std::string str = py::cast<py::str>(py_token);
     auto v8_token_str = v8::String::NewFromUtf8(v8_isolate, str.c_str()).ToLocalChecked();
     Handle()->SetSecurityToken(v8_token_str);
   }
 }
 
-pb::object CContext::GetEntered() {
+py::object CContext::GetEntered() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   if (!v8_isolate->InContext()) {
-    return pb::none();
+    return py::none();
   }
   auto v8_scope = v8u::getScope(v8_isolate);
 
   auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   if (v8_context.IsEmpty()) {
-    return pb::none();
+    return py::none();
   }
-  return pb::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(CContextPtr(new CContext(v8_context)));
 }
 
-pb::object CContext::GetCurrent() {
+py::object CContext::GetCurrent() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {
-    return pb::none();
+    return py::none();
   }
-  return pb::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(CContextPtr(new CContext(v8_context)));
 }
 
-pb::object CContext::GetCalling() {
+py::object CContext::GetCalling() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   if (!v8_isolate->InContext()) {
-    return pb::none();
+    return py::none();
   }
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {
-    return pb::none();
+    return py::none();
   }
 
-  return pb::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(CContextPtr(new CContext(v8_context)));
 }
 
-pb::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
+py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.Compile(src, name, line, col);
   return script->Run();
 }
 
-pb::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
+py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.CompileW(src, name, line, col);

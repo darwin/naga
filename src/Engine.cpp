@@ -4,17 +4,17 @@
 #include "JSObject.h"
 #include "PythonAllowThreadsGuard.h"
 
-void CEngine::Expose(const pb::module& py_module) {
+void CEngine::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
-      .def(pb::init<>(),
+  py::class_<CEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
+      .def(py::init<>(),
            "Create a new script engine instance.")
       .def_property_readonly_static(
-          "version", [](const pb::object&) { return CEngine::GetVersion(); },
+          "version", [](const py::object&) { return CEngine::GetVersion(); },
           "Get the V8 engine version.")
 
       .def_property_readonly_static(
-          "dead", [](const pb::object&) { return CEngine::IsDead(); },
+          "dead", [](const py::object&) { return CEngine::IsDead(); },
           "Check if V8 is dead and therefore unusable.")
 
       .def_static("setFlags", &CEngine::SetFlags,
@@ -34,20 +34,20 @@ void CEngine::Expose(const pb::module& py_module) {
           "Optional notification that the system is running low on memory.")
 
       .def_static("setStackLimit", &CEngine::SetStackLimit,
-                  pb::arg("stack_limit_size") = 0,
+                  py::arg("stack_limit_size") = 0,
                   "Uses the address of a local variable to determine the stack top now."
                   "Given a size, returns an address that is that far from the current top of stack.")
 
       .def("compile", &CEngine::Compile,
-           pb::arg("source"),
-           pb::arg("name") = std::string(),
-           pb::arg("line") = -1,
-           pb::arg("col") = -1)
+           py::arg("source"),
+           py::arg("name") = std::string(),
+           py::arg("line") = -1,
+           py::arg("col") = -1)
       .def("compile", &CEngine::CompileW,
-           pb::arg("source"),
-           pb::arg("name") = std::wstring(),
-           pb::arg("line") = -1,
-           pb::arg("col") = -1);
+           py::arg("source"),
+           py::arg("name") = std::wstring(),
+           py::arg("line") = -1,
+           py::arg("col") = -1);
   // clang-format on
 }
 
@@ -107,7 +107,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   return CScriptPtr(new CScript(m_v8_isolate, *this, script_source, script.ToLocalChecked()));
 }
 
-pb::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
+py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -122,7 +122,7 @@ pb::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   } else {
     if (v8_try_catch.HasCaught()) {
       if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
-        throw pb::error_already_set();
+        throw py::error_already_set();
       }
 
       CJSException::ThrowIf(m_v8_isolate, v8_try_catch);

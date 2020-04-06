@@ -15,9 +15,9 @@ static std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
   return os;
 }
 
-void CJSObject::Expose(const pb::module& py_module) {
+void CJSObject::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
+  py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
       .def("__getattr__", &CJSObject::GetAttr)
       .def("__setattr__", &CJSObject::SetAttr)
       .def("__delattr__", &CJSObject::DelAttr)
@@ -46,23 +46,23 @@ void CJSObject::Expose(const pb::module& py_module) {
       .def("__ne__", &CJSObject::Unequals)
 
       .def_static("create", &CJSObjectFunction::CreateWithArgs,
-                  pb::arg("constructor"),
-                  pb::arg("arguments") = pb::tuple(),
-                  pb::arg("propertiesObject") = pb::dict(),
+                  py::arg("constructor"),
+                  py::arg("arguments") = py::tuple(),
+                  py::arg("propertiesObject") = py::dict(),
                   "Creates a new object with the specified prototype object and properties.");
 
-  pb::class_<CJSObjectNull, CJSObjectNullPtr, CJSObject>(py_module, "JSNull")
-      .def(pb::init<>())
+  py::class_<CJSObjectNull, CJSObjectNullPtr, CJSObject>(py_module, "JSNull")
+      .def(py::init<>())
       .def("__bool__", &CJSObjectNull::nonzero)
       .def("__str__", &CJSObjectNull::str);
 
-  pb::class_<CJSObjectUndefined, CJSObjectUndefinedPtr, CJSObject>(py_module, "JSUndefined")
-      .def(pb::init<>())
+  py::class_<CJSObjectUndefined, CJSObjectUndefinedPtr, CJSObject>(py_module, "JSUndefined")
+      .def(py::init<>())
       .def("__bool__", &CJSObjectUndefined::nonzero)
       .def("__str__", &CJSObjectUndefined::str);
 
-  pb::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
-      .def(pb::init<pb::object>())
+  py::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
+      .def(py::init<py::object>())
 
       .def("__len__", &CJSObjectArray::Length)
 
@@ -74,22 +74,22 @@ void CJSObject::Expose(const pb::module& py_module) {
 
       .def("__contains__", &CJSObjectArray::Contains);
 
-  pb::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
+  py::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
       .def("__call__", &CJSObjectFunction::CallWithArgs)
 
       .def("apply", &CJSObjectFunction::ApplyJavascript,
-           pb::arg("self"),
-           pb::arg("args") = pb::list(),
-           pb::arg("kwds") = pb::dict(),
+           py::arg("self"),
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
            "Performs a function call using the parameters.")
       .def("apply", &CJSObjectFunction::ApplyPython,
-           pb::arg("self"),
-           pb::arg("args") = pb::list(),
-           pb::arg("kwds") = pb::dict(),
+           py::arg("self"),
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
            "Performs a function call using the parameters.")
       .def("invoke", &CJSObjectFunction::Invoke,
-           pb::arg("args") = pb::list(),
-           pb::arg("kwds") = pb::dict(),
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
            "Performs a binding method call using the parameters.")
 
       .def("setName", &CJSObjectFunction::SetName)
@@ -132,7 +132,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   }
 }
 
-pb::object CJSObject::GetAttr(const std::string& name) {
+py::object CJSObject::GetAttr(const std::string& name) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -150,7 +150,7 @@ pb::object CJSObject::GetAttr(const std::string& name) {
   return CJSObject::Wrap(v8_attr_value, Object());
 }
 
-void CJSObject::SetAttr(const std::string& name, pb::object py_obj) const {
+void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -180,14 +180,14 @@ void CJSObject::DelAttr(const std::string& name) {
   }
 }
 
-pb::list CJSObject::GetAttrList() const {
+py::list CJSObject::GetAttrList() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   v8u::checkContext(v8_isolate);
 
   CPythonGIL python_gil;
 
-  pb::list attrs;
+  py::list attrs;
 
   if (v8u::executionTerminating(v8_isolate)) {
     return attrs;
@@ -289,7 +289,7 @@ void CJSObject::Dump(std::ostream& os) const {
   }
 }
 
-pb::object CJSObject::ToPythonInt() const {
+py::object CJSObject::ToPythonInt() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -300,10 +300,10 @@ pb::object CJSObject::ToPythonInt() const {
   }
 
   auto val = Object()->Int32Value(v8_context).ToChecked();
-  return pb::cast(val);
+  return py::cast(val);
 }
 
-pb::object CJSObject::ToPythonFloat() const {
+py::object CJSObject::ToPythonFloat() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -314,10 +314,10 @@ pb::object CJSObject::ToPythonFloat() const {
   }
 
   auto val = Object()->NumberValue(v8_context).ToChecked();
-  return pb::cast(val);
+  return py::cast(val);
 }
 
-pb::object CJSObject::ToPythonBool() const {
+py::object CJSObject::ToPythonBool() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -327,56 +327,56 @@ pb::object CJSObject::ToPythonBool() const {
     val = Object()->BooleanValue(v8_isolate);
   }
 
-  return pb::cast(val);
+  return py::cast(val);
 }
 
-pb::object CJSObject::ToPythonStr() const {
+py::object CJSObject::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
-  return pb::cast(ss.str());
+  return py::cast(ss.str());
 }
 
-pb::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
+py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::getScope(v8_isolate);
 
   if (v8_val.IsEmpty() || v8_val->IsNull() || v8_val->IsUndefined()) {
-    return pb::none();
+    return py::none();
   }
   if (v8_val->IsTrue()) {
-    return pb::bool_(true);
+    return py::bool_(true);
   }
   if (v8_val->IsFalse()) {
-    return pb::bool_(false);
+    return py::bool_(false);
   }
   if (v8_val->IsInt32()) {
     auto int32 = v8_val->Int32Value(v8_isolate->GetCurrentContext()).ToChecked();
-    return pb::int_(int32);
+    return py::int_(int32);
   }
   if (v8_val->IsString()) {
     auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_val.As<v8::String>());
-    return pb::str(*v8_utf, v8_utf.length());
+    return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsStringObject()) {
     auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_val.As<v8::StringObject>()->ValueOf());
-    return pb::str(*v8_utf, v8_utf.length());
+    return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsBoolean()) {
     bool val = v8_val->BooleanValue(v8_isolate);
-    return pb::bool_(val);
+    return py::bool_(val);
   }
   if (v8_val->IsBooleanObject()) {
     auto val = v8_val.As<v8::BooleanObject>()->BooleanValue(v8_isolate);
-    return pb::bool_(val);
+    return py::bool_(val);
   }
   if (v8_val->IsNumber()) {
     auto val = v8_val->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
-    return pb::float_(val);
+    return py::float_(val);
   }
   if (v8_val->IsNumberObject()) {
     auto val = v8_val.As<v8::NumberObject>()->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
-    return pb::float_(val);
+    return py::float_(val);
   }
   if (v8_val->IsDate()) {
     auto val = v8_val.As<v8::Date>()->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
@@ -391,13 +391,13 @@ pb::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
   return Wrap(v8_obj, v8_self);
 }
 
-pb::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
+py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::getScope(v8_isolate);
 
   if (v8_obj.IsEmpty()) {
-    return pb::none();
+    return py::none();
   }
   if (v8_obj->IsArray()) {
     auto v8_array = v8_obj.As<v8::Array>();
@@ -431,15 +431,15 @@ pb::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   return Wrap(CJSObjectPtr(new CJSObject(v8_obj)));
 }
 
-pb::object CJSObject::Wrap(const CJSObjectPtr& obj) {
+py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
   CPythonGIL python_gil;
   auto v8_isolate = v8::Isolate::GetCurrent();
 
   if (v8u::executionTerminating(v8_isolate)) {
-    return pb::none();
+    return py::none();
   }
 
-  return pb::cast(obj);
+  return py::cast(obj);
 }
 
 v8::Local<v8::Object> CJSObject::Object() const {

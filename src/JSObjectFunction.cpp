@@ -5,7 +5,7 @@
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
-pb::object CJSObjectFunction::CallWithArgs(pb::args py_args, const pb::kwargs& py_kwargs) {
+py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
   auto args_count = py_args.size();
 
   if (args_count == 0) {
@@ -13,7 +13,7 @@ pb::object CJSObjectFunction::CallWithArgs(pb::args py_args, const pb::kwargs& p
   }
 
   auto py_self = py_args[0];
-  if (!pb::isinstance<CJSObjectFunction>(py_self)) {
+  if (!py::isinstance<CJSObjectFunction>(py_self)) {
     throw CJSException("self argument must be a js function", PyExc_TypeError);
   }
 
@@ -22,16 +22,16 @@ pb::object CJSObjectFunction::CallWithArgs(pb::args py_args, const pb::kwargs& p
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
-  auto fn = pb::cast<CJSObjectFunctionPtr>(py_self);
+  auto fn = py::cast<CJSObjectFunctionPtr>(py_self);
   assert(fn.get());
   // TODO: move this into a helper function
   auto raw_args_without_self_tuple = PyTuple_GetSlice(py_args.ptr(), 1, args_count);
-  auto py_args_without_self_tuple = pb::reinterpret_steal<pb::list>(raw_args_without_self_tuple);
-  auto py_args_without_self = pb::cast<pb::list>(py_args_without_self_tuple);
+  auto py_args_without_self_tuple = py::reinterpret_steal<py::list>(raw_args_without_self_tuple);
+  auto py_args_without_self = py::cast<py::list>(py_args_without_self_tuple);
   return fn->Call(fn->Self(), py_args_without_self, py_kwargs);
 }
 
-pb::object CJSObjectFunction::Call(v8::Local<v8::Object> v8_self, const pb::list& py_args, const pb::dict& py_kwargs) {
+py::object CJSObjectFunction::Call(v8::Local<v8::Object> v8_self, const py::list& py_args, const py::dict& py_kwargs) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -71,9 +71,9 @@ pb::object CJSObjectFunction::Call(v8::Local<v8::Object> v8_self, const pb::list
   return CJSObject::Wrap(v8_result.ToLocalChecked());
 }
 
-pb::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
-                                             const pb::tuple& py_args,
-                                             const pb::dict& py_kwds) {
+py::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
+                                             const py::tuple& py_args,
+                                             const py::dict& py_kwds) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -115,16 +115,16 @@ pb::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
   return CJSObject::Wrap(v8_result);
 }
 
-pb::object CJSObjectFunction::ApplyJavascript(const CJSObjectPtr& self,
-                                              const pb::list& py_args,
-                                              const pb::dict& py_kwds) {
+py::object CJSObjectFunction::ApplyJavascript(const CJSObjectPtr& self,
+                                              const py::list& py_args,
+                                              const py::dict& py_kwds) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
   return Call(self->Object(), py_args, py_kwds);
 }
 
-pb::object CJSObjectFunction::ApplyPython(pb::object py_self, const pb::list& py_args, const pb::dict& py_kwds) {
+py::object CJSObjectFunction::ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -134,7 +134,7 @@ pb::object CJSObjectFunction::ApplyPython(pb::object py_self, const pb::list& py
   return Call(CPythonObject::Wrap(std::move(py_self))->ToObject(context).ToLocalChecked(), py_args, py_kwds);
 }
 
-pb::object CJSObjectFunction::Invoke(const pb::list& py_args, const pb::dict& py_kwds) {
+py::object CJSObjectFunction::Invoke(const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);
@@ -229,7 +229,7 @@ int CJSObjectFunction::GetColumnOffset() const {
   return func->GetScriptOrigin().ResourceColumnOffset()->Value();
 }
 
-pb::object CJSObjectFunction::GetOwner2() const {
+py::object CJSObjectFunction::GetOwner2() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::getScope(v8_isolate);

@@ -4,10 +4,10 @@
 
 namespace v8u {
 
-std::optional<v8::Local<v8::String>> toStringDirectly(pb::handle obj) {
+std::optional<v8::Local<v8::String>> toStringDirectly(py::handle obj) {
   if (PyUnicode_CheckExact(obj.ptr())) {
     auto py_bytes = PyUnicode_AsUTF8String(obj.ptr());  // may be NULL
-    auto bytes_obj = pb::reinterpret_steal<pb::object>(py_bytes);
+    auto bytes_obj = py::reinterpret_steal<py::object>(py_bytes);
     return pythonBytesObjectToString(bytes_obj.ptr());
   }
 
@@ -21,7 +21,7 @@ std::optional<v8::Local<v8::String>> toStringDirectly(pb::handle obj) {
   return std::nullopt;
 }
 
-v8::Local<v8::String> toString(pb::handle py_str) {
+v8::Local<v8::String> toString(py::handle py_str) {
   // first try to convert python string object directly if possible
   auto v8_str = toStringDirectly(py_str);
   if (v8_str) {
@@ -30,7 +30,7 @@ v8::Local<v8::String> toString(pb::handle py_str) {
 
   // alternatively convert it to string representation and try again
   auto py_computed_str = PyObject_Str(py_str.ptr());  // may be NULL
-  auto py_computed_obj = pb::reinterpret_steal<pb::object>(py_computed_str);
+  auto py_computed_obj = py::reinterpret_steal<py::object>(py_computed_str);
   v8_str = toStringDirectly(py_computed_obj);
   if (v8_str) {
     return *v8_str;
@@ -47,7 +47,7 @@ v8::Local<v8::String> toString(const std::string& str) {
 
 v8::Local<v8::String> toString(const std::wstring& str) {
   auto raw_unicode = PyUnicode_FromWideChar(str.c_str(), str.size());  // may be NULL
-  auto py_obj = pb::reinterpret_steal<pb::object>(raw_unicode);
+  auto py_obj = py::reinterpret_steal<py::object>(raw_unicode);
   auto v8_str = toStringDirectly(py_obj);
   if (v8_str) {
     return *v8_str;

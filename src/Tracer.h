@@ -19,7 +19,7 @@ class ObjectTracer {
   ObjectTracer(v8::Local<v8::Value> v8_handle, PyObject* raw_object);
   ~ObjectTracer();
 
-  pb::object Object() const;
+  py::object Object() const;
 
   void Dispose();
   static ObjectTracer& Trace(v8::Local<v8::Value> v8_handle, PyObject* raw_object);

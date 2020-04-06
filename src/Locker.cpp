@@ -23,17 +23,17 @@ bool CLocker::IsActive() {
   return v8::Locker::IsActive();
 }
 
-void CLocker::Expose(const pb::module& py_module) {
+void CLocker::Expose(const py::module& py_module) {
   // clang-format off
-  pb::class_<CLocker>(py_module, "JSLocker")
-      .def(pb::init<>())
-      .def(pb::init<CIsolatePtr>(), pb::arg("isolate"))
+  py::class_<CLocker>(py_module, "JSLocker")
+      .def(py::init<>())
+      .def(py::init<CIsolatePtr>(), py::arg("isolate"))
 
       .def_property_readonly_static(
-          "active", [](const pb::object&) { return CLocker::IsActive(); },
+          "active", [](const py::object&) { return CLocker::IsActive(); },
           "whether Locker is being used by this V8 instance.")
       .def_property_readonly_static(
-          "locked", [](const pb::object&) { return CLocker::IsLocked(); },
+          "locked", [](const py::object&) { return CLocker::IsLocked(); },
           "whether or not the locker is locked by the current thread.")
 
       .def("entered", &CLocker::entered)

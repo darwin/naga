@@ -23,7 +23,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-namespace pb = pybind11;
+namespace py = pybind11;
 
 #include "v8.h"
 #include "libplatform/libplatform.h"

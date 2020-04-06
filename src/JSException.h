@@ -38,12 +38,12 @@ class CJSException : public std::runtime_error {
   std::string GetSourceLine();
   std::string GetStackTrace();
 
-  [[nodiscard]] pb::object ToPythonStr() const;
+  [[nodiscard]] py::object ToPythonStr() const;
 
-  void PrintCallStack(pb::object py_file);
+  void PrintCallStack(py::object py_file);
   static void ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch);
 
-  static void Expose(const pb::module& py_module);
+  static void Expose(const py::module& py_module);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

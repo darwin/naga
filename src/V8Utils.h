@@ -6,7 +6,7 @@ namespace v8u {
 
 v8::Local<v8::String> toString(const std::string& str);
 v8::Local<v8::String> toString(const std::wstring& str);
-v8::Local<v8::String> toString(pb::handle py_str);
+v8::Local<v8::String> toString(py::handle py_str);
 
 v8::String::Utf8Value toUtf8Value(v8::Isolate* v8_isolate, v8::Local<v8::String> v8_string);
 
