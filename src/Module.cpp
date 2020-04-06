@@ -1,5 +1,6 @@
 #include "Base.h"
 #include "Platform.h"
+#include "Isolate.h"
 #include "Context.h"
 #include "Engine.h"
 #include "Exception.h"
@@ -8,6 +9,7 @@
 
 PYBIND11_MODULE(_STPyV8, m) {
   CPlatform::Expose(m);
+  CIsolate::Expose(m);
   CJavascriptException::Expose(m);
   CJSObject::Expose(m);
   CContext::Expose(m);

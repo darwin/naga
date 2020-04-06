@@ -1,32 +1,10 @@
 #include "Context.h"
-#include "Platform.h"
-#include "Isolate.h"
 #include "Engine.h"
 #include "JSObject.h"
 #include "PythonObject.h"
 
 void CContext::Expose(pb::module& m) {
   // clang-format off
-  pb::class_<CIsolate, CIsolatePtr>(m, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
-      .def(pb::init<bool>(), pb::arg("owner") = false)
-
-      .def_property_readonly_static(
-          "current", [](pb::object) { return CIsolate::GetCurrent(); },
-          "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")
-
-      .def_property_readonly("locked", &CIsolate::IsLocked)
-
-      .def("GetCurrentStackTrace", &CIsolate::GetCurrentStackTrace)
-
-      .def("enter", &CIsolate::Enter,
-           "Sets this isolate as the entered one for the current thread. "
-           "Saves the previously entered one (if any), so that it can be "
-           "restored when exiting.  Re-entering an isolate is allowed.")
-
-      .def("leave", &CIsolate::Leave,
-           "Exits this isolate by restoring the previously entered one in the current thread. "
-           "The isolate may still stay the same, if it was entered more than once.");
-
   pb::class_<CContext, CContextPtr>(m, "JSContext", "JSContext is an execution context.")
       .def(pb::init<const CContext &>(),
            "Create a new context based on a existing context")
