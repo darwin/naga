@@ -20,5 +20,5 @@ class CPlatform {
 
   void Init();
 
-  static void Expose(pb::module& m);
+  static void Expose(const pb::module& m);
 };
