@@ -4,8 +4,8 @@
 
 template <typename T>
 T withPythonAllowThreadsGuard(std::function<T()> fn) {
-  PyThreadState* thread_state = PyEval_SaveThread();
-  [[maybe_unused]] auto _ = finally([&]() { PyEval_RestoreThread(thread_state); });
+  PyThreadState* raw_thread_state = PyEval_SaveThread();
+  [[maybe_unused]] auto _ = finally([&]() { PyEval_RestoreThread(raw_thread_state); });
   return fn();
 }
 

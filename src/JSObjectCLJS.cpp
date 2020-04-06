@@ -1,4 +1,7 @@
-//#include "JSObjectCLJS.h"
+#include "JSObjectCLJS.h"
+
+// TODO: CLJS support
+
 //#include "PythonObject.h"
 //#include "Exception.h"
 //
@@ -277,7 +280,7 @@
 //  validateBridgeResult(res_val, fn_name);
 //
 //  if (is_sentinel(res_val)) {
-//    throw CJavascriptException("CLJSType index out of bounds", ::PyExc_IndexError);
+//    throw CJavascriptException("CLJSType index out of bounds", PyExc_IndexError);
 //  }
 //  return CJSObject::Wrap(res_val, Object());
 //}
@@ -377,7 +380,7 @@
 //    return GetItemSlice(py_key);
 //  }
 //
-//  throw CJavascriptException("indices must be integers or slices", ::PyExc_TypeError);
+//  throw CJavascriptException("indices must be integers or slices", PyExc_TypeError);
 //}
 //
 //py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
@@ -388,7 +391,7 @@
 //    return GetItemString(py_key);
 //  }
 //
-//  throw CJavascriptException("attr names must be strings", ::PyExc_TypeError);
+//  throw CJavascriptException("attr names must be strings", PyExc_TypeError);
 //}
 //
 //py::object CJSObjectCLJS::Iter() {

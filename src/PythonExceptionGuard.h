@@ -4,19 +4,19 @@
 #include "PythonObject.h"
 
 template <typename T>
-std::optional<T> withPythonExceptionGuard(v8::Isolate* isolate, std::function<T()> fn) {
+std::optional<T> withPythonExceptionGuard(v8::Isolate* v8_isolate, std::function<T()> fn) {
   try {
     return fn();
   } catch (const pb::error_already_set& e) {
-    CPythonObject::ThrowIf(isolate, e);
+    CPythonObject::ThrowIf(v8_isolate, e);
   } catch (const std::exception& e) {
-    auto msg = v8::String::NewFromUtf8(isolate, e.what()).ToLocalChecked();
-    isolate->ThrowException(v8::Exception::Error(msg));
+    auto v8_msg = v8::String::NewFromUtf8(v8_isolate, e.what()).ToLocalChecked();
+    v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   } catch (...) {
-    auto msg = v8::String::NewFromUtf8(isolate, "unknown exception").ToLocalChecked();
-    isolate->ThrowException(v8::Exception::Error(msg));
+    auto v8_msg = v8::String::NewFromUtf8(v8_isolate, "unknown exception").ToLocalChecked();
+    v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   }
   return std::nullopt;
 }
 
-void withPythonExceptionGuard(v8::Isolate* isolate, std::function<void()> fn);
+void withPythonExceptionGuard(v8::Isolate* v8_isolate, std::function<void()> fn);

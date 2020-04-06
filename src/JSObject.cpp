@@ -128,7 +128,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
     msg << "'" << *v8::String::Utf8Value(isolate, Object()->ObjectProtoToString(context).ToLocalChecked())
         << "' object has no attribute '" << *v8::String::Utf8Value(isolate, v8_name) << "'";
 
-    throw CJSException(msg.str(), ::PyExc_AttributeError);
+    throw CJSException(msg.str(), PyExc_AttributeError);
   }
 }
 
@@ -310,7 +310,7 @@ pb::object CJSObject::ToPythonFloat() const {
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (m_v8_obj.IsEmpty()) {
-    throw CJSException("argument must be a string or a number, not 'NoneType'", ::PyExc_TypeError);
+    throw CJSException("argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
   }
 
   auto val = Object()->NumberValue(v8_context).ToChecked();
