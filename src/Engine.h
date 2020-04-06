@@ -69,5 +69,5 @@ class CScript {
   const std::string GetSource() const;
 
   // py::object Run();
-  pb::object Run2();
+  pb::object Run();
 };

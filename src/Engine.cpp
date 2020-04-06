@@ -113,7 +113,7 @@ void CEngine::Expose(pb::module& m) {
   pb::class_<CScript, CScriptPtr>(m, "JSScript", "JSScript is a compiled JavaScript script.")
       .def_property_readonly("source", &CScript::GetSource, "the source code")
 
-      .def("run", &CScript::Run2, "Execute the compiled code.");
+      .def("run", &CScript::Run, "Execute the compiled code.");
 
   //  py::class_<CScript, boost::noncopyable>("JSScript", "JSScript is a compiled JavaScript script.", py::no_init)
   //      .add_property("source", &CScript::GetSource, "the source code")
@@ -309,7 +309,7 @@ const std::string CScript::GetSource() const {
 //  return m_engine.ExecuteScript(Script());
 //}
 
-pb::object CScript::Run2() {
+pb::object CScript::Run() {
   auto v8_scope = v8u::getScope(m_isolate);
   return m_engine.ExecuteScript2(Script());
 }
