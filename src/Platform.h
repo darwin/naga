@@ -9,12 +9,16 @@ typedef std::shared_ptr<CPlatform> CPlatformPtr;
 class CPlatform {
  private:
   static bool m_inited;
-  static std::unique_ptr<v8::Platform> m_platform;
   std::string m_argv;
+  static std::unique_ptr<v8::Platform> m_v8_platform;
 
  public:
-  CPlatform() {}
-  explicit CPlatform(std::string argv) : m_argv(std::move(argv)) {}
+  CPlatform() = default;
   ~CPlatform() = default;
+
+  explicit CPlatform(std::string argv);
+
   void Init();
+
+  static void Expose(pb::module& m);
 };

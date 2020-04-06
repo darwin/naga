@@ -7,12 +7,6 @@
 
 void CContext::Expose(pb::module& m) {
   // clang-format off
-  pb::class_<CPlatform, CPlatformPtr>(m, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
-      .def(pb::init<std::string>(),
-           pb::arg("argv") = std::string())
-      .def("init", &CPlatform::Init,
-           "Initializes the platform");
-
   pb::class_<CIsolate, CIsolatePtr>(m, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
       .def(pb::init<bool>(), pb::arg("owner") = false)
 

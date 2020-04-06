@@ -1,4 +1,5 @@
 #include "Base.h"
+#include "Platform.h"
 #include "Context.h"
 #include "Engine.h"
 #include "Exception.h"
@@ -6,6 +7,7 @@
 #include "JSObject.h"
 
 PYBIND11_MODULE(_STPyV8, m) {
+  CPlatform::Expose(m);
   CJavascriptException::Expose(m);
   CJSObject::Expose(m);
   CContext::Expose(m);
