@@ -1,7 +1,5 @@
 #include "Platform.h"
 
-#include "libplatform/libplatform.h"
-
 std::unique_ptr<v8::Platform> CPlatform::m_v8_platform;
 bool CPlatform::m_inited = false;
 

@@ -26,6 +26,7 @@
 namespace pb = pybind11;
 
 #include "v8.h"
+#include "libplatform/libplatform.h"
 
 #include "Utils.h"
 #include "V8Utils.h"
