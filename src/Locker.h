@@ -9,13 +9,10 @@ class CLocker {
 
  public:
   CLocker() {
-//    std::cerr << "LOCKER ALLOC1 " << this << "\n";
   }
   CLocker(CIsolatePtr isolate) : m_isolate(isolate) {
-//    std::cerr << "LOCKER ALLOC2 " << this << "\n";
   }
   ~CLocker() {
-//    std::cerr << "LOCKER DEALLOC " << this << "\n";
   }
   bool entered() { return m_locker.get(); }
 
@@ -32,10 +29,8 @@ class CUnlocker {
 
  public:
   CUnlocker() {
-//    std::cerr << "UNLOCKER ALLOC1 " << this << "\n";
   }
   ~CUnlocker() {
-//    std::cerr << "UNLOCKER DEALLOC " << this << "\n";
   }
   bool entered() { return m_unlocker.get(); }
 

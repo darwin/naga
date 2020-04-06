@@ -40,6 +40,7 @@ stpyv8_source_files = [
   "Locker.cpp",
   "Locker.h",
   "Module.cpp",
+  "Module.h",
   "Platform.cpp",
   "Platform.h",
   "PythonAllowThreadsGuard.cpp",

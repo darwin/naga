@@ -5,13 +5,7 @@
 #include "Locker.h"
 #include "JSObject.h"
 
-BOOST_PYTHON_MODULE(_STPyV8) {
-  // TODO: remove me
-  //  this is just temporary for sharing module during boost -> pybind transition
-  auto pm = py::scope().ptr();
-  assert(pm);
-  auto m = pb::reinterpret_borrow<pb::module>(pm);
-
+PYBIND11_MODULE(_STPyV8, m) {
   CJavascriptException::Expose(m);
   CJSObject::Expose(m);
   CContext::Expose(m);

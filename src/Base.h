@@ -18,12 +18,13 @@
 #include <vector>
 
 #include <Python.h>
+#include "Debug.h"
 
-#include <boost/python/raw_function.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/python.hpp>
-
-namespace py = boost::python;
+//#include <boost/python/raw_function.hpp>
+//#include <boost/iterator/iterator_facade.hpp>
+//#include <boost/python.hpp>
+//
+//namespace py = boost::python;
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>

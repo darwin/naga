@@ -4,12 +4,12 @@
 
 class CJavascriptException;
 
-struct ExceptionTranslator {
-  static void Translate(CJavascriptException const& ex);
-
-  static void* Convertible(PyObject* obj);
-  static void Construct(PyObject* obj, py::converter::rvalue_from_python_stage1_data* data);
-};
+// struct ExceptionTranslator {
+//  static void Translate(CJavascriptException const& ex);
+//
+//  static void* Convertible(PyObject* obj);
+//  static void Construct(PyObject* obj, py::converter::rvalue_from_python_stage1_data* data);
+//};
 
 class CJavascriptStackTrace;
 class CJavascriptStackFrame;
@@ -32,11 +32,8 @@ class CJavascriptStackTrace {
 
   v8::Local<v8::StackTrace> Handle() const { return v8::Local<v8::StackTrace>::New(m_isolate, m_st); }
 
-  int GetFrameCount() const {
-    v8::HandleScope handle_scope(m_isolate);
-    return Handle()->GetFrameCount();
-  }
-  CJavascriptStackFramePtr GetFrame(size_t idx) const;
+  int GetFrameCount() const;
+  CJavascriptStackFramePtr GetFrame(int idx) const;
 
   static CJavascriptStackTracePtr GetCurrentStackTrace(
       v8::Isolate* isolate,
@@ -45,10 +42,12 @@ class CJavascriptStackTrace {
 
   void Dump(std::ostream& os) const;
 
-  class FrameIterator : public boost::iterator_facade<FrameIterator,
-                                                      CJavascriptStackFramePtr const,
-                                                      boost::forward_traversal_tag,
-                                                      CJavascriptStackFramePtr> {
+  class FrameIterator
+//      : public boost::iterator_facade<FrameIterator,
+//                                                      CJavascriptStackFramePtr const,
+//                                                      boost::forward_traversal_tag,
+//                                                      CJavascriptStackFramePtr>
+  {
     CJavascriptStackTrace* m_st;
     size_t m_idx;
 
@@ -59,11 +58,13 @@ class CJavascriptStackTrace {
 
     bool equal(FrameIterator const& other) const { return m_st == other.m_st && m_idx == other.m_idx; }
 
-    reference dereference() const { return m_st->GetFrame(m_idx); }
+    CJavascriptStackFramePtr dereference() const { return m_st->GetFrame(m_idx); }
   };
 
   FrameIterator begin(void) { return FrameIterator(this, 0); }
   FrameIterator end(void) { return FrameIterator(this, GetFrameCount()); }
+
+  pb::object ToPythonStr() const;
 };
 
 class CJavascriptStackFrame {
@@ -151,6 +152,8 @@ class CJavascriptException : public std::runtime_error {
       m_msg.Reset();
   }
 
+  PyObject* GetType() const { return m_type; }
+
   v8::Local<v8::Value> Exception() const { return v8::Local<v8::Value>::New(m_isolate, m_exc); }
   v8::Local<v8::Value> Stack() const { return v8::Local<v8::Value>::New(m_isolate, m_stack); }
   v8::Local<v8::Message> Message() const { return v8::Local<v8::Message>::New(m_isolate, m_msg); }
@@ -166,12 +169,14 @@ class CJavascriptException : public std::runtime_error {
   const std::string GetSourceLine(void);
   const std::string GetStackTrace(void);
 
-  void PrintCallStack(py::object file);
+//  void PrintCallStack(py::object file);
+  void PrintCallStack2(pb::object file);
 
-  static void ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch);
-  static void ThrowIf2(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch);
+  //  static void ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch);
+  static void ThrowIf(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch);
 
   static void Expose(pb::module& m);
+  pb::object ToPythonStr() const;
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJavascriptException>::value,

@@ -109,6 +109,7 @@ class JSError(Exception):
         return self.parse_stack(self.stackTrace)
 
 _STPyV8._JSError._jsclass = JSError
+_STPyV8.JSError = JSError
 
 JSObject    = _STPyV8.JSObject
 JSNull      = _STPyV8.JSNull

@@ -24,7 +24,8 @@ class CIsolate {
 
   CJavascriptStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions options);
 
-  static py::object GetCurrent(void);
+  // static py::object GetCurrent(void);
+  static pb::object GetCurrent(void);
 
   void Enter(void) { m_isolate->Enter(); }
   void Leave(void) { m_isolate->Exit(); }

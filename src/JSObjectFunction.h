@@ -12,7 +12,7 @@ class CJSObjectFunction : public CJSObject {
   // credit: https://stackoverflow.com/a/22648552/84283
   v8::Persistent<v8::Object, v8::CopyablePersistentTraits<v8::Object>> m_self;
 
-  py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
+  // py::object Call(v8::Local<v8::Object> self, py::list args, py::dict kwds);
   pb::object Call2(v8::Local<v8::Object> v8_self, pb::list py_args, pb::dict py_kwargs);
 
  public:
@@ -23,16 +23,16 @@ class CJSObjectFunction : public CJSObject {
 
   v8::Local<v8::Object> Self() const { return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self); }
 
-  static py::object CallWithArgs(py::tuple args, py::dict kwds);
+  // static py::object CallWithArgs(py::tuple args, py::dict kwds);
   static pb::object CallWithArgs2(pb::args py_args, pb::kwargs py_kwargs);
-  static py::object CreateWithArgs(CJSObjectFunctionPtr proto, py::tuple args, py::dict kwds);
+  // static py::object CreateWithArgs(CJSObjectFunctionPtr proto, py::tuple args, py::dict kwds);
   static pb::object CreateWithArgs2(CJSObjectFunctionPtr proto, pb::tuple py_args, pb::dict py_kwds);
 
-  py::object ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds);
+  // py::object ApplyJavascript(CJSObjectPtr self, py::list args, py::dict kwds);
   pb::object ApplyJavascript2(CJSObjectPtr self, pb::list py_args, pb::dict py_kwds);
-  py::object ApplyPython(py::object self, py::list args, py::dict kwds);
+  // py::object ApplyPython(py::object self, py::list args, py::dict kwds);
   pb::object ApplyPython2(pb::object py_self, pb::list py_args, pb::dict py_kwds);
-  py::object Invoke(py::list args, py::dict kwds);
+  // py::object Invoke(py::list args, py::dict kwds);
   pb::object Invoke2(pb::list py_args, pb::dict py_kwds);
 
   const std::string GetName() const;
@@ -45,6 +45,6 @@ class CJSObjectFunction : public CJSObject {
   int GetLineOffset() const;
   int GetColumnOffset() const;
 
-  py::object GetOwner() const;
+  // py::object GetOwner() const;
   pb::object GetOwner2() const;
 };

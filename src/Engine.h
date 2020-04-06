@@ -22,6 +22,7 @@ class CEngine {
 
   CScriptPtr Compile(const std::string& src, const std::string name = std::string(), int line = -1, int col = -1);
   CScriptPtr CompileW(const std::wstring& src, const std::wstring name = std::wstring(), int line = -1, int col = -1);
+
  public:
   static void Expose(pb::module& m);
 
@@ -29,7 +30,7 @@ class CEngine {
   static bool SetMemoryLimit(int max_young_space_size, int max_old_space_size, int max_executable_size);
   static void SetStackLimit(uintptr_t stack_limit_size);
 
-  py::object ExecuteScript(v8::Local<v8::Script> script);
+  // py::object ExecuteScript(v8::Local<v8::Script> script);
   pb::object ExecuteScript2(v8::Local<v8::Script> v8_script);
 
   static void SetFlags(const std::string& flags) { v8::V8::SetFlagsFromString(flags.c_str(), flags.size()); }
@@ -67,6 +68,6 @@ class CScript {
 
   const std::string GetSource() const;
 
-  py::object Run();
+  // py::object Run();
   pb::object Run2();
 };

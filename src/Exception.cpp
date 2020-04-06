@@ -1,6 +1,6 @@
 #include "Exception.h"
 #include "PythonGIL.h"
-#include "PythonObject.h"
+#include "Module.h"
 
 std::ostream& operator<<(std::ostream& os, const CJavascriptException& ex) {
   os << "JSError: " << ex.what();
@@ -14,16 +14,98 @@ std::ostream& operator<<(std::ostream& os, const CJavascriptStackTrace& obj) {
   return os;
 }
 
+void translateJavascriptException(const CJavascriptException& e) {
+  CPythonGIL python_gil;
+
+  if (e.GetType()) {
+    PyErr_SetString(e.GetType(), e.what());
+  } else {
+    auto v8_isolate = v8::Isolate::GetCurrent();
+    auto v8_scope = v8u::getScope(v8_isolate);
+
+    if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
+      auto v8_ex = e.Exception()->ToObject(v8_isolate->GetCurrentContext()).ToLocalChecked();
+
+      auto v8_ex_type_key = v8::String::NewFromUtf8(v8_isolate, "exc_type").ToLocalChecked();
+      auto v8_ex_type_api = v8::Private::ForApi(v8_isolate, v8_ex_type_key);
+      auto v8_ex_type_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_type_api);
+
+      auto v8_ex_value_key = v8::String::NewFromUtf8(v8_isolate, "exc_value").ToLocalChecked();
+      auto v8_ex_value_api = v8::Private::ForApi(v8_isolate, v8_ex_value_key);
+      auto v8_ex_value_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_value_api);
+
+      if (!v8_ex_type_val.IsEmpty() && !v8_ex_value_val.IsEmpty()) {
+        auto v8_ex_type = v8_ex_type_val.ToLocalChecked();
+        PyObject* raw_type = nullptr;
+        if (v8_ex_type->IsExternal()) {
+          auto type_val = v8::Local<v8::External>::Cast(v8_ex_type)->Value();
+          raw_type = static_cast<PyObject*>(type_val);
+        }
+        auto v8_ex_value = v8_ex_value_val.ToLocalChecked();
+        PyObject* raw_value = nullptr;
+        if (v8_ex_value->IsExternal()) {
+          auto value_val = v8::Local<v8::External>::Cast(v8_ex_value)->Value();
+          raw_value = static_cast<PyObject*>(value_val);
+        }
+
+        if (raw_type && raw_value) {
+          PyErr_SetObject(raw_type, raw_value);
+          Py_DECREF(raw_type);
+          Py_DECREF(raw_value);
+          return;
+        }
+        if (raw_type) {
+          Py_DECREF(raw_type);
+        }
+        if (raw_value) {
+          Py_DECREF(raw_value);
+        }
+      }
+    }
+
+    // TODO: revisit if we can do better with pybind
+    // Boost Python doesn't support inheriting from Python class,
+    // so, just use some workaround to throw our custom exception
+    //
+    // http://www.language-binding.net/pyplusplus/troubleshooting_guide/exceptions/exceptions.html
+
+    auto m = pb::module::import("_STPyV8");
+    auto py_error_class = m.attr("JSError");
+    auto py_error_instance = py_error_class(e);
+    py_error_instance.inc_ref();
+    PyErr_SetObject(py_error_class.ptr(), py_error_instance.ptr());
+  }
+}
+
+void translateException(std::exception_ptr p) {
+  try {
+    if (p) {
+      std::rethrow_exception(p);
+    }
+  } catch (const CJavascriptException& e) {
+    translateJavascriptException(e);
+  }
+}
+
 void CJavascriptException::Expose(pb::module& m) {
-  py::class_<CJavascriptStackTrace>("JSStackTrace", py::no_init)
+  // clang-format off
+  pb::class_<CJavascriptStackTrace, CJavascriptStackTracePtr>(m, "JSStackTrace")
       .def("__len__", &CJavascriptStackTrace::GetFrameCount)
       .def("__getitem__", &CJavascriptStackTrace::GetFrame)
 
-      .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
+      // TODO: .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
 
-      .def(str(py::self));
+      .def("__str__", &CJavascriptStackTrace::ToPythonStr);
 
-  py::enum_<v8::StackTrace::StackTraceOptions>("JSStackTraceOptions")
+  //  py::class_<CJavascriptStackTrace>("JSStackTrace", py::no_init)
+  //      .def("__len__", &CJavascriptStackTrace::GetFrameCount)
+  //      .def("__getitem__", &CJavascriptStackTrace::GetFrame)
+  //
+  //      .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
+  //
+  //      .def(str(py::self));
+
+  pb::enum_<v8::StackTrace::StackTraceOptions>(m, "JSStackTraceOptions")
       .value("LineNumber", v8::StackTrace::kLineNumber)
       .value("ColumnOffset", v8::StackTrace::kColumnOffset)
       .value("ScriptName", v8::StackTrace::kScriptName)
@@ -31,51 +113,102 @@ void CJavascriptException::Expose(pb::module& m) {
       .value("IsEval", v8::StackTrace::kIsEval)
       .value("IsConstructor", v8::StackTrace::kIsConstructor)
       .value("Overview", v8::StackTrace::kOverview)
-      .value("Detailed", v8::StackTrace::kDetailed);
+      .value("Detailed", v8::StackTrace::kDetailed)
+      .export_values();
+  ;
 
-  py::class_<CJavascriptStackFrame>("JSStackFrame", py::no_init)
-      .add_property("lineNum", &CJavascriptStackFrame::GetLineNumber)
-      .add_property("column", &CJavascriptStackFrame::GetColumn)
-      .add_property("scriptName", &CJavascriptStackFrame::GetScriptName)
-      .add_property("funcName", &CJavascriptStackFrame::GetFunctionName)
-      .add_property("isEval", &CJavascriptStackFrame::IsEval)
-      .add_property("isConstructor", &CJavascriptStackFrame::IsConstructor);
+  //  py::enum_<v8::StackTrace::StackTraceOptions>("JSStackTraceOptions")
+  //      .value("LineNumber", v8::StackTrace::kLineNumber)
+  //      .value("ColumnOffset", v8::StackTrace::kColumnOffset)
+  //      .value("ScriptName", v8::StackTrace::kScriptName)
+  //      .value("FunctionName", v8::StackTrace::kFunctionName)
+  //      .value("IsEval", v8::StackTrace::kIsEval)
+  //      .value("IsConstructor", v8::StackTrace::kIsConstructor)
+  //      .value("Overview", v8::StackTrace::kOverview)
+  //      .value("Detailed", v8::StackTrace::kDetailed);
 
-  py::objects::class_value_wrapper<
-      std::shared_ptr<CJavascriptStackTrace>,
-      py::objects::make_ptr_instance<
-          CJavascriptStackTrace,
-          py::objects::pointer_holder<std::shared_ptr<CJavascriptStackTrace>, CJavascriptStackTrace> > >();
+  pb::class_<CJavascriptStackFrame, CJavascriptStackFramePtr>(m, "JSStackFrame")
+      .def_property_readonly("lineNum", &CJavascriptStackFrame::GetLineNumber)
+      .def_property_readonly("column", &CJavascriptStackFrame::GetColumn)
+      .def_property_readonly("scriptName", &CJavascriptStackFrame::GetScriptName)
+      .def_property_readonly("funcName", &CJavascriptStackFrame::GetFunctionName)
+      .def_property_readonly("isEval", &CJavascriptStackFrame::IsEval)
+      .def_property_readonly("isConstructor", &CJavascriptStackFrame::IsConstructor);
 
-  py::objects::class_value_wrapper<
-      std::shared_ptr<CJavascriptStackFrame>,
-      py::objects::make_ptr_instance<
-          CJavascriptStackFrame,
-          py::objects::pointer_holder<std::shared_ptr<CJavascriptStackFrame>, CJavascriptStackFrame> > >();
+  //  py::class_<CJavascriptStackFrame>("JSStackFrame", py::no_init)
+  //      .add_property("lineNum", &CJavascriptStackFrame::GetLineNumber)
+  //      .add_property("column", &CJavascriptStackFrame::GetColumn)
+  //      .add_property("scriptName", &CJavascriptStackFrame::GetScriptName)
+  //      .add_property("funcName", &CJavascriptStackFrame::GetFunctionName)
+  //      .add_property("isEval", &CJavascriptStackFrame::IsEval)
+  //      .add_property("isConstructor", &CJavascriptStackFrame::IsConstructor);
 
-  py::class_<CJavascriptException>("_JSError", py::no_init)
-      .def(str(py::self))
+  //  py::objects::class_value_wrapper<
+  //      std::shared_ptr<CJavascriptStackTrace>,
+  //      py::objects::make_ptr_instance<
+  //          CJavascriptStackTrace,
+  //          py::objects::pointer_holder<std::shared_ptr<CJavascriptStackTrace>, CJavascriptStackTrace> > >();
+  //
+  //  py::objects::class_value_wrapper<
+  //      std::shared_ptr<CJavascriptStackFrame>,
+  //      py::objects::make_ptr_instance<
+  //          CJavascriptStackFrame,
+  //          py::objects::pointer_holder<std::shared_ptr<CJavascriptStackFrame>, CJavascriptStackFrame> > >();
 
-      .add_property("name", &CJavascriptException::GetName, "The exception name.")
-      .add_property("message", &CJavascriptException::GetMessage, "The exception message.")
-      .add_property("scriptName", &CJavascriptException::GetScriptName, "The script name which throw the exception.")
-      .add_property("lineNum", &CJavascriptException::GetLineNumber, "The line number of error statement.")
-      .add_property("startPos", &CJavascriptException::GetStartPosition,
-                    "The start position of error statement in the script.")
-      .add_property("endPos", &CJavascriptException::GetEndPosition,
-                    "The end position of error statement in the script.")
-      .add_property("startCol", &CJavascriptException::GetStartColumn,
-                    "The start column of error statement in the script.")
-      .add_property("endCol", &CJavascriptException::GetEndColumn, "The end column of error statement in the script.")
-      .add_property("sourceLine", &CJavascriptException::GetSourceLine, "The source line of error statement.")
-      .add_property("stackTrace", &CJavascriptException::GetStackTrace, "The stack trace of error statement.")
-      .def("print_tb", &CJavascriptException::PrintCallStack, (py::arg("file") = py::object()),
+  pb::class_<CJavascriptException>(m, "_JSError")
+      .def("__str__", &CJavascriptException::ToPythonStr)
+
+      .def_property_readonly("name", &CJavascriptException::GetName, "The exception name.")
+      .def_property_readonly("message", &CJavascriptException::GetMessage, "The exception message.")
+      .def_property_readonly("scriptName", &CJavascriptException::GetScriptName,
+                             "The script name which throw the exception.")
+      .def_property_readonly("lineNum", &CJavascriptException::GetLineNumber, "The line number of error statement.")
+      .def_property_readonly("startPos", &CJavascriptException::GetStartPosition,
+                             "The start position of error statement in the script.")
+      .def_property_readonly("endPos", &CJavascriptException::GetEndPosition,
+                             "The end position of error statement in the script.")
+      .def_property_readonly("startCol", &CJavascriptException::GetStartColumn,
+                             "The start column of error statement in the script.")
+      .def_property_readonly("endCol", &CJavascriptException::GetEndColumn,
+                             "The end column of error statement in the script.")
+      .def_property_readonly("sourceLine", &CJavascriptException::GetSourceLine, "The source line of error statement.")
+      .def_property_readonly("stackTrace", &CJavascriptException::GetStackTrace, "The stack trace of error statement.")
+      .def("print_tb", &CJavascriptException::PrintCallStack2, pb::arg("file") = pb::none(),
            "Print the stack trace of error statement.");
 
-  py::register_exception_translator<CJavascriptException>(ExceptionTranslator::Translate);
+  //  py::class_<CJavascriptException>("_JSError", py::no_init)
+  //      .def(str(py::self))
+  //
+  //      .add_property("name", &CJavascriptException::GetName, "The exception name.")
+  //      .add_property("message", &CJavascriptException::GetMessage, "The exception message.")
+  //      .add_property("scriptName", &CJavascriptException::GetScriptName, "The script name which throw the
+  //      exception.") .add_property("lineNum", &CJavascriptException::GetLineNumber, "The line number of error
+  //      statement.") .add_property("startPos", &CJavascriptException::GetStartPosition,
+  //                    "The start position of error statement in the script.")
+  //      .add_property("endPos", &CJavascriptException::GetEndPosition,
+  //                    "The end position of error statement in the script.")
+  //      .add_property("startCol", &CJavascriptException::GetStartColumn,
+  //                    "The start column of error statement in the script.")
+  //      .add_property("endCol", &CJavascriptException::GetEndColumn, "The end column of error statement in the
+  //      script.") .add_property("sourceLine", &CJavascriptException::GetSourceLine, "The source line of error
+  //      statement.") .add_property("stackTrace", &CJavascriptException::GetStackTrace, "The stack trace of error
+  //      statement.") .def("print_tb", &CJavascriptException::PrintCallStack, (py::arg("file") = py::object()),
+  //           "Print the stack trace of error statement.");
 
-  py::converter::registry::push_back(ExceptionTranslator::Convertible, ExceptionTranslator::Construct,
-                                     py::type_id<CJavascriptException>());
+  pb::register_exception_translator(&translateException);
+
+  //  py::register_exception_translator<CJavascriptException>(ExceptionTranslator::Translate);
+
+  //  py::converter::registry::push_back(ExceptionTranslator::Convertible, ExceptionTranslator::Construct,
+  //                                     py::type_id<CJavascriptException>());
+
+  // clang-format on
+}
+
+pb::object CJavascriptStackTrace::ToPythonStr() const {
+  std::stringstream ss;
+  ss << *this;
+  return pb::cast(ss.str());
 }
 
 CJavascriptStackTracePtr CJavascriptStackTrace::GetCurrentStackTrace(v8::Isolate* isolate,
@@ -90,20 +223,28 @@ CJavascriptStackTracePtr CJavascriptStackTrace::GetCurrentStackTrace(v8::Isolate
   if (st.IsEmpty())
     CJavascriptException::ThrowIf(isolate, try_catch);
 
-  return std::shared_ptr<CJavascriptStackTrace>(new CJavascriptStackTrace(isolate, st));
+  return CJavascriptStackTracePtr(new CJavascriptStackTrace(isolate, st));
 }
 
-CJavascriptStackFramePtr CJavascriptStackTrace::GetFrame(size_t idx) const {
+int CJavascriptStackTrace::GetFrameCount() const {
   v8::HandleScope handle_scope(m_isolate);
+  auto result = Handle()->GetFrameCount();
+  return result;
+}
 
-  v8::TryCatch try_catch(m_isolate);
+CJavascriptStackFramePtr CJavascriptStackTrace::GetFrame(int idx) const {
+  auto v8_scope = v8u::getScope(m_isolate);
+  auto v8_try_catch = v8u::openTryCatch(m_isolate);
+  if (idx >= Handle()->GetFrameCount()) {
+    throw CJavascriptException("index of of range", PyExc_IndexError);
+  }
+  auto frame = Handle()->GetFrame(m_isolate, idx);
 
-  v8::Local<v8::StackFrame> frame = Handle()->GetFrame(m_isolate, idx);
+  if (frame.IsEmpty()) {
+    CJavascriptException::ThrowIf(m_isolate, v8_try_catch);
+  }
 
-  if (frame.IsEmpty())
-    CJavascriptException::ThrowIf(m_isolate, try_catch);
-
-  return std::shared_ptr<CJavascriptStackFrame>(new CJavascriptStackFrame(m_isolate, frame));
+  return CJavascriptStackFramePtr(new CJavascriptStackFrame(m_isolate, frame));
 }
 
 void CJavascriptStackTrace::Dump(std::ostream& os) const {
@@ -317,34 +458,34 @@ static struct {
                      {"SyntaxError", PyExc_SyntaxError},
                      {"TypeError", PyExc_TypeError}};
 
-void CJavascriptException::ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch) {
-  if (try_catch.HasCaught() && try_catch.CanContinue()) {
-    v8::HandleScope handle_scope(isolate);
+// void CJavascriptException::ThrowIf(v8::Isolate* isolate, v8::TryCatch& try_catch) {
+//  if (try_catch.HasCaught() && try_catch.CanContinue()) {
+//    v8::HandleScope handle_scope(isolate);
+//
+//    PyObject* type = NULL;
+//    v8::Local<v8::Value> obj = try_catch.Exception();
+//
+//    if (obj->IsObject()) {
+//      v8::Local<v8::Object> exc = obj->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
+//      v8::Local<v8::String> name = v8::String::NewFromUtf8(isolate, "name").ToLocalChecked();
+//
+//      if (exc->Has(isolate->GetCurrentContext(), name).ToChecked()) {
+//        v8::String::Utf8Value s(
+//            isolate, v8::Local<v8::String>::Cast(exc->Get(isolate->GetCurrentContext(), name).ToLocalChecked()));
+//
+//        for (size_t i = 0; i < std::size(SupportErrors); i++) {
+//          if (strncasecmp(SupportErrors[i].name, *s, s.length()) == 0) {
+//            type = SupportErrors[i].type;
+//          }
+//        }
+//      }
+//    }
+//
+//    throw CJavascriptException(isolate, try_catch, type);
+//  }
+//}
 
-    PyObject* type = NULL;
-    v8::Local<v8::Value> obj = try_catch.Exception();
-
-    if (obj->IsObject()) {
-      v8::Local<v8::Object> exc = obj->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
-      v8::Local<v8::String> name = v8::String::NewFromUtf8(isolate, "name").ToLocalChecked();
-
-      if (exc->Has(isolate->GetCurrentContext(), name).ToChecked()) {
-        v8::String::Utf8Value s(
-            isolate, v8::Local<v8::String>::Cast(exc->Get(isolate->GetCurrentContext(), name).ToLocalChecked()));
-
-        for (size_t i = 0; i < std::size(SupportErrors); i++) {
-          if (strncasecmp(SupportErrors[i].name, *s, s.length()) == 0) {
-            type = SupportErrors[i].type;
-          }
-        }
-      }
-    }
-
-    throw CJavascriptException(isolate, try_catch, type);
-  }
-}
-
-void CJavascriptException::ThrowIf2(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch) {
+void CJavascriptException::ThrowIf(v8::Isolate* v8_isolate, v8::TryCatch& v8_try_catch) {
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
   }
@@ -372,97 +513,114 @@ void CJavascriptException::ThrowIf2(v8::Isolate* v8_isolate, v8::TryCatch& v8_tr
 
   throw CJavascriptException(v8_isolate, v8_try_catch, raw_type);
 }
-void ExceptionTranslator::Translate(CJavascriptException const& ex) {
+
+// void ExceptionTranslator::Translate(CJavascriptException const& ex) {
+//  CPythonGIL python_gil;
+//
+//  if (ex.m_type) {
+//    PyErr_SetString(ex.m_type, ex.what());
+//  } else {
+//    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+//    v8::HandleScope handle_scope(isolate);
+//
+//    if (!ex.Exception().IsEmpty() && ex.Exception()->IsObject()) {
+//      v8::Local<v8::Object> obj = ex.Exception()->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
+//
+//      v8::Local<v8::String> key_type = v8::String::NewFromUtf8(isolate, "exc_type").ToLocalChecked();
+//      v8::Local<v8::Private> privateKey_type = v8::Private::ForApi(isolate, key_type);
+//      v8::MaybeLocal<v8::Value> exc_type = obj->GetPrivate(isolate->GetCurrentContext(), privateKey_type);
+//
+//      v8::Local<v8::String> key_value = v8::String::NewFromUtf8(isolate, "exc_value").ToLocalChecked();
+//      v8::Local<v8::Private> privateKey_value = v8::Private::ForApi(isolate, key_value);
+//      v8::MaybeLocal<v8::Value> exc_value = obj->GetPrivate(isolate->GetCurrentContext(), privateKey_value);
+//
+//      if (!exc_type.IsEmpty() && !exc_value.IsEmpty()) {
+//        auto exc_type_val = exc_type.ToLocalChecked();
+//        std::unique_ptr<py::object> type;
+//        if (exc_type_val->IsExternal()) {
+//          auto type_val = v8::Local<v8::External>::Cast(exc_type_val)->Value();
+//          type.reset(static_cast<py::object*>(type_val));
+//        }
+//        auto exc_value_val = exc_value.ToLocalChecked();
+//        std::unique_ptr<py::object> value;
+//        if (exc_value_val->IsExternal()) {
+//          auto value_val = v8::Local<v8::External>::Cast(exc_value_val)->Value();
+//          value.reset(static_cast<py::object*>(value_val));
+//        }
+//
+//        if (type != nullptr && value != nullptr) {
+//          PyErr_SetObject(type->ptr(), value->ptr());
+//          return;
+//        }
+//      }
+//    }
+//
+//    // BoostPython doesn't support inherite from Python class,
+//    // so, just use some workaround to throw our custom exception
+//    //
+//    // http://www.language-binding.net/pyplusplus/troubleshooting_guide/exceptions/exceptions.html
+//
+//    py::object impl(ex);
+//    py::object clazz = impl.attr("_jsclass");
+//    py::object err = clazz(impl);
+//
+//    PyErr_SetObject(clazz.ptr(), py::incref(err.ptr()));
+//  }
+//}
+
+// void* ExceptionTranslator::Convertible(PyObject* obj) {
+//  CPythonGIL python_gil;
+//
+//  if (1 != PyObject_IsInstance(obj, PyExc_Exception))
+//    return NULL;
+//
+//  if (1 != PyObject_HasAttrString(obj, "_impl"))
+//    return NULL;
+//
+//  py::object err(py::handle<>(py::borrowed(obj)));
+//  py::object impl = err.attr("_impl");
+//  py::extract<CJavascriptException> extractor(impl);
+//
+//  return extractor.check() ? obj : NULL;
+//}
+
+// void ExceptionTranslator::Construct(PyObject* obj, py::converter::rvalue_from_python_stage1_data* data) {
+//  CPythonGIL python_gil;
+//
+//  py::object err(py::handle<>(py::borrowed(obj)));
+//  py::object impl = err.attr("_impl");
+//
+//  typedef py::converter::rvalue_from_python_storage<CJavascriptException> storage_t;
+//
+//  storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+//  void* memory_chunk = the_storage->storage.bytes;
+//  new (memory_chunk) CJavascriptException(py::extract<CJavascriptException>(impl));
+//
+//  data->convertible = memory_chunk;
+//}
+
+// void CJavascriptException::PrintCallStack(py::object file) {
+//  CPythonGIL python_gil;
+//
+//  PyObject* out = file.is_none() ? PySys_GetObject((char*)"stdout") : file.ptr();
+//
+//  int fd = PyObject_AsFileDescriptor(out);
+//
+//  Message()->PrintCurrentStackTrace(m_isolate, fdopen(fd, "w+"));
+//}
+
+void CJavascriptException::PrintCallStack2(pb::object py_file) {
   CPythonGIL python_gil;
 
-  if (ex.m_type) {
-    ::PyErr_SetString(ex.m_type, ex.what());
-  } else {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    v8::HandleScope handle_scope(isolate);
-
-    if (!ex.Exception().IsEmpty() && ex.Exception()->IsObject()) {
-      v8::Local<v8::Object> obj = ex.Exception()->ToObject(isolate->GetCurrentContext()).ToLocalChecked();
-
-      v8::Local<v8::String> key_type = v8::String::NewFromUtf8(isolate, "exc_type").ToLocalChecked();
-      v8::Local<v8::Private> privateKey_type = v8::Private::ForApi(isolate, key_type);
-      v8::MaybeLocal<v8::Value> exc_type = obj->GetPrivate(isolate->GetCurrentContext(), privateKey_type);
-
-      v8::Local<v8::String> key_value = v8::String::NewFromUtf8(isolate, "exc_value").ToLocalChecked();
-      v8::Local<v8::Private> privateKey_value = v8::Private::ForApi(isolate, key_value);
-      v8::MaybeLocal<v8::Value> exc_value = obj->GetPrivate(isolate->GetCurrentContext(), privateKey_value);
-
-      if (!exc_type.IsEmpty() && !exc_value.IsEmpty()) {
-        auto exc_type_val = exc_type.ToLocalChecked();
-        std::unique_ptr<py::object> type;
-        if (exc_type_val->IsExternal()) {
-          auto type_val = v8::Local<v8::External>::Cast(exc_type_val)->Value();
-          type.reset(static_cast<py::object*>(type_val));
-        }
-        auto exc_value_val = exc_value.ToLocalChecked();
-        std::unique_ptr<py::object> value;
-        if (exc_value_val->IsExternal()) {
-          auto value_val = v8::Local<v8::External>::Cast(exc_value_val)->Value();
-          value.reset(static_cast<py::object*>(value_val));
-        }
-
-        if (type != nullptr && value != nullptr) {
-          ::PyErr_SetObject(type->ptr(), value->ptr());
-          return;
-        }
-      }
-    }
-
-    // Boost::Python doesn't support inherite from Python class,
-    // so, just use some workaround to throw our custom exception
-    //
-    // http://www.language-binding.net/pyplusplus/troubleshooting_guide/exceptions/exceptions.html
-
-    py::object impl(ex);
-    py::object clazz = impl.attr("_jsclass");
-    py::object err = clazz(impl);
-
-    ::PyErr_SetObject(clazz.ptr(), py::incref(err.ptr()));
-  }
-}
-
-void* ExceptionTranslator::Convertible(PyObject* obj) {
-  CPythonGIL python_gil;
-
-  if (1 != ::PyObject_IsInstance(obj, ::PyExc_Exception))
-    return NULL;
-
-  if (1 != ::PyObject_HasAttrString(obj, "_impl"))
-    return NULL;
-
-  py::object err(py::handle<>(py::borrowed(obj)));
-  py::object impl = err.attr("_impl");
-  py::extract<CJavascriptException> extractor(impl);
-
-  return extractor.check() ? obj : NULL;
-}
-
-void ExceptionTranslator::Construct(PyObject* obj, py::converter::rvalue_from_python_stage1_data* data) {
-  CPythonGIL python_gil;
-
-  py::object err(py::handle<>(py::borrowed(obj)));
-  py::object impl = err.attr("_impl");
-
-  typedef py::converter::rvalue_from_python_storage<CJavascriptException> storage_t;
-
-  storage_t* the_storage = reinterpret_cast<storage_t*>(data);
-  void* memory_chunk = the_storage->storage.bytes;
-  new (memory_chunk) CJavascriptException(py::extract<CJavascriptException>(impl));
-
-  data->convertible = memory_chunk;
-}
-
-void CJavascriptException::PrintCallStack(py::object file) {
-  CPythonGIL python_gil;
-
-  PyObject* out = file.is_none() ? ::PySys_GetObject((char*)"stdout") : file.ptr();
-
-  int fd = ::PyObject_AsFileDescriptor(out);
+  // TODO: move this into utility function
+  auto raw_file = py_file.is_none() ? PySys_GetObject((char*)"stdout") : py_file.ptr();
+  auto fd = PyObject_AsFileDescriptor(raw_file);
 
   Message()->PrintCurrentStackTrace(m_isolate, fdopen(fd, "w+"));
+}
+
+pb::object CJavascriptException::ToPythonStr() const {
+  std::stringstream ss;
+  ss << *this;
+  return pb::cast(ss.str());
 }
