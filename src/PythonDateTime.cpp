@@ -103,7 +103,7 @@ void getPythonTime(pb::handle py_obj, tm& ts, int& ms) {
 //  return py::object(py::handle<>(raw_obj));
 //}
 
-pb::object pythonFromDateAndTime2(int year, int month, int day, int hour, int minute, int second, int usecond) {
+pb::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond) {
   assert(PyDateTimeAPI);
   auto raw_obj = PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
   return pb::reinterpret_steal<pb::object>(raw_obj);

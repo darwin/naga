@@ -5,7 +5,7 @@
 #include "JSException.h"
 
 void CJSObjectArray::LazyConstructor() {
-  if (!m_obj.IsEmpty()) {
+  if (!m_v8_obj.IsEmpty()) {
     return;
   }
 
@@ -56,7 +56,7 @@ void CJSObjectArray::LazyConstructor() {
     }
   }
 
-  m_obj.Reset(v8_isolate, v8_array);
+  m_v8_obj.Reset(v8_isolate, v8_array);
 }
 
 // void CJSObjectArray::LazyConstructor() {
