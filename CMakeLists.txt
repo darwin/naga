@@ -9,11 +9,9 @@ set(STPYV8_V8_GIT_TAG 8.3.104)
 set(STPYV8_DEBUG 1)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(Boost_USE_MULTITHREADED ON)
 set(CMAKE_FIND_FRAMEWORK NEVER)
 
 find_package(Python3)
-find_package(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
 find_package(PythonInterp 3)
 find_package(PythonLibs 3 REQUIRED)
 
@@ -51,13 +49,12 @@ endif ()
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 message(STATUS "V8_HOME = ${V8_HOME}")
 message(STATUS "STPYV8_V8_GIT_TAG = ${STPYV8_V8_GIT_TAG}")
 message(STATUS "STPYV8_DEBUG = ${STPYV8_DEBUG}")
 
-include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
-link_libraries(${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+include_directories(${PYTHON_INCLUDE_DIRS})
+link_libraries(${PYTHON_LIBRARIES})
 
 set(CMAKE_CXX_STANDARD 17)
 
