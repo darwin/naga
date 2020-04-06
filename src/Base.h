@@ -28,7 +28,7 @@ namespace py = pybind11;
 #include "v8.h"
 #include "libplatform/libplatform.h"
 
-#include "SmartPointers.h"
+#include "ForwardDeclarations.h"
 #include "Utils.h"
 #include "V8Utils.h"
 #include "Printing.h"

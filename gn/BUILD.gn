@@ -17,6 +17,7 @@ stpyv8_source_files = [
   "Debug.h",
   "Engine.cpp",
   "Engine.h",
+  "ForwardDeclarations.h",
   "Isolate.cpp",
   "Isolate.h",
   "JSException.cpp",
