@@ -8,15 +8,15 @@ class CIsolate;
 typedef std::shared_ptr<CContext> CContextPtr;
 
 class CContext {
-  pb::object m_global;
-  v8::Persistent<v8::Context> m_context;
+  pb::object m_py_global;
+  v8::Persistent<v8::Context> m_v8_context;
 
  public:
   explicit CContext(const v8::Local<v8::Context>& context);
   explicit CContext(const CContext& context);
   explicit CContext(const pb::object& py_global);
 
-  ~CContext() { m_context.Reset(); }
+  ~CContext() { m_v8_context.Reset(); }
 
   v8::Local<v8::Context> Handle() const;
   pb::object GetGlobal() const;
@@ -24,7 +24,7 @@ class CContext {
   pb::str GetSecurityToken();
   void SetSecurityToken(const pb::str& py_token) const;
 
-  bool IsEntered() { return !m_context.IsEmpty(); }
+  bool IsEntered() { return !m_v8_context.IsEmpty(); }
   void Enter() const;
   void Leave() const;
 

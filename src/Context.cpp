@@ -85,21 +85,21 @@ CContext::CContext(const v8::Local<v8::Context>& context) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
 
-  m_context.Reset(context->GetIsolate(), context);
+  m_v8_context.Reset(context->GetIsolate(), context);
 }
 
 CContext::CContext(const CContext& context) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
 
-  m_context.Reset(context.Handle()->GetIsolate(), context.Handle());
+  m_v8_context.Reset(context.Handle()->GetIsolate(), context.Handle());
 }
 
-CContext::CContext(const pb::object& py_global) : m_global(py_global) {
+CContext::CContext(const pb::object& py_global) : m_py_global(py_global) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::getScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
-  m_context.Reset(v8_isolate, v8_context);
+  m_v8_context.Reset(v8_isolate, v8_context);
 
   v8::Context::Scope context_scope(Handle());
 
@@ -131,7 +131,7 @@ pb::str CContext::GetSecurityToken() {
     return pb::str();
   }
 
-  auto v8_token_string = v8_token->ToString(m_context.Get(v8_isolate)).ToLocalChecked();
+  auto v8_token_string = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
   auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_token_string);
   return pb::str(*v8_utf, v8_utf.length());
 }
@@ -205,7 +205,7 @@ pb::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name
 
 v8::Local<v8::Context> CContext::Handle() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  return v8::Local<v8::Context>::New(v8_isolate, m_context);
+  return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }
 void CContext::Enter() const {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
