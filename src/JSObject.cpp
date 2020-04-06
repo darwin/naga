@@ -8,7 +8,7 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 #include "PythonGIL.h"
-#include "Exception.h"
+#include "JSException.h"
 
 static std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
   obj.Dump(os);

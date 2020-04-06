@@ -2,7 +2,7 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 #include "JSObjectCLJS.h"
-#include "Exception.h"
+#include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
 //py::object CJSObjectFunction::CallWithArgs(py::tuple args, py::dict kwds) {

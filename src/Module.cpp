@@ -3,7 +3,9 @@
 #include "Isolate.h"
 #include "Context.h"
 #include "Engine.h"
-#include "Exception.h"
+#include "JSStackFrame.h"
+#include "JSStackTrace.h"
+#include "JSException.h"
 #include "Locker.h"
 #include "JSObject.h"
 #include "Script.h"
@@ -11,6 +13,8 @@
 PYBIND11_MODULE(_STPyV8, m) {
   CPlatform::Expose(m);
   CIsolate::Expose(m);
+  CJSStackFrame::Expose(m);
+  CJSStackTrace::Expose(m);
   CJSException::Expose(m);
   CJSObject::Expose(m);
   CContext::Expose(m);

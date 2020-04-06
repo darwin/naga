@@ -1,6 +1,6 @@
 #include "Engine.h"
 #include "Script.h"
-#include "Exception.h"
+#include "JSException.h"
 #include "JSObject.h"
 #include "PythonAllowThreadsGuard.h"
 

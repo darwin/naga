@@ -2,7 +2,7 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 #include "JSObjectCLJS.h"
-#include "Exception.h"
+#include "JSException.h"
 
 void CJSObjectArray::LazyConstructor() {
   if (!m_obj.IsEmpty()) {

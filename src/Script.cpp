@@ -1,5 +1,5 @@
 #include "Script.h"
-#include "Exception.h"
+#include "JSException.h"
 
 void CScript::Expose(const pb::module& m) {
   // clang-format off

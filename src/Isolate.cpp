@@ -1,5 +1,6 @@
 #include "Isolate.h"
 #include "Context.h"
+#include "JSStackTrace.h"
 
 void CIsolate::Expose(const pb::module& m) {
   // clang-format off

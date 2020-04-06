@@ -1,6 +1,6 @@
 #include "V8Utils.h"
 #include "PythonUtils.h"
-#include "Exception.h"
+#include "JSException.h"
 
 namespace v8u {
 
