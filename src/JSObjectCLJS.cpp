@@ -8,11 +8,11 @@
 //#pragma clang diagnostic push
 //#pragma ide diagnostic ignored "hicpp-signed-bitwise"
 //
-//static auto sentinel_name = "bcljs-bridge-sentinel";
+// static auto sentinel_name = "bcljs-bridge-sentinel";
 //
 //// https://stackoverflow.com/a/26221725/84283
-//template <typename... Args>
-//std::string string_format(const std::string& format, Args... args) {
+// template <typename... Args>
+// std::string string_format(const std::string& format, Args... args) {
 //  size_t size = snprintf(nullptr, 0, format.c_str(), args...) + 1;  // Extra space for '\0'
 //  if (size <= 0) {
 //    throw std::runtime_error("Error during formatting.");
@@ -22,9 +22,9 @@
 //  return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
 //}
 //
-//std::ostream& operator<<(std::ostream& os, const CJSObject& obj);
+// std::ostream& operator<<(std::ostream& os, const CJSObject& obj);
 //
-//std::ostream& operator<<(std::ostream& os, const v8::Local<v8::Object>& obj) {
+// std::ostream& operator<<(std::ostream& os, const v8::Local<v8::Object>& obj) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8::HandleScope handle_scope(isolate);
 //  auto context = isolate->GetCurrentContext();
@@ -34,16 +34,16 @@
 //  return os;
 //}
 //
-//static inline void validateBridgeResult(v8::Local<v8::Value> val, const char* fn_name) {
+// static inline void validateBridgeResult(v8::Local<v8::Value> val, const char* fn_name) {
 //  if (val.IsEmpty()) {
 //    throw CJavascriptException(string_format("Unexpected: got empty result from bcljs.bridge.%s call", fn_name),
 //                               PyExc_UnboundLocalError);
 //  }
 //}
 //
-//auto hint_property_name = "stpyv8hint";
+// auto hint_property_name = "stpyv8hint";
 //
-//void setWrapperHint(v8::Local<v8::Object> obj, uint32_t hint) {
+// void setWrapperHint(v8::Local<v8::Object> obj, uint32_t hint) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8::HandleScope handle_scope(isolate);
 //  auto context = isolate->GetCurrentContext();
@@ -54,7 +54,7 @@
 //  obj->SetPrivate(context, private_property, hint_value);
 //}
 //
-//uint32_t getWrapperHint(v8::Local<v8::Object> obj) {
+// uint32_t getWrapperHint(v8::Local<v8::Object> obj) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8::HandleScope handle_scope(isolate);
 //  auto context = isolate->GetCurrentContext();
@@ -73,7 +73,7 @@
 //  return res_val->Uint32Value(context).ToChecked();
 //}
 //
-//bool isCLJSType(v8::Local<v8::Object> obj) {
+// bool isCLJSType(v8::Local<v8::Object> obj) {
 //  // early rejection
 //  if (obj.IsEmpty()) {
 //    return false;
@@ -101,7 +101,7 @@
 //  // but we assume existence of property means true value
 //}
 //
-//void exposeCLJSTypes() {
+// void exposeCLJSTypes() {
 //  py::class_<CJSObjectCLJS, py::bases<CJSObject>, boost::noncopyable>("CLJSType", py::no_init)
 //      .def("__str__", &CJSObjectCLJS::Str)
 //      .def("__repr__", &CJSObjectCLJS::Repr)
@@ -116,7 +116,7 @@
 //      .def("__iter__", boost::python::objects::identity_function());
 //}
 //
-//v8::Local<v8::Function> lookup_bridge_fn(const char* name) {
+// v8::Local<v8::Function> lookup_bridge_fn(const char* name) {
 //  // TODO: caching? review performance
 //
 //  auto isolate = v8::Isolate::GetCurrent();
@@ -170,7 +170,7 @@
 //  return fn_obj;
 //}
 //
-//v8::Local<v8::Value> call_bridge(v8::Isolate* isolate,
+// v8::Local<v8::Value> call_bridge(v8::Isolate* isolate,
 //                                 const char* name,
 //                                 v8::Local<v8::Object> self,
 //                                 std::vector<v8::Local<v8::Value>> params) {
@@ -188,7 +188,7 @@
 //  return result.ToLocalChecked();
 //}
 //
-//size_t CJSObjectCLJS::Length() {
+// size_t CJSObjectCLJS::Length() {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -210,7 +210,7 @@
 //  return val.ToChecked();
 //}
 //
-//py::object CJSObjectCLJS::Str() {
+// py::object CJSObjectCLJS::Str() {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -231,7 +231,7 @@
 //  return py::object(py::handle<>(py_str));
 //}
 //
-//py::object CJSObjectCLJS::Repr() {
+// py::object CJSObjectCLJS::Repr() {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -252,7 +252,7 @@
 //  return py::object(py::handle<>(py_str));
 //}
 //
-//bool is_sentinel(v8::Local<v8::Value> val) {
+// bool is_sentinel(v8::Local<v8::Value> val) {
 //  if (!val->IsSymbol()) {
 //    return false;
 //  }
@@ -266,7 +266,7 @@
 //  return res_sym->SameValue(sentinel);
 //}
 //
-//py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
+// py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -285,7 +285,7 @@
 //  return CJSObject::Wrap(res_val, Object());
 //}
 //
-//py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
+// py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -334,7 +334,7 @@
 //  return std::move(py_res);
 //}
 //
-//py::object CJSObjectCLJS::GetItemString(const py::object& py_string) {
+// py::object CJSObjectCLJS::GetItemString(const py::object& py_string) {
 //  assert(PyUnicode_Check(py_string.ptr()));
 //
 //  auto isolate = v8::Isolate::GetCurrent();
@@ -368,7 +368,7 @@
 //  return CJSObject::Wrap(res_val, Object());
 //}
 //
-//py::object CJSObjectCLJS::GetItem(const py::object& py_key) {
+// py::object CJSObjectCLJS::GetItem(const py::object& py_key) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //
@@ -383,7 +383,7 @@
 //  throw CJavascriptException("indices must be integers or slices", PyExc_TypeError);
 //}
 //
-//py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
+// py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //
@@ -394,7 +394,7 @@
 //  throw CJavascriptException("attr names must be strings", PyExc_TypeError);
 //}
 //
-//py::object CJSObjectCLJS::Iter() {
+// py::object CJSObjectCLJS::Iter() {
 //  auto isolate = v8::Isolate::GetCurrent();
 //  v8u::checkContext(isolate);
 //  v8::HandleScope handle_scope(isolate);
@@ -416,13 +416,13 @@
 //  return CCLJSIIterableIterator::Wrap(it);
 //}
 //
-//py::object CCLJSIIterableIterator::Next() {
+// py::object CCLJSIIterableIterator::Next() {
 //  // TODO: implement
 //  return py::object();
 //}
 //
 //// https://wiki.python.org/moin/boost.python/iterator
-//py::object CCLJSIIterableIterator::Iter(const py::object& py_iter) {
+// py::object CCLJSIIterableIterator::Iter(const py::object& py_iter) {
 //  // pass through
 //  return py_iter;
 //}
