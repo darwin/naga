@@ -10,15 +10,15 @@ class CIsolate;
 typedef std::shared_ptr<CIsolate> CIsolatePtr;
 
 class CIsolate {
-  v8::Isolate* m_v8_isolate;
+  v8::Isolate* m_v8_isolate{};
   bool m_owner;
   
   void Init(bool owner);
 
  public:
   CIsolate();
-  CIsolate(bool owner);
-  CIsolate(v8::Isolate* v8_isolate);
+  explicit CIsolate(bool owner);
+  explicit CIsolate(v8::Isolate* v8_isolate);
   ~CIsolate();
 
   v8::Isolate* GetIsolate();
@@ -33,5 +33,5 @@ class CIsolate {
 
   bool IsLocked() { return v8::Locker::IsLocked(m_v8_isolate); }
 
-  static void Expose(pb::module& m);
+  static void Expose(const pb::module& m);
 };

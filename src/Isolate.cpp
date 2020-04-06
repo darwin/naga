@@ -1,14 +1,14 @@
 #include "Isolate.h"
 #include "Context.h"
 
-void CIsolate::Expose(pb::module& m) {
+void CIsolate::Expose(const pb::module& m) {
   // clang-format off
   pb::class_<CIsolate, CIsolatePtr>(m, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
       .def(pb::init<bool>(),
            pb::arg("owner") = false)
 
       .def_property_readonly_static(
-          "current", [](pb::object) { return CIsolate::GetCurrent(); },
+          "current", [](const pb::object&) { return CIsolate::GetCurrent(); },
           "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")
 
       .def_property_readonly("locked", &CIsolate::IsLocked)
@@ -29,28 +29,32 @@ void CIsolate::Expose(pb::module& m) {
 void CIsolate::Init(bool owner) {
   m_owner = owner;
 
-  v8::Isolate::CreateParams v8_create_params;
-  v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-  m_v8_isolate = v8::Isolate::New(v8_create_params);
+  if (!m_v8_isolate) {
+    v8::Isolate::CreateParams v8_create_params;
+    v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    m_v8_isolate = v8::Isolate::New(v8_create_params);
+  }
 }
 
-CIsolate::CIsolate(bool owner) {
+CIsolate::CIsolate(bool owner) : m_v8_isolate(nullptr), m_owner(false) {
   CIsolate::Init(owner);
 }
 
-CIsolate::CIsolate() {
+CIsolate::CIsolate() : m_v8_isolate(nullptr), m_owner(false) {
   CIsolate::Init(false);
 }
 
-CIsolate::CIsolate(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate), m_owner(false) {}
+CIsolate::CIsolate(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate), m_owner(false) {
+  CIsolate::Init(false);
+}
 
-CIsolate::~CIsolate(void) {
+CIsolate::~CIsolate() {
   if (m_owner) {
     m_v8_isolate->Dispose();
   }
 }
 
-v8::Isolate* CIsolate::GetIsolate(void) {
+v8::Isolate* CIsolate::GetIsolate() {
   return m_v8_isolate;
 }
 
@@ -60,7 +64,7 @@ CJavascriptStackTracePtr CIsolate::GetCurrentStackTrace(
   return CJavascriptStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
 
-pb::object CIsolate::GetCurrent(void) {
+pb::object CIsolate::GetCurrent() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   if (!v8_isolate || !v8_isolate->IsInUse()) {
     return pb::none();
