@@ -11,17 +11,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-// static std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
-//  obj.Dump(os);
-//
-//  return os;
-//}
-
-static std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
-  obj->Dump(os);
-  return os;
-}
-
 void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e) {
   CPythonGIL python_gil;
 

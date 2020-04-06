@@ -1,34 +1,27 @@
 #pragma once
 
 class CPlatform;
-typedef std::shared_ptr<CPlatform> CPlatformPtr;
-
 class CContext;
-typedef std::shared_ptr<CContext> CContextPtr;
-
 class CIsolate;
-typedef std::shared_ptr<CIsolate> CIsolatePtr;
-
 class CScript;
-typedef std::shared_ptr<CScript> CScriptPtr;
-
 class CJSStackTrace;
-typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
-
 class CJSStackFrame;
-typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
-
+class CJSException;
 class CJSObject;
-typedef std::shared_ptr<CJSObject> CJSObjectPtr;
-
 class CJSObjectArray;
-typedef std::shared_ptr<CJSObjectArray> CJSObjectArrayPtr;
-
 class CJSObjectFunction;
-typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
-
 class CJSObjectNull;
-typedef std::shared_ptr<CJSObjectNull> CJSObjectNullPtr;
-
 class CJSObjectUndefined;
+
+typedef std::shared_ptr<CPlatform> CPlatformPtr;
+typedef std::shared_ptr<CContext> CContextPtr;
+typedef std::shared_ptr<CIsolate> CIsolatePtr;
+typedef std::shared_ptr<CScript> CScriptPtr;
+typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
+typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
+typedef std::shared_ptr<CJSException> CJSExceptionPtr;
+typedef std::shared_ptr<CJSObject> CJSObjectPtr;
+typedef std::shared_ptr<CJSObjectArray> CJSObjectArrayPtr;
+typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
+typedef std::shared_ptr<CJSObjectNull> CJSObjectNullPtr;
 typedef std::shared_ptr<CJSObjectUndefined> CJSObjectUndefinedPtr;

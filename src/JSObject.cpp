@@ -10,11 +10,6 @@
 #include "PythonDateTime.h"
 #include "PythonGIL.h"
 
-static std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
-  obj.Dump(os);
-  return os;
-}
-
 void CJSObject::Expose(const py::module& py_module) {
   // clang-format off
   py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")

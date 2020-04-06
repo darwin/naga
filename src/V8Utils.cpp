@@ -91,20 +91,3 @@ v8::TryCatch openTryCatch(v8::Isolate* v8_isolate) {
 }
 
 }  // namespace v8u
-
-std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_context = v8_isolate->GetCurrentContext();
-  if (v8_val.IsEmpty()) {
-    os << "[EMPTY VAL]";
-  } else {
-    auto v8_str = v8_val->ToDetailString(v8_context);
-    if (!v8_str.IsEmpty()) {
-      auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_str.ToLocalChecked());
-      os << *v8_utf;
-    } else {
-      os << "[N/A]";
-    }
-  }
-  return os;
-}

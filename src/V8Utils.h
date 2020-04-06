@@ -18,5 +18,3 @@ v8::EscapableHandleScope openEscapableScope(v8::Isolate* v8_isolate);
 v8::TryCatch openTryCatch(v8::Isolate* v8_isolate);
 
 }  // namespace v8u
-
-std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);

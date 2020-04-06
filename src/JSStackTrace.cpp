@@ -2,12 +2,6 @@
 #include "JSStackFrame.h"
 #include "JSException.h"
 
-std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj) {
-  obj.Dump(os);
-
-  return os;
-}
-
 void CJSStackTrace::Expose(const py::module& m) {
   // clang-format off
   py::class_<CJSStackTrace, CJSStackTracePtr>(m, "JSStackTrace")

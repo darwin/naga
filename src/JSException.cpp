@@ -1,12 +1,6 @@
 #include "JSException.h"
 #include "PythonGIL.h"
 
-std::ostream& operator<<(std::ostream& os, const CJSException& ex) {
-  os << "JSError: " << ex.what();
-
-  return os;
-}
-
 void translateJavascriptException(const CJSException& e) {
   CPythonGIL python_gil;
 
