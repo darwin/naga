@@ -10,6 +10,6 @@ v8::Local<v8::String> pythonBytesObjectToString(PyObject* py_obj) {
   assert(s);
   auto sz = PyBytes_GET_SIZE(py_obj);
   assert(sz >= 0);
-  auto isolate = v8::Isolate::GetCurrent();
-  return v8::String::NewFromUtf8(isolate, s, v8::NewStringType::kNormal, sz).ToLocalChecked();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal, sz).ToLocalChecked();
 }

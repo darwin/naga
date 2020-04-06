@@ -802,7 +802,7 @@ v8::Local<v8::Value> CPythonObject::Wrap(pb::handle py_obj) {
   auto v8_isolate = v8::Isolate::GetCurrent();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
-  auto value = ObjectTracer2::FindCache(py_obj.ptr());
+  auto value = ObjectTracer::FindCache(py_obj.ptr());
   if (value.IsEmpty()) {
     value = WrapInternal2(py_obj);
   }
@@ -882,7 +882,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
     auto func_tmpl = v8::FunctionTemplate::New(v8_isolate);
 
     // NOTE: tracker will keep the object alive
-    ObjectTracer2::Trace(v8_result, py_obj.ptr());
+    ObjectTracer::Trace(v8_result, py_obj.ptr());
     // Py_INCREF(py_obj.ptr());
     func_tmpl->SetCallHandler(Caller, v8::External::New(v8_isolate, py_obj.ptr()));
 
@@ -902,7 +902,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(pb::handle py_obj) {
     if (!instance.IsEmpty()) {
       auto realInstance = instance.ToLocalChecked();
       // NOTE: tracker will keep the object alive
-      ObjectTracer2::Trace(instance.ToLocalChecked(), py_obj.ptr());
+      ObjectTracer::Trace(instance.ToLocalChecked(), py_obj.ptr());
       // Py_INCREF(py_obj.ptr());
       realInstance->SetInternalField(0, v8::External::New(v8_isolate, py_obj.ptr()));
       v8_result = realInstance;
