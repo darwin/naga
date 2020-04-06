@@ -16,5 +16,5 @@ class CPlatform {
 
   void Init();
 
-  static void Expose(const pb::module& m);
+  static void Expose(const pb::module& py_module);
 };

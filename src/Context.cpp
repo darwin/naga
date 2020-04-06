@@ -4,9 +4,9 @@
 #include "PythonObject.h"
 #include "Script.h"
 
-void CContext::Expose(const pb::module& m) {
+void CContext::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CContext, CContextPtr>(m, "JSContext", "JSContext is an execution context.")
+  pb::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(pb::init<const CContext &>(),
            "Create a new context based on a existing context")
       .def(pb::init<pb::object>())
@@ -183,4 +183,8 @@ void CContext::Enter() const {
 void CContext::Leave() const {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   Handle()->Exit();
+}
+
+bool CContext::InContext() {
+  return v8::Isolate::GetCurrent()->InContext();
 }

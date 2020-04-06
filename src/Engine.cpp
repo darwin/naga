@@ -4,9 +4,9 @@
 #include "JSObject.h"
 #include "PythonAllowThreadsGuard.h"
 
-void CEngine::Expose(const pb::module& m) {
+void CEngine::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CEngine>(m, "JSEngine", "JSEngine is a backend Javascript engine.")
+  pb::class_<CEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
       .def(pb::init<>(),
            "Create a new script engine instance.")
       .def_property_readonly_static(

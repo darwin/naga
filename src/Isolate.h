@@ -8,7 +8,7 @@ enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 class CIsolate {
   v8::Isolate* m_v8_isolate{};
   bool m_owner;
-  
+
   void Init(bool owner);
 
  public:
@@ -29,5 +29,5 @@ class CIsolate {
 
   bool IsLocked() { return v8::Locker::IsLocked(m_v8_isolate); }
 
-  static void Expose(const pb::module& m);
+  static void Expose(const pb::module& py_module);
 };

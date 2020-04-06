@@ -2,9 +2,9 @@
 #include "Context.h"
 #include "JSStackTrace.h"
 
-void CIsolate::Expose(const pb::module& m) {
+void CIsolate::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CIsolate, CIsolatePtr>(m, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
+  pb::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
       .def(pb::init<bool>(),
            pb::arg("owner") = false)
 

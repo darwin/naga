@@ -3,9 +3,9 @@
 std::unique_ptr<v8::Platform> CPlatform::m_v8_platform;
 bool CPlatform::m_inited = false;
 
-void CPlatform::Expose(const pb::module& m) {
+void CPlatform::Expose(const pb::module& py_module) {
   // clang-format off
-  pb::class_<CPlatform, CPlatformPtr>(m, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
+  pb::class_<CPlatform, CPlatformPtr>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
       .def(pb::init<std::string>(),
            pb::arg("argv") = std::string())
       .def("init", &CPlatform::Init,

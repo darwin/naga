@@ -23,7 +23,7 @@ class CContext {
   void Enter() const;
   void Leave() const;
 
-  static bool InContext() { return v8::Isolate::GetCurrent()->InContext(); }
+  static bool InContext();
 
   static pb::object GetEntered();
   static pb::object GetCurrent();
@@ -38,5 +38,5 @@ class CContext {
                               int line = -1,
                               int col = -1);
 
-  static void Expose(const pb::module& m);
+  static void Expose(const pb::module& py_module);
 };
