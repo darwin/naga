@@ -32,30 +32,10 @@ void CEngine::Expose(const pb::module& m) {
           "lowMemory", []() { v8::Isolate::GetCurrent()->LowMemoryNotification(); },
           "Optional notification that the system is running low on memory.")
 
-          /*
-              .def("setMemoryLimit", &CEngine::SetMemoryLimit, (pb::arg("max_young_space_size") = 0,
-                                                                pb::arg("max_old_space_size") = 0,
-                                                                pb::arg("max_executable_size") = 0),
-                   "Specifies the limits of the runtime's memory use."
-                   "You must set the heap size before initializing the VM"
-                   "the size cannot be adjusted after the VM is initialized.")
-              .staticmethod("setMemoryLimit")
-          */
-
       .def_static("setStackLimit", &CEngine::SetStackLimit,
                   pb::arg("stack_limit_size") = 0,
                   "Uses the address of a local variable to determine the stack top now."
                   "Given a size, returns an address that is that far from the current top of stack.")
-
-          /*
-              .def("setMemoryAllocationCallback", &MemoryAllocationManager::SetCallback,
-                                                  (pb::arg("callback"),
-                                                   pb::arg("space") = v8::kObjectSpaceAll,
-                                                   pb::arg("action") = v8::kAllocationActionAll),
-                                                  "Enables the host application to provide a mechanism to be notified "
-                                                  "and perform custom logging when V8 Allocates Executable Memory.")
-              .staticmethod("setMemoryAllocationCallback")
-          */
 
       .def("compile", &CEngine::Compile,
            pb::arg("source"),
@@ -83,41 +63,6 @@ bool CEngine::IsDead() {
 
 void CEngine::TerminateAllThreads() {
   v8::Isolate::GetCurrent()->TerminateExecution();
-}
-
-void CEngine::ReportFatalError(const char* location, const char* message) {
-  std::cerr << "<" << location << "> " << message << std::endl;
-}
-
-void CEngine::ReportMessage(v8::Local<v8::Message> v8_message, [[maybe_unused]] v8::Local<v8::Value> v8_data) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_context = v8_isolate->GetCurrentContext();
-
-  v8::String::Utf8Value filename(v8_isolate, v8_message->GetScriptResourceName());
-  int line_number = v8_message->GetLineNumber(v8_context).ToChecked();
-  v8::String::Utf8Value source_line(v8_isolate, v8_message->GetSourceLine(v8_context).ToLocalChecked());
-
-  std::cerr << *filename << ":" << line_number << " -> " << *source_line << std::endl;
-}
-
-bool CEngine::SetMemoryLimit(int max_young_space_size,
-                             int max_old_space_size,
-                             [[maybe_unused]] int max_executable_size) {
-  v8::ResourceConstraints limit;
-
-  if (max_young_space_size) {
-    limit.set_max_young_generation_size_in_bytes(max_young_space_size);
-  }
-
-  if (max_old_space_size) {
-    limit.set_max_old_generation_size_in_bytes(max_old_space_size);
-  }
-  // TODO: should this be code range size instead?
-  // if (max_executable_size) limit.set_max_executable_size(max_executable_size);
-
-  // TODO: - memory limits are now only settable on isolate creation
-  // return v8::SetResourceConstraints(v8::Isolate::GetCurrent(), &limit);
-  return false;
 }
 
 void CEngine::SetStackLimit(uintptr_t stack_limit_size) {

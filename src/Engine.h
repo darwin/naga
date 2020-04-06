@@ -11,11 +11,7 @@ class CEngine {
 
  protected:
   CScriptPtr InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col);
-
   static void TerminateAllThreads();
-
-  static void ReportFatalError(const char* location, const char* message);
-  static void ReportMessage(v8::Local<v8::Message> v8_message, [[maybe_unused]] v8::Local<v8::Value> v8_data);
 
  public:
   explicit CEngine(v8::Isolate* v8_isolate = nullptr);
@@ -25,9 +21,6 @@ class CEngine {
 
  public:
   static const char* GetVersion();
-  static bool SetMemoryLimit(int max_young_space_size,
-                             int max_old_space_size,
-                             [[maybe_unused]] int max_executable_size);
   static void SetStackLimit(uintptr_t stack_limit_size);
 
   [[nodiscard]] pb::object ExecuteScript(v8::Local<v8::Script> v8_script) const;
