@@ -6,41 +6,41 @@
 
 // TODO: revisit this and maybe use pybind chrono
 
-static bool initPythonDateTime() noexcept;
-
-[[maybe_unused]] static bool initialized = initPythonDateTime();
-
-static bool initPythonDateTime() noexcept {
+static bool initPythonDateTime() {
   try {
     PyDateTime_IMPORT;
-    assert(PyDateTimeAPI);
-    return PyDateTimeAPI;
+    return true;
   } catch (...) {
     std::cerr << "Fatal error: unable to initialize PyDateTimeAPI";
     exit(13);
   }
 }
 
-bool isExactTime(py::handle py_obj) {
+static void usePythonDateTime() {
+  [[maybe_unused]] static bool initialized = initPythonDateTime();
   assert(PyDateTimeAPI);
+}
+
+bool isExactTime(py::handle py_obj) {
+  usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   return PyTime_CheckExact(raw_obj);
 }
 
 bool isExactDate(py::handle py_obj) {
-  assert(PyDateTimeAPI);
+  usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   return PyDate_CheckExact(raw_obj);
 }
 
 bool isExactDateTime(py::handle py_obj) {
-  assert(PyDateTimeAPI);
+  usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   return PyDateTime_CheckExact(raw_obj);
 }
 
-void getPythonDateTime(py::handle py_obj, tm& ts, int& ms) {
-  assert(PyDateTimeAPI);
+void getPythonDateTime(py::handle py_obj, tm &ts, int &ms) {
+  usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   ts.tm_year = PyDateTime_GET_YEAR(raw_obj) - 1900;
   ts.tm_mon = PyDateTime_GET_MONTH(raw_obj) - 1;
@@ -53,8 +53,8 @@ void getPythonDateTime(py::handle py_obj, tm& ts, int& ms) {
   ms = PyDateTime_DATE_GET_MICROSECOND(raw_obj);
 }
 
-void getPythonTime(py::handle py_obj, tm& ts, int& ms) {
-  assert(PyDateTimeAPI);
+void getPythonTime(py::handle py_obj, tm &ts, int &ms) {
+  usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   ts.tm_hour = PyDateTime_TIME_GET_HOUR(raw_obj) - 1;
   ts.tm_min = PyDateTime_TIME_GET_MINUTE(raw_obj);
@@ -64,7 +64,7 @@ void getPythonTime(py::handle py_obj, tm& ts, int& ms) {
 }
 
 py::object pythonFromDateAndTime(int year, int month, int day, int hour, int minute, int second, int usecond) {
-  assert(PyDateTimeAPI);
+  usePythonDateTime();
   auto raw_obj = PyDateTime_FromDateAndTime(year, month, day, hour, minute, second, usecond);
   return py::reinterpret_steal<py::object>(raw_obj);
 }
