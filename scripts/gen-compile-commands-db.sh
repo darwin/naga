@@ -11,7 +11,7 @@ TARGETS=${1:-stpyv8_src}
 STPYV8_GN_GEN_EXTRA_ARGS=--export-compile-commands="$TARGETS"
 export STPYV8_GN_GEN_EXTRA_ARGS
 
-STPYV8_GN_EXTRA_ARGS="stpyv8_enable_precompiled_headers=false"
+STPYV8_GN_EXTRA_ARGS="$STPYV8_GN_EXTRA_ARGS stpyv8_enable_precompiled_headers=false"
 export STPYV8_GN_EXTRA_ARGS
 
 echo_cmd ./scripts/gen-build.sh debug _out/ccdb
