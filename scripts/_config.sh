@@ -38,6 +38,13 @@ STPYV8_CLANG_FORMAT_PATH=${STPYV8_CLANG_FORMAT_PATH:-clang-format}
 STPYV8_CLANG_TIDY_PATH=${STPYV8_CLANG_TIDY_PATH:-clang-tidy}
 STPYV8_CLANG_TIDY_EXTRA_ARGS=${STPYV8_CLANG_TIDY_EXTRA_ARGS}
 
+# these get initialized on-demand via detect_python_build_settings
+STPYV8_PYTHON_INCLUDES=${STPYV8_PYTHON_INCLUDES}
+STPYV8_PYTHON_LIBS=${STPYV8_PYTHON_LIBS}
+STPYV8_PYTHON_CFLAGS=${STPYV8_PYTHON_CFLAGS}
+STPYV8_PYTHON_LDFLAGS=${STPYV8_PYTHON_LDFLAGS}
+STPYV8_PYTHON_ABIFLAGS=${STPYV8_PYTHON_ABIFLAGS}
+
 # git cache path could speedup depot checkouts/syncs
 # as suggested in https://github.com/electron/electron/blob/master/docs/development/build-instructions-gn.md#git_cache_path
 STPYV8_GIT_CACHE_PATH=${STPYV8_GIT_CACHE_PATH:-$ROOT_DIR/.git_cache}

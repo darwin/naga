@@ -43,15 +43,12 @@ echo_err() {
   >&2 echo_with_color "$COLOR_RED" "$*"
 }
 
-export_python_build_settings() {
-  # shellcheck disable=SC2155
-  export STPYV8_PYTHON_INCLUDES=$(python-config --includes)
-  # shellcheck disable=SC2155
-  export STPYV8_PYTHON_LIBS=$(python-config --libs)
-  # shellcheck disable=SC2155
-  export STPYV8_PYTHON_CFLAGS=$(python-config --cflags)
-  # shellcheck disable=SC2155
-  export STPYV8_PYTHON_LDFLAGS=$(python-config --ldflags)
+detect_python_build_settings() {
+  STPYV8_PYTHON_INCLUDES=${STPYV8_PYTHON_INCLUDES:-$(python3-config --includes)}
+  STPYV8_PYTHON_LIBS=${STPYV8_PYTHON_LIBS:-$(python3-config --libs)}
+  STPYV8_PYTHON_CFLAGS=${STPYV8_PYTHON_CFLAGS:-$(python3-config --cflags)}
+  STPYV8_PYTHON_LDFLAGS=${STPYV8_PYTHON_LDFLAGS:-$(python3-config --ldflags)}
+  STPYV8_PYTHON_ABIFLAGS=${STPYV8_PYTHON_ABIFLAGS:-$(python3-config --abiflags)}
 }
 
 # https://stackoverflow.com/a/53400482/84283

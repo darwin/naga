@@ -16,7 +16,7 @@ BUILD_DIR=${2:-"_out/$STPYV8_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
 # activate Python3, we should capture build settings from Python3.7
 # shellcheck disable=SC1090
 source "$VENV_DIR/bin/activate"
-export_python_build_settings
+detect_python_build_settings
 
 # export variables with our prefix
 for name in "${!STPYV8_@}"; do
