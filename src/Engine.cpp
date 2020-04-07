@@ -107,7 +107,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
     CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return CScriptPtr(new CScript(m_v8_isolate, *this, v8_script_source, v8_script.ToLocalChecked()));
+  return std::make_shared<CScript>(m_v8_isolate, *this, v8_script_source, v8_script.ToLocalChecked());
 }
 
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {

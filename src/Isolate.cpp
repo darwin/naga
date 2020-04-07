@@ -73,5 +73,5 @@ py::object CIsolate::GetCurrent() {
   }
 
   auto v8_scope = v8u::openScope(v8_isolate);
-  return py::cast(CIsolatePtr(new CIsolate(v8_isolate)));
+  return py::cast(std::make_shared<CIsolate>(v8_isolate));
 }

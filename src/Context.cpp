@@ -129,7 +129,7 @@ py::object CContext::GetEntered() {
   if (v8_context.IsEmpty()) {
     return py::none();
   }
-  return py::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(std::make_shared<CContext>(v8_context));
 }
 
 py::object CContext::GetCurrent() {
@@ -140,7 +140,7 @@ py::object CContext::GetCurrent() {
   if (v8_context.IsEmpty()) {
     return py::none();
   }
-  return py::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(std::make_shared<CContext>(v8_context));
 }
 
 py::object CContext::GetCalling() {
@@ -155,7 +155,7 @@ py::object CContext::GetCalling() {
     return py::none();
   }
 
-  return py::cast(CContextPtr(new CContext(v8_context)));
+  return py::cast(std::make_shared<CContext>(v8_context));
 }
 
 py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
@@ -176,11 +176,13 @@ v8::Local<v8::Context> CContext::Handle() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }
+
 void CContext::Enter() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   Handle()->Enter();
 }
+
 void CContext::Leave() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);

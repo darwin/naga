@@ -42,7 +42,7 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  return CJSStackTracePtr(new CJSStackTrace(v8_isolate, v8_stack_trace));
+  return std::make_shared<CJSStackTrace>(v8_isolate, v8_stack_trace);
 }
 
 int CJSStackTrace::GetFrameCount() const {
@@ -62,7 +62,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
     CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return CJSStackFramePtr(new CJSStackFrame(m_v8_isolate, v8_stack_frame));
+  return std::make_shared<CJSStackFrame>(m_v8_isolate, v8_stack_frame);
 }
 
 void CJSStackTrace::Dump(std::ostream& os) const {

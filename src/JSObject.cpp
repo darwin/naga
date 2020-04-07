@@ -216,7 +216,7 @@ CJSObjectPtr CJSObject::Clone() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  return CJSObjectPtr(new CJSObject(Object()->Clone()));
+  return std::make_shared<CJSObject>(Object()->Clone());
 }
 
 bool CJSObject::Contains(const std::string& name) const {
@@ -393,7 +393,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   }
   if (v8_obj->IsArray()) {
     auto v8_array = v8_obj.As<v8::Array>();
-    return Wrap(CJSObjectArrayPtr(new CJSObjectArray(v8_array)));
+    return Wrap(std::make_shared<CJSObjectArray>(v8_array));
   }
 
   if (CPythonObject::IsWrapped2(v8_obj)) {
@@ -411,16 +411,16 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   //  }
 
   if (isCLJSType(v8_obj)) {
-    return Wrap(CJSObjectCLJSPtr(new CJSObjectCLJS(v8_obj)));
+    return Wrap(std::make_shared<CJSObjectCLJS>(v8_obj));
   }
 #endif
 
   if (v8_obj->IsFunction()) {
     auto v8_fn = v8_obj.As<v8::Function>();
-    return Wrap(CJSObjectFunctionPtr(new CJSObjectFunction(v8_self, v8_fn)));
+    return Wrap(std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
   }
 
-  return Wrap(CJSObjectPtr(new CJSObject(v8_obj)));
+  return Wrap(std::make_shared<CJSObject>(v8_obj));
 }
 
 py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
