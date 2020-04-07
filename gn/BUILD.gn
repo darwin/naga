@@ -80,6 +80,8 @@ stpyv8_source_files = [
   "PythonGIL.h",
   "PythonObject.cpp",
   "PythonObject.h",
+  "PyUtils.cpp",
+  "PyUtils.h",
   "RawUtils.cpp",
   "RawUtils.h",
   "Script.cpp",

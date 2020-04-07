@@ -32,4 +32,6 @@ namespace py = pybind11;
 #include "ForwardDeclarations.h"
 #include "Utils.h"
 #include "V8Utils.h"
+#include "RawUtils.h"
+#include "PyUtils.h"
 #include "Printing.h"
