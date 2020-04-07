@@ -17,3 +17,4 @@ cmake-build-debug
 *.egg-info
 
 compile_commands.json
+vendor/cpython
