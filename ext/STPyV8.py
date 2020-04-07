@@ -12,6 +12,9 @@ import collections.abc
 import functools
 import json
 
+if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
+    input("Waiting for debugger, please hit ENTER when ready...")
+
 import _STPyV8
 
 __version__ = '0.1'
