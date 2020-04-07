@@ -97,7 +97,7 @@ void CJSStackTrace::Dump(std::ostream& os) const {
     os << std::endl;
   }
 }
-CJSStackTrace::CJSStackTrace(v8::IsolateRef v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {}
 
 CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {

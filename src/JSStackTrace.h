@@ -7,7 +7,7 @@ class CJSStackTrace {
   v8::Persistent<v8::StackTrace> m_v8_stack_trace;
 
  public:
-  CJSStackTrace(v8::IsolateRef v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
+  CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
   CJSStackTrace(const CJSStackTrace& stack_trace);
 
   [[nodiscard]] v8::Local<v8::StackTrace> Handle() const;

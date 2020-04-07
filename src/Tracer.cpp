@@ -42,7 +42,7 @@ LivingMap2* ObjectTracer::GetLivingMapping() {
   if (!v8_value.IsEmpty()) {
     auto v8_val = v8_value.ToLocalChecked();
     if (v8_val->IsExternal()) {
-      LivingMap2* living = (LivingMap2*)v8_val.As<v8::External>()->Value();
+      LivingMap2* living = static_cast<LivingMap2*>(v8_val.As<v8::External>()->Value());
 
       if (living) {
         return living;

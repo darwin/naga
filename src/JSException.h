@@ -10,10 +10,10 @@ class CJSException : public std::runtime_error {
   v8::Persistent<v8::Value> m_v8_stack;
   v8::Persistent<v8::Message> m_v8_message;
 
-  static std::string Extract(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch);
+  static std::string Extract(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 
  protected:
-  CJSException(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
+  CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
  public:
   CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type = nullptr) noexcept;
@@ -41,7 +41,7 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] py::object ToPythonStr() const;
 
   void PrintCallStack(py::object py_file);
-  static void ThrowIf(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch);
+  static void ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 
   static void Expose(const py::module& py_module);
 };

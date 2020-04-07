@@ -1,7 +1,6 @@
 #include "JSObjectFunction.h"
 
 #include "PythonObject.h"
-#include "JSObjectCLJS.h"
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 

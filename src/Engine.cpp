@@ -146,7 +146,7 @@ const char* CEngine::GetVersion() {
 
 CEngine::CEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {}
 
-CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(v8_isolate) {}
+CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {}
 
 CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
   auto v8_scope = v8u::openScope(m_v8_isolate);
