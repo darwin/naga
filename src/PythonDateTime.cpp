@@ -39,7 +39,7 @@ bool isExactDateTime(py::handle py_obj) {
   return PyDateTime_CheckExact(raw_obj);
 }
 
-void getPythonDateTime(py::handle py_obj, tm &ts, int &ms) {
+void getPythonDateTime(py::handle py_obj, tm& ts, int& ms) {
   usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   ts.tm_year = PyDateTime_GET_YEAR(raw_obj) - 1900;
@@ -53,7 +53,7 @@ void getPythonDateTime(py::handle py_obj, tm &ts, int &ms) {
   ms = PyDateTime_DATE_GET_MICROSECOND(raw_obj);
 }
 
-void getPythonTime(py::handle py_obj, tm &ts, int &ms) {
+void getPythonTime(py::handle py_obj, tm& ts, int& ms) {
   usePythonDateTime();
   auto raw_obj = py_obj.ptr();
   ts.tm_hour = PyDateTime_TIME_GET_HOUR(raw_obj) - 1;
