@@ -21,6 +21,6 @@ if [[ "$BUILD_CONFIG" == "debug" ]]; then
   EXTRA_BUILD_ARGS+=("--debug")
 fi
 
-echo_cmd python setup.py build "${EXTRA_BUILD_ARGS[@]}"
+echo_cmd python3 setup.py build "${EXTRA_BUILD_ARGS[@]}"
 
-echo_cmd python setup.py install --prefix "$VENV_DIR"
+echo_cmd python3 setup.py install --prefix "$VENV_DIR"

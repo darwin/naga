@@ -12,6 +12,4 @@ set -x
 cd tests
 
 export PATH=$VENV_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-python -m unittest discover --failfast --locals "$@"
-#python -m trace --listfuncs test_Multithread.py
-#python test_Multithread.py
+python3 -m unittest discover --failfast --locals "$@"
