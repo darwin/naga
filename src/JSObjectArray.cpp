@@ -13,7 +13,7 @@ void CJSObjectArray::LazyInit() {
   }
 
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   v8::Local<v8::Array> v8_array;
@@ -67,7 +67,7 @@ size_t CJSObjectArray::Length() {
 
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto result = Object().As<v8::Array>()->Length();
   return result;
 }
@@ -77,7 +77,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
 
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
@@ -132,7 +132,7 @@ py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
 
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
@@ -219,7 +219,7 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
 
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
@@ -267,7 +267,7 @@ bool CJSObjectArray::Contains(const py::object& py_key) {
 
   auto v8_isolate = v8::Isolate::GetCurrent();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 

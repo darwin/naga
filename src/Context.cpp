@@ -52,21 +52,21 @@ void CContext::Expose(const py::module& py_module) {
 
 CContext::CContext(const v8::Local<v8::Context>& context) {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   m_v8_context.Reset(context->GetIsolate(), context);
 }
 
 CContext::CContext(const CContext& context) {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   m_v8_context.Reset(context.Handle()->GetIsolate(), context.Handle());
 }
 
 CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
   m_v8_context.Reset(v8_isolate, v8_context);
 
@@ -87,13 +87,13 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
 
 py::object CContext::GetGlobal() const {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   return CJSObject::Wrap(Handle()->Global());
 }
 
 py::str CContext::GetSecurityToken() {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_token = Handle()->GetSecurityToken();
 
   if (v8_token.IsEmpty()) {
@@ -107,7 +107,7 @@ py::str CContext::GetSecurityToken() {
 
 void CContext::SetSecurityToken(const py::str& py_token) const {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (py_token.is_none()) {
     Handle()->UseDefaultSecurityToken();
@@ -123,7 +123,7 @@ py::object CContext::GetEntered() {
   if (!v8_isolate->InContext()) {
     return py::none();
   }
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   if (v8_context.IsEmpty()) {
@@ -134,7 +134,7 @@ py::object CContext::GetEntered() {
 
 py::object CContext::GetCurrent() {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {
@@ -148,7 +148,7 @@ py::object CContext::GetCalling() {
   if (!v8_isolate->InContext()) {
     return py::none();
   }
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {

@@ -34,7 +34,7 @@ py::object CJSStackTrace::ToPythonStr() const {
 CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
                                                      int frame_limit,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
@@ -46,12 +46,12 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
 }
 
 int CJSStackTrace::GetFrameCount() const {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return Handle()->GetFrameCount();
 }
 
 CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(m_v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
     throw CJSException("index of of range", PyExc_IndexError);
@@ -101,7 +101,7 @@ CJSStackTrace::CJSStackTrace(v8::Isolate* v8_isolate, v8::Local<v8::StackTrace> 
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {}
 
 CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
 }
 

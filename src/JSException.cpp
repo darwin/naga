@@ -8,7 +8,7 @@ void translateJavascriptException(const CJSException& e) {
     PyErr_SetString(e.GetType(), e.what());
   } else {
     auto v8_isolate = v8::Isolate::GetCurrent();
-    auto v8_scope = v8u::getScope(v8_isolate);
+    auto v8_scope = v8u::openScope(v8_isolate);
 
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
       auto v8_ex = e.Exception()->ToObject(v8_isolate->GetCurrentContext()).ToLocalChecked();
@@ -114,7 +114,7 @@ void CJSException::Expose(const py::module& py_module) {
 
 CJSException::CJSException(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
 
@@ -323,7 +323,7 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"TypeError", PyExc_TypeError}};
 
 void CJSException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
   }

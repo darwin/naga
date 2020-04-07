@@ -14,7 +14,7 @@
 void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e) {
   CPythonGIL python_gil;
 
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   py::object py_type(e.type());
   py::object py_value(e.value());
@@ -115,7 +115,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -181,7 +181,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -244,7 +244,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
   }
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
@@ -385,7 +385,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -440,7 +440,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
                                   v8::Local<v8::Value> v8_value,
                                   const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -479,7 +479,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
@@ -525,7 +525,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
@@ -557,7 +557,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Array>());
@@ -585,7 +585,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
 
 void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -759,7 +759,7 @@ bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
 
 py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_val = v8_obj->GetInternalField(0);
   assert(!v8_val.IsEmpty());
   auto v8_payload = v8_val.As<v8::External>();

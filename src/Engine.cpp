@@ -109,7 +109,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
 
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
@@ -148,11 +148,11 @@ CEngine::CEngine(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate) {
 }
 
 CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  auto v8_scope = v8u::getScope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }

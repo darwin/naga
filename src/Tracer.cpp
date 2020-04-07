@@ -31,7 +31,7 @@ void ObjectTracer::Trace() {
 
 LivingMap2* ObjectTracer::GetLivingMapping() {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_key = v8::String::NewFromUtf8(v8_isolate, "__living__").ToLocalChecked();
@@ -81,7 +81,7 @@ ContextTracer::ContextTracer(v8::Local<v8::Context> v8_context, LivingMap2* livi
 
 ContextTracer::~ContextTracer() {
   auto v8_isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::getScope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_key = v8::String::NewFromUtf8(v8_isolate, "__living__").ToLocalChecked();
