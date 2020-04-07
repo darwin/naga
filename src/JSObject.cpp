@@ -111,7 +111,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
 
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   if (!Object()->Has(context, v8_name).FromMaybe(false)) {
@@ -206,7 +206,7 @@ py::list CJSObject::GetAttrList() const {
 int CJSObject::GetIdentityHash() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   return Object()->GetIdentityHash();
 }
@@ -214,7 +214,7 @@ int CJSObject::GetIdentityHash() const {
 CJSObjectPtr CJSObject::Clone() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   return CJSObjectPtr(new CJSObject(Object()->Clone()));
 }
@@ -222,7 +222,7 @@ CJSObjectPtr CJSObject::Clone() const {
 bool CJSObject::Contains(const std::string& name) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
@@ -240,7 +240,7 @@ bool CJSObject::Contains(const std::string& name) const {
 bool CJSObject::Equals(const CJSObjectPtr& other) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
@@ -435,5 +435,6 @@ py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
 }
 
 v8::Local<v8::Object> CJSObject::Object() const {
-  return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_v8_obj);
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8::Local<v8::Object>::New(v8_isolate, m_v8_obj);
 }

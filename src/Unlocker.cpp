@@ -2,7 +2,7 @@
 #include "PythonAllowThreadsGuard.h"
 
 void CUnlocker::enter() {
-  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(new v8::Unlocker(v8::Isolate::GetCurrent())); });
+  withPythonAllowThreadsGuard([&]() { m_v8_unlocker.reset(new v8::Unlocker(v8u::getCurrentIsolate())); });
 }
 
 void CUnlocker::leave() {

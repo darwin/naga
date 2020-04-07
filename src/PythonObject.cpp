@@ -279,7 +279,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
   }
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
@@ -323,7 +323,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
 #pragma ide diagnostic ignored "bugprone-lambda-function-name"
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Array>());
@@ -371,7 +371,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
       auto py_item = Wrap(py::reinterpret_borrow<py::object>(raw_item));
       auto v8_i = v8::Uint32::New(v8_isolate, i);
-      auto res = v8_array->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), v8_i, py_item);
+      auto res = v8_array->Set(v8u::getCurrentIsolate()->GetCurrentContext(), v8_i, py_item);
       res.Check();
     }
     return v8_array;
@@ -713,7 +713,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
 }
 
 void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz) {
-  v8::HandleScope handle_scope(isolate);
+  auto v8_scope = v8u::openScope(isolate);
 
   clazz->SetInternalFieldCount(1);
   clazz->SetHandler(
@@ -768,7 +768,7 @@ py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   if (value->IsObject()) {
     v8::MaybeLocal<v8::Object> objMaybe = value->ToObject(v8_isolate->GetCurrentContext());

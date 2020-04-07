@@ -6,7 +6,7 @@
 
 void CLocker::enter() {
   withPythonAllowThreadsGuard([&]() {
-    auto v8_isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8::Isolate::GetCurrent();
+    auto v8_isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8u::getCurrentIsolate();
     m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
   });
 }
@@ -16,7 +16,7 @@ void CLocker::leave() {
 }
 
 bool CLocker::IsLocked() {
-  return v8::Locker::IsLocked(v8::Isolate::GetCurrent());
+  return v8::Locker::IsLocked(v8u::getCurrentIsolate());
 }
 
 bool CLocker::IsActive() {

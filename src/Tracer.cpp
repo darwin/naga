@@ -1,7 +1,7 @@
 #include "Tracer.h"
 
 ObjectTracer::ObjectTracer(v8::Local<v8::Value> v8_handle, PyObject* raw_object)
-    : m_v8_handle(v8::Isolate::GetCurrent(), v8_handle), m_raw_object(raw_object), m_living(GetLivingMapping()) {
+    : m_v8_handle(v8u::getCurrentIsolate(), v8_handle), m_raw_object(raw_object), m_living(GetLivingMapping()) {
   Py_INCREF(m_raw_object);
 }
 
@@ -52,7 +52,7 @@ LivingMap2* ObjectTracer::GetLivingMapping() {
 
   std::unique_ptr<LivingMap2> living(new LivingMap2());
 
-  auto v8_living = v8::External::New(v8::Isolate::GetCurrent(), living.get());
+  auto v8_living = v8::External::New(v8u::getCurrentIsolate(), living.get());
   v8_context->Global()->SetPrivate(v8_context, v8_key_api, v8_living);
 
   ContextTracer::Trace(v8_context, living.get());
@@ -76,7 +76,7 @@ py::object ObjectTracer::Object() const {
 }
 
 ContextTracer::ContextTracer(v8::Local<v8::Context> v8_context, LivingMap2* living)
-    : m_v8_context(v8::Isolate::GetCurrent(), v8_context), m_living(living) {}
+    : m_v8_context(v8u::getCurrentIsolate(), v8_context), m_living(living) {}
 
 ContextTracer::~ContextTracer() {
   auto v8_isolate = v8u::getCurrentIsolate();
@@ -108,5 +108,6 @@ void ContextTracer::Trace() {
 }
 
 v8::Local<v8::Context> ContextTracer::Context() const {
-  return v8::Local<v8::Context>::New(v8::Isolate::GetCurrent(), m_v8_context);
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }

@@ -66,7 +66,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
 }
 
 void CJSStackTrace::Dump(std::ostream& os) const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
 
   v8::TryCatch try_catch(m_v8_isolate);
 

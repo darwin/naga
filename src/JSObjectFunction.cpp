@@ -145,7 +145,7 @@ py::object CJSObjectFunction::Invoke(const py::list& py_args, const py::dict& py
 std::string CJSObjectFunction::GetName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -157,7 +157,7 @@ std::string CJSObjectFunction::GetName() const {
 void CJSObjectFunction::SetName(const std::string& name) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -168,7 +168,7 @@ void CJSObjectFunction::SetName(const std::string& name) {
 int CJSObjectFunction::GetLineNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -178,7 +178,7 @@ int CJSObjectFunction::GetLineNumber() const {
 int CJSObjectFunction::GetColumnNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -188,7 +188,7 @@ int CJSObjectFunction::GetColumnNumber() const {
 std::string CJSObjectFunction::GetResourceName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -200,7 +200,7 @@ std::string CJSObjectFunction::GetResourceName() const {
 std::string CJSObjectFunction::GetInferredName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -212,7 +212,7 @@ std::string CJSObjectFunction::GetInferredName() const {
 int CJSObjectFunction::GetLineOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -222,7 +222,7 @@ int CJSObjectFunction::GetLineOffset() const {
 int CJSObjectFunction::GetColumnOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  v8::HandleScope handle_scope(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -237,8 +237,9 @@ py::object CJSObjectFunction::GetOwner2() const {
 }
 
 CJSObjectFunction::CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
-    : CJSObject(func), m_self(v8::Isolate::GetCurrent(), self) {}
+    : CJSObject(func), m_self(v8u::getCurrentIsolate(), self) {}
 
 v8::Local<v8::Object> CJSObjectFunction::Self() const {
-  return v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), m_self);
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8::Local<v8::Object>::New(v8_isolate, m_self);
 }

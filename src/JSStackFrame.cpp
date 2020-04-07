@@ -13,7 +13,7 @@ void CJSStackFrame::Expose(const py::module& m) {
 }
 
 std::string CJSStackFrame::GetScriptName() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
 
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetScriptName());
 
@@ -21,7 +21,7 @@ std::string CJSStackFrame::GetScriptName() const {
 }
 
 std::string CJSStackFrame::GetFunctionName() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
 
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetFunctionName());
 
@@ -32,7 +32,7 @@ CJSStackFrame::CJSStackFrame(v8::Isolate* v8_isolate, v8::Local<v8::StackFrame> 
     : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {}
 
 CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
 
   m_v8_frame.Reset(m_v8_isolate, stack_frame.Handle());
 }
@@ -42,21 +42,21 @@ v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
 }
 
 int CJSStackFrame::GetLineNumber() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return Handle()->GetLineNumber();
 }
 
 int CJSStackFrame::GetColumn() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return Handle()->GetColumn();
 }
 
 bool CJSStackFrame::IsEval() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return Handle()->IsEval();
 }
 
 bool CJSStackFrame::IsConstructor() const {
-  v8::HandleScope handle_scope(m_v8_isolate);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
   return Handle()->IsConstructor();
 }

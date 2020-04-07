@@ -177,14 +177,17 @@ v8::Local<v8::Context> CContext::Handle() const {
   return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }
 void CContext::Enter() const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_scope = v8u::openScope(v8_isolate);
   Handle()->Enter();
 }
 void CContext::Leave() const {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_scope = v8u::openScope(v8_isolate);
   Handle()->Exit();
 }
 
 bool CContext::InContext() {
-  return v8::Isolate::GetCurrent()->InContext();
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8_isolate->InContext();
 }

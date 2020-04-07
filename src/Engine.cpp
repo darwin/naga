@@ -30,7 +30,7 @@ void CEngine::Expose(const py::module& py_module) {
           "it cannot be reinitialized.")
 
       .def_static(
-          "lowMemory", []() { v8::Isolate::GetCurrent()->LowMemoryNotification(); },
+          "lowMemory", []() { v8u::getCurrentIsolate()->LowMemoryNotification(); },
           "Optional notification that the system is running low on memory.")
 
       .def_static("setStackLimit", &CEngine::SetStackLimit,
@@ -52,11 +52,13 @@ void CEngine::Expose(const py::module& py_module) {
 }
 
 bool CEngine::IsDead() {
-  return v8::Isolate::GetCurrent()->IsDead();
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8_isolate->IsDead();
 }
 
 void CEngine::TerminateAllThreads() {
-  v8::Isolate::GetCurrent()->TerminateExecution();
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8_isolate->TerminateExecution();
 }
 
 void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
@@ -74,7 +76,8 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
     return;
   }
 
-  v8::Isolate::GetCurrent()->SetStackLimit(stack_limit);
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8_isolate->SetStackLimit(stack_limit);
 }
 
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
@@ -143,7 +146,7 @@ const char* CEngine::GetVersion() {
 
 CEngine::CEngine(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate) {
   if (!m_v8_isolate) {
-    m_v8_isolate = v8::Isolate::GetCurrent();
+    m_v8_isolate = v8u::getCurrentIsolate();
   }
 }
 

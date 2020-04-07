@@ -373,7 +373,7 @@ py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
 }
 
 // py::object CJSObjectCLJS::Iter() {
-//  auto isolate = v8::Isolate::GetCurrent();
+//  auto v8_isolate = v8u::getCurrentIsolate();
 //  v8u::checkContext(isolate);
 //  auto v8_scope = v8u::openScope(isolate);
 //
