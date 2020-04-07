@@ -4,7 +4,7 @@ Please note that this workflow was tested only under macOS 10.15.
 But it should possible to use it for other system as well.
 
 This library is bundled as some Python code with a C extension. 
-The C extension needs to link against V8 library and boost::python.
+The C extension needs to link against V8 library and Python3 library.
 
 We do not use standard setup.py toolchain for compilation of the C++ code. 
 We use it only for bundling the final artifact.
@@ -31,11 +31,6 @@ Virualenv [has a lot of issues](https://datagrok.org/python/activate).
 One being that is it was not really designed for building Python C extensions.
 Some aspects of it still leak down to system Python. So you are required to have Python3.7 as your system Python.
 At least that is how it works on my machine (macOS 10.15).
-
-### Boost libraries
-
-We don't don't do anything fancy here. We expect boost libraries headers to be in `/usr/local/include`
-and libs in `/usr/local/lib`. Search for `STPYV8_BOOST_INCLUDES` and `STPYV8_BOOST_LDFLAGS` to override.
 
 ### Ready?
 
