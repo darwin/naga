@@ -148,6 +148,10 @@ config("stpyv8_python_linker_flags") {
   ldflags = python_ldflags
 }
 
+config("stpyv8_gsl_lite_compiler_flags") {
+  include_dirs = [ "../vendor/gsl-lite/include" ]
+}
+
 config("stpyv8_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
@@ -183,6 +187,7 @@ source_set("stpyv8_src") {
     ":stpyv8_precompiled_headers",
     ":stpyv8_python_compiler_flags",
     ":stpyv8_compiler_flags",
+    ":stpyv8_gsl_lite_compiler_flags",
     ":stpyv8_pybind11_compiler_flags",
     ":stpyv8_features",
   ]

@@ -28,6 +28,8 @@ namespace py = pybind11;
 #include "v8.h"
 #include "libplatform/libplatform.h"
 
+#include <gsl/gsl-lite.hpp>
+
 #include "Features.h"
 #include "ForwardDeclarations.h"
 #include "Utils.h"
