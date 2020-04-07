@@ -11,10 +11,10 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 
-V8_GIT_TAG_STABLE = "8.3.104"
-V8_GIT_TAG_MASTER = "master"
+STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG')
+if STPYV8_V8_GIT_TAG is None:
+    raise Exception("STPYV8_V8_GIT_TAG is not defined in your environment")
 
-STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG', V8_GIT_TAG_STABLE)
 STPYV8_VERSION = STPYV8_V8_GIT_TAG
 
 
