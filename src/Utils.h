@@ -12,21 +12,6 @@ T value_or(const std::optional<T>& opt, F fn) {
   }
 }
 
-// https://stackoverflow.com/a/25510879/84283
-template <typename F>
-struct FinalAction {
-  FinalAction(F f) : m_f{f} {}
-  ~FinalAction() { m_f(); }
-
- private:
-  F m_f;
-};
-
-template <typename F>
-FinalAction<F> finally(F f) {
-  return FinalAction<F>(f);
-}
-
 // https://stackoverflow.com/a/26221725/84283
 template <typename... Args>
 std::string string_format(const std::string& format, Args... args) {
