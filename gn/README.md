@@ -119,3 +119,24 @@ python setup.py install --prefix ../.venv
 ```bash
 ./scripts/test.sh
 ```
+
+# FAQ
+
+### Where should I put V8 repo?
+
+> V8 repo directory location is specified by `V8_HOME` env variable. By default it goes to `gn/v8`.
+> The build system expects it there, so if you specify some other location via explicit `V8_HOME` in your environment
+> the build script will create a symlink from `gn/v8` to your `V8_HOME`. 
+>
+> Warning: Building V8 via a symlink works but paths to original sources in debug symbols (DWARF) might be confused
+> depending on your debugger. This might cause inconveniences when debugging stack traces in V8. So it is recommended 
+>to leave V8_HOME in the default location. 
+ 
+### How do I change V8 revision?
+
+> `export STPYV8_V8_GIT_TAG=${revision}`
+>
+> Then do `./scripts/checkout-v8.sh` which will pull and checkout specified revision. 
+>
+> Please make sure that this env variable is persistent in your env. I personally use [direnv](https://direnv.net) 
+> for this kind of setup.
