@@ -618,83 +618,83 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
       }
       case 2: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]));
+                            CJSObject::Wrap(v8_info[1]));
         break;
       }
       case 3: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]));
         break;
       }
       case 4: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]));
         break;
       }
       case 5: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]));
         break;
       }
       case 6: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]),
-                      CJSObject::Wrap(v8_info[5]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]),
+                            CJSObject::Wrap(v8_info[5]));
         break;
       }
       case 7: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]),
-                      CJSObject::Wrap(v8_info[5]),
-                      CJSObject::Wrap(v8_info[6]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]),
+                            CJSObject::Wrap(v8_info[5]),
+                            CJSObject::Wrap(v8_info[6]));
         break;
       }
       case 8: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]),
-                      CJSObject::Wrap(v8_info[5]),
-                      CJSObject::Wrap(v8_info[6]),
-                      CJSObject::Wrap(v8_info[7]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]),
+                            CJSObject::Wrap(v8_info[5]),
+                            CJSObject::Wrap(v8_info[6]),
+                            CJSObject::Wrap(v8_info[7]));
         break;
       }
       case 9: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]),
-                      CJSObject::Wrap(v8_info[5]),
-                      CJSObject::Wrap(v8_info[6]),
-                      CJSObject::Wrap(v8_info[7]),
-                      CJSObject::Wrap(v8_info[8]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]),
+                            CJSObject::Wrap(v8_info[5]),
+                            CJSObject::Wrap(v8_info[6]),
+                            CJSObject::Wrap(v8_info[7]),
+                            CJSObject::Wrap(v8_info[8]));
         break;
       }
       case 10: {
         py_result = py_self(CJSObject::Wrap(v8_info[0]),
-                      CJSObject::Wrap(v8_info[1]),
-                      CJSObject::Wrap(v8_info[2]),
-                      CJSObject::Wrap(v8_info[3]),
-                      CJSObject::Wrap(v8_info[4]),
-                      CJSObject::Wrap(v8_info[5]),
-                      CJSObject::Wrap(v8_info[6]),
-                      CJSObject::Wrap(v8_info[7]),
-                      CJSObject::Wrap(v8_info[8]),
-                      CJSObject::Wrap(v8_info[9]));
+                            CJSObject::Wrap(v8_info[1]),
+                            CJSObject::Wrap(v8_info[2]),
+                            CJSObject::Wrap(v8_info[3]),
+                            CJSObject::Wrap(v8_info[4]),
+                            CJSObject::Wrap(v8_info[5]),
+                            CJSObject::Wrap(v8_info[6]),
+                            CJSObject::Wrap(v8_info[7]),
+                            CJSObject::Wrap(v8_info[8]),
+                            CJSObject::Wrap(v8_info[9]));
         break;
       }
         // clang-format on
