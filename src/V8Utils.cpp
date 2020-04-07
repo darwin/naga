@@ -79,7 +79,9 @@ bool executionTerminating(v8::Isolate* v8_isolate) {
 }
 
 v8::Isolate* getCurrentIsolate() {
-  return v8::Isolate::GetCurrent();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  assert(v8_isolate);
+  return v8_isolate;
 }
 
 v8::HandleScope openScope(v8::Isolate* v8_isolate) {

@@ -66,7 +66,8 @@ CJSStackTracePtr CIsolate::GetCurrentStackTrace(
 }
 
 py::object CIsolate::GetCurrent() {
-  auto v8_isolate = v8u::getCurrentIsolate();
+  // here we don't want to call our v8u::getCurrentIsolate, which expects non-NULL
+  auto v8_isolate = v8::Isolate::GetCurrent();
   if (!v8_isolate || !v8_isolate->IsInUse()) {
     return py::none();
   }
