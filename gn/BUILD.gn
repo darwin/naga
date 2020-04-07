@@ -6,6 +6,8 @@ declare_args() {
 
   stpyv8_disable_feature_cljs = true
 
+  stpyv8_log_level = "OFF"
+
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
@@ -24,6 +26,7 @@ declare_args() {
 }
 
 if (stpyv8_verbose_build) {
+  print("using log level", stpyv8_log_level)
   print("using precompiled headers", stpyv8_enable_precompiled_headers)
   print("using disable cljs", stpyv8_disable_feature_cljs)
   print("using python_includes", python_includes)
@@ -64,6 +67,8 @@ stpyv8_source_files = [
   "JSStackTrace.h",
   "Locker.cpp",
   "Locker.h",
+  "Logging.cpp",
+  "Logging.h",
   "Module.cpp",
   "Module.h",
   "Platform.cpp",
@@ -148,6 +153,10 @@ config("stpyv8_python_linker_flags") {
   ldflags = python_ldflags
 }
 
+config("stpyv8_spdlog_compiler_flags") {
+  include_dirs = [ "../vendor/spdlog/include" ]
+}
+
 config("stpyv8_gsl_lite_compiler_flags") {
   include_dirs = [ "../vendor/gsl-lite/include" ]
 }
@@ -161,6 +170,10 @@ config("stpyv8_features") {
   if (stpyv8_disable_feature_cljs) {
     defines += [ "STPYV8_DISABLE_FEATURE_CLJS" ]
   }
+}
+
+config("stpyv8_logging") {
+  defines = ["STPYV8_LOG_LEVEL=$stpyv8_log_level" ]
 }
 
 source_set("stpyv8_src") {
@@ -187,9 +200,11 @@ source_set("stpyv8_src") {
     ":stpyv8_precompiled_headers",
     ":stpyv8_python_compiler_flags",
     ":stpyv8_compiler_flags",
+    ":stpyv8_spdlog_compiler_flags",
     ":stpyv8_gsl_lite_compiler_flags",
     ":stpyv8_pybind11_compiler_flags",
     ":stpyv8_features",
+    ":stpyv8_logging",
   ]
 
   # this is very important

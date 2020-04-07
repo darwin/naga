@@ -1,6 +1,10 @@
 import("base.gn")
 
 is_debug = true
+
+# see Logging.h
+stpyv8_log_level = "INFO"
+
 dcheck_always_on = true
 symbol_level = 2
 

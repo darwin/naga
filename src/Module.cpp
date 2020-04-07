@@ -13,6 +13,9 @@
 #include "Unlocker.h"
 
 PYBIND11_MODULE(_STPyV8, m) {
+  useLogging();
+
+  SPDLOG_INFO("Initializing _STPyV8 module...");
   CPlatform::Expose(m);
   CIsolate::Expose(m);
   CJSStackFrame::Expose(m);
