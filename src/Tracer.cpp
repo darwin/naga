@@ -63,10 +63,9 @@ LivingMap2* ObjectTracer::GetLivingMapping() {
 v8::Local<v8::Value> ObjectTracer::FindCache(PyObject* raw_object) {
   auto living = GetLivingMapping();
   if (living) {
-    LivingMap2::const_iterator it = living->find(raw_object);
-
+    auto it = living->find(raw_object);
     if (it != living->end()) {
-      return v8::Local<v8::Value>::New(v8::Isolate::GetCurrent(), it->second->m_v8_handle);
+      return v8::Local<v8::Value>::New(v8u::getCurrentIsolate(), it->second->m_v8_handle);
     }
   }
 
@@ -89,8 +88,8 @@ ContextTracer::~ContextTracer() {
 
   Context()->Global()->DeletePrivate(v8_context, v8_key_api);
 
-  for (LivingMap2::const_iterator it = m_living->begin(); it != m_living->end(); it++) {
-    std::unique_ptr<ObjectTracer> tracer(it->second);
+  for (auto& it : *m_living) {
+    std::unique_ptr<ObjectTracer> tracer(it.second);
     tracer->Dispose();
   }
 }
