@@ -33,3 +33,11 @@ namespace v8 {
 typedef gsl::not_null<v8::Isolate*> IsolateRef;
 
 }
+
+namespace spdlog {
+
+class logger;
+
+}
+
+typedef gsl::not_null<spdlog::logger*> LoggerRef;

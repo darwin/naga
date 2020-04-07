@@ -10,7 +10,10 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
+#define TRACER(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
+
 void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& e) {
+  TRACER("CPythonObject::ThrowIf");
   auto py_gil = pyu::acquireGIL();
 
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -108,6 +111,7 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
 }
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  TRACER("CPythonObject::NamedGetter name='{}'", v8_prop_name);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -174,6 +178,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
 void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
                                 v8::Local<v8::Value> v8_value,
                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  TRACER("CPythonObject::NamedSetter name='{}' value={}", v8_prop_name, v8_value);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -237,6 +242,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
 }
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
+  TRACER("CPythonObject::NamedQuery name='{}'", v8_prop_name);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -273,6 +279,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
                                  const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
+  TRACER("CPythonObject::NamedQuery name='{}'", v8_prop_name);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8

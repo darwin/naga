@@ -30,9 +30,9 @@ namespace py = pybind11;
 
 #include <gsl/gsl-lite.hpp>
 
+#include "ForwardDeclarations.h"
 #include "Logging.h"
 #include "Features.h"
-#include "ForwardDeclarations.h"
 #include "Utils.h"
 #include "V8Utils.h"
 #include "RawUtils.h"

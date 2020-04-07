@@ -2,8 +2,6 @@
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
-#include "spdlog/spdlog.h"
-
 #if defined(STPYV8_LOG_LEVEL)
 // change SPDLOG_ACTIVE_LEVEL based on STPYV8_LOG_LEVEL passed from build system
 #undef SPDLOG_ACTIVE_LEVEL
@@ -25,4 +23,11 @@
 
 #endif
 
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
+
+enum Loggers { kRootLogger = 0, kPythonObjectLogger, kNumLoggers };
+
 void useLogging();
+
+LoggerRef getLogger(Loggers which);
