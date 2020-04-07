@@ -12,7 +12,7 @@ void CJSObjectArray::LazyInit() {
     return;
   }
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
@@ -65,7 +65,7 @@ void CJSObjectArray::LazyInit() {
 size_t CJSObjectArray::Length() {
   LazyInit();
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto result = Object().As<v8::Array>()->Length();
@@ -75,7 +75,7 @@ size_t CJSObjectArray::Length() {
 py::object CJSObjectArray::GetItem(py::object py_key) {
   LazyInit();
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -130,7 +130,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
 py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
   LazyInit();
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -217,7 +217,7 @@ py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
 py::object CJSObjectArray::DelItem(py::object py_key) {
   LazyInit();
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -265,7 +265,7 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
 bool CJSObjectArray::Contains(const py::object& py_key) {
   LazyInit();
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();

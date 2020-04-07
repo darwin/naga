@@ -13,6 +13,7 @@ v8::String::Utf8Value toUtf8Value(v8::Isolate* v8_isolate, v8::Local<v8::String>
 void checkContext(v8::Isolate* v8_isolate);
 bool executionTerminating(v8::Isolate* v8_isolate);
 
+v8::Isolate* getCurrentIsolate();
 v8::HandleScope openScope(v8::Isolate* v8_isolate);
 v8::EscapableHandleScope openEscapableScope(v8::Isolate* v8_isolate);
 v8::TryCatch openTryCatch(v8::Isolate* v8_isolate);

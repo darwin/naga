@@ -51,21 +51,21 @@ void CContext::Expose(const py::module& py_module) {
 }
 
 CContext::CContext(const v8::Local<v8::Context>& context) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
   m_v8_context.Reset(context->GetIsolate(), context);
 }
 
 CContext::CContext(const CContext& context) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
   m_v8_context.Reset(context.Handle()->GetIsolate(), context.Handle());
 }
 
 CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
   m_v8_context.Reset(v8_isolate, v8_context);
@@ -86,13 +86,13 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
 }
 
 py::object CContext::GetGlobal() const {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   return CJSObject::Wrap(Handle()->Global());
 }
 
 py::str CContext::GetSecurityToken() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_token = Handle()->GetSecurityToken();
 
@@ -106,7 +106,7 @@ py::str CContext::GetSecurityToken() {
 }
 
 void CContext::SetSecurityToken(const py::str& py_token) const {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
   if (py_token.is_none()) {
@@ -119,7 +119,7 @@ void CContext::SetSecurityToken(const py::str& py_token) const {
 }
 
 py::object CContext::GetEntered() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
     return py::none();
   }
@@ -133,7 +133,7 @@ py::object CContext::GetEntered() {
 }
 
 py::object CContext::GetCurrent() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
@@ -144,7 +144,7 @@ py::object CContext::GetCurrent() {
 }
 
 py::object CContext::GetCalling() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
     return py::none();
   }
@@ -159,21 +159,21 @@ py::object CContext::GetCalling() {
 }
 
 py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.Compile(src, name, line, col);
   return script->Run();
 }
 
 py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.CompileW(src, name, line, col);
   return script->Run();
 }
 
 v8::Local<v8::Context> CContext::Handle() const {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }
 void CContext::Enter() const {

@@ -757,7 +757,7 @@ bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
 }
 
 py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_val = v8_obj->GetInternalField(0);
   assert(!v8_val.IsEmpty());
@@ -767,7 +767,7 @@ py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
 }
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8::HandleScope handle_scope(v8_isolate);
 
   if (value->IsObject()) {
@@ -787,7 +787,7 @@ void CPythonObject::Dispose(v8::Local<v8::Value> value) {
 }
 
 v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
   auto value = ObjectTracer::FindCache(py_obj.ptr());
@@ -798,7 +798,7 @@ v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
 }
 
 v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);

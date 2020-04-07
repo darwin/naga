@@ -28,7 +28,7 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
 }
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_context = v8_isolate->GetCurrentContext();
   if (v8_val.IsEmpty()) {
     os << "[EMPTY VAL]";

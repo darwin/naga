@@ -41,7 +41,7 @@ v8::Local<v8::String> toString(py::handle py_str) {
 }
 
 v8::Local<v8::String> toString(const std::string& str) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
 }
 
@@ -76,6 +76,10 @@ bool executionTerminating(v8::Isolate* v8_isolate) {
   PyErr_Clear();
   PyErr_SetString(PyExc_RuntimeError, "execution is terminating");
   return true;
+}
+
+v8::Isolate* getCurrentIsolate() {
+  return v8::Isolate::GetCurrent();
 }
 
 v8::HandleScope openScope(v8::Isolate* v8_isolate) {

@@ -6,7 +6,7 @@ void translateJavascriptException(const CJSException& e) {
   if (e.GetType()) {
     PyErr_SetString(e.GetType(), e.what());
   } else {
-    auto v8_isolate = v8::Isolate::GetCurrent();
+    auto v8_isolate = v8u::getCurrentIsolate();
     auto v8_scope = v8u::openScope(v8_isolate);
 
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {

@@ -20,7 +20,7 @@ static inline void validateBridgeResult(v8::Local<v8::Value> v8_val, const char*
 static auto g_hint_property_name = "stpyv8hint";
 
 void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
@@ -31,7 +31,7 @@ void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint) {
 }
 
 uint32_t getWrapperHint(v8::Local<v8::Object> v8_obj) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
@@ -55,7 +55,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
     return false;
   }
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
@@ -80,7 +80,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
 static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
   // TODO: caching? review performance
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_global = v8_isolate->GetCurrentContext()->Global();
 
@@ -151,7 +151,7 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
     return false;
   }
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_res_sym = v8::Local<v8::Symbol>::Cast(v8_val);
@@ -179,7 +179,7 @@ void CJSObjectCLJS::Expose(const py::module& py_module) {
 }
 
 size_t CJSObjectCLJS::Length() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -200,7 +200,7 @@ size_t CJSObjectCLJS::Length() {
 }
 
 py::object CJSObjectCLJS::Str() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -221,7 +221,7 @@ py::object CJSObjectCLJS::Str() {
 }
 
 py::object CJSObjectCLJS::Repr() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -242,7 +242,7 @@ py::object CJSObjectCLJS::Repr() {
 }
 
 py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -262,7 +262,7 @@ py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
 }
 
 py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -316,7 +316,7 @@ py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
 py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
   assert(PyUnicode_Check(py_str.ptr()));
 
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -347,7 +347,7 @@ py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
 }
 
 py::object CJSObjectCLJS::GetItem(const py::object& py_key) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
   if (PyLong_Check(py_key.ptr()) != 0) {
@@ -362,7 +362,7 @@ py::object CJSObjectCLJS::GetItem(const py::object& py_key) {
 }
 
 py::object CJSObjectCLJS::GetAttr(const py::object& py_key) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {

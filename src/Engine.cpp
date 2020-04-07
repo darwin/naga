@@ -78,7 +78,7 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
 }
 
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
@@ -108,7 +108,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
 }
 
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
-  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
