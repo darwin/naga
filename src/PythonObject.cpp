@@ -768,11 +768,11 @@ py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
 }
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(v8_isolate);
 
   if (value->IsObject()) {
-    v8::MaybeLocal<v8::Object> objMaybe = value->ToObject(isolate->GetCurrentContext());
+    v8::MaybeLocal<v8::Object> objMaybe = value->ToObject(v8_isolate->GetCurrentContext());
 
     if (objMaybe.IsEmpty()) {
       return;

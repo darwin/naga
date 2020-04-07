@@ -41,8 +41,8 @@ v8::Local<v8::String> toString(py::handle py_str) {
 }
 
 v8::Local<v8::String> toString(const std::string& str) {
-  auto isolate = v8::Isolate::GetCurrent();
-  return v8::String::NewFromUtf8(isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
 }
 
 v8::Local<v8::String> toString(const std::wstring& str) {

@@ -10,11 +10,11 @@ void CEngine::Expose(const py::module& py_module) {
       .def(py::init<>(),
            "Create a new script engine instance.")
       .def_property_readonly_static(
-          "version", [](const py::object&) { return CEngine::GetVersion(); },
+          "version", [](const py::object &) { return CEngine::GetVersion(); },
           "Get the V8 engine version.")
 
       .def_property_readonly_static(
-          "dead", [](const py::object&) { return CEngine::IsDead(); },
+          "dead", [](const py::object &) { return CEngine::IsDead(); },
           "Check if V8 is dead and therefore unusable.")
 
       .def_static("setFlags", &CEngine::SetFlags,
@@ -78,33 +78,33 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
 }
 
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
-  v8::TryCatch try_catch(isolate);
+  v8::Persistent<v8::String> v8_script_source(m_v8_isolate, v8_src);
 
-  v8::Persistent<v8::String> script_source(m_v8_isolate, v8_src);
-
-  v8::MaybeLocal<v8::Script> script;
-  v8::Local<v8::String> source = v8::Local<v8::String>::New(m_v8_isolate, script_source);
+  v8::MaybeLocal<v8::Script> v8_script;
+  auto v8_source = v8::Local<v8::String>::New(m_v8_isolate, v8_script_source);
 
   withPythonAllowThreadsGuard([&]() {
     if (line >= 0 && col >= 0) {
-      v8::ScriptOrigin script_origin(v8_name, v8::Integer::New(m_v8_isolate, line),
-                                     v8::Integer::New(m_v8_isolate, col));
-      script = v8::Script::Compile(context, source, &script_origin);
+      auto v8_line = v8::Integer::New(m_v8_isolate, line);
+      auto v8_col = v8::Integer::New(m_v8_isolate, col);
+      v8::ScriptOrigin v8_script_origin(v8_name, v8_line, v8_col);
+      v8_script = v8::Script::Compile(v8_context, v8_source, &v8_script_origin);
     } else {
-      v8::ScriptOrigin script_origin(v8_name);
-      script = v8::Script::Compile(context, source, &script_origin);
+      v8::ScriptOrigin v8_script_origin(v8_name);
+      v8_script = v8::Script::Compile(v8_context, v8_source, &v8_script_origin);
     }
   });
 
-  if (script.IsEmpty()) {
-    CJSException::ThrowIf(m_v8_isolate, try_catch);
+  if (v8_script.IsEmpty()) {
+    CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return CScriptPtr(new CScript(m_v8_isolate, *this, script_source, script.ToLocalChecked()));
+  return CScriptPtr(new CScript(m_v8_isolate, *this, v8_script_source, v8_script.ToLocalChecked()));
 }
 
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {

@@ -111,17 +111,17 @@ void CJSObject::Expose(const py::module& py_module) {
 }
 
 void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  assert(isolate->InContext());
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  assert(v8_isolate->InContext());
 
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::HandleScope handle_scope(v8_isolate);
+  v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   if (!Object()->Has(context, v8_name).FromMaybe(false)) {
     std::ostringstream msg;
 
-    msg << "'" << *v8::String::Utf8Value(isolate, Object()->ObjectProtoToString(context).ToLocalChecked())
-        << "' object has no attribute '" << *v8::String::Utf8Value(isolate, v8_name) << "'";
+    msg << "'" << *v8::String::Utf8Value(v8_isolate, Object()->ObjectProtoToString(context).ToLocalChecked())
+        << "' object has no attribute '" << *v8::String::Utf8Value(v8_isolate, v8_name) << "'";
 
     throw CJSException(msg.str(), PyExc_AttributeError);
   }
@@ -207,45 +207,45 @@ py::list CJSObject::GetAttrList() const {
 }
 
 int CJSObject::GetIdentityHash() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   return Object()->GetIdentityHash();
 }
 
 CJSObjectPtr CJSObject::Clone() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   return CJSObjectPtr(new CJSObject(Object()->Clone()));
 }
 
 bool CJSObject::Contains(const std::string& name) const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
-  v8::TryCatch try_catch(isolate);
+  v8::TryCatch try_catch(v8_isolate);
 
   bool found = Object()->Has(context, v8u::toString(name)).ToChecked();
 
   if (try_catch.HasCaught()) {
-    CJSException::ThrowIf(isolate, try_catch);
+    CJSException::ThrowIf(v8_isolate, try_catch);
   }
 
   return found;
 }
 
 bool CJSObject::Equals(const CJSObjectPtr& other) const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   return other.get() && Object()->Equals(context, other->Object()).ToChecked();
 }

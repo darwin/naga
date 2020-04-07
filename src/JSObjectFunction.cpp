@@ -143,32 +143,32 @@ py::object CJSObjectFunction::Invoke(const py::list& py_args, const py::dict& py
 }
 
 std::string CJSObjectFunction::GetName() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
-  v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(func->GetName()));
+  v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetName()));
 
   return std::string(*name, name.length());
 }
 
 void CJSObjectFunction::SetName(const std::string& name) {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
   func->SetName(
-      v8::String::NewFromUtf8(isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
+      v8::String::NewFromUtf8(v8_isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
 }
 
 int CJSObjectFunction::GetLineNumber() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -176,9 +176,9 @@ int CJSObjectFunction::GetLineNumber() const {
 }
 
 int CJSObjectFunction::GetColumnNumber() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -186,33 +186,33 @@ int CJSObjectFunction::GetColumnNumber() const {
 }
 
 std::string CJSObjectFunction::GetResourceName() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
-  v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
+  v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
 
   return std::string(*name, name.length());
 }
 
 std::string CJSObjectFunction::GetInferredName() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
-  v8::String::Utf8Value name(isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
+  v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
   return std::string(*name, name.length());
 }
 
 int CJSObjectFunction::GetLineOffset() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 
@@ -220,9 +220,9 @@ int CJSObjectFunction::GetLineOffset() const {
 }
 
 int CJSObjectFunction::GetColumnOffset() const {
-  auto isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(isolate);
-  v8::HandleScope handle_scope(isolate);
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  v8::HandleScope handle_scope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(Object());
 

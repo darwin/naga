@@ -79,7 +79,7 @@
 //    return false;
 //  }
 //
-//  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+//  auto isolate = v8::Isolate::GetCurrent();
 //  v8::HandleScope handle_scope(isolate);
 //  v8::Local<v8::Context> context = isolate->GetCurrentContext();
 //
