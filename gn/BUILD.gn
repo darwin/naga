@@ -2,6 +2,8 @@ import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
 
 declare_args() {
+  stpyv8_verbose_build=false
+
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
@@ -17,6 +19,14 @@ declare_args() {
   #   "dm" means debug-multithreaded
   #   "m" means multithreaded (normal release build)
   stpyv8_using_debug_python = python_abiflags=="dm"
+}
+
+if (stpyv8_verbose_build) {
+  print("using precompiled headers", stpyv8_enable_precompiled_headers)
+  print("using python_includes", python_includes)
+  print("using python_libs", python_libs)
+  print("using python_ldflags", python_ldflags)
+  print("using python_abiflags", python_abiflags)
 }
 
 stpyv8_source_files = [
@@ -123,7 +133,9 @@ config("stpyv8_python_compiler_flags") {
   cflags = python_includes
 
   if (stpyv8_using_debug_python) {
-    # print("using debug python")
+    if (stpyv8_verbose_build) {
+      print("using debug python")
+    }
     defines = [
       "Py_DEBUG",
     ]
@@ -175,11 +187,6 @@ source_set("stpyv8_src") {
 
 shared_library("stpyv8") {
   output_extension = "so"
-
-  # print("using python_includes", python_includes)
-  # print("using python_libs", python_libs)
-  # print("using python_ldflags", python_ldflags)
-  # print("using python_abiflags", python_abiflags)
 
   # add some of our own settings...
   configs += [ ":stpyv8_python_linker_flags" ]
