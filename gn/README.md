@@ -78,10 +78,6 @@ STPYV8_PYTHON_LDFLAGS=-L/usr/local/opt/python/Frameworks/Python.framework/Versio
 STPYV8_PYTHON_LIBS=-lpython3.7m -ldl -framework CoreFoundation
 STPYV8_V8_GIT_TAG=8.3.104
 STPYV8_V8_GIT_URL=https://chromium.googlesource.com/v8/v8.git
-
-The default interactive shell is now zsh.
-To update your account to use zsh, please run `chsh -s /bin/zsh`.
-For more details, please visit https://support.apple.com/kb/HT208050.
 gn:
 ```
 

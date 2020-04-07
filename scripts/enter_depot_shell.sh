@@ -22,6 +22,9 @@ cd "$GN_DIR"
 export PATH=$DEPOT_HOME:$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 if [[ $# == 0 ]]; then
+  export BASH_SILENCE_DEPRECATION_WARNING=1
+  # TODO: it would be nice to support user's default shell here
+  #       unfortunately I don't know how to prevent/pass init file in general
   exec bash --rcfile <(echo "PS1='gn: ';env | sort | grep ^STPYV8_") -i
 else
   echo_info "in depot shell"
