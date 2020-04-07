@@ -5,13 +5,13 @@
 #ifdef STPYV8_FEATURE_CLJS
 #include "JSObject.h"
 
-bool isCLJSType(v8::Local<v8::Object> obj);
+bool isCLJSType(v8::Local<v8::Object> v8_obj);
 
 const uint32_t kWrapperHintNone = 0;
 const uint32_t kWrapperHintCCLJSIIterableIterator = 1;
 
-void setWrapperHint(v8::Local<v8::Object> obj, uint32_t hint);
-uint32_t getWrapperHint(v8::Local<v8::Object> obj);
+void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint);
+uint32_t getWrapperHint(v8::Local<v8::Object> v8_obj);
 
 // this is a generic wrapper for all CLJS types
 // see https://docs.python.org/3/reference/datamodel.html?highlight=__iter__#emulating-container-types

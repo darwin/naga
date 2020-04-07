@@ -10,149 +10,158 @@
 
 static auto sentinel_name = "bcljs-bridge-sentinel";
 
-static inline void validateBridgeResult(v8::Local<v8::Value> val, const char* fn_name) {
-  if (val.IsEmpty()) {
+static inline void validateBridgeResult(v8::Local<v8::Value> v8_val, const char* fn_name) {
+  if (v8_val.IsEmpty()) {
     throw CJSException(string_format("Unexpected: got empty result from bcljs.bridge.%s call", fn_name),
                        PyExc_UnboundLocalError);
   }
 }
 
-auto hint_property_name = "stpyv8hint";
+static auto g_hint_property_name = "stpyv8hint";
 
-void setWrapperHint(v8::Local<v8::Object> obj, uint32_t hint) {
-  auto isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::openScope(isolate);
-  auto context = isolate->GetCurrentContext();
-  auto hint_property_str = v8::String::NewFromUtf8(isolate, hint_property_name).ToLocalChecked();
-  auto private_property = v8::Private::ForApi(isolate, hint_property_str);
-  auto hint_value = v8::Integer::New(isolate, hint);
+void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint) {
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
+  auto v8_hint_property_api = v8::Private::ForApi(v8_isolate, v8_hint_property_str);
+  auto v8_hint_value = v8::Integer::New(v8_isolate, hint);
 
-  obj->SetPrivate(context, private_property, hint_value);
+  v8_obj->SetPrivate(v8_context, v8_hint_property_api, v8_hint_value);
 }
 
-uint32_t getWrapperHint(v8::Local<v8::Object> obj) {
-  auto isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::openScope(isolate);
-  auto context = isolate->GetCurrentContext();
-  auto hint_property_str = v8::String::NewFromUtf8(isolate, hint_property_name).ToLocalChecked();
-  auto private_property = v8::Private::ForApi(isolate, hint_property_str);
-  auto res_val = obj->GetPrivate(context, private_property).ToLocalChecked();
+uint32_t getWrapperHint(v8::Local<v8::Object> v8_obj) {
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
+  auto v8_hint_property_api = v8::Private::ForApi(v8_isolate, v8_hint_property_str);
+  auto v8_result = v8_obj->GetPrivate(v8_context, v8_hint_property_api).ToLocalChecked();
 
-  if (res_val.IsEmpty()) {
+  if (v8_result.IsEmpty()) {
     return kWrapperHintNone;
   }
 
-  if (!res_val->IsNumber()) {
+  if (!v8_result->IsNumber()) {
     return kWrapperHintNone;
   }
 
-  return res_val->Uint32Value(context).ToChecked();
+  return v8_result->Uint32Value(v8_context).ToChecked();
 }
 
-bool isCLJSType(v8::Local<v8::Object> obj) {
+bool isCLJSType(v8::Local<v8::Object> v8_obj) {
   // early rejection
-  if (obj.IsEmpty()) {
+  if (v8_obj.IsEmpty()) {
     return false;
   }
 
-  auto isolate = v8::Isolate::GetCurrent();
-  auto v8_scope = v8u::openScope(isolate);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
 
-  auto ctor_key = v8::String::NewFromUtf8(isolate, "constructor").ToLocalChecked();
-  auto ctor_val = obj->Get(context, ctor_key).ToLocalChecked();
+  auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();
+  auto v8_ctor_val = v8_obj->Get(v8_context, v8_ctor_key).ToLocalChecked();
 
-  if (ctor_val.IsEmpty() || !ctor_val->IsObject()) {
+  if (v8_ctor_val.IsEmpty() || !v8_ctor_val->IsObject()) {
     return false;
   }
 
-  auto ctor_obj = v8::Local<v8::Object>::Cast(ctor_val);
-  auto cljs_key = v8::String::NewFromUtf8(isolate, "cljs$lang$type").ToLocalChecked();
-  auto cljs_val = ctor_obj->Get(context, cljs_key).ToLocalChecked();
+  auto v8_ctor_obj = v8::Local<v8::Object>::Cast(v8_ctor_val);
+  auto v8_cljs_key = v8::String::NewFromUtf8(v8_isolate, "cljs$lang$type").ToLocalChecked();
+  auto v8_cljs_val = v8_ctor_obj->Get(v8_context, v8_cljs_key).ToLocalChecked();
 
-  return !(cljs_val.IsEmpty() || !cljs_val->IsBoolean());
+  return !(v8_cljs_val.IsEmpty() || !v8_cljs_val->IsBoolean());
 
   // note:
   // we should cast cljs_val to object and check cljs_obj->BooleanValue()
   // but we assume existence of property means true value
 }
 
-void Expose(const py::module& py_module);
-
-v8::Local<v8::Function> lookup_bridge_fn(const char* name) {
+static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
   // TODO: caching? review performance
 
-  auto isolate = v8::Isolate::GetCurrent();
-  auto context = isolate->GetCurrentContext();
-  auto global_obj = isolate->GetCurrentContext()->Global();
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_global = v8_isolate->GetCurrentContext()->Global();
 
-  auto bcljs_key = v8::String::NewFromUtf8(isolate, "bcljs").ToLocalChecked();
-  auto bcljs_val = global_obj->Get(context, bcljs_key).ToLocalChecked();
+  auto v8_bcljs_key = v8::String::NewFromUtf8(v8_isolate, "bcljs").ToLocalChecked();
+  auto v8_bcljs_val = v8_global->Get(v8_context, v8_bcljs_key).ToLocalChecked();
 
-  if (bcljs_val.IsEmpty()) {
+  if (v8_bcljs_val.IsEmpty()) {
     auto msg = "Unable to retrieve bcljs in global js context";
     throw CJSException(msg, PyExc_UnboundLocalError);
   }
 
-  if (!bcljs_val->IsObject()) {
+  if (!v8_bcljs_val->IsObject()) {
     auto msg = "Unexpected: bcljs in global js context in not a js object";
     throw CJSException(msg, PyExc_UnboundLocalError);
   }
 
-  auto bcljs_obj = v8::Local<v8::Object>::Cast(bcljs_val);
+  auto v8_bcljs_obj = v8::Local<v8::Object>::Cast(v8_bcljs_val);
 
-  auto bridge_key = v8::String::NewFromUtf8(isolate, "bridge").ToLocalChecked();
-  auto bridge_val = bcljs_obj->Get(context, bridge_key).ToLocalChecked();
+  auto v8_bridge_key = v8::String::NewFromUtf8(v8_isolate, "bridge").ToLocalChecked();
+  auto v8_bridge_val = v8_bcljs_obj->Get(v8_context, v8_bridge_key).ToLocalChecked();
 
-  if (bridge_val.IsEmpty() || bridge_val->IsNullOrUndefined()) {
+  if (v8_bridge_val.IsEmpty() || v8_bridge_val->IsNullOrUndefined()) {
     auto msg = "Unable to retrieve bcljs.bridge in global js context";
     throw CJSException(msg, PyExc_UnboundLocalError);
   }
 
-  if (!bridge_val->IsObject()) {
+  if (!v8_bridge_val->IsObject()) {
     auto msg = "Unexpected: bcljs.bridge in global js context in not a js object";
     throw CJSException(msg, PyExc_TypeError);
   }
 
-  auto bridge_obj = v8::Local<v8::Object>::Cast(bridge_val);
+  auto v8_bridge_obj = v8::Local<v8::Object>::Cast(v8_bridge_val);
 
-  auto fn_key = v8::String::NewFromUtf8(isolate, name).ToLocalChecked();
-  auto fn_val = bridge_obj->Get(context, fn_key).ToLocalChecked();
+  auto v8_fn_key = v8::String::NewFromUtf8(v8_isolate, name).ToLocalChecked();
+  auto v8_fn_val = v8_bridge_obj->Get(v8_context, v8_fn_key).ToLocalChecked();
 
-  if (fn_val.IsEmpty() || fn_val->IsNullOrUndefined()) {
+  if (v8_fn_val.IsEmpty() || v8_fn_val->IsNullOrUndefined()) {
     auto msg = string_format("Unable to retrieve bcljs.bridge.%s", name);
     throw CJSException(msg, PyExc_UnboundLocalError);
   }
 
-  if (!fn_val->IsFunction()) {
+  if (!v8_fn_val->IsFunction()) {
     auto msg = string_format("Unexpected: bcljs.bridge.%s must be a js function", name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
-  auto fn_obj = v8::Local<v8::Function>::Cast(fn_val);
-  return fn_obj;
+  return v8_fn_val.As<v8::Function>();
 }
 
-v8::Local<v8::Value> callBridge(v8::Isolate* isolate,
-                                const char* name,
-                                v8::Local<v8::Object> self,
-                                std::vector<v8::Local<v8::Value>> params) {
-  auto context = isolate->GetCurrentContext();
-  v8::TryCatch try_catch(isolate);
-  auto func = lookup_bridge_fn(name);
+static v8::Local<v8::Value> callBridge(v8::Isolate* v8_isolate,
+                                       const char* name,
+                                       v8::Local<v8::Object> v8_self,
+                                       std::vector<v8::Local<v8::Value>> v8_params) {
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_fn = lookupBridgeFn(name);
 
-  v8::MaybeLocal<v8::Value> result;
-  result = func->Call(context, self, params.size(), params.empty() ? nullptr : &params[0]);
-
-  if (result.IsEmpty()) {
-    CJSException::ThrowIf(isolate, try_catch);
+  auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
+  if (v8_result.IsEmpty()) {
+    CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  return result.ToLocalChecked();
+  return v8_result.ToLocalChecked();
 }
 
-void CJSObjectCLJS::Expose(const py::module& py_module){
-    // clang-format off
+static bool isSentinel(v8::Local<v8::Value> v8_val) {
+  if (!v8_val->IsSymbol()) {
+    return false;
+  }
+
+  auto v8_isolate = v8::Isolate::GetCurrent();
+  v8u::checkContext(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_res_sym = v8::Local<v8::Symbol>::Cast(v8_val);
+  auto v8_sentinel_name_key = v8::String::NewFromUtf8(v8_isolate, sentinel_name).ToLocalChecked();
+  auto v8_sentinel = v8_res_sym->For(v8_isolate, v8_sentinel_name_key);
+  return v8_res_sym->SameValue(v8_sentinel);
+}
+
+void CJSObjectCLJS::Expose(const py::module& py_module) {
+  // clang-format off
   py::class_<CJSObjectCLJS, CJSObjectCLJSPtr, CJSObject>(py_module, "CLJSType")
       .def("__str__", &CJSObjectCLJS::Str)
       .def("__repr__", &CJSObjectCLJS::Repr)
@@ -166,7 +175,7 @@ void CJSObjectCLJS::Expose(const py::module& py_module){
 //      .def("__next__", &CCLJSIIterableIterator::Next)
 //      .def("__iter__", boost::python::objects::identity_function());
 
-    // clang-format on
+  // clang-format on
 }
 
 size_t CJSObjectCLJS::Length() {
@@ -206,8 +215,8 @@ py::object CJSObjectCLJS::Str() {
     throw CJSException(msg, PyExc_TypeError);
   }
 
-  auto str = *v8::String::Utf8Value(v8_isolate, v8_result);
-  auto raw_str = PyUnicode_FromString(str);
+  auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
+  auto raw_str = PyUnicode_FromString(*v8_utf);
   return py::cast<py::object>(raw_str);
 }
 
@@ -227,23 +236,9 @@ py::object CJSObjectCLJS::Repr() {
     throw CJSException(msg, PyExc_TypeError);
   }
 
-  auto str = *v8::String::Utf8Value(v8_isolate, v8_result);
-  auto raw_str = PyUnicode_FromString(str);
+  auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
+  auto raw_str = PyUnicode_FromString(*v8_utf);
   return py::cast<py::object>(raw_str);
-}
-
-bool isSentinel(v8::Local<v8::Value> v8_val) {
-  if (!v8_val->IsSymbol()) {
-    return false;
-  }
-
-  auto v8_isolate = v8::Isolate::GetCurrent();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_res_sym = v8::Local<v8::Symbol>::Cast(v8_val);
-  auto v8_sentinel_name_key = v8::String::NewFromUtf8(v8_isolate, sentinel_name).ToLocalChecked();
-  auto v8_sentinel = v8_res_sym->For(v8_isolate, v8_sentinel_name_key);
-  return v8_res_sym->SameValue(v8_sentinel);
 }
 
 py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
@@ -251,7 +246,7 @@ py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  uint32_t idx = PyLong_AsUnsignedLong(py_index.ptr());
+  auto idx = PyLong_AsUnsignedLong(py_index.ptr());
 
   auto v8_idx = v8::Uint32::New(v8_isolate, idx);
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_idx};
@@ -325,7 +320,6 @@ py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-
   auto v8_str = v8u::toString(py_str);
 
   // JS object lookup
