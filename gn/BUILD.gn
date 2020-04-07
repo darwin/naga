@@ -5,8 +5,18 @@ declare_args() {
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
+  python_abiflags = getenv("STPYV8_PYTHON_ABIFLAGS")
 
   stpyv8_enable_precompiled_headers = true
+}
+
+declare_args() {
+  # should be true when running with debug build of Python
+  # reason: https://github.com/pybind/pybind11/pull/1438
+  # we retrieve STPYV8_PYTHON_ABIFLAGS via `python3-config --abiflags`
+  #   "dm" means debug-multithreaded
+  #   "m" means multithreaded (normal release build)
+  stpyv8_using_debug_python = python_abiflags=="dm"
 }
 
 stpyv8_source_files = [
@@ -111,11 +121,13 @@ config("stpyv8_compiler_flags") {
 
 config("stpyv8_python_compiler_flags") {
   cflags = python_includes
-  defines = [
-    #"Py_DEBUG",
-    #"Py_REF_DEBUG",
-    #"Py_TRACE_REFS",
-  ]
+
+  if (stpyv8_using_debug_python) {
+    # print("using debug python")
+    defines = [
+      "Py_DEBUG",
+    ]
+  }
 }
 
 config("stpyv8_python_linker_flags") {
@@ -163,6 +175,11 @@ source_set("stpyv8_src") {
 
 shared_library("stpyv8") {
   output_extension = "so"
+
+  # print("using python_includes", python_includes)
+  # print("using python_libs", python_libs)
+  # print("using python_ldflags", python_ldflags)
+  # print("using python_abiflags", python_abiflags)
 
   # add some of our own settings...
   configs += [ ":stpyv8_python_linker_flags" ]
