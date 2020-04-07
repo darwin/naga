@@ -1,8 +1,7 @@
 #include "JSException.h"
-#include "PythonGIL.h"
 
 void translateJavascriptException(const CJSException& e) {
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
 
   if (e.GetType()) {
     PyErr_SetString(e.GetType(), e.what());
@@ -352,7 +351,7 @@ void CJSException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_c
 }
 
 void CJSException::PrintCallStack(py::object py_file) {
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
 
   // TODO: move this into utility function
   auto raw_file = py_file.is_none() ? PySys_GetObject("stdout") : py_file.ptr();

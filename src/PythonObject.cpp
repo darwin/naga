@@ -5,14 +5,13 @@
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
-#include "PythonGIL.h"
 #include "PythonExceptionGuard.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
 void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e) {
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
 
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -123,7 +122,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
   }
 
   auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -189,7 +188,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -252,7 +251,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_prop_name);
@@ -288,7 +287,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_prop_name);
@@ -332,7 +331,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -393,7 +392,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -448,7 +447,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -487,7 +486,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -533,7 +532,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
@@ -565,7 +564,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     Py_ssize_t len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
@@ -593,7 +592,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    CPythonGIL python_gil;
+    auto py_gil = pyu::acquireGIL();
 
     py::object py_self;
 
@@ -804,7 +803,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
 
   if (v8u::executionTerminating(v8_isolate)) {
     return v8::Undefined(v8_isolate);

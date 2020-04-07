@@ -8,7 +8,6 @@
 
 #include "PythonObject.h"
 #include "PythonDateTime.h"
-#include "PythonGIL.h"
 
 void CJSObject::Expose(const py::module& py_module) {
   // clang-format off
@@ -178,7 +177,7 @@ py::list CJSObject::GetAttrList() const {
   auto v8_scope = v8u::openScope(v8_isolate);
   v8u::checkContext(v8_isolate);
 
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
 
   py::list attrs;
 
@@ -425,7 +424,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
 }
 
 py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
-  CPythonGIL python_gil;
+  auto py_gil = pyu::acquireGIL();
   auto v8_isolate = v8::Isolate::GetCurrent();
 
   if (v8u::executionTerminating(v8_isolate)) {

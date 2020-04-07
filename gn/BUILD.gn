@@ -76,8 +76,6 @@ stpyv8_source_files = [
   "PythonExceptionGuard.h",
   "PythonDateTime.cpp",
   "PythonDateTime.h",
-  "PythonGIL.cpp",
-  "PythonGIL.h",
   "PythonObject.cpp",
   "PythonObject.h",
   "PyUtils.cpp",
