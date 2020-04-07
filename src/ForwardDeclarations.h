@@ -27,3 +27,9 @@ typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
 typedef std::shared_ptr<CJSObjectNull> CJSObjectNullPtr;
 typedef std::shared_ptr<CJSObjectUndefined> CJSObjectUndefinedPtr;
 typedef std::shared_ptr<CJSObjectCLJS> CJSObjectCLJSPtr;
+
+namespace v8 {
+
+typedef gsl::not_null<v8::Isolate*> IsolateRef;
+
+}

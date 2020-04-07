@@ -3,20 +3,20 @@
 #include "Base.h"
 
 class CJSException : public std::runtime_error {
-  v8::Isolate* m_v8_isolate;
+  v8::IsolateRef m_v8_isolate;
   PyObject* m_raw_type;
 
   v8::Persistent<v8::Value> m_v8_exception;
   v8::Persistent<v8::Value> m_v8_stack;
   v8::Persistent<v8::Message> m_v8_message;
 
-  static std::string Extract(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch);
+  static std::string Extract(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch);
 
  protected:
-  CJSException(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
+  CJSException(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
  public:
-  CJSException(v8::Isolate* v8_isolate, const std::string& msg, PyObject* raw_type = nullptr) noexcept;
+  CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type = nullptr) noexcept;
   explicit CJSException(const std::string& msg, PyObject* raw_type = nullptr) noexcept;
   CJSException(const CJSException& ex) noexcept;
   ~CJSException() noexcept override;
@@ -41,7 +41,7 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] py::object ToPythonStr() const;
 
   void PrintCallStack(py::object py_file);
-  static void ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch);
+  static void ThrowIf(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch);
 
   static void Expose(const py::module& py_module);
 };

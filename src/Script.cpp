@@ -23,7 +23,7 @@ py::object CScript::Run() {
   auto v8_scope = v8u::openScope(m_v8_isolate);
   return m_engine.ExecuteScript(Script());
 }
-CScript::CScript(v8::Isolate* v8_isolate,
+CScript::CScript(v8::IsolateRef v8_isolate,
                  const CEngine& engine,
                  const v8::Persistent<v8::String>& v8_source,
                  v8::Local<v8::Script> v8_script)

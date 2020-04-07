@@ -1,4 +1,6 @@
 #include "Isolate.h"
+
+#include <utility>
 #include "Context.h"
 #include "JSStackTrace.h"
 
@@ -27,27 +29,11 @@ void CIsolate::Expose(const py::module& py_module) {
   // clang-format on
 }
 
-void CIsolate::Init(bool owner) {
-  m_owner = owner;
+CIsolate::CIsolate(bool owner) : m_v8_isolate(v8u::createIsolate()), m_owner(owner) {}
 
-  if (!m_v8_isolate) {
-    v8::Isolate::CreateParams v8_create_params;
-    v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
-    m_v8_isolate = v8::Isolate::New(v8_create_params);
-  }
-}
+CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()), m_owner(false) {}
 
-CIsolate::CIsolate(bool owner) : m_v8_isolate(nullptr), m_owner(false) {
-  CIsolate::Init(owner);
-}
-
-CIsolate::CIsolate() : m_v8_isolate(nullptr), m_owner(false) {
-  CIsolate::Init(false);
-}
-
-CIsolate::CIsolate(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate), m_owner(false) {
-  CIsolate::Init(false);
-}
+CIsolate::CIsolate(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)), m_owner(false) {}
 
 CIsolate::~CIsolate() {
   if (m_owner) {
@@ -55,7 +41,7 @@ CIsolate::~CIsolate() {
   }
 }
 
-v8::Isolate* CIsolate::GetIsolate() {
+v8::IsolateRef CIsolate::GetIsolate() {
   return m_v8_isolate;
 }
 
@@ -66,12 +52,13 @@ CJSStackTracePtr CIsolate::GetCurrentStackTrace(
 }
 
 py::object CIsolate::GetCurrent() {
-  // here we don't want to call our v8u::getCurrentIsolate, which expects non-NULL
-  auto v8_isolate = v8::Isolate::GetCurrent();
-  if (!v8_isolate || !v8_isolate->IsInUse()) {
+  // here we don't want to call our v8u::getCurrentIsolate, which returns non_)
+  auto v8_nullable_isolate = v8::Isolate::GetCurrent();
+  if (!v8_nullable_isolate || !v8_nullable_isolate->IsInUse()) {
     return py::none();
   }
 
+  v8::IsolateRef v8_isolate(v8_nullable_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   return py::cast(std::make_shared<CIsolate>(v8_isolate));
 }

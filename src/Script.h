@@ -4,14 +4,14 @@
 #include "Engine.h"
 
 class CScript {
-  v8::Isolate* m_v8_isolate;
+  v8::IsolateRef m_v8_isolate;
   const CEngine& m_engine;
 
   v8::Persistent<v8::String> m_v8_source;
   v8::Persistent<v8::Script> m_v8_script;
 
  public:
-  CScript(v8::Isolate* v8_isolate,
+  CScript(v8::IsolateRef v8_isolate,
           const CEngine& engine,
           const v8::Persistent<v8::String>& v8_source,
           v8::Local<v8::Script> v8_script);

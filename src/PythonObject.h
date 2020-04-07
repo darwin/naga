@@ -22,9 +22,9 @@ class CPythonObject {
 
   static void Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info);
 
-  static void SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz);
-  static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::Isolate* isolate);
-  static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(v8::Isolate* isolate);
+  static void SetupObjectTemplate(v8::IsolateRef isolate, v8::Local<v8::ObjectTemplate> clazz);
+  static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(v8::IsolateRef isolate);
+  static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(v8::IsolateRef isolate);
 
   static v8::Local<v8::Value> WrapInternal2(py::handle py_obj);
 
@@ -34,5 +34,5 @@ class CPythonObject {
 
   static void Dispose(v8::Local<v8::Value> v8_val);
 
-  static void ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e = py::error_already_set());
+  static void ThrowIf(v8::IsolateRef v8_isolate, const py::error_already_set& e = py::error_already_set());
 };

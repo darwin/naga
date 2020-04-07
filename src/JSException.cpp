@@ -111,7 +111,7 @@ void CJSException::Expose(const py::module& py_module) {
   // clang-format on
 }
 
-CJSException::CJSException(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
+CJSException::CJSException(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
   auto v8_scope = v8u::openScope(m_v8_isolate);
 
@@ -125,7 +125,7 @@ CJSException::CJSException(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_c
   m_v8_message.Reset(m_v8_isolate, v8_try_catch.Message());
 }
 
-CJSException::CJSException(v8::Isolate* v8_isolate, const std::string& msg, PyObject* raw_type) noexcept
+CJSException::CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type) noexcept
     : std::runtime_error(msg), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {}
 
 CJSException::CJSException(const std::string& msg, PyObject* raw_type) noexcept
@@ -274,7 +274,7 @@ std::string CJSException::GetStackTrace() {
   return std::string();
 }
 
-std::string CJSException::Extract(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
+std::string CJSException::Extract(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch) {
   assert(v8_isolate->InContext());
 
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -321,7 +321,7 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"SyntaxError", PyExc_SyntaxError},
                                               {"TypeError", PyExc_TypeError}};
 
-void CJSException::ThrowIf(v8::Isolate* v8_isolate, const v8::TryCatch& v8_try_catch) {
+void CJSException::ThrowIf(v8::IsolateRef v8_isolate, const v8::TryCatch& v8_try_catch) {
   auto v8_scope = v8u::openScope(v8_isolate);
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;

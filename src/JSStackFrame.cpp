@@ -28,7 +28,7 @@ std::string CJSStackFrame::GetFunctionName() const {
   return std::string(*name, name.length());
 }
 
-CJSStackFrame::CJSStackFrame(v8::Isolate* v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
+CJSStackFrame::CJSStackFrame(v8::IsolateRef v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
     : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {}
 
 CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {

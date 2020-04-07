@@ -31,7 +31,7 @@ py::object CJSStackTrace::ToPythonStr() const {
   return py::cast(ss.str());
 }
 
-CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::Isolate* v8_isolate,
+CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
                                                      int frame_limit,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -97,7 +97,7 @@ void CJSStackTrace::Dump(std::ostream& os) const {
     os << std::endl;
   }
 }
-CJSStackTrace::CJSStackTrace(v8::Isolate* v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+CJSStackTrace::CJSStackTrace(v8::IsolateRef v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {}
 
 CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {

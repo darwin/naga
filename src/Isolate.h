@@ -6,18 +6,16 @@
 enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 
 class CIsolate {
-  v8::Isolate* m_v8_isolate{};
+  v8::IsolateRef m_v8_isolate;
   bool m_owner;
-
-  void Init(bool owner);
 
  public:
   CIsolate();
   explicit CIsolate(bool owner);
-  explicit CIsolate(v8::Isolate* v8_isolate);
+  explicit CIsolate(v8::IsolateRef v8_isolate);
   ~CIsolate();
 
-  v8::Isolate* GetIsolate();
+  v8::IsolateRef GetIsolate();
 
   CJSStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options);
 

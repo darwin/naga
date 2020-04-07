@@ -10,7 +10,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-void CPythonObject::ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e) {
+void CPythonObject::ThrowIf(v8::IsolateRef v8_isolate, const py::error_already_set& e) {
   auto py_gil = pyu::acquireGIL();
 
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -712,7 +712,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> clazz) {
+void CPythonObject::SetupObjectTemplate(v8::IsolateRef isolate, v8::Local<v8::ObjectTemplate> clazz) {
   auto v8_scope = v8u::openScope(isolate);
 
   clazz->SetInternalFieldCount(1);
@@ -722,7 +722,7 @@ void CPythonObject::SetupObjectTemplate(v8::Isolate* isolate, v8::Local<v8::Obje
   clazz->SetCallAsFunctionHandler(Caller);
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(v8::Isolate* isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(v8::IsolateRef isolate) {
   v8::EscapableHandleScope handle_scope(isolate);
 
   v8::Local<v8::ObjectTemplate> clazz = v8::ObjectTemplate::New(isolate);
@@ -732,7 +732,7 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(v8::Isolate* i
   return handle_scope.Escape(clazz);
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(v8::Isolate* isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(v8::IsolateRef isolate) {
   v8::EscapableHandleScope handle_scope(isolate);
   // retrieve cached object template from the isolate
   auto template_ptr = isolate->GetData(kJSObjectTemplate);
