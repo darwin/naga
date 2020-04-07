@@ -2,7 +2,7 @@ import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
 
 declare_args() {
-  stpyv8_verbose_build=false
+  stpyv8_verbose_build = false
 
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
@@ -18,7 +18,7 @@ declare_args() {
   # we retrieve STPYV8_PYTHON_ABIFLAGS via `python3-config --abiflags`
   #   "dm" means debug-multithreaded
   #   "m" means multithreaded (normal release build)
-  stpyv8_using_debug_python = python_abiflags=="dm"
+  stpyv8_using_debug_python = python_abiflags == "dm"
 }
 
 if (stpyv8_verbose_build) {
@@ -136,9 +136,7 @@ config("stpyv8_python_compiler_flags") {
     if (stpyv8_verbose_build) {
       print("using debug python")
     }
-    defines = [
-      "Py_DEBUG",
-    ]
+    defines = [ "Py_DEBUG" ]
   }
 }
 
