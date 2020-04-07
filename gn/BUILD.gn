@@ -6,7 +6,7 @@ declare_args() {
 
   stpyv8_disable_feature_cljs = true
 
-  stpyv8_log_level = "OFF"
+  stpyv8_active_log_level = "INFO"
 
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
@@ -26,7 +26,7 @@ declare_args() {
 }
 
 if (stpyv8_verbose_build) {
-  print("using log level", stpyv8_log_level)
+  print("using active log level", stpyv8_active_log_level)
   print("using precompiled headers", stpyv8_enable_precompiled_headers)
   print("using disable cljs", stpyv8_disable_feature_cljs)
   print("using python_includes", python_includes)
@@ -173,7 +173,7 @@ config("stpyv8_features") {
 }
 
 config("stpyv8_logging") {
-  defines = ["STPYV8_LOG_LEVEL=$stpyv8_log_level" ]
+  defines = ["STPYV8_ACTIVE_LOG_LEVEL=$stpyv8_active_log_level" ]
 }
 
 source_set("stpyv8_src") {

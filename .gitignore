@@ -18,3 +18,4 @@ cmake-build-debug
 
 compile_commands.json
 vendor/cpython
+tests/logs

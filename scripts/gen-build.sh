@@ -28,8 +28,8 @@ if [[ -n "$STPYV8_VERBOSE" ]]; then
   STPYV8_GN_ARGS+=("stpyv8_verbose_build=true")
 fi
 
-if [[ -n "$STPYV8_LOG_LEVEL" ]]; then
-  STPYV8_GN_ARGS+=("stpyv8_log_level=\"$STPYV8_LOG_LEVEL\"")
+if [[ -n "$STPYV8_ACTIVE_LOG_LEVEL" ]]; then
+  STPYV8_GN_ARGS+=("stpyv8_active_log_level=\"$STPYV8_ACTIVE_LOG_LEVEL\"")
 fi
 
 cd "$GN_DIR"
