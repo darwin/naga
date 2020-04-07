@@ -12,6 +12,7 @@ class CJSObjectArray;
 class CJSObjectFunction;
 class CJSObjectNull;
 class CJSObjectUndefined;
+class CJSObjectCLJS;
 
 typedef std::shared_ptr<CPlatform> CPlatformPtr;
 typedef std::shared_ptr<CContext> CContextPtr;
@@ -25,3 +26,4 @@ typedef std::shared_ptr<CJSObjectArray> CJSObjectArrayPtr;
 typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
 typedef std::shared_ptr<CJSObjectNull> CJSObjectNullPtr;
 typedef std::shared_ptr<CJSObjectUndefined> CJSObjectUndefinedPtr;
+typedef std::shared_ptr<CJSObjectCLJS> CJSObjectCLJSPtr;

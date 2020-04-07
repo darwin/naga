@@ -52,7 +52,7 @@ done
 export PATH=$DEPOT_HOME:$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 echo_cmd gn gen --verbose "$BUILD_DIR" \
-  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $STPYV8_GN_EXTRA_ARGS ${STPYV8_GN_ARGS[@]}" \
+  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $STPYV8_GN_EXTRA_ARGS ${STPYV8_GN_ARGS[*]}" \
   $STPYV8_GN_GEN_EXTRA_ARGS
 
 if [[ -z "$STPYV8_GN_GEN_EXTRA_ARGS" ]]; then

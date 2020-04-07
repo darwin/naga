@@ -4,6 +4,8 @@ import("//v8/gni/v8.gni")
 declare_args() {
   stpyv8_verbose_build = false
 
+  stpyv8_disable_feature_cljs = true
+
   python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
@@ -23,6 +25,7 @@ declare_args() {
 
 if (stpyv8_verbose_build) {
   print("using precompiled headers", stpyv8_enable_precompiled_headers)
+  print("using disable cljs", stpyv8_disable_feature_cljs)
   print("using python_includes", python_includes)
   print("using python_libs", python_libs)
   print("using python_ldflags", python_ldflags)
@@ -37,6 +40,7 @@ stpyv8_source_files = [
   "Debug.h",
   "Engine.cpp",
   "Engine.h",
+  "Features.h",
   "ForwardDeclarations.h",
   "Isolate.cpp",
   "Isolate.h",
@@ -148,6 +152,13 @@ config("stpyv8_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
 
+config("stpyv8_features") {
+  defines = []
+  if (stpyv8_disable_feature_cljs) {
+    defines += [ "STPYV8_DISABLE_FEATURE_CLJS" ]
+  }
+}
+
 source_set("stpyv8_src") {
   sources = stpyv8_source_file_paths
 
@@ -173,6 +184,7 @@ source_set("stpyv8_src") {
     ":stpyv8_python_compiler_flags",
     ":stpyv8_compiler_flags",
     ":stpyv8_pybind11_compiler_flags",
+    ":stpyv8_features",
   ]
 
   # this is very important

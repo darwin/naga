@@ -106,8 +106,6 @@ void CJSObject::Expose(const py::module& py_module) {
       .def_property_readonly("coloff", &CJSObjectFunction::GetColumnOffset,
                              "The column offset of function in the script");
   // clang-format on
-
-  // exposeCLJSTypes();
 }
 
 void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
@@ -403,8 +401,8 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
     return CPythonObject::GetWrapper2(v8_obj);
   }
 
-  // TODO: CLJS support
-  //
+#ifdef STPYV8_FEATURE_CLJS
+
   //  auto wrapperHint = getWrapperHint(v8_obj);
   //  if (wrapperHint != kWrapperHintNone) {
   //    if (wrapperHint == kWrapperHintCCLJSIIterableIterator) {
@@ -412,11 +410,11 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   //      return Wrap(obj);
   //    }
   //  }
-  //
-  //  if (isCLJSType(v8_obj)) {
-  //    auto obj = new CJSObjectCLJS(v8_obj);
-  //    return Wrap(obj);
-  //  }
+
+  if (isCLJSType(v8_obj)) {
+    return Wrap(CJSObjectCLJSPtr(new CJSObjectCLJS(v8_obj)));
+  }
+#endif
 
   if (v8_obj->IsFunction()) {
     auto v8_fn = v8_obj.As<v8::Function>();

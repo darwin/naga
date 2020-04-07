@@ -34,5 +34,5 @@ class CPythonObject {
 
   static void Dispose(v8::Local<v8::Value> v8_val);
 
-  static void ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e);
+  static void ThrowIf(v8::Isolate* v8_isolate, const py::error_already_set& e = py::error_already_set());
 };
