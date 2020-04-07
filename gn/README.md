@@ -47,6 +47,7 @@ Our general strategy is:
 
 ```bash
 ./scripts/install-deps.sh
+./scripts/checkout-v8.sh
 ```
 
 ##### Generate the build project
