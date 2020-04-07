@@ -2,4 +2,9 @@
 
 #include "Base.h"
 
-namespace pyu {}  // namespace pyu
+namespace pyu {
+
+py::gil_scoped_acquire acquireGIL();
+py::gil_scoped_release releaseGIL();
+
+}  // namespace pyu
