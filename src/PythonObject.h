@@ -4,12 +4,12 @@
 
 class CPythonObject {
  public:
-  static void NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info);
-  static void NamedSetter(v8::Local<v8::Name> v8_prop_name,
+  static void NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info);
+  static void NamedSetter(v8::Local<v8::Name> v8_name,
                           v8::Local<v8::Value> v8_value,
                           const v8::PropertyCallbackInfo<v8::Value>& v8_info);
-  static void NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info);
-  static void NamedDeleter(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info);
+  static void NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info);
+  static void NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info);
   static void NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info);
 
   static void IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info);
@@ -22,17 +22,17 @@ class CPythonObject {
 
   static void Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info);
 
-  static void SetupObjectTemplate(const v8::IsolateRef& isolate, v8::Local<v8::ObjectTemplate> clazz);
-  static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(const v8::IsolateRef& isolate);
-  static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(const v8::IsolateRef& isolate);
+  static void SetupObjectTemplate(const v8::IsolateRef& v8_isolate, v8::Local<v8::ObjectTemplate> v8_object_template);
+  static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(const v8::IsolateRef& v8_isolate);
+  static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate);
 
-  static v8::Local<v8::Value> WrapInternal2(py::handle py_obj);
+  static v8::Local<v8::Value> WrapInternal(py::handle py_handle);
 
-  static bool IsWrapped2(v8::Local<v8::Object> v8_obj);
-  static v8::Local<v8::Value> Wrap(py::handle py_obj);
-  static py::object GetWrapper2(v8::Local<v8::Object> v8_obj);
+  static bool IsWrapped(v8::Local<v8::Object> v8_object);
+  static v8::Local<v8::Value> Wrap(py::handle py_handle);
+  static py::object GetWrapper(v8::Local<v8::Object> v8_object);
 
-  static void Dispose(v8::Local<v8::Value> v8_val);
+  static void Dispose(v8::Local<v8::Value> v8_value);
 
-  static void ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& e = py::error_already_set());
+  static void ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex = py::error_already_set());
 };

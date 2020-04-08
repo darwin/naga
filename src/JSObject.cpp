@@ -396,8 +396,8 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
     return Wrap(std::make_shared<CJSObjectArray>(v8_array));
   }
 
-  if (CPythonObject::IsWrapped2(v8_obj)) {
-    return CPythonObject::GetWrapper2(v8_obj);
+  if (CPythonObject::IsWrapped(v8_obj)) {
+    return CPythonObject::GetWrapper(v8_obj);
   }
 
 #ifdef STPYV8_FEATURE_CLJS

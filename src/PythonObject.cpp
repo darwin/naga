@@ -12,14 +12,14 @@
 
 #define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
 
-void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& e) {
+void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowIf");
   auto py_gil = pyu::acquireGIL();
 
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  py::object py_type(e.type());
-  py::object py_value(e.value());
+  py::object py_type(py_ex.type());
+  py::object py_value(py_ex.value());
 
   PyObject* raw_val = py_value.ptr();
 
@@ -52,7 +52,7 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
       msg = PyBytes_AS_STRING(raw_val);
     } else if (PyTuple_CheckExact(raw_val)) {
       for (int i = 0; i < PyTuple_GET_SIZE(raw_val); i++) {
-        PyObject* raw_item = PyTuple_GET_ITEM(raw_val, i);
+        auto raw_item = PyTuple_GET_ITEM(raw_val, i);
 
         if (raw_item && PyBytes_CheckExact(raw_item)) {
           msg = PyBytes_AS_STRING(raw_item);
@@ -110,10 +110,10 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
   v8_isolate->ThrowException(v8_error);
 }
 
-void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
-  TRACE("CPythonObject::NamedGetter name={} v8_info={}", v8_prop_name, v8_info);
+void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  if (v8_prop_name->IsSymbol()) {
+  if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
@@ -125,12 +125,10 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
     return;
   }
 
-  auto result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-
-    auto v8_utf_name = v8u::toUtf8Value(v8_isolate, v8_prop_name.As<v8::String>());
+    auto v8_utf_name = v8u::toUtf8Value(v8_isolate, v8_name.As<v8::String>());
 
     // TODO: use pybind
     if (PyGen_Check(py_obj.ptr())) {
@@ -171,16 +169,16 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
     return Wrap(py_val);
   });
 
-  auto result_handle = value_or(result, [&]() { return v8::Undefined(v8_isolate); });
-  v8_info.GetReturnValue().Set(result_handle);
+  auto v8_final_result = value_or(v8_result, [&]() { return v8::Undefined(v8_isolate); });
+  v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
+void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
                                 v8::Local<v8::Value> v8_value,
                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
-  TRACE("CPythonObject::NamedSetter name={} value={} v8_info={}", v8_prop_name, v8_value, v8_info);
+  TRACE("CPythonObject::NamedSetter v8_name={} v8_value={} v8_info={}", v8_name, v8_value, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  if (v8_prop_name->IsSymbol()) {
+  if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
@@ -194,10 +192,8 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-
-    v8::String::Utf8Value v8_utf_name(v8_isolate, v8_prop_name);
+    v8::String::Utf8Value v8_utf_name(v8_isolate, v8_name);
     auto py_val = CJSObject::Wrap(v8_value);
     bool found = py::hasattr(py_obj, *v8_utf_name);
 
@@ -241,10 +237,10 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
-  TRACE("CPythonObject::NamedQuery v8_prop_name={} v8_info={}", v8_prop_name, v8_info);
+void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
+  TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  if (v8_prop_name->IsSymbol()) {
+  if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
@@ -258,9 +254,8 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-    v8::String::Utf8Value name(v8_isolate, v8_prop_name);
+    v8::String::Utf8Value name(v8_isolate, v8_name);
 
     // TODO: rewrite using pybind
     bool exists = PyGen_Check(py_obj.ptr()) || PyObject_HasAttrString(py_obj.ptr(), *name) ||
@@ -277,11 +272,10 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
-                                 const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
-  TRACE("CPythonObject::NamedQuery name={} v8_info={}", v8_prop_name, v8_info);
+void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
+  TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  if (v8_prop_name->IsSymbol()) {
+  if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
@@ -295,9 +289,8 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-    v8::String::Utf8Value name(v8_isolate, v8_prop_name);
+    v8::String::Utf8Value name(v8_isolate, v8_name);
 
     // TODO: rewrite using pybind
     if (!PyObject_HasAttrString(py_obj.ptr(), *name) && PyMapping_Check(py_obj.ptr()) &&
@@ -322,14 +315,14 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
     }
   });
 
-  auto result_handle = value_or(v8_result, [&]() { return v8::Local<v8::Boolean>(); });
-  v8_info.GetReturnValue().Set(result_handle);
+  auto v8_final_result = value_or(v8_result, [&]() { return v8::Local<v8::Boolean>(); });
+  v8_info.GetReturnValue().Set(v8_final_result);
 }
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "bugprone-lambda-function-name"
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
-  TRACE("CPythonObject::NamedEnumerator");
+  TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -340,9 +333,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-
     py::list keys;
     bool filter_name = false;
 
@@ -352,9 +343,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
       keys = py::reinterpret_steal<py::list>(PyMapping_Keys(py_obj.ptr()));
     } else if (PyGen_CheckExact(py_obj.ptr())) {
       auto py_iter(py::reinterpret_steal<py::object>(PyObject_GetIter(py_obj.ptr())));
-
       PyObject* raw_item = nullptr;
-
       while (nullptr != (raw_item = PyIter_Next(py_iter.ptr()))) {
         keys.append(py::reinterpret_steal<py::object>(raw_item));
       }
@@ -363,10 +352,10 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
       filter_name = true;
     }
 
-    Py_ssize_t len = PyList_GET_SIZE(keys.ptr());
-    v8::Local<v8::Array> v8_array = v8::Array::New(v8_isolate, len);
+    auto len = PyList_GET_SIZE(keys.ptr());
+    auto v8_array = v8::Array::New(v8_isolate, len);
     for (Py_ssize_t i = 0; i < len; i++) {
-      PyObject* raw_item = PyList_GET_ITEM(keys.ptr(), i);
+      auto raw_item = PyList_GET_ITEM(keys.ptr(), i);
 
       if (filter_name && PyBytes_CheckExact(raw_item)) {
         std::string name(py::reinterpret_borrow<py::str>(raw_item));
@@ -385,8 +374,8 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
     return v8_array;
   });
 
-  auto result_handle = value_or(v8_result, [&]() { return v8::Local<v8::Array>(); });
-  v8_info.GetReturnValue().Set(result_handle);
+  auto v8_final_result = value_or(v8_result, [&]() { return v8::Local<v8::Array>(); });
+  v8_info.GetReturnValue().Set(v8_final_result);
 }
 #pragma clang diagnostic pop
 
@@ -402,7 +391,6 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
@@ -420,9 +408,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
     if (PyMapping_Check(py_obj.ptr())) {
       char buf[65];
-
       snprintf(buf, sizeof(buf), "%d", index);
-
       PyObject* raw_value = PyMapping_GetItemString(py_obj.ptr(), buf);
 
       if (!raw_value) {
@@ -440,14 +426,14 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     return v8::Undefined(v8_isolate).As<v8::Value>();
   });
 
-  auto result_handle = value_or(v8_result, [&]() { return v8::Undefined(v8_isolate); });
-  v8_info.GetReturnValue().Set(result_handle);
+  auto v8_final_result = value_or(v8_result, [&]() { return v8::Undefined(v8_isolate); });
+  v8_info.GetReturnValue().Set(v8_final_result);
 }
 
 void CPythonObject::IndexedSetter(uint32_t index,
                                   v8::Local<v8::Value> v8_value,
                                   const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
-  TRACE("CPythonObject::IndexedSetter index={} value={} v8_info={}", index, v8_value, v8_info);
+  TRACE("CPythonObject::IndexedSetter index={} v8_value={} v8_info={}", index, v8_value, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -458,7 +444,6 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr())) {
@@ -487,7 +472,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
 }
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
-  TRACE("CPythonObject::IndexedQuery index={}", index);
+  TRACE("CPythonObject::IndexedQuery index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -498,7 +483,6 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
@@ -534,7 +518,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 }
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
-  TRACE("CPythonObject::IndexedDeleter index={}", index);
+  TRACE("CPythonObject::IndexedDeleter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -545,7 +529,6 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr()) && static_cast<Py_ssize_t>(index) < PySequence_Size(py_obj.ptr())) {
@@ -578,9 +561,8 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-    Py_ssize_t len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
+    auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
     auto v8_array = v8::Array::New(v8_isolate, len);
     auto v8_context = v8_isolate->GetCurrentContext();
 
@@ -607,7 +589,6 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
     auto py_gil = pyu::acquireGIL();
-
     py::object py_self;
 
     if (!v8_info.Data().IsEmpty() && v8_info.Data()->IsExternal()) {
@@ -726,117 +707,117 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& isolate, v8::Local<v8::ObjectTemplate> clazz) {
+void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& v8_isolate,
+                                        v8::Local<v8::ObjectTemplate> v8_object_template) {
   TRACE("CPythonObject::SetupObjectTemplate");
-  auto v8_scope = v8u::openScope(isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_handler_config =
+      v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator);
 
-  clazz->SetInternalFieldCount(1);
-  clazz->SetHandler(
-      v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator));
-  clazz->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter, IndexedEnumerator);
-  clazz->SetCallAsFunctionHandler(Caller);
+  v8_object_template->SetInternalFieldCount(1);
+  v8_object_template->SetHandler(v8_handler_config);
+  v8_object_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter,
+                                                IndexedEnumerator);
+  v8_object_template->SetCallAsFunctionHandler(Caller);
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::CreateObjectTemplate");
-  v8::EscapableHandleScope handle_scope(isolate);
+  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+  auto v8_class = v8::ObjectTemplate::New(v8_isolate);
 
-  v8::Local<v8::ObjectTemplate> clazz = v8::ObjectTemplate::New(isolate);
+  SetupObjectTemplate(v8_isolate, v8_class);
 
-  SetupObjectTemplate(isolate, clazz);
-
-  return handle_scope.Escape(clazz);
+  return v8_scope.Escape(v8_class);
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
-  v8::EscapableHandleScope handle_scope(isolate);
+  auto v8_scope = v8u::openEscapableScope(v8_isolate);
   // retrieve cached object template from the isolate
-  auto template_ptr = isolate->GetData(kJSObjectTemplate);
+  auto template_ptr = v8_isolate->GetData(kJSObjectTemplate);
   if (!template_ptr) {
     TRACE("  => creating template");
     // it hasn't been created yet = > go create it and cache it in the isolate
-    auto template_val = CreateObjectTemplate(isolate);
-    auto eternal_val_ptr = new v8::Eternal<v8::ObjectTemplate>(isolate, template_val);
-    assert(isolate->GetNumberOfDataSlots() > kJSObjectTemplate);
-    isolate->SetData(kJSObjectTemplate, eternal_val_ptr);
-    template_ptr = eternal_val_ptr;
+    auto v8_born_template = CreateObjectTemplate(v8_isolate);
+    auto v8_eternal_born_template = new v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
+    assert(v8_isolate->GetNumberOfDataSlots() > kJSObjectTemplate);
+    v8_isolate->SetData(kJSObjectTemplate, v8_eternal_born_template);
+    template_ptr = v8_eternal_born_template;
   }
   // convert raw pointer to pointer to eternal handle
-  auto template_eternal_val = static_cast<v8::Eternal<v8::ObjectTemplate>*>(template_ptr);
-  assert(template_eternal_val);
+  auto v8_eternal_val = static_cast<v8::Eternal<v8::ObjectTemplate>*>(template_ptr);
+  assert(v8_eternal_val);
   // retrieve local handle from eternal handle
-  auto template_val = template_eternal_val->Get(isolate);
-  return handle_scope.Escape(template_val);
+  auto v8_template = v8_eternal_val->Get(v8_isolate);
+  return v8_scope.Escape(v8_template);
 }
 
-bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
-  TRACE("CPythonObject::IsWrapped v8_obj={}", v8_obj);
-  return v8_obj->InternalFieldCount() > 0;
+bool CPythonObject::IsWrapped(v8::Local<v8::Object> v8_object) {
+  TRACE("CPythonObject::IsWrapped v8_object={}", v8_object);
+  return v8_object->InternalFieldCount() > 0;
 }
 
-py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
-  TRACE("CPythonObject::GetWrapper v8_obj={}", v8_obj);
+py::object CPythonObject::GetWrapper(v8::Local<v8::Object> v8_object) {
+  TRACE("CPythonObject::GetWrapper v8_object={}", v8_object);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_val = v8_obj->GetInternalField(0);
+  auto v8_val = v8_object->GetInternalField(0);
   assert(!v8_val.IsEmpty());
   auto v8_payload = v8_val.As<v8::External>();
   auto raw_obj = static_cast<PyObject*>(v8_payload->Value());
   return py::reinterpret_borrow<py::object>(raw_obj);
 }
 
-void CPythonObject::Dispose(v8::Local<v8::Value> value) {
-  TRACE("CPythonObject::Dispose value={}", value);
+void CPythonObject::Dispose(v8::Local<v8::Value> v8_value) {
+  TRACE("CPythonObject::Dispose v8_value={}", v8_value);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  if (value->IsObject()) {
-    v8::MaybeLocal<v8::Object> objMaybe = value->ToObject(v8_isolate->GetCurrentContext());
-
-    if (objMaybe.IsEmpty()) {
+  if (v8_value->IsObject()) {
+    v8::MaybeLocal<v8::Object> v8_maybe_object = v8_value->ToObject(v8_isolate->GetCurrentContext());
+    if (v8_maybe_object.IsEmpty()) {
       return;
     }
 
-    v8::Local<v8::Object> obj = objMaybe.ToLocalChecked();
+    auto v8_object = v8_maybe_object.ToLocalChecked();
 
     // TODO: revisit this
-    if (IsWrapped2(obj)) {
-      Py_DECREF(CPythonObject::GetWrapper2(obj).ptr());
+    if (IsWrapped(v8_object)) {
+      Py_DECREF(CPythonObject::GetWrapper(v8_object).ptr());
     }
   }
 }
 
-v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
-  TRACE("CPythonObject::Wrap py_obj={}", py_obj);
+v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {
+  TRACE("CPythonObject::Wrap py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
-  auto value = ObjectTracer::FindCache(py_obj.ptr());
-  if (value.IsEmpty()) {
-    value = WrapInternal2(py_obj);
+  auto v8_value = ObjectTracer::FindCache(py_handle.ptr());
+  if (v8_value.IsEmpty()) {
+    v8_value = WrapInternal(py_handle);
   }
-  return v8_scope.Escape(value);
+  return v8_scope.Escape(v8_value);
 }
 
-v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
-  TRACE("CPythonObject::WrapInternal py_obj={}", py_obj);
+v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
+  TRACE("CPythonObject::WrapInternal py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
-
   auto py_gil = pyu::acquireGIL();
 
   if (v8u::executionTerminating(v8_isolate)) {
     return v8::Undefined(v8_isolate);
   }
 
-  if (py_obj.is_none()) {
+  if (py_handle.is_none()) {
     return v8::Null(v8_isolate);
   }
-  if (py::isinstance<py::bool_>(py_obj)) {
-    auto py_bool = py::cast<py::bool_>(py_obj);
+  if (py::isinstance<py::bool_>(py_handle)) {
+    auto py_bool = py::cast<py::bool_>(py_handle);
     if (py_bool) {
       return v8::True(v8_isolate);
     } else {
@@ -844,80 +825,73 @@ v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
     }
   }
 
-  if (py::isinstance<CJSObjectNull>(py_obj)) {
+  if (py::isinstance<CJSObjectNull>(py_handle)) {
     return v8::Null(v8_isolate);
   }
 
-  if (py::isinstance<CJSObjectUndefined>(py_obj)) {
+  if (py::isinstance<CJSObjectUndefined>(py_handle)) {
     return v8::Undefined(v8_isolate);
   }
 
-  if (py::isinstance<CJSObject>(py_obj)) {
-    auto obj = py::cast<CJSObjectPtr>(py_obj);
-    assert(obj.get());
-    obj->LazyInit();
+  if (py::isinstance<CJSObject>(py_handle)) {
+    auto object = py::cast<CJSObjectPtr>(py_handle);
+    assert(object.get());
+    object->LazyInit();
 
-    if (obj->Object().IsEmpty()) {
+    if (object->Object().IsEmpty()) {
       throw CJSException("Refer to a null object", PyExc_AttributeError);
     }
 
     // ObjectTracer2::Trace(obj->Object(), py_obj.ptr());
-    return v8_scope.Escape(obj->Object());
+    return v8_scope.Escape(object->Object());
   }
 
   v8::Local<v8::Value> v8_result;
 
   // TODO: replace this with pybind code
-  if (PyLong_CheckExact(py_obj.ptr())) {
-    v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_obj.ptr()));
-  } else if (PyBool_Check(py_obj.ptr())) {
-    v8_result = v8::Boolean::New(v8_isolate, py::cast<py::bool_>(py_obj));
-  } else if (PyBytes_CheckExact(py_obj.ptr()) || PyUnicode_CheckExact(py_obj.ptr())) {
-    v8_result = v8u::toString(py_obj);
-  } else if (PyFloat_CheckExact(py_obj.ptr())) {
-    v8_result = v8::Number::New(v8_isolate, py::cast<py::float_>(py_obj));
-  } else if (isExactDateTime(py_obj) || isExactDate(py_obj)) {
+  if (PyLong_CheckExact(py_handle.ptr())) {
+    v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_handle.ptr()));
+  } else if (PyBool_Check(py_handle.ptr())) {
+    v8_result = v8::Boolean::New(v8_isolate, py::cast<py::bool_>(py_handle));
+  } else if (PyBytes_CheckExact(py_handle.ptr()) || PyUnicode_CheckExact(py_handle.ptr())) {
+    v8_result = v8u::toString(py_handle);
+  } else if (PyFloat_CheckExact(py_handle.ptr())) {
+    v8_result = v8::Number::New(v8_isolate, py::cast<py::float_>(py_handle));
+  } else if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
     tm ts = {0};
     int ms = 0;
-    getPythonDateTime(py_obj, ts, ms);
+    getPythonDateTime(py_handle, ts, ms);
     v8_result = v8::Date::New(v8_isolate->GetCurrentContext(), (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000)
                     .ToLocalChecked();
-  } else if (isExactTime(py_obj)) {
+  } else if (isExactTime(py_handle)) {
     tm ts = {0};
     int ms = 0;
-    getPythonTime(py_obj, ts, ms);
+    getPythonTime(py_handle, ts, ms);
     v8_result = v8::Date::New(v8_isolate->GetCurrentContext(), (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000)
                     .ToLocalChecked();
-  } else if (PyCFunction_Check(py_obj.ptr()) || PyFunction_Check(py_obj.ptr()) || PyMethod_Check(py_obj.ptr()) ||
-             PyType_CheckExact(py_obj.ptr())) {
-    auto func_tmpl = v8::FunctionTemplate::New(v8_isolate);
-
-    // NOTE: tracker will keep the object alive
-    ObjectTracer::Trace(v8_result, py_obj.ptr());
-    // Py_INCREF(py_obj.ptr());
-    func_tmpl->SetCallHandler(Caller, v8::External::New(v8_isolate, py_obj.ptr()));
-
-    if (PyType_Check(py_obj.ptr())) {
-      auto py_name_attr = py_obj.attr("__name__");
+  } else if (PyCFunction_Check(py_handle.ptr()) || PyFunction_Check(py_handle.ptr()) ||
+             PyMethod_Check(py_handle.ptr()) || PyType_CheckExact(py_handle.ptr())) {
+    auto v8_fn_template = v8::FunctionTemplate::New(v8_isolate);
+    v8_fn_template->SetCallHandler(Caller, v8::External::New(v8_isolate, py_handle.ptr()));
+    if (PyType_Check(py_handle.ptr())) {
+      auto py_name_attr = py_handle.attr("__name__");
       // TODO: we should do it safer here, if __name__ is not string
       auto v8_cls_name = v8u::toString(py_name_attr);
-      func_tmpl->SetClassName(v8_cls_name);
+      v8_fn_template->SetClassName(v8_cls_name);
     }
-    v8_result = func_tmpl->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
-    //    if (!v8_result.IsEmpty()) {
-    //      ObjectTracer2::Trace(v8_result, py_obj.ptr());
-    //    }
+    v8_result = v8_fn_template->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
+    assert(!v8_result.IsEmpty());
+    // NOTE: tracker will keep the object alive
+    ObjectTracer::Trace(v8_result, py_handle.ptr());
   } else {
-    auto template_val = GetCachedObjectTemplateOrCreate(v8_isolate);
-    auto instance = template_val->NewInstance(v8_isolate->GetCurrentContext());
-    if (!instance.IsEmpty()) {
-      auto realInstance = instance.ToLocalChecked();
-      // NOTE: tracker will keep the object alive
-      ObjectTracer::Trace(instance.ToLocalChecked(), py_obj.ptr());
-      // Py_INCREF(py_obj.ptr());
-      realInstance->SetInternalField(0, v8::External::New(v8_isolate, py_obj.ptr()));
-      v8_result = realInstance;
-    }
+    auto v8_object_template = GetCachedObjectTemplateOrCreate(v8_isolate);
+    auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
+    ;
+    assert(!v8_object_instance.IsEmpty());
+    v8_object_instance->SetInternalField(0, v8::External::New(v8_isolate, py_handle.ptr()));
+    // NOTE: tracker will keep the object alive
+    ObjectTracer::Trace(v8_object_instance, py_handle.ptr());
+    v8_result = v8_object_instance;
   }
 
   if (v8_result.IsEmpty()) {
