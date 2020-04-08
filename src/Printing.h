@@ -2,12 +2,23 @@
 
 #include "Base.h"
 
+#define THIS voidThis(this)
+
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj);
 std::ostream& operator<<(std::ostream& os, const CJSException& ex);
 std::ostream& operator<<(std::ostream& os, const CJSObject& obj);
 std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj);
+std::ostream& operator<<(std::ostream& os, const CContext& obj);
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "google-readability-casting"
+template <typename T>
+void* voidThis(const T* v) {
+  return (void*)v;
+}
+#pragma clang diagnostic pop
 
 // https://fmt.dev/latest/api.html#formatting-user-defined-types
 // I wasn't able to get above operator<< functions to work with spdlog/fmt lib out-of-the box
@@ -23,6 +34,16 @@ struct fmt::formatter<v8::Local<T>> {
     std::ostringstream msg;
     msg << val;
     return format_to(ctx.out(), "{}", msg.str());
+  }
+};
+
+template <>
+struct fmt::formatter<v8::Local<v8::Context>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::Context>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::Context {} global={}", static_cast<void*>(*val), val->Global());
   }
 };
 
@@ -70,6 +91,29 @@ struct fmt::formatter<py::handle> {
     } else {
       auto py_repr = py::repr(val);
       return format_to(ctx.out(), "py::object {} {}", static_cast<void*>(raw_obj), py_repr);
+    }
+  }
+};
+
+// wait for https://github.com/fmtlib/fmt/issues/1621
+struct wstring_printer {
+  std::wstring m_s;
+};
+
+template <>
+struct fmt::formatter<wstring_printer> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const wstring_printer& val, FormatContext& ctx) {
+    // TODO: revisit this and do it more directly if possible
+    // this is really ugly way to use Python C library to convert from wstring to UTF-8 for printing
+    auto v8_string = v8u::toString(val.m_s);
+    auto v8_utf = v8u::toUtf8Value(v8u::getCurrentIsolate(), v8_string);
+    if (*v8_utf) {
+      return format_to(ctx.out(), "{}", *v8_utf);
+    } else {
+      return format_to(ctx.out(), "?wstring?");
     }
   }
 };

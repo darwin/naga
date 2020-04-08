@@ -1,4 +1,5 @@
 #include "Printing.h"
+#include "Context.h"
 #include "JSException.h"
 #include "JSObject.h"
 #include "JSStackTrace.h"
@@ -41,5 +42,10 @@ std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
       os << "[N/A]";
     }
   }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const CContext& obj) {
+  obj.Dump(os);
   return os;
 }

@@ -4,7 +4,10 @@
 #include "PythonObject.h"
 #include "Script.h"
 
+#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__))
+
 void CContext::Expose(const py::module& py_module) {
+  TRACE("CContext::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(py::init<const CContext &>(),
@@ -50,14 +53,16 @@ void CContext::Expose(const py::module& py_module) {
   // clang-format on
 }
 
-CContext::CContext(const v8::Local<v8::Context>& context) {
+CContext::CContext(const v8::Local<v8::Context>& v8_context) {
+  TRACE("CContext::CContext {} v8_context={}", THIS, v8_context);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  m_v8_context.Reset(context->GetIsolate(), context);
+  m_v8_context.Reset(v8_context->GetIsolate(), v8_context);
 }
 
 CContext::CContext(const CContext& context) {
+  TRACE("CContext::CContext {} context={}", THIS, context);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -65,6 +70,7 @@ CContext::CContext(const CContext& context) {
 }
 
 CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
+  TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
@@ -75,8 +81,8 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
   if (!py_global.is_none()) {
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto global = CPythonObject::Wrap(py_global);
-    auto result = Handle()->Global()->Set(v8_context, v8_proto_key, global);
-    if (result.IsNothing()) {
+    auto v8_result = Handle()->Global()->Set(v8_context, v8_proto_key, global);
+    if (v8_result.IsNothing()) {
       // TODO we need to do something if the set call failed
     }
 
@@ -86,12 +92,14 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
 }
 
 py::object CContext::GetGlobal() const {
+  TRACE("CContext::GetGlobal {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   return CJSObject::Wrap(Handle()->Global());
 }
 
 py::str CContext::GetSecurityToken() {
+  TRACE("CContext::GetSecurityToken {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_token = Handle()->GetSecurityToken();
@@ -106,6 +114,7 @@ py::str CContext::GetSecurityToken() {
 }
 
 void CContext::SetSecurityToken(const py::str& py_token) const {
+  TRACE("CContext::SetSecurityToken {} py_token={}", THIS, py_token);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -119,6 +128,7 @@ void CContext::SetSecurityToken(const py::str& py_token) const {
 }
 
 py::object CContext::GetEntered() {
+  TRACE("CContext::GetEntered");
   auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
     return py::none();
@@ -133,6 +143,7 @@ py::object CContext::GetEntered() {
 }
 
 py::object CContext::GetCurrent() {
+  TRACE("CContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -144,6 +155,7 @@ py::object CContext::GetCurrent() {
 }
 
 py::object CContext::GetCalling() {
+  TRACE("CContext::GetCalling");
   auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
     return py::none();
@@ -159,6 +171,7 @@ py::object CContext::GetCalling() {
 }
 
 py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
+  TRACE("CContext::Evaluate name={} line={} col={} src={}", name, line, col, src);
   auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.Compile(src, name, line, col);
@@ -166,6 +179,7 @@ py::object CContext::Evaluate(const std::string& src, const std::string& name, i
 }
 
 py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
+  TRACE("CContext::EvaluateW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
   auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.CompileW(src, name, line, col);
@@ -173,23 +187,31 @@ py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name
 }
 
 v8::Local<v8::Context> CContext::Handle() const {
+  TRACE("CContext::Handle {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
 }
 
 void CContext::Enter() const {
+  TRACE("CContext::Enter {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   Handle()->Enter();
 }
 
 void CContext::Leave() const {
+  TRACE("CContext::Leave {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   Handle()->Exit();
 }
 
 bool CContext::InContext() {
+  TRACE("CContext::InContext {}");
   auto v8_isolate = v8u::getCurrentIsolate();
   return v8_isolate->InContext();
+}
+
+void CContext::Dump(std::ostream& os) const {
+  fmt::print(os, "CContext {} m_v8_context={} m_py_global={}", voidThis(this), Handle(), m_py_global);
 }

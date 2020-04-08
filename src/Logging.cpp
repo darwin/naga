@@ -14,8 +14,10 @@ static void setupLogger(const std::shared_ptr<spdlog::logger>& logger) {
 static void initLoggers() {
   auto logger_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/stpyv8.txt");
 
-  g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("stpyv8", logger_file_sink);
-  g_loggers[kPythonObjectLogger] = std::make_shared<spdlog::logger>("stpyv8pyobj", logger_file_sink);
+  // keep all logger names same length to have logger names aligned
+  g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("stpyv8_rot", logger_file_sink);
+  g_loggers[kPythonObjectLogger] = std::make_shared<spdlog::logger>("stpyv8_pyo", logger_file_sink);
+  g_loggers[kContextLogger] = std::make_shared<spdlog::logger>("stpyv8_ctx", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

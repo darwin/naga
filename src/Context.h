@@ -7,11 +7,13 @@ class CContext {
   v8::Persistent<v8::Context> m_v8_context;
 
  public:
-  explicit CContext(const v8::Local<v8::Context>& context);
+  explicit CContext(const v8::Local<v8::Context>& v8_context);
   CContext(const CContext& context);
   explicit CContext(const py::object& py_global);
 
   ~CContext() { m_v8_context.Reset(); }
+
+  void Dump(std::ostream& os) const;
 
   [[nodiscard]] v8::Local<v8::Context> Handle() const;
   [[nodiscard]] py::object GetGlobal() const;
