@@ -10,28 +10,17 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj);
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
 
 // https://fmt.dev/latest/api.html#formatting-user-defined-types
-template <>
-struct fmt::formatter<v8::Local<v8::Name>> {
-  constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+// I wasn't able to get above operator<< functions to work with spdlog/fmt lib out-of-the box
+// this is an alternative way when we defined custom formatter and delegate work to operator<< explicitly
+// I'm not sure about codegen complexity, but we use logging only during development so this is ok, I guess
+template <typename T>
+struct fmt::formatter<v8::Local<T>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
 
   template <typename FormatContext>
-  auto format(const v8::Local<v8::Name>& d, FormatContext& ctx) {
+  auto format(const v8::Local<T>& val, FormatContext& ctx) {
     std::ostringstream msg;
-    msg << d;
-    return format_to(ctx.out(), "{}", msg.str());
-  }
-};
-
-// TODO: figure out how to do this via template
-// hint: see "You can also write a formatter for a hierarchy of classes" via the above link
-template <>
-struct fmt::formatter<v8::Local<v8::Value>> {
-  constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::Value>& d, FormatContext& ctx) {
-    std::ostringstream msg;
-    msg << d;
+    msg << val;
     return format_to(ctx.out(), "{}", msg.str());
   }
 };
