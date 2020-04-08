@@ -11,6 +11,7 @@ std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
 
 // https://fmt.dev/latest/api.html#formatting-user-defined-types
 // I wasn't able to get above operator<< functions to work with spdlog/fmt lib out-of-the box
+// maybe this was the issue? https://github.com/fmtlib/fmt/issues/1542#issuecomment-581855567
 // this is an alternative way when we defined custom formatter and delegate work to operator<< explicitly
 // I'm not sure about codegen complexity, but we use logging only during development so this is ok, I guess
 template <typename T>
@@ -22,5 +23,53 @@ struct fmt::formatter<v8::Local<T>> {
     std::ostringstream msg;
     msg << val;
     return format_to(ctx.out(), "{}", msg.str());
+  }
+};
+
+template <typename T>
+struct fmt::formatter<v8::PropertyCallbackInfo<T>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::PropertyCallbackInfo<T>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8:PCI[This={} Holder={} ReturnValue={}]", val.This(), val.Holder(),
+                     val.GetReturnValue().Get());
+  }
+};
+
+template <typename T>
+struct fmt::formatter<v8::FunctionCallbackInfo<T>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::FunctionCallbackInfo<T>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8:FCI[Length={} This={} Holder={} ReturnValue={}]", val.Length(), val.This(),
+                     val.Holder(), val.GetReturnValue().Get());
+  }
+};
+
+template <>
+struct fmt::formatter<py::error_already_set> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const py::error_already_set& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "py::ex[type={} what={}]", val.type(), val.what());
+  }
+};
+
+template <>
+struct fmt::formatter<py::handle> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const py::handle& val, FormatContext& ctx) {
+    auto raw_obj = val.ptr();
+    if (!raw_obj) {
+      return format_to(ctx.out(), "py::object 0x0");
+    } else {
+      auto py_repr = py::repr(val);
+      return format_to(ctx.out(), "py::object {} {}", static_cast<void*>(raw_obj), py_repr);
+    }
   }
 };

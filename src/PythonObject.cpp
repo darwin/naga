@@ -10,10 +10,10 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-#define TRACER(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
+#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
 
 void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& e) {
-  TRACER("CPythonObject::ThrowIf");
+  TRACE("CPythonObject::ThrowIf");
   auto py_gil = pyu::acquireGIL();
 
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -111,7 +111,7 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
 }
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
-  TRACER("CPythonObject::NamedGetter name='{}'", v8_prop_name);
+  TRACE("CPythonObject::NamedGetter name={} v8_info={}", v8_prop_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -178,7 +178,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_prop_name, const v8::Prop
 void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
                                 v8::Local<v8::Value> v8_value,
                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
-  TRACER("CPythonObject::NamedSetter name='{}' value={}", v8_prop_name, v8_value);
+  TRACE("CPythonObject::NamedSetter name={} value={} v8_info={}", v8_prop_name, v8_value, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -242,7 +242,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_prop_name,
 }
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
-  TRACER("CPythonObject::NamedQuery name='{}'", v8_prop_name);
+  TRACE("CPythonObject::NamedQuery v8_prop_name={} v8_info={}", v8_prop_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -279,7 +279,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_prop_name, const v8::Prope
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
                                  const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
-  TRACER("CPythonObject::NamedQuery name='{}'", v8_prop_name);
+  TRACE("CPythonObject::NamedQuery name={} v8_info={}", v8_prop_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_prop_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
@@ -329,6 +329,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_prop_name,
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "bugprone-lambda-function-name"
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
+  TRACE("CPythonObject::NamedEnumerator");
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -390,6 +391,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 #pragma clang diagnostic pop
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  TRACE("CPythonObject::IndexedGetter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -445,6 +447,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 void CPythonObject::IndexedSetter(uint32_t index,
                                   v8::Local<v8::Value> v8_value,
                                   const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  TRACE("CPythonObject::IndexedSetter index={} value={} v8_info={}", index, v8_value, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -484,6 +487,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
 }
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
+  TRACE("CPythonObject::IndexedQuery index={}", index);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -530,6 +534,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 }
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
+  TRACE("CPythonObject::IndexedDeleter index={}", index);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -562,6 +567,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 }
 
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
+  TRACE("CPythonObject::IndexedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -590,6 +596,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
 }
 
 void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
+  TRACE("CPythonObject::Caller v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -720,6 +727,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
 }
 
 void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& isolate, v8::Local<v8::ObjectTemplate> clazz) {
+  TRACE("CPythonObject::SetupObjectTemplate");
   auto v8_scope = v8u::openScope(isolate);
 
   clazz->SetInternalFieldCount(1);
@@ -730,6 +738,7 @@ void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& isolate, v8::Local
 }
 
 v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& isolate) {
+  TRACE("CPythonObject::CreateObjectTemplate");
   v8::EscapableHandleScope handle_scope(isolate);
 
   v8::Local<v8::ObjectTemplate> clazz = v8::ObjectTemplate::New(isolate);
@@ -740,10 +749,12 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::Isol
 }
 
 v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& isolate) {
+  TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
   v8::EscapableHandleScope handle_scope(isolate);
   // retrieve cached object template from the isolate
   auto template_ptr = isolate->GetData(kJSObjectTemplate);
   if (!template_ptr) {
+    TRACE("  => creating template");
     // it hasn't been created yet = > go create it and cache it in the isolate
     auto template_val = CreateObjectTemplate(isolate);
     auto eternal_val_ptr = new v8::Eternal<v8::ObjectTemplate>(isolate, template_val);
@@ -760,10 +771,12 @@ v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(con
 }
 
 bool CPythonObject::IsWrapped2(v8::Local<v8::Object> v8_obj) {
+  TRACE("CPythonObject::IsWrapped v8_obj={}", v8_obj);
   return v8_obj->InternalFieldCount() > 0;
 }
 
 py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
+  TRACE("CPythonObject::GetWrapper v8_obj={}", v8_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_val = v8_obj->GetInternalField(0);
@@ -774,6 +787,7 @@ py::object CPythonObject::GetWrapper2(v8::Local<v8::Object> v8_obj) {
 }
 
 void CPythonObject::Dispose(v8::Local<v8::Value> value) {
+  TRACE("CPythonObject::Dispose value={}", value);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
 
@@ -794,6 +808,7 @@ void CPythonObject::Dispose(v8::Local<v8::Value> value) {
 }
 
 v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
+  TRACE("CPythonObject::Wrap py_obj={}", py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
@@ -805,6 +820,7 @@ v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_obj) {
 }
 
 v8::Local<v8::Value> CPythonObject::WrapInternal2(py::handle py_obj) {
+  TRACE("CPythonObject::WrapInternal py_obj={}", py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
