@@ -1,6 +1,7 @@
 #pragma once
 
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#define SPDLOG_FUNCTION __PRETTY_FUNCTION__
 
 #if defined(STPYV8_LOG_LEVEL)
 // change SPDLOG_ACTIVE_LEVEL based on STPYV8_LOG_LEVEL passed from build system

@@ -6,6 +6,45 @@
 
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 
+// this is our attempt to replace fmt's v-flag with wide padding
+// for some reason they support only max 64 characters
+// while we are at it we also handle multi-line case, which would not be covered by standard padding
+class wide_v_formatter final : public spdlog::custom_flag_formatter {
+  static const size_t m_log_message_padding_width = 300;
+
+ public:
+  void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
+    auto text_size = msg.payload.size();
+    auto text = std::string_view(msg.payload.begin(), text_size);
+    auto last_line_start_pos = text.rfind("\n") + 1;          // in single-line case this is 0
+    auto last_line_length = text_size - last_line_start_pos;  // in single-line case this is total string length
+
+    assert(last_line_length >= 0);
+    auto padding_size = 0;
+    if (m_log_message_padding_width > last_line_length) {
+      padding_size = m_log_message_padding_width - last_line_length;
+    }
+    if (last_line_start_pos > 0) {
+      // this is multi-line situation
+      // we rely on the fact that dest is created fresh for each new log message
+      // that means that current size is what was already printed as prefix
+      // something like "22:15:18.521 T stpyv8_pyo | "
+      padding_size += dest.size();
+    }
+
+    dest.reserve(dest.size() + text_size + padding_size);
+    dest.append(text.data(), text.data() + text_size);
+    while (padding_size > 0) {
+      dest.push_back(' ');
+      padding_size--;
+    }
+  }
+
+  [[nodiscard]] std::unique_ptr<custom_flag_formatter> clone() const override {
+    return spdlog::details::make_unique<wide_v_formatter>();
+  }
+};
+
 static void setupLogger(const std::shared_ptr<spdlog::logger>& logger) {
   // always flush
   logger->flush_on(spdlog::level::trace);
@@ -25,6 +64,11 @@ static void initLoggers() {
   }
 
   spdlog::set_default_logger(g_loggers[kRootLogger]);
+
+  auto custom_formatter = std::make_unique<spdlog::pattern_formatter>();
+  custom_formatter->add_flag<wide_v_formatter>('*');
+  custom_formatter->set_pattern("%H:%M:%S.%e %L %n | %-400*   |> %s:%#");
+  spdlog::set_formatter(std::move(custom_formatter));
 }
 
 static bool initLogging() {
