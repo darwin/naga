@@ -9,44 +9,7 @@
 
 #define BUILD_PRECOMPILE_H_
 
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <math.h>
-#include <memory.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #if defined(__cplusplus)
-
-#include <algorithm>
-#include <bitset>
-#include <cmath>
-#include <cstddef>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <functional>
-#include <iomanip>
-#include <iosfwd>
-#include <iterator>
-#include <limits>
-#include <list>
-#include <map>
-#include <numeric>
-#include <ostream>
-#include <queue>
-#include <set>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "Base.h"
 
