@@ -47,6 +47,16 @@ struct fmt::formatter<v8::Local<v8::Context>> {
   }
 };
 
+template <>
+struct fmt::formatter<v8::Local<v8::Script>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::Script>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::Script {}", static_cast<void*>(*val));
+  }
+};
+
 template <typename T>
 struct fmt::formatter<v8::PropertyCallbackInfo<T>> {
   [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
@@ -95,9 +105,9 @@ struct fmt::formatter<py::handle> {
   }
 };
 
-// wait for https://github.com/fmtlib/fmt/issues/1621
+// see https://github.com/fmtlib/fmt/issues/1621
 struct wstring_printer {
-  std::wstring m_ws;
+  const std::wstring& m_ws;
 };
 
 template <>
@@ -113,5 +123,19 @@ struct fmt::formatter<wstring_printer> {
     } catch (...) {
       return format_to(ctx.out(), "?wstring?");
     }
+  }
+};
+
+struct isolateref_printer {
+  const v8::IsolateRef& m_isolate;
+};
+
+template <>
+struct fmt::formatter<isolateref_printer> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const isolateref_printer& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::IsolateRef {}", static_cast<void*>(val.m_isolate));
   }
 };

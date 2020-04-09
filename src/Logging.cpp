@@ -57,6 +57,7 @@ static void initLoggers() {
   g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("stpyv8_rot", logger_file_sink);
   g_loggers[kPythonObjectLogger] = std::make_shared<spdlog::logger>("stpyv8_pyo", logger_file_sink);
   g_loggers[kContextLogger] = std::make_shared<spdlog::logger>("stpyv8_ctx", logger_file_sink);
+  g_loggers[kEngineLogger] = std::make_shared<spdlog::logger>("stpyv8_eng", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);
