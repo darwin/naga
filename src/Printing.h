@@ -97,7 +97,7 @@ struct fmt::formatter<py::handle> {
 
 // wait for https://github.com/fmtlib/fmt/issues/1621
 struct wstring_printer {
-  std::wstring m_s;
+  std::wstring m_ws;
 };
 
 template <>
@@ -106,13 +106,11 @@ struct fmt::formatter<wstring_printer> {
 
   template <typename FormatContext>
   auto format(const wstring_printer& val, FormatContext& ctx) {
-    // TODO: revisit this and do it more directly if possible
-    // this is really ugly way to use Python C library to convert from wstring to UTF-8 for printing
-    auto v8_string = v8u::toString(val.m_s);
-    auto v8_utf = v8u::toUtf8Value(v8u::getCurrentIsolate(), v8_string);
-    if (*v8_utf) {
-      return format_to(ctx.out(), "{}", *v8_utf);
-    } else {
+    try {
+      std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+      auto utf8_string = converter.to_bytes(val.m_ws);
+      return format_to(ctx.out(), "{}", utf8_string);
+    } catch (...) {
       return format_to(ctx.out(), "?wstring?");
     }
   }

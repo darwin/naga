@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <codecvt>
 
 #include <Python.h>
 #include "Debug.h"
