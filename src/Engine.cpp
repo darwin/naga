@@ -116,7 +116,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
     CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return std::make_shared<CScript>(m_v8_isolate, *this, v8_script_source, v8_script.ToLocalChecked());
+  return std::make_shared<CScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
@@ -176,4 +176,8 @@ CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, 
   TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
   auto v8_scope = v8u::openScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
+}
+
+void CEngine::Dump(std::ostream& os) const {
+  fmt::print(os, "CEngine {}", THIS);
 }

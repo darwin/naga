@@ -25,7 +25,7 @@ py::object CScript::Run() {
 }
 CScript::CScript(v8::IsolateRef v8_isolate,
                  const CEngine& engine,
-                 const v8::Persistent<v8::String>& v8_source,
+                 v8::Local<v8::String> v8_source,
                  v8::Local<v8::Script> v8_script)
     : m_v8_isolate(std::move(v8_isolate)),
       m_engine(engine),
