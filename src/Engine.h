@@ -16,7 +16,6 @@ class CEngine {
   CScriptPtr Compile(const std::string& src, const std::string& name = std::string(), int line = -1, int col = -1);
   CScriptPtr CompileW(const std::wstring& src, const std::wstring& name = std::wstring(), int line = -1, int col = -1);
 
- public:
   static const char* GetVersion();
   static void SetStackLimit(uintptr_t stack_limit_size);
 
