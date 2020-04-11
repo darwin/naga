@@ -108,6 +108,8 @@ static void initLoggers() {
   custom_formatter->add_flag<wide_v_formatter>('*');
   custom_formatter->set_pattern("%H:%M:%S.%e %L %n | %-400*   |> %s:%#");
   spdlog::set_formatter(std::move(custom_formatter));
+  spdlog::set_error_handler(
+      [](const std::string& msg) { throw std::runtime_error(fmt::format("LOGGING ERROR: {}", msg)); });
 }
 
 static bool initLogging() {
