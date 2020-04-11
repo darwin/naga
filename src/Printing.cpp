@@ -1,5 +1,7 @@
 #include "Printing.h"
 #include "Context.h"
+#include "Engine.h"
+#include "Script.h"
 #include "JSException.h"
 #include "JSObject.h"
 #include "JSStackTrace.h"
@@ -46,6 +48,16 @@ std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
 }
 
 std::ostream& operator<<(std::ostream& os, const CContext& obj) {
+  obj.Dump(os);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const CEngine& obj) {
+  obj.Dump(os);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const CScript& obj) {
   obj.Dump(os);
   return os;
 }

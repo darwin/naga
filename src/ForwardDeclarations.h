@@ -2,6 +2,7 @@
 
 class CPlatform;
 class CContext;
+class CEngine;
 class CIsolate;
 class CScript;
 class CJSStackTrace;

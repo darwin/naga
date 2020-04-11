@@ -9,6 +9,8 @@ std::ostream& operator<<(std::ostream& os, const CJSException& ex);
 std::ostream& operator<<(std::ostream& os, const CJSObject& obj);
 std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj);
 std::ostream& operator<<(std::ostream& os, const CContext& obj);
+std::ostream& operator<<(std::ostream& os, const CEngine& obj);
+std::ostream& operator<<(std::ostream& os, const CScript& obj);
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
 
