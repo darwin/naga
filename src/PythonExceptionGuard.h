@@ -4,7 +4,7 @@
 #include "PythonObject.h"
 
 template <typename T>
-std::optional<T> withPythonExceptionGuard(v8::IsolateRef v8_isolate, std::function<T()> fn) {
+std::optional<T> withPythonExceptionGuard(const v8::IsolateRef& v8_isolate, std::function<T()> fn) {
   try {
     return fn();
   } catch (const py::error_already_set& e) {
@@ -19,4 +19,4 @@ std::optional<T> withPythonExceptionGuard(v8::IsolateRef v8_isolate, std::functi
   return std::nullopt;
 }
 
-void withPythonExceptionGuard(v8::IsolateRef v8_isolate, std::function<void()> fn);
+void withPythonExceptionGuard(const v8::IsolateRef& v8_isolate, std::function<void()> fn);
