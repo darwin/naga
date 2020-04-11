@@ -20,9 +20,9 @@ void CLocker::Expose(const py::module& py_module) {
           "locked", [](const py::object&) { return CLocker::IsLocked(); },
           "whether or not the locker is locked by the current thread.")
 
-      .def("entered", &CLocker::entered)
-      .def("enter", &CLocker::enter)
-      .def("leave", &CLocker::leave);
+      .def("entered", &CLocker::IsEntered)
+      .def("enter", &CLocker::Enter)
+      .def("leave", &CLocker::Leave);
   // clang-format on
 }
 
@@ -30,22 +30,22 @@ CLocker::CLocker(CIsolatePtr isolate) : m_isolate(std::move(isolate)) {
   TRACE("CLocker::CLocker {} isolate={}", THIS, m_isolate);
 }
 
-bool CLocker::entered() {
+bool CLocker::IsEntered() {
   auto result = (bool)m_v8_locker.get();
-  TRACE("CLocker::entered {} => {}", THIS, result);
+  TRACE("CLocker::IsEntered {} => {}", THIS, result);
   return result;
 }
 
-void CLocker::enter() {
-  TRACE("CLocker::enter {}", THIS);
+void CLocker::Enter() {
+  TRACE("CLocker::Enter {}", THIS);
   withPythonAllowThreadsGuard([&]() {
     auto v8_isolate = m_isolate.get() ? m_isolate->GetIsolate() : v8u::getCurrentIsolate();
     m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
   });
 }
 
-void CLocker::leave() {
-  TRACE("CLocker::leave {}", THIS);
+void CLocker::Leave() {
+  TRACE("CLocker::Leave {}", THIS);
   withPythonAllowThreadsGuard([&]() { m_v8_locker.reset(); });
 }
 

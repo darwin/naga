@@ -10,11 +10,10 @@ class CLocker {
   CLocker() = default;
   explicit CLocker(CIsolatePtr isolate);
   ~CLocker() = default;
-  bool entered();
 
-  void enter();
-  void leave();
-
+  bool IsEntered();
+  void Enter();
+  void Leave();
   static bool IsLocked();
   static bool IsActive();
 

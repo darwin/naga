@@ -9,9 +9,9 @@ class CUnlocker {
   CUnlocker() = default;
   ~CUnlocker() = default;
 
-  bool entered();
-  void enter();
-  void leave();
+  bool IsEntered();
+  void Enter();
+  void Leave();
 
   static void Expose(const py::module& py_module);
 };
