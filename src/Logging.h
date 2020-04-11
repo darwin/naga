@@ -36,6 +36,7 @@ enum Loggers {
   kPlatformLogger,
   kScriptLogger,
   kLockingLogger,
+  kJSExceptionLogger,
   kNumLoggers
 };
 

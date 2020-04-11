@@ -59,6 +59,26 @@ struct fmt::formatter<v8::Local<v8::Script>> {
   }
 };
 
+template <>
+struct fmt::formatter<v8::TryCatch> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::TryCatch& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::TryCatch Message=[{}]", val.Message());
+  }
+};
+
+template <>
+struct fmt::formatter<v8::Local<v8::Message>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::Message>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::Message {} '{}'", static_cast<void*>(*val), val->Get());
+  }
+};
+
 template <typename T>
 struct fmt::formatter<v8::PropertyCallbackInfo<T>> {
   [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
@@ -139,5 +159,19 @@ struct fmt::formatter<isolateref_printer> {
   template <typename FormatContext>
   auto format(const isolateref_printer& val, FormatContext& ctx) {
     return format_to(ctx.out(), "v8::IsolateRef {}", static_cast<void*>(val.m_isolate));
+  }
+};
+
+struct raw_object_printer {
+  PyObject* m_raw_object;
+};
+
+template <>
+struct fmt::formatter<raw_object_printer> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const raw_object_printer& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "PyObject {}", static_cast<void*>(val.m_raw_object));
   }
 };

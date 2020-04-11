@@ -100,6 +100,7 @@ static void initLoggers() {
   g_loggers[kPlatformLogger] = std::make_shared<spdlog::logger>("stpyv8_plt", logger_file_sink);
   g_loggers[kScriptLogger] = std::make_shared<spdlog::logger>("stpyv8_scr", logger_file_sink);
   g_loggers[kLockingLogger] = std::make_shared<spdlog::logger>("stpyv8_lck", logger_file_sink);
+  g_loggers[kJSExceptionLogger] = std::make_shared<spdlog::logger>("stpyv8_jse", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);
