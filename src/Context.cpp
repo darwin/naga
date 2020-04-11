@@ -207,11 +207,16 @@ void CContext::Leave() const {
 }
 
 bool CContext::InContext() {
-  TRACE("CContext::InContext {}");
+  TRACE("CContext::InContext");
   auto v8_isolate = v8u::getCurrentIsolate();
   return v8_isolate->InContext();
 }
 
 void CContext::Dump(std::ostream& os) const {
   fmt::print(os, "CContext {} m_v8_context={} m_py_global={}", voidThis(this), Handle(), m_py_global);
+}
+bool CContext::IsEntered() {
+  auto result = !m_v8_context.IsEmpty();
+  TRACE("CContext::IsEntered {} => {}", THIS, result);
+  return result;
 }

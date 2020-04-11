@@ -21,7 +21,7 @@ class CContext {
   py::str GetSecurityToken();
   void SetSecurityToken(const py::str& py_token) const;
 
-  bool IsEntered() { return !m_v8_context.IsEmpty(); }
+  bool IsEntered();
   void Enter() const;
   void Leave() const;
 
