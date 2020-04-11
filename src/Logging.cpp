@@ -16,27 +16,65 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
   void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
     auto text_size = msg.payload.size();
     auto text = std::string_view(msg.payload.begin(), text_size);
-    auto last_line_start_pos = text.rfind("\n") + 1;          // in single-line case this is 0
+
+    std::size_t lines_count = 1;
+    std::size_t text_pos = -1;
+    std::size_t last_line_start_pos = 0;
+    while (true) {
+      last_line_start_pos = text_pos + 1;
+      text_pos = text.find("\n", text_pos + 1);
+      if (text_pos == std::string::npos) {
+        break;
+      }
+      lines_count++;
+    }
+
     auto last_line_length = text_size - last_line_start_pos;  // in single-line case this is total string length
 
     assert(last_line_length >= 0);
+    assert(lines_count > 0);
     auto padding_size = 0;
     if (m_log_message_padding_width > last_line_length) {
       padding_size = m_log_message_padding_width - last_line_length;
     }
-    if (last_line_start_pos > 0) {
-      // this is multi-line situation
-      // we rely on the fact that dest is created fresh for each new log message
-      // that means that current size is what was already printed as prefix
-      // something like "22:15:18.521 T stpyv8_pyo | "
-      padding_size += dest.size();
-    }
 
-    dest.reserve(dest.size() + text_size + padding_size);
-    dest.append(text.data(), text.data() + text_size);
-    while (padding_size > 0) {
-      dest.push_back(' ');
-      padding_size--;
+    // we rely on the fact that dest is created fresh for each new log message
+    // that means that current size is what was already printed as prefix
+    // something like "22:15:18.521 T stpyv8_pyo | "
+    // we are going to indent each line but first
+    auto indent_size = dest.size();
+    assert(indent_size >= 2);
+    auto indents_size = (lines_count - 1) * indent_size;
+
+    dest.reserve(dest.size() + text_size + indents_size + padding_size);
+
+    // print the text line by line
+    text_pos = -1;
+    while (true) {
+      last_line_start_pos = text_pos + 1;
+      text_pos = text.find("\n", text_pos + 1);
+      if (last_line_start_pos > 0) {
+        // print indent with separator,
+        // -2 is stripping last two characters from prefix to draw separator below
+        for (size_t i = 0; i < indent_size - 2; i++) {
+          dest.push_back(' ');
+        }
+        dest.push_back('|');
+        dest.push_back(' ');
+      }
+      if (text_pos == std::string::npos) {
+        // this is the last line
+        // print remainder with padding
+        dest.append(text.data() + last_line_start_pos, text.data() + text_size);
+        while (padding_size > 0) {
+          dest.push_back(' ');
+          padding_size--;
+        }
+        break;
+      } else {
+        // print the line, including the new line
+        dest.append(text.data() + last_line_start_pos, text.data() + text_pos + 1);
+      }
     }
   }
 
