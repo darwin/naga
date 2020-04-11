@@ -17,7 +17,8 @@ class CIsolate {
 
   v8::IsolateRef GetIsolate();
 
-  CJSStackTracePtr GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options);
+  CJSStackTracePtr GetCurrentStackTrace(int frame_limit,
+                                        v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview);
 
   static py::object GetCurrent();
 
@@ -25,7 +26,7 @@ class CIsolate {
   void Leave() { m_v8_isolate->Exit(); }
   void Dispose() { m_v8_isolate->Dispose(); }
 
-  bool IsLocked() { return v8::Locker::IsLocked(m_v8_isolate); }
+  bool IsLocked();
 
   static void Expose(const py::module& py_module);
 };

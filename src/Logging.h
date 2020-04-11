@@ -27,7 +27,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-enum Loggers { kRootLogger = 0, kPythonObjectLogger, kContextLogger, kEngineLogger, kNumLoggers };
+enum Loggers { kRootLogger = 0, kPythonObjectLogger, kContextLogger, kEngineLogger, kIsolateLogger, kNumLoggers };
 
 void useLogging();
 
