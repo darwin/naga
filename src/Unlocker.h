@@ -9,7 +9,7 @@ class CUnlocker {
   CUnlocker() = default;
   ~CUnlocker() = default;
 
-  bool entered() { return m_v8_unlocker.get(); }
+  bool entered();
   void enter();
   void leave();
 

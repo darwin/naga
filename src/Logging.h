@@ -35,6 +35,7 @@ enum Loggers {
   kIsolateLogger,
   kPlatformLogger,
   kScriptLogger,
+  kLockingLogger,
   kNumLoggers
 };
 

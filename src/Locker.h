@@ -8,9 +8,9 @@ class CLocker {
 
  public:
   CLocker() = default;
-  explicit CLocker(CIsolatePtr isolate) : m_isolate(std::move(isolate)) {}
+  explicit CLocker(CIsolatePtr isolate);
   ~CLocker() = default;
-  bool entered() { return m_v8_locker.get(); }
+  bool entered();
 
   void enter();
   void leave();
