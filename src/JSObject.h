@@ -12,8 +12,8 @@ class CJSObject {
   CJSObject() = default;
 
  public:
-  explicit CJSObject(v8::Local<v8::Object> v8_obj) : m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {}
-  virtual ~CJSObject() { m_v8_obj.Reset(); }
+  explicit CJSObject(v8::Local<v8::Object> v8_obj);
+  virtual ~CJSObject();
 
   virtual void LazyInit() {}
 

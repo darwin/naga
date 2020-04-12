@@ -39,6 +39,7 @@ enum Loggers {
   kJSExceptionLogger,
   kJSStackFrameLogger,
   kJSStackTraceLogger,
+  kJSObjectLogger,
   kNumLoggers
 };
 

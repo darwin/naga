@@ -9,7 +9,10 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 
+#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__))
+
 void CJSObject::Expose(const py::module& py_module) {
+  TRACE("CJSObject::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
       .def("__getattr__", &CJSObject::GetAttr)
@@ -107,7 +110,17 @@ void CJSObject::Expose(const py::module& py_module) {
   // clang-format on
 }
 
+CJSObject::CJSObject(v8::Local<v8::Object> v8_obj) : m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
+  TRACE("CJSObject::CJSObject {} v8_obj={}", THIS, v8_obj);
+}
+
+CJSObject::~CJSObject() {
+  TRACE("CJSObject::~CJSObject {}", THIS);
+  m_v8_obj.Reset();
+}
+
 void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
+  TRACE("CJSObject::CheckAttr {} v8_name={}", THIS, v8_name);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
 
@@ -125,6 +138,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
 }
 
 py::object CJSObject::GetAttr(const std::string& name) {
+  TRACE("CJSObject::GetAttr {} name={}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -139,10 +153,13 @@ py::object CJSObject::GetAttr(const std::string& name) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  return CJSObject::Wrap(v8_attr_value, Object());
+  auto py_result = CJSObject::Wrap(v8_attr_value, Object());
+  TRACE("CJSObject::GetAttr {} => {}", THIS, py_result);
+  return py_result;
 }
 
 void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
+  TRACE("CJSObject::SetAttr {} name={} py_obj={}", THIS, name, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -158,6 +175,7 @@ void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
 }
 
 void CJSObject::DelAttr(const std::string& name) {
+  TRACE("CJSObject::DelAttr {} name={}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -173,6 +191,7 @@ void CJSObject::DelAttr(const std::string& name) {
 }
 
 py::list CJSObject::GetAttrList() const {
+  TRACE("CJSObject::GetAttrList {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -200,6 +219,7 @@ py::list CJSObject::GetAttrList() const {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
+  TRACE("CJSObject::GetAttrList {} => {}", THIS, attrs);
   return attrs;
 }
 
@@ -208,7 +228,9 @@ int CJSObject::GetIdentityHash() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  return Object()->GetIdentityHash();
+  auto result = Object()->GetIdentityHash();
+  TRACE("CJSObject::GetIdentityHash {} => {}", THIS, result);
+  return result;
 }
 
 CJSObjectPtr CJSObject::Clone() const {
@@ -216,7 +238,9 @@ CJSObjectPtr CJSObject::Clone() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
 
-  return std::make_shared<CJSObject>(Object()->Clone());
+  auto result = std::make_shared<CJSObject>(Object()->Clone());
+  TRACE("CJSObject::Clone {} => {}", THIS, result);
+  return result;
 }
 
 bool CJSObject::Contains(const std::string& name) const {
@@ -228,13 +252,14 @@ bool CJSObject::Contains(const std::string& name) const {
 
   v8::TryCatch try_catch(v8_isolate);
 
-  bool found = Object()->Has(context, v8u::toString(name)).ToChecked();
+  bool result = Object()->Has(context, v8u::toString(name)).ToChecked();
 
   if (try_catch.HasCaught()) {
     CJSException::ThrowIf(v8_isolate, try_catch);
   }
 
-  return found;
+  TRACE("CJSObject::Contains {} name={} => {}", THIS, name, result);
+  return result;
 }
 
 bool CJSObject::Equals(const CJSObjectPtr& other) const {
@@ -244,44 +269,13 @@ bool CJSObject::Equals(const CJSObjectPtr& other) const {
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
-  return other.get() && Object()->Equals(context, other->Object()).ToChecked();
-}
-
-void CJSObject::Dump(std::ostream& os) const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
-
-  auto v8_obj = Object();
-  if (v8_obj.IsEmpty()) {
-    os << "None";  // TODO: this should be something different than "None"
-    return;
-  }
-
-  if (v8_obj->IsInt32()) {
-    os << v8_obj->Int32Value(v8_context).ToChecked();
-  } else if (v8_obj->IsNumber()) {
-    os << v8_obj->NumberValue(v8_context).ToChecked();
-  } else if (v8_obj->IsBoolean()) {
-    os << v8_obj->BooleanValue(v8_isolate);
-  } else if (v8_obj->IsNull()) {
-    os << "None";
-  } else if (v8_obj->IsUndefined()) {
-    os << "N/A";
-  } else if (v8_obj->IsString()) {
-    os << *v8::String::Utf8Value(v8_isolate, v8::Local<v8::String>::Cast(v8_obj));
-  } else {
-    v8::MaybeLocal<v8::String> s = v8_obj->ToString(v8_context);
-    if (s.IsEmpty()) {
-      s = v8_obj->ObjectProtoToString(v8_context);
-    } else {
-      os << *v8::String::Utf8Value(v8_isolate, s.ToLocalChecked());
-    }
-  }
+  auto result = other.get() && Object()->Equals(context, other->Object()).ToChecked();
+  TRACE("CJSObject::Equals {} other={} => {}", THIS, other, result);
+  return result;
 }
 
 py::object CJSObject::ToPythonInt() const {
+  TRACE("CJSObject::ToPythonInt {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -292,10 +286,13 @@ py::object CJSObject::ToPythonInt() const {
   }
 
   auto val = Object()->Int32Value(v8_context).ToChecked();
-  return py::cast(val);
+  auto py_result = py::cast(val);
+  TRACE("CJSObject::ToPythonInt {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObject::ToPythonFloat() const {
+  TRACE("CJSObject::ToPythonFloat {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -306,7 +303,9 @@ py::object CJSObject::ToPythonFloat() const {
   }
 
   auto val = Object()->NumberValue(v8_context).ToChecked();
-  return py::cast(val);
+  auto py_result = py::cast(val);
+  TRACE("CJSObject::ToPythonInt {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObject::ToPythonBool() const {
@@ -319,16 +318,21 @@ py::object CJSObject::ToPythonBool() const {
     val = Object()->BooleanValue(v8_isolate);
   }
 
-  return py::cast(val);
+  auto py_result = py::cast(val);
+  TRACE("CJSObject::ToPythonBool {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObject::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
-  return py::cast(ss.str());
+  auto py_result = py::cast(ss.str());
+  TRACE("CJSObject::ToPythonStr {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
+  TRACE("CJSObject::Wrap v8_val={} v8_self={}", v8_val, v8_self);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openScope(v8_isolate);
@@ -380,50 +384,45 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
 
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
-  return Wrap(v8_obj, v8_self);
+  auto py_result = Wrap(v8_obj, v8_self);
+  TRACE("CJSObject::Wrap => {}", py_result);
+  return py_result;
 }
 
 py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
+  TRACE("CJSObject::Wrap v8_obj={} v8_self={}", v8_obj, v8_self);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::openScope(v8_isolate);
 
+  py::object py_result;
+
   if (v8_obj.IsEmpty()) {
-    return py::none();
-  }
-  if (v8_obj->IsArray()) {
+    py_result = py::none();
+  } else if (v8_obj->IsArray()) {
     auto v8_array = v8_obj.As<v8::Array>();
-    return Wrap(std::make_shared<CJSObjectArray>(v8_array));
+    py_result = Wrap(std::make_shared<CJSObjectArray>(v8_array));
+  } else if (CPythonObject::IsWrapped(v8_obj)) {
+    py_result = CPythonObject::GetWrapper(v8_obj);
   }
-
-  if (CPythonObject::IsWrapped(v8_obj)) {
-    return CPythonObject::GetWrapper(v8_obj);
-  }
-
 #ifdef STPYV8_FEATURE_CLJS
-
-  //  auto wrapperHint = getWrapperHint(v8_obj);
-  //  if (wrapperHint != kWrapperHintNone) {
-  //    if (wrapperHint == kWrapperHintCCLJSIIterableIterator) {
-  //      auto obj = new CCLJSIIterableIterator(v8_obj);
-  //      return Wrap(obj);
-  //    }
-  //  }
-
-  if (isCLJSType(v8_obj)) {
-    return Wrap(std::make_shared<CJSObjectCLJS>(v8_obj));
+  else if (isCLJSType(v8_obj)) {
+    py_result = Wrap(std::make_shared<CJSObjectCLJS>(v8_obj));
   }
 #endif
-
-  if (v8_obj->IsFunction()) {
+  else if (v8_obj->IsFunction()) {
     auto v8_fn = v8_obj.As<v8::Function>();
-    return Wrap(std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
+    py_result = Wrap(std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
+  } else {
+    py_result = Wrap(std::make_shared<CJSObject>(v8_obj));
   }
 
-  return Wrap(std::make_shared<CJSObject>(v8_obj));
+  TRACE("CJSObject::Wrap => {}", py_result);
+  return py_result;
 }
 
 py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
+  TRACE("CJSObject::Wrap obj={}", obj);
   auto py_gil = pyu::acquireGIL();
   auto v8_isolate = v8u::getCurrentIsolate();
 
@@ -431,10 +430,47 @@ py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
     return py::none();
   }
 
-  return py::cast(obj);
+  auto py_result = py::cast(obj);
+  TRACE("CJSObject::Wrap => {}", py_result);
+  return py_result;
 }
 
 v8::Local<v8::Object> CJSObject::Object() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  return v8::Local<v8::Object>::New(v8_isolate, m_v8_obj);
+  auto v8_result = v8::Local<v8::Object>::New(v8_isolate, m_v8_obj);
+  TRACE("CJSObject::CJSObject {} => {}", THIS, v8_result);
+  return v8_result;
+}
+void CJSObject::Dump(std::ostream& os) const {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8u::checkContext(v8_isolate);
+  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+
+  auto v8_obj = Object();
+  if (v8_obj.IsEmpty()) {
+    os << "None";  // TODO: this should be something different than "None"
+    return;
+  }
+
+  if (v8_obj->IsInt32()) {
+    os << v8_obj->Int32Value(v8_context).ToChecked();
+  } else if (v8_obj->IsNumber()) {
+    os << v8_obj->NumberValue(v8_context).ToChecked();
+  } else if (v8_obj->IsBoolean()) {
+    os << v8_obj->BooleanValue(v8_isolate);
+  } else if (v8_obj->IsNull()) {
+    os << "None";
+  } else if (v8_obj->IsUndefined()) {
+    os << "N/A";
+  } else if (v8_obj->IsString()) {
+    os << *v8::String::Utf8Value(v8_isolate, v8::Local<v8::String>::Cast(v8_obj));
+  } else {
+    v8::MaybeLocal<v8::String> s = v8_obj->ToString(v8_context);
+    if (s.IsEmpty()) {
+      s = v8_obj->ObjectProtoToString(v8_context);
+    } else {
+      os << *v8::String::Utf8Value(v8_isolate, s.ToLocalChecked());
+    }
+  }
 }
