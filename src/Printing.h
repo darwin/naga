@@ -91,6 +91,16 @@ struct fmt::formatter<v8::Local<v8::StackFrame>> {
   }
 };
 
+template <>
+struct fmt::formatter<v8::Local<v8::StackTrace>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::StackTrace>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::StackTrace {} FrameCount={}", static_cast<void*>(*val), val->GetFrameCount());
+  }
+};
+
 template <typename T>
 struct fmt::formatter<v8::PropertyCallbackInfo<T>> {
   [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }

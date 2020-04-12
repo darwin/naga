@@ -2,9 +2,12 @@
 #include "JSStackFrame.h"
 #include "JSException.h"
 
-void CJSStackTrace::Expose(const py::module& m) {
+#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__))
+
+void CJSStackTrace::Expose(const py::module& py_module) {
+  TRACE("CJSStackTrace::Expose py_module={}", py_module);
   // clang-format off
-  py::class_<CJSStackTrace, CJSStackTracePtr>(m, "JSStackTrace")
+  py::class_<CJSStackTrace, CJSStackTracePtr>(py_module, "JSStackTrace")
       .def("__len__", &CJSStackTrace::GetFrameCount)
       .def("__getitem__", &CJSStackTrace::GetFrame)
 
@@ -12,7 +15,7 @@ void CJSStackTrace::Expose(const py::module& m) {
 
       .def("__str__", &CJSStackTrace::ToPythonStr);
 
-  py::enum_<v8::StackTrace::StackTraceOptions>(m, "JSStackTraceOptions")
+  py::enum_<v8::StackTrace::StackTraceOptions>(py_module, "JSStackTraceOptions")
       .value("LineNumber", v8::StackTrace::kLineNumber)
       .value("ColumnOffset", v8::StackTrace::kColumnOffset)
       .value("ScriptName", v8::StackTrace::kScriptName)
@@ -28,12 +31,16 @@ void CJSStackTrace::Expose(const py::module& m) {
 py::object CJSStackTrace::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;
-  return py::cast(ss.str());
+  auto result = py::cast(ss.str());
+  TRACE("CJSStackTrace::ToPythonStr {} => {}", THIS, result);
+  return result;
 }
 
 CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
                                                      int frame_limit,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
+  TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}",
+        isolateref_printer{v8_isolate}, frame_limit, v8_options);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(v8_isolate);
 
@@ -47,10 +54,13 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
 
 int CJSStackTrace::GetFrameCount() const {
   auto v8_scope = v8u::openScope(m_v8_isolate);
-  return Handle()->GetFrameCount();
+  auto result = Handle()->GetFrameCount();
+  TRACE("CJSStackTrace::GetFrameCount {} => {}", THIS, result);
+  return result;
 }
 
 CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
+  TRACE("CJSStackTrace::GetFrame {} idx={}", THIS, idx);
   auto v8_scope = v8u::openScope(m_v8_isolate);
   auto v8_try_catch = v8u::openTryCatch(m_v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
@@ -62,14 +72,31 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
     CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
 
-  return std::make_shared<CJSStackFrame>(m_v8_isolate, v8_stack_frame);
+  auto result = std::make_shared<CJSStackFrame>(m_v8_isolate, v8_stack_frame);
+  TRACE("CJSStackTrace::GetFrame {} => {}", THIS, result);
+  return result;
+}
+
+CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+    : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {
+  TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, isolateref_printer{v8_isolate},
+        v8_stack_trace);
+}
+
+CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
+  TRACE("CJSStackTrace::CJSStackTrace {} stack_trace={}", THIS, stack_trace);
+  auto v8_scope = v8u::openScope(m_v8_isolate);
+  m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
+}
+
+v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
+  auto result = v8::Local<v8::StackTrace>::New(m_v8_isolate, m_v8_stack_trace);
+  TRACE("CJSStackTrace::Handle {} => {}", THIS, result);
+  return result;
 }
 
 void CJSStackTrace::Dump(std::ostream& os) const {
   auto v8_scope = v8u::openScope(m_v8_isolate);
-
-  v8::TryCatch try_catch(m_v8_isolate);
-
   std::ostringstream oss;
 
   for (int i = 0; i < GetFrameCount(); i++) {
@@ -96,15 +123,4 @@ void CJSStackTrace::Dump(std::ostream& os) const {
 
     os << std::endl;
   }
-}
-CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
-    : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {}
-
-CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
-  m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
-}
-
-v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
-  return v8::Local<v8::StackTrace>::New(m_v8_isolate, m_v8_stack_trace);
 }
