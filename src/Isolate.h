@@ -22,9 +22,9 @@ class CIsolate {
 
   static py::object GetCurrent();
 
-  void Enter() { m_v8_isolate->Enter(); }
-  void Leave() { m_v8_isolate->Exit(); }
-  void Dispose() { m_v8_isolate->Dispose(); }
+  void Enter();
+  void Leave();
+  void Dispose();
 
   bool IsLocked();
 

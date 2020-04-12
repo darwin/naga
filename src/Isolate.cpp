@@ -56,9 +56,7 @@ v8::IsolateRef CIsolate::GetIsolate() {
   return m_v8_isolate;
 }
 
-CJSStackTracePtr CIsolate::GetCurrentStackTrace(
-    int frame_limit,
-    v8::StackTrace::StackTraceOptions v8_options) {
+CJSStackTracePtr CIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) {
   TRACE("CIsolate::GetCurrentStackTrace {} frame_limit={} v8_options={:#x}", THIS, frame_limit, v8_options);
   return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
@@ -82,4 +80,19 @@ bool CIsolate::IsLocked() {
   auto result = v8::Locker::IsLocked(m_v8_isolate);
   TRACE("CIsolate::IsLocked {} => {}", THIS, result);
   return result;
+}
+
+void CIsolate::Enter() {
+  TRACE("CIsolate::Enter");
+  m_v8_isolate->Enter();
+}
+
+void CIsolate::Leave() {
+  TRACE("CIsolate::Leave");
+  m_v8_isolate->Exit();
+}
+
+void CIsolate::Dispose() {
+  TRACE("CIsolate::Dispose");
+  m_v8_isolate->Dispose();
 }
