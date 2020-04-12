@@ -7,7 +7,7 @@ class CJSStackFrame {
   v8::Persistent<v8::StackFrame> m_v8_frame;
 
  public:
-  CJSStackFrame(v8::IsolateRef v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
+  CJSStackFrame(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
   CJSStackFrame(const CJSStackFrame& stack_frame);
 
   [[nodiscard]] v8::Local<v8::StackFrame> Handle() const;
@@ -19,5 +19,6 @@ class CJSStackFrame {
   [[nodiscard]] bool IsEval() const;
   [[nodiscard]] bool IsConstructor() const;
 
-  static void Expose(const py::module& m);
+  static void Expose(const py::module& py_module);
+  void Dump(std::ostream& os) const;
 };

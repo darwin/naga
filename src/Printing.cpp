@@ -5,6 +5,7 @@
 #include "JSException.h"
 #include "JSObject.h"
 #include "JSStackTrace.h"
+#include "JSStackFrame.h"
 
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj) {
   obj.Dump(os);
@@ -58,6 +59,11 @@ std::ostream& operator<<(std::ostream& os, const CEngine& obj) {
 }
 
 std::ostream& operator<<(std::ostream& os, const CScript& obj) {
+  obj.Dump(os);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const CJSStackFrame& obj) {
   obj.Dump(os);
   return os;
 }

@@ -11,6 +11,7 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj);
 std::ostream& operator<<(std::ostream& os, const CContext& obj);
 std::ostream& operator<<(std::ostream& os, const CEngine& obj);
 std::ostream& operator<<(std::ostream& os, const CScript& obj);
+std::ostream& operator<<(std::ostream& os, const CJSStackFrame& obj);
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
 
@@ -76,6 +77,17 @@ struct fmt::formatter<v8::Local<v8::Message>> {
   template <typename FormatContext>
   auto format(const v8::Local<v8::Message>& val, FormatContext& ctx) {
     return format_to(ctx.out(), "v8::Message {} '{}'", static_cast<void*>(*val), val->Get());
+  }
+};
+
+template <>
+struct fmt::formatter<v8::Local<v8::StackFrame>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::StackFrame>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::StackFrame {} ScriptId={} Script={}", static_cast<void*>(*val), val->GetScriptId(),
+                     val->GetScriptNameOrSourceURL());
   }
 };
 
