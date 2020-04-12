@@ -97,10 +97,9 @@ v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
 
 void CJSStackTrace::Dump(std::ostream& os) const {
   auto v8_scope = v8u::openScope(m_v8_isolate);
-  std::ostringstream oss;
 
   for (int i = 0; i < GetFrameCount(); i++) {
-    v8::Local<v8::StackFrame> frame = GetFrame(i)->Handle();
+    auto frame = GetFrame(i)->Handle();
 
     v8::String::Utf8Value funcName(m_v8_isolate, frame->GetFunctionName()),
         scriptName(m_v8_isolate, frame->GetScriptName());
