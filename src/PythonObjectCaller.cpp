@@ -2,7 +2,7 @@
 #include "JSObject.h"
 #include "PythonExceptionGuard.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::Caller v8_info={}", v8_info);

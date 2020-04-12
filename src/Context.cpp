@@ -4,7 +4,7 @@
 #include "PythonObject.h"
 #include "Script.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__)
 
 void CContext::Expose(const py::module& py_module) {
   TRACE("CContext::Expose py_module={}", py_module);

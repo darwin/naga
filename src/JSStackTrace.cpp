@@ -2,7 +2,7 @@
 #include "JSStackFrame.h"
 #include "JSException.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__)
 
 void CJSStackTrace::Expose(const py::module& py_module) {
   TRACE("CJSStackTrace::Expose py_module={}", py_module);

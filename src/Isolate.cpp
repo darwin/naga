@@ -1,10 +1,9 @@
 #include "Isolate.h"
 
-#include <utility>
 #include "Context.h"
 #include "JSStackTrace.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
 
 void CIsolate::Expose(const py::module& py_module) {
   TRACE("CIsolate::Expose py_module={}", py_module);

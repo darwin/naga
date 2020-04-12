@@ -5,6 +5,7 @@
 #include "spdlog/cfg/env.h"
 
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
+size_t LoggerIndent::m_indent = 0;
 
 // this is our attempt to replace fmt's v-flag with wide padding
 // for some reason they support only max 64 characters
@@ -16,6 +17,8 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
   void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
     auto text_size = msg.payload.size();
     auto text = std::string_view(msg.payload.begin(), text_size);
+
+    auto inner_indent = 2 * LoggerIndent::GetIndent();
 
     std::size_t lines_count = 1;
     std::size_t text_pos = -1;
@@ -29,7 +32,7 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
       lines_count++;
     }
 
-    auto last_line_length = text_size - last_line_start_pos;  // in single-line case this is total string length
+    auto last_line_length = inner_indent + text_size - last_line_start_pos;  // in single-line case this is total string length
 
     assert(last_line_length >= 0);
     assert(lines_count > 0);
@@ -45,8 +48,9 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
     auto indent_size = dest.size();
     assert(indent_size >= 2);
     auto indents_size = (lines_count - 1) * indent_size;
+    auto inner_indents_size = lines_count * inner_indent;
 
-    dest.reserve(dest.size() + text_size + indents_size + padding_size);
+    dest.reserve(dest.size() + text_size + indents_size + padding_size + inner_indents_size);
 
     // print the text line by line
     text_pos = -1;
@@ -60,6 +64,10 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
           dest.push_back(' ');
         }
         dest.push_back('|');
+        dest.push_back(' ');
+      }
+      // print inner indent for each line
+      for (size_t i = 0; i < inner_indent; i++) {
         dest.push_back(' ');
       }
       if (text_pos == std::string::npos) {

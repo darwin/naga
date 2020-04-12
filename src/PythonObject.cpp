@@ -6,7 +6,7 @@
 #include "PythonDateTime.h"
 #include "Tracer.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"

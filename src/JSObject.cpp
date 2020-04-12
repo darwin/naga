@@ -9,7 +9,9 @@
 #include "PythonObject.h"
 #include "PythonDateTime.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__))
+#define TRACE(...)    \
+  RAII_LOGGER_INDENT; \
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
 void CJSObject::Expose(const py::module& py_module) {
   TRACE("CJSObject::Expose py_module={}", py_module);
@@ -441,6 +443,7 @@ v8::Local<v8::Object> CJSObject::Object() const {
   TRACE("CJSObject::CJSObject {} => {}", THIS, v8_result);
   return v8_result;
 }
+
 void CJSObject::Dump(std::ostream& os) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);

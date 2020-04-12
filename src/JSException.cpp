@@ -1,6 +1,6 @@
 #include "JSException.h"
 
-#define TRACE(...) (SPDLOG_LOGGER_TRACE(getLogger(kJSExceptionLogger), __VA_ARGS__))
+#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kJSExceptionLogger), __VA_ARGS__)
 
 static void translateJavascriptException(const CJSException& e) {
   TRACE("translateJavascriptException");
