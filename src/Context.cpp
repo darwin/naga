@@ -80,14 +80,11 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
 
   if (!py_global.is_none()) {
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
-    auto global = CPythonObject::Wrap(py_global);
-    auto v8_result = Handle()->Global()->Set(v8_context, v8_proto_key, global);
+    auto v8_global = CPythonObject::Wrap(py_global);
+    auto v8_result = Handle()->Global()->Set(v8_context, v8_proto_key, v8_global);
     if (v8_result.IsNothing()) {
       // TODO we need to do something if the set call failed
     }
-
-    // TODO: revisit this, we should get rid of all raw refcount operations
-    Py_DECREF(py_global.ptr());
   }
 }
 

@@ -1,113 +1,79 @@
 #include "Tracer.h"
 
-ObjectTracer::ObjectTracer(v8::Local<v8::Value> v8_handle, PyObject* raw_object)
-    : m_v8_handle(v8u::getCurrentIsolate(), v8_handle), m_raw_object(raw_object), m_living_ptr(GetLivingMap()) {
-  Py_INCREF(m_raw_object);
+#define TRACE(...)    \
+  RAII_LOGGER_INDENT; \
+  SPDLOG_LOGGER_TRACE(getLogger(kV8TracingLogger), __VA_ARGS__)
+
+// TODO: do proper cleanup when isolate goes away
+// currently we rely on weak callbacks per tracked object
+// these callbacks are not guaranteed by V8, we should do extra cleanup step during isolate destruction
+// see https://itnext.io/v8-wrapped-objects-lifecycle-42272de712e0
+//
+// also to limit number of weak callbacks we could set weak callback only per-context and dispose all
+// context-related objects during context disposal (this is how original STPyV8 tracking worked)
+
+static CTracer g_tracer;
+
+void traceV8Object(PyObject* raw_object, v8::Local<v8::Object> v8_object) {
+  g_tracer.Trace(raw_object, v8_object);
 }
 
-ObjectTracer::~ObjectTracer() {
-  if (!m_v8_handle.IsEmpty()) {
-    Dispose();
-    m_living_ptr->erase(m_raw_object);
-  }
+v8::Local<v8::Object> lookupTracedV8Object(PyObject* raw_object) {
+  return g_tracer.Lookup(raw_object);
 }
 
-void ObjectTracer::Dispose() {
-  m_v8_handle.Reset();
-  assert(m_raw_object);
-  Py_DECREF(m_raw_object);
-  m_raw_object = nullptr;
-}
+// --------------------------------------------------------------------------------------------------------------------
 
-ObjectTracer& ObjectTracer::Trace(v8::Local<v8::Value> v8_handle, PyObject* raw_object) {
-  std::unique_ptr<ObjectTracer> tracer(new ObjectTracer(v8_handle, raw_object));
-  tracer->Trace();
-  return *tracer.release();
-}
+void CTracer::Trace(PyObject* raw_object, v8::Local<v8::Object> v8_object) {
+  TRACE("CTracer::Trace raw_object={} v8_object={}", raw_object_printer{raw_object}, v8_object);
 
-void ObjectTracer::Trace() {
-  m_living_ptr->insert(std::make_pair(m_raw_object, this));
-}
-
-LivingMap* ObjectTracer::GetLivingMap() {
+  // trace must be called only for not-yet tracked objects
+  assert(m_tracked_objects.find(raw_object) == m_tracked_objects.end());
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
 
-  auto v8_key = v8::String::NewFromUtf8(v8_isolate, "__living__").ToLocalChecked();
-  auto v8_key_api = v8::Private::ForApi(v8_isolate, v8_key);
+  // create persistent V8 object and mark it as weak
+  auto v8_object_ptr = new V8Object(v8_isolate, v8_object);
+  v8_object_ptr->SetWeak(raw_object, WeakCallback, v8::WeakCallbackType::kParameter);
 
-  auto v8_value = v8_context->Global()->GetPrivate(v8_context, v8_key_api);
+  // hold onto raw PyObject
+  Py_INCREF(raw_object);
 
-  if (!v8_value.IsEmpty()) {
-    auto v8_val = v8_value.ToLocalChecked();
-    if (v8_val->IsExternal()) {
-      LivingMap* living = static_cast<LivingMap*>(v8_val.As<v8::External>()->Value());
+  // add our record for lookups
+  m_tracked_objects.insert(std::make_pair(raw_object, v8_object_ptr));
+}
 
-      if (living) {
-        return living;
-      }
-    }
+v8::Local<v8::Object> CTracer::Lookup(PyObject* raw_object) {
+  auto lookup = m_tracked_objects.find(raw_object);
+  if (lookup == m_tracked_objects.end()) {
+    TRACE("CTracer::Lookup raw_object={} => CACHE MISS", raw_object_printer{raw_object});
+    return v8::Local<v8::Object>();
   }
-
-  std::unique_ptr<LivingMap> living(new LivingMap());
-
-  auto v8_living = v8::External::New(v8u::getCurrentIsolate(), living.get());
-  v8_context->Global()->SetPrivate(v8_context, v8_key_api, v8_living);
-
-  ContextTracer::Trace(v8_context, living.get());
-
-  return living.release();
+  auto v8_result = v8::Local<v8::Object>::New(v8u::getCurrentIsolate(), *lookup->second);
+  TRACE("CTracer::Lookup raw_object={} => {}", raw_object_printer{raw_object}, v8_result);
+  return v8_result;
 }
 
-v8::Local<v8::Value> ObjectTracer::FindCache(PyObject* raw_object) {
-  auto living = GetLivingMap();
-  if (living) {
-    auto it = living->find(raw_object);
-    if (it != living->end()) {
-      return v8::Local<v8::Value>::New(v8u::getCurrentIsolate(), it->second->m_v8_handle);
-    }
-  }
+void CTracer::Dispose(PyObject* raw_object) {
+  TRACE("CTracer::Dispose raw_object={}", raw_object_printer{raw_object});
 
-  return v8::Local<v8::Value>();
-}
-py::object ObjectTracer::Object() const {
-  return py::reinterpret_borrow<py::object>(m_raw_object);
-}
+  // dispose mus tbe called for a tracked object
+  auto lookup = m_tracked_objects.find(raw_object);
+  assert(lookup != m_tracked_objects.end());
 
-ContextTracer::ContextTracer(v8::Local<v8::Context> v8_context, LivingMap* living)
-    : m_v8_context(v8u::getCurrentIsolate(), v8_context), m_living(living) {}
+  // dispose V8 object
+  auto v8_object_ptr = lookup->second;
+  v8_object_ptr->Reset();
+  delete v8_object_ptr;
 
-ContextTracer::~ContextTracer() {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  // dispose PyObject
+  Py_DECREF(raw_object);
 
-  auto v8_key = v8::String::NewFromUtf8(v8_isolate, "__living__").ToLocalChecked();
-  auto v8_key_api = v8::Private::ForApi(v8_isolate, v8_key);
-
-  Context()->Global()->DeletePrivate(v8_context, v8_key_api);
-
-  for (auto& it : *m_living) {
-    std::unique_ptr<ObjectTracer> tracer(it.second);
-    tracer->Dispose();
-  }
+  // remove our record
+  m_tracked_objects.erase(lookup);
 }
 
-void ContextTracer::WeakCallback(const v8::WeakCallbackInfo<ContextTracer>& v8_info) {
-  delete v8_info.GetParameter();
-}
-
-void ContextTracer::Trace(v8::Local<v8::Context> v8_context, LivingMap* living) {
-  auto tracer = new ContextTracer(v8_context, living);
-  tracer->Trace();
-}
-
-void ContextTracer::Trace() {
-  m_v8_context.SetWeak(this, WeakCallback, v8::WeakCallbackType::kFinalizer);
-}
-
-v8::Local<v8::Context> ContextTracer::Context() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
+void CTracer::WeakCallback(const v8::WeakCallbackInfo<PyObject>& v8_info) {
+  auto raw_object = v8_info.GetParameter();
+  TRACE("CTracer::WeakCallback raw_object={}", raw_object_printer{raw_object});
+  g_tracer.Dispose(raw_object);
 }

@@ -40,6 +40,7 @@ enum Loggers {
   kJSStackFrameLogger,
   kJSStackTraceLogger,
   kJSObjectLogger,
+  kV8TracingLogger,
   kNumLoggers
 };
 

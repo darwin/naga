@@ -6,7 +6,9 @@
 #include "PythonDateTime.h"
 #include "Tracer.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
+#define TRACE(...)    \
+  RAII_LOGGER_INDENT; \
+  SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
@@ -198,10 +200,12 @@ v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::openEscapableScope(v8_isolate);
 
-  auto v8_value = ObjectTracer::FindCache(py_handle.ptr());
-  if (v8_value.IsEmpty()) {
-    v8_value = WrapInternal(py_handle);
+  auto v8_object = lookupTracedV8Object(py_handle.ptr());
+  if (!v8_object.IsEmpty()) {
+    return v8_scope.Escape(v8_object);
   }
+
+  auto v8_value = WrapInternal(py_handle);
   return v8_scope.Escape(v8_value);
 }
 
@@ -249,7 +253,6 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
       throw CJSException("Refer to a null object", PyExc_AttributeError);
     }
 
-    // ObjectTracer2::Trace(obj->Object(), py_obj.ptr());
     return v8_scope.Escape(object->Object());
   }
 
@@ -286,17 +289,18 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
       auto v8_cls_name = v8u::toString(py_name_attr);
       v8_fn_template->SetClassName(v8_cls_name);
     }
-    v8_result = v8_fn_template->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
-    assert(!v8_result.IsEmpty());
     // NOTE: tracker will keep the object alive
-    ObjectTracer::Trace(v8_result, py_handle.ptr());
+    auto v8_function = v8_fn_template->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
+    assert(!v8_function.IsEmpty());
+    traceV8Object(py_handle.ptr(), v8_function);
+    v8_result = v8_function;
   } else {
     auto v8_object_template = GetCachedObjectTemplateOrCreate(v8_isolate);
     auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
     assert(!v8_object_instance.IsEmpty());
-    v8_object_instance->SetInternalField(0, v8::External::New(v8_isolate, py_handle.ptr()));
     // NOTE: tracker will keep the object alive
-    ObjectTracer::Trace(v8_object_instance, py_handle.ptr());
+    v8_object_instance->SetInternalField(0, v8::External::New(v8_isolate, py_handle.ptr()));
+    traceV8Object(py_handle.ptr(), v8_object_instance);
     v8_result = v8_object_instance;
   }
 
