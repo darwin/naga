@@ -3,14 +3,17 @@
 #include "Context.h"
 #include "JSStackTrace.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
+#define TRACE(...)    \
+  RAII_LOGGER_INDENT; \
+  SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
+
+const int kSelfDataSlotIndex = 0;
 
 void CIsolate::Expose(const py::module& py_module) {
   TRACE("CIsolate::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
-      .def(py::init<bool>(),
-           py::arg("owner") = false)
+      .def(py::init<>())
 
       .def_property_readonly_static(
           "current", [](const py::object&) { return CIsolate::GetCurrent(); },
@@ -31,28 +34,28 @@ void CIsolate::Expose(const py::module& py_module) {
   // clang-format on
 }
 
-CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()), m_owner(false) {
+CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
+  // FromV8 may be called only on isolates created by our constructor
+  assert(v8_isolate->GetNumberOfDataSlots() > kSelfDataSlotIndex);
+  auto isolate_ptr = static_cast<CIsolate*>(v8_isolate->GetData(kSelfDataSlotIndex));
+  assert(isolate_ptr);
+  TRACE("CIsolate::FromV8 v8_isolate={} => {}", isolateref_printer{v8_isolate}, (void*)isolate_ptr);
+  return isolate_ptr->shared_from_this();
+}
+
+CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()) {
   TRACE("CIsolate::CIsolate {}", THIS);
-}
-
-CIsolate::CIsolate(bool owner) : m_v8_isolate(v8u::createIsolate()), m_owner(owner) {
-  TRACE("CIsolate::CIsolate {} owner={}", THIS, owner);
-}
-
-CIsolate::CIsolate(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)), m_owner(false) {
-  TRACE("CIsolate::CIsolate {} v8_isolate={}", THIS, isolateref_printer{m_v8_isolate});
+  m_v8_isolate->SetData(kSelfDataSlotIndex, this);
 }
 
 CIsolate::~CIsolate() {
   TRACE("CIsolate::~CIsolate {}", THIS);
-  if (m_owner) {
-    m_v8_isolate->Dispose();
+  // isolate could be entered, we cannot dispose unless we exit it completely
+  while (m_v8_isolate->IsInUse()) {
+    Leave();
   }
-}
-
-v8::IsolateRef CIsolate::GetIsolate() {
-  TRACE("CIsolate::GetIsolate {} => {}", THIS, isolateref_printer{m_v8_isolate});
-  return m_v8_isolate;
+  Dispose();
+  TRACE("CIsolate::~CIsolate {} [COMPLETED]", THIS);
 }
 
 CJSStackTracePtr CIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) {
@@ -70,11 +73,9 @@ py::object CIsolate::GetCurrent() {
   }
 
   v8::IsolateRef v8_isolate(v8_nullable_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto result = py::cast(std::make_shared<CIsolate>(v8_isolate));
-  TRACE("CIsolate::GetCurrent => {}", result);
-  return result;
+  return py::cast(FromV8(v8_isolate));
 }
+
 bool CIsolate::IsLocked() {
   auto result = v8::Locker::IsLocked(m_v8_isolate);
   TRACE("CIsolate::IsLocked {} => {}", THIS, result);
@@ -82,16 +83,16 @@ bool CIsolate::IsLocked() {
 }
 
 void CIsolate::Enter() {
-  TRACE("CIsolate::Enter");
+  TRACE("CIsolate::Enter {}", THIS);
   m_v8_isolate->Enter();
 }
 
 void CIsolate::Leave() {
-  TRACE("CIsolate::Leave");
+  TRACE("CIsolate::Leave {}", THIS);
   m_v8_isolate->Exit();
 }
 
 void CIsolate::Dispose() {
-  TRACE("CIsolate::Dispose");
+  TRACE("CIsolate::Dispose {}", THIS);
   m_v8_isolate->Dispose();
 }

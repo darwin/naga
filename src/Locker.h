@@ -4,11 +4,11 @@
 
 class CLocker {
   std::unique_ptr<v8::Locker> m_v8_locker;
+  // this smart pointer is important to ensure that associated isolate outlives our locker
   CIsolatePtr m_isolate;
 
  public:
   CLocker() = default;
-  explicit CLocker(CIsolatePtr isolate);
   ~CLocker() = default;
 
   bool IsEntered();

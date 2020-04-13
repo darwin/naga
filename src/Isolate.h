@@ -5,17 +5,15 @@
 
 enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 
-class CIsolate {
+class CIsolate : public std::enable_shared_from_this<CIsolate> {
   v8::IsolateRef m_v8_isolate;
-  bool m_owner;
 
  public:
   CIsolate();
-  explicit CIsolate(bool owner);
-  explicit CIsolate(v8::IsolateRef v8_isolate);
   ~CIsolate();
 
-  v8::IsolateRef GetIsolate();
+  static CIsolatePtr FromV8(const v8::IsolateRef& v8_isolate);
+  [[nodiscard]] const v8::IsolateRef& ToV8() { return m_v8_isolate; }
 
   CJSStackTracePtr GetCurrentStackTrace(int frame_limit,
                                         v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview);

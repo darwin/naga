@@ -2,20 +2,22 @@
 
 #include "Base.h"
 
-class CContext {
+class CContext : public std::enable_shared_from_this<CContext> {
   py::object m_py_global;
   v8::Persistent<v8::Context> m_v8_context;
+  // this smart pointer is important to ensure that associated isolate outlives our context
+  // it should always be equal to m_v8_context->GetIsolate()
+  CIsolatePtr m_isolate;
 
  public:
-  explicit CContext(const v8::Local<v8::Context>& v8_context);
-  CContext(const CContext& context);
-  explicit CContext(const py::object& py_global);
+  static CContextPtr FromV8(v8::Local<v8::Context> v8_context);
+  [[nodiscard]] v8::Local<v8::Context> ToV8() const;
 
-  ~CContext() { m_v8_context.Reset(); }
+  explicit CContext(const py::object& py_global);
+  ~CContext();
 
   void Dump(std::ostream& os) const;
 
-  [[nodiscard]] v8::Local<v8::Context> Handle() const;
   [[nodiscard]] py::object GetGlobal() const;
 
   py::str GetSecurityToken();

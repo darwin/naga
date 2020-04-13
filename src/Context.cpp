@@ -3,15 +3,18 @@
 #include "JSObject.h"
 #include "PythonObject.h"
 #include "Script.h"
+#include "Isolate.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__)
+#define TRACE(...)    \
+  RAII_LOGGER_INDENT; \
+  SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__)
+
+const int kSelfEmbedderDataIndex = 0;
 
 void CContext::Expose(const py::module& py_module) {
   TRACE("CContext::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
-      .def(py::init<const CContext &>(),
-           "Create a new context based on a existing context")
       .def(py::init<py::object>())
 
       .def_property("securityToken", &CContext::GetSecurityToken, &CContext::SetSecurityToken)
@@ -53,53 +56,61 @@ void CContext::Expose(const py::module& py_module) {
   // clang-format on
 }
 
-CContext::CContext(const v8::Local<v8::Context>& v8_context) {
-  TRACE("CContext::CContext {} v8_context={}", THIS, v8_context);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
-
-  m_v8_context.Reset(v8_context->GetIsolate(), v8_context);
+CContextPtr CContext::FromV8(v8::Local<v8::Context> v8_context) {
+  // FromV8 may be called only on contexts created by our constructor
+  assert(v8_context->GetNumberOfEmbedderDataFields() > kSelfEmbedderDataIndex);
+  auto v8_data = v8_context->GetEmbedderData(kSelfEmbedderDataIndex);
+  assert(v8_data->IsExternal());
+  auto v8_external = v8_data.As<v8::External>();
+  auto context_ptr = static_cast<CContext*>(v8_external->Value());
+  assert(context_ptr);
+  TRACE("CContext::FromV8 v8_context={} => {}", v8_context, (void*)context_ptr);
+  return context_ptr->shared_from_this();
 }
 
-CContext::CContext(const CContext& context) {
-  TRACE("CContext::CContext {} context={}", THIS, context);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
-
-  m_v8_context.Reset(context.Handle()->GetIsolate(), context.Handle());
+v8::Local<v8::Context> CContext::ToV8() const {
+  auto v8_isolate = m_isolate->ToV8();
+  auto v8_result = v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
+  TRACE("CContext::ToV8 {} => {}", THIS, v8_result);
+  return v8_result;
 }
 
 CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
   TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
+  m_isolate = CIsolate::FromV8(v8_isolate);
   auto v8_scope = v8u::openScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
   m_v8_context.Reset(v8_isolate, v8_context);
-
-  v8::Context::Scope context_scope(Handle());
+  auto v8_this = v8::External::New(v8_context->GetIsolate(), this);
+  v8_context->SetEmbedderData(kSelfEmbedderDataIndex, v8_this);
+  v8::Context::Scope context_scope(v8_context);
 
   if (!py_global.is_none()) {
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto v8_global = CPythonObject::Wrap(py_global);
-    auto v8_result = Handle()->Global()->Set(v8_context, v8_proto_key, v8_global);
-    if (v8_result.IsNothing()) {
-      // TODO we need to do something if the set call failed
-    }
+    ToV8()->Global()->Set(v8_context, v8_proto_key, v8_global).Check();
   }
 }
 
+CContext::~CContext() {
+  TRACE("CContext::~CContext {}", THIS);
+  m_v8_context.Reset();
+}
+
 py::object CContext::GetGlobal() const {
-  TRACE("CContext::GetGlobal {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::openScope(v8_isolate);
-  return CJSObject::Wrap(Handle()->Global());
+  auto py_result = CJSObject::Wrap(ToV8()->Global());
+  TRACE("CContext::GetGlobal {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::str CContext::GetSecurityToken() {
   TRACE("CContext::GetSecurityToken {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_token = Handle()->GetSecurityToken();
+  auto v8_token = ToV8()->GetSecurityToken();
 
   if (v8_token.IsEmpty()) {
     return py::str();
@@ -107,20 +118,22 @@ py::str CContext::GetSecurityToken() {
 
   auto v8_token_string = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
   auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_token_string);
-  return py::str(*v8_utf, v8_utf.length());
+  auto py_result = py::str(*v8_utf, v8_utf.length());
+  TRACE("CContext::GetSecurityToken {} => {}", THIS, py_result);
+  return py_result;
 }
 
 void CContext::SetSecurityToken(const py::str& py_token) const {
   TRACE("CContext::SetSecurityToken {} py_token={}", THIS, py_token);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::openScope(v8_isolate);
 
   if (py_token.is_none()) {
-    Handle()->UseDefaultSecurityToken();
+    ToV8()->UseDefaultSecurityToken();
   } else {
     std::string str = py::cast<py::str>(py_token);
     auto v8_token_str = v8::String::NewFromUtf8(v8_isolate, str.c_str()).ToLocalChecked();
-    Handle()->SetSecurityToken(v8_token_str);
+    ToV8()->SetSecurityToken(v8_token_str);
   }
 }
 
@@ -136,7 +149,9 @@ py::object CContext::GetEntered() {
   if (v8_context.IsEmpty()) {
     return py::none();
   }
-  return py::cast(std::make_shared<CContext>(v8_context));
+  auto py_result = py::cast(FromV8(v8_context));
+  TRACE("CContext::GetEntered => {}", py_result);
+  return py_result;
 }
 
 py::object CContext::GetCurrent() {
@@ -148,7 +163,9 @@ py::object CContext::GetCurrent() {
   if (v8_context.IsEmpty()) {
     return py::none();
   }
-  return py::cast(std::make_shared<CContext>(v8_context));
+  auto py_result = py::cast(FromV8(v8_context));
+  TRACE("CContext::GetCurrent => {}", py_result);
+  return py_result;
 }
 
 py::object CContext::GetCalling() {
@@ -164,7 +181,9 @@ py::object CContext::GetCalling() {
     return py::none();
   }
 
-  return py::cast(std::make_shared<CContext>(v8_context));
+  auto py_result = py::cast(FromV8(v8_context));
+  TRACE("CContext::GetCalling => {}", py_result);
+  return py_result;
 }
 
 py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
@@ -172,7 +191,9 @@ py::object CContext::Evaluate(const std::string& src, const std::string& name, i
   auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.Compile(src, name, line, col);
-  return script->Run();
+  auto py_result = script->Run();
+  TRACE("CContext::Evaluate => {}", py_result);
+  return py_result;
 }
 
 py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
@@ -183,24 +204,18 @@ py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name
   return script->Run();
 }
 
-v8::Local<v8::Context> CContext::Handle() const {
-  TRACE("CContext::Handle {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
-}
-
 void CContext::Enter() const {
   TRACE("CContext::Enter {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::openScope(v8_isolate);
-  Handle()->Enter();
+  ToV8()->Enter();
 }
 
 void CContext::Leave() const {
   TRACE("CContext::Leave {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::openScope(v8_isolate);
-  Handle()->Exit();
+  ToV8()->Exit();
 }
 
 bool CContext::InContext() {
@@ -210,10 +225,11 @@ bool CContext::InContext() {
 }
 
 void CContext::Dump(std::ostream& os) const {
-  fmt::print(os, "CContext {} m_v8_context={} m_py_global={}", THIS, Handle(), m_py_global);
+  fmt::print(os, "CContext {} m_v8_context={} m_py_global={}", THIS, ToV8(), m_py_global);
 }
 
 bool CContext::IsEntered() {
+  // TODO: this is wrong!
   auto result = !m_v8_context.IsEmpty();
   TRACE("CContext::IsEntered {} => {}", THIS, result);
   return result;
