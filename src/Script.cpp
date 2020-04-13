@@ -31,7 +31,7 @@ CScript::CScript(v8::IsolateRef v8_isolate,
 
 CScript::CScript(const CScript& script) : m_engine(script.m_engine), m_v8_isolate(script.m_v8_isolate) {
   TRACE("CScript::CScript {} script={}", THIS, script);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_source.Reset(m_v8_isolate, script.Source());
   m_v8_script.Reset(m_v8_isolate, script.Script());
@@ -56,7 +56,7 @@ v8::Local<v8::Script> CScript::Script() const {
 }
 
 std::string CScript::GetSource() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value source(m_v8_isolate, Source());
   auto result = std::string(*source, source.length());
   TRACE("CScript::GetSource {} => {}", THIS, result);
@@ -65,7 +65,7 @@ std::string CScript::GetSource() const {
 
 py::object CScript::Run() {
   TRACE("CScript::Run {}", THIS);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_engine.ExecuteScript(Script());
   TRACE("CScript::Run {} => {}", THIS, result);
   return result;

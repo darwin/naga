@@ -4,7 +4,7 @@
 
 namespace pyu {
 
-py::gil_scoped_acquire acquireGIL();
-py::gil_scoped_release releaseGIL();
+py::gil_scoped_acquire withGIL();
+py::gil_scoped_release withoutGIL();
 
 }  // namespace pyu

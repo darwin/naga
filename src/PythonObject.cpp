@@ -15,9 +15,9 @@
 
 void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowIf");
-  auto py_gil = pyu::acquireGIL();
+  auto py_gil = pyu::withGIL();
 
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   py::object py_type(py_ex.type());
   py::object py_value(py_ex.value());
@@ -116,7 +116,7 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
 void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& v8_isolate,
                                         v8::Local<v8::ObjectTemplate> v8_object_template) {
   TRACE("CPythonObject::SetupObjectTemplate");
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_handler_config =
       v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator);
 
@@ -129,7 +129,7 @@ void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& v8_isolate,
 
 v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::CreateObjectTemplate");
-  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+  auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_class = v8::ObjectTemplate::New(v8_isolate);
 
   SetupObjectTemplate(v8_isolate, v8_class);
@@ -139,7 +139,7 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::Isol
 
 v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
-  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+  auto v8_scope = v8u::withEscapableScope(v8_isolate);
   // retrieve cached object template from the isolate
   auto template_ptr = v8_isolate->GetData(kJSObjectTemplate);
   if (!template_ptr) {
@@ -167,7 +167,7 @@ bool CPythonObject::IsWrapped(v8::Local<v8::Object> v8_object) {
 py::object CPythonObject::GetWrapper(v8::Local<v8::Object> v8_object) {
   TRACE("CPythonObject::GetWrapper v8_object={}", v8_object);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_val = v8_object->GetInternalField(0);
   assert(!v8_val.IsEmpty());
   auto v8_payload = v8_val.As<v8::External>();
@@ -178,7 +178,7 @@ py::object CPythonObject::GetWrapper(v8::Local<v8::Object> v8_object) {
 void CPythonObject::Dispose(v8::Local<v8::Value> v8_value) {
   TRACE("CPythonObject::Dispose v8_value={}", v8_value);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8_value->IsObject()) {
     v8::MaybeLocal<v8::Object> v8_maybe_object = v8_value->ToObject(v8_isolate->GetCurrentContext());
@@ -198,7 +198,7 @@ void CPythonObject::Dispose(v8::Local<v8::Value> v8_value) {
 v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {
   TRACE("CPythonObject::Wrap py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openEscapableScope(v8_isolate);
+  auto v8_scope = v8u::withEscapableScope(v8_isolate);
 
   auto v8_object = lookupTracedV8Object(py_handle.ptr());
   if (!v8_object.IsEmpty()) {
@@ -216,9 +216,9 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
   TRACE("CPythonObject::WrapInternal py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::openEscapableScope(v8_isolate);
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
-  auto py_gil = pyu::acquireGIL();
+  auto v8_scope = v8u::withEscapableScope(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto py_gil = pyu::withGIL();
 
   if (v8u::executionTerminating(v8_isolate)) {
     return v8::Undefined(v8_isolate);

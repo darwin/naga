@@ -21,7 +21,7 @@ static auto g_hint_property_name = "stpyv8hint";
 
 void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint) {
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
   auto v8_hint_property_api = v8::Private::ForApi(v8_isolate, v8_hint_property_str);
@@ -32,7 +32,7 @@ void setWrapperHint(v8::Local<v8::Object> v8_obj, uint32_t hint) {
 
 uint32_t getWrapperHint(v8::Local<v8::Object> v8_obj) {
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_hint_property_str = v8::String::NewFromUtf8(v8_isolate, g_hint_property_name).ToLocalChecked();
   auto v8_hint_property_api = v8::Private::ForApi(v8_isolate, v8_hint_property_str);
@@ -56,7 +56,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
   }
 
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();
@@ -135,7 +135,7 @@ static v8::Local<v8::Value> callBridge(v8::IsolateRef v8_isolate,
                                        v8::Local<v8::Object> v8_self,
                                        std::vector<v8::Local<v8::Value>> v8_params) {
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_fn = lookupBridgeFn(name);
 
   auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
@@ -153,7 +153,7 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_res_sym = v8::Local<v8::Symbol>::Cast(v8_val);
   auto v8_sentinel_name_key = v8::String::NewFromUtf8(v8_isolate, sentinel_name).ToLocalChecked();
   auto v8_sentinel = v8_res_sym->For(v8_isolate, v8_sentinel_name_key);
@@ -181,7 +181,7 @@ void CJSObjectCLJS::Expose(const py::module& py_module) {
 size_t CJSObjectCLJS::Length() {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
@@ -202,7 +202,7 @@ size_t CJSObjectCLJS::Length() {
 py::object CJSObjectCLJS::Str() {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "str";
@@ -223,7 +223,7 @@ py::object CJSObjectCLJS::Str() {
 py::object CJSObjectCLJS::Repr() {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "repr";
@@ -244,7 +244,7 @@ py::object CJSObjectCLJS::Repr() {
 py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto idx = PyLong_AsUnsignedLong(py_index.ptr());
 
@@ -264,7 +264,7 @@ py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
 py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   Py_ssize_t length = Length();
   Py_ssize_t start;
@@ -318,7 +318,7 @@ py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_str = v8u::toString(py_str);
 

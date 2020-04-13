@@ -13,7 +13,7 @@ void CJSObjectArray::LazyInit() {
   }
 
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   v8::Local<v8::Array> v8_array;
@@ -67,7 +67,7 @@ size_t CJSObjectArray::Length() {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto result = Object().As<v8::Array>()->Length();
   return result;
 }
@@ -77,9 +77,9 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
@@ -132,9 +132,9 @@ py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     PyObject* values = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
@@ -219,9 +219,9 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     Py_ssize_t arrayLen = Object().As<v8::Array>()->Length();
@@ -267,9 +267,9 @@ bool CJSObjectArray::Contains(const py::object& py_key) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {
     if (Object()->Has(v8_context, i).ToChecked()) {

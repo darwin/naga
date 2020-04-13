@@ -126,7 +126,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   if (!Object()->Has(context, v8_name).FromMaybe(false)) {
@@ -142,10 +142,10 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
 py::object CJSObject::GetAttr(const std::string& name) {
   TRACE("CJSObject::GetAttr {} name={}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(name);
   CheckAttr(v8_attr_name);
@@ -163,10 +163,10 @@ py::object CJSObject::GetAttr(const std::string& name) {
 void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
   TRACE("CJSObject::SetAttr {} name={} py_obj={}", THIS, name, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(name);
   auto v8_attr_obj = CPythonObject::Wrap(std::move(py_obj));
@@ -179,10 +179,10 @@ void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
 void CJSObject::DelAttr(const std::string& name) {
   TRACE("CJSObject::DelAttr {} name={}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(name);
   CheckAttr(v8_attr_name);
@@ -195,10 +195,10 @@ void CJSObject::DelAttr(const std::string& name) {
 py::list CJSObject::GetAttrList() const {
   TRACE("CJSObject::GetAttrList {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
 
-  auto py_gil = pyu::acquireGIL();
+  auto py_gil = pyu::withGIL();
 
   py::list attrs;
 
@@ -207,7 +207,7 @@ py::list CJSObject::GetAttrList() const {
   }
 
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto props = Object()->GetPropertyNames(v8_context).ToLocalChecked();
 
@@ -228,7 +228,7 @@ py::list CJSObject::GetAttrList() const {
 int CJSObject::GetIdentityHash() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = Object()->GetIdentityHash();
   TRACE("CJSObject::GetIdentityHash {} => {}", THIS, result);
@@ -238,7 +238,7 @@ int CJSObject::GetIdentityHash() const {
 CJSObjectPtr CJSObject::Clone() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = std::make_shared<CJSObject>(Object()->Clone());
   TRACE("CJSObject::Clone {} => {}", THIS, result);
@@ -248,7 +248,7 @@ CJSObjectPtr CJSObject::Clone() const {
 bool CJSObject::Contains(const std::string& name) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
@@ -267,7 +267,7 @@ bool CJSObject::Contains(const std::string& name) const {
 bool CJSObject::Equals(const CJSObjectPtr& other) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
@@ -280,7 +280,7 @@ py::object CJSObject::ToPythonInt() const {
   TRACE("CJSObject::ToPythonInt {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (m_v8_obj.IsEmpty()) {
@@ -297,7 +297,7 @@ py::object CJSObject::ToPythonFloat() const {
   TRACE("CJSObject::ToPythonFloat {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (m_v8_obj.IsEmpty()) {
@@ -313,7 +313,7 @@ py::object CJSObject::ToPythonFloat() const {
 py::object CJSObject::ToPythonBool() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   bool val = false;
   if (!m_v8_obj.IsEmpty()) {
@@ -337,7 +337,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
   TRACE("CJSObject::Wrap v8_val={} v8_self={}", v8_val, v8_self);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8_val.IsEmpty() || v8_val->IsNull() || v8_val->IsUndefined()) {
     return py::none();
@@ -353,11 +353,11 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
     return py::int_(int32);
   }
   if (v8_val->IsString()) {
-    auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_val.As<v8::String>());
+    auto v8_utf = v8u::toUTF(v8_isolate, v8_val.As<v8::String>());
     return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsStringObject()) {
-    auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_val.As<v8::StringObject>()->ValueOf());
+    auto v8_utf = v8u::toUTF(v8_isolate, v8_val.As<v8::StringObject>()->ValueOf());
     return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsBoolean()) {
@@ -395,7 +395,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   TRACE("CJSObject::Wrap v8_obj={} v8_self={}", v8_obj, v8_self);
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   py::object py_result;
 
@@ -425,7 +425,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
 
 py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
   TRACE("CJSObject::Wrap obj={}", obj);
-  auto py_gil = pyu::acquireGIL();
+  auto py_gil = pyu::withGIL();
   auto v8_isolate = v8u::getCurrentIsolate();
 
   if (v8u::executionTerminating(v8_isolate)) {
@@ -447,7 +447,7 @@ v8::Local<v8::Object> CJSObject::Object() const {
 void CJSObject::Dump(std::ostream& os) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_obj = Object();

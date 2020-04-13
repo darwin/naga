@@ -9,7 +9,7 @@
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedGetter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -17,7 +17,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
@@ -62,7 +62,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
                                   const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedSetter index={} v8_value={} v8_info={}", index, v8_value, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -70,7 +70,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr())) {
@@ -101,7 +101,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::IndexedQuery index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
@@ -109,7 +109,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
@@ -147,7 +147,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::IndexedDeleter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
@@ -155,7 +155,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr()) && static_cast<Py_ssize_t>(index) < PySequence_Size(py_obj.ptr())) {
@@ -179,7 +179,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::IndexedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Array>());
@@ -187,7 +187,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
     auto v8_array = v8::Array::New(v8_isolate, len);

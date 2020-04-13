@@ -79,14 +79,14 @@ CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
   TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
   m_isolate = CIsolate::FromV8(v8_isolate);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
-  m_v8_context.Reset(v8_isolate, v8_context);
   auto v8_this = v8::External::New(v8_context->GetIsolate(), this);
   v8_context->SetEmbedderData(kSelfEmbedderDataIndex, v8_this);
-  v8::Context::Scope context_scope(v8_context);
+  m_v8_context.Reset(v8_isolate, v8_context);
 
   if (!py_global.is_none()) {
+    auto v8_context_scope = v8u::withContext(v8_context);
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto v8_global = CPythonObject::Wrap(py_global);
     ToV8()->Global()->Set(v8_context, v8_proto_key, v8_global).Check();
@@ -100,7 +100,7 @@ CContext::~CContext() {
 
 py::object CContext::GetGlobal() const {
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto py_result = CJSObject::Wrap(ToV8()->Global());
   TRACE("CContext::GetGlobal {} => {}", THIS, py_result);
   return py_result;
@@ -109,7 +109,7 @@ py::object CContext::GetGlobal() const {
 py::str CContext::GetSecurityToken() {
   TRACE("CContext::GetSecurityToken {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_token = ToV8()->GetSecurityToken();
 
   if (v8_token.IsEmpty()) {
@@ -117,7 +117,7 @@ py::str CContext::GetSecurityToken() {
   }
 
   auto v8_token_string = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
-  auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_token_string);
+  auto v8_utf = v8u::toUTF(v8_isolate, v8_token_string);
   auto py_result = py::str(*v8_utf, v8_utf.length());
   TRACE("CContext::GetSecurityToken {} => {}", THIS, py_result);
   return py_result;
@@ -126,7 +126,7 @@ py::str CContext::GetSecurityToken() {
 void CContext::SetSecurityToken(const py::str& py_token) const {
   TRACE("CContext::SetSecurityToken {} py_token={}", THIS, py_token);
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (py_token.is_none()) {
     ToV8()->UseDefaultSecurityToken();
@@ -143,7 +143,7 @@ py::object CContext::GetEntered() {
   if (!v8_isolate->InContext()) {
     return py::none();
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   if (v8_context.IsEmpty()) {
@@ -157,7 +157,7 @@ py::object CContext::GetEntered() {
 py::object CContext::GetCurrent() {
   TRACE("CContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {
@@ -174,7 +174,7 @@ py::object CContext::GetCalling() {
   if (!v8_isolate->InContext()) {
     return py::none();
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
   if (v8_context.IsEmpty()) {
@@ -207,14 +207,14 @@ py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name
 void CContext::Enter() const {
   TRACE("CContext::Enter {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Enter();
 }
 
 void CContext::Leave() const {
   TRACE("CContext::Leave {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Exit();
 }
 

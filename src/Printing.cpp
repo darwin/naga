@@ -41,7 +41,7 @@ std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
   } else {
     auto v8_str = v8_val->ToDetailString(v8_context);
     if (!v8_str.IsEmpty()) {
-      auto v8_utf = v8u::toUtf8Value(v8_isolate, v8_str.ToLocalChecked());
+      auto v8_utf = v8u::toUTF(v8_isolate, v8_str.ToLocalChecked());
       os << *v8_utf;
     } else {
       os << "[N/A]";

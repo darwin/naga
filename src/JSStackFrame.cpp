@@ -18,7 +18,7 @@ void CJSStackFrame::Expose(const py::module& py_module) {
 }
 
 std::string CJSStackFrame::GetScriptName() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetScriptName());
   auto result = std::string(*name, name.length());
   TRACE("CJSStackFrame::GetScriptName {} => {}", THIS, result);
@@ -26,7 +26,7 @@ std::string CJSStackFrame::GetScriptName() const {
 }
 
 std::string CJSStackFrame::GetFunctionName() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetFunctionName());
   auto result = std::string(*name, name.length());
   TRACE("CJSStackFrame::GetFunctionName {} => {}", THIS, result);
@@ -41,7 +41,7 @@ CJSStackFrame::CJSStackFrame(const v8::IsolateRef& v8_isolate, v8::Local<v8::Sta
 
 CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
   TRACE("CJSStackFrame::CJSStackFrame {} stack_frame={}", THIS, stack_frame);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   m_v8_frame.Reset(m_v8_isolate, stack_frame.Handle());
 }
 
@@ -52,28 +52,28 @@ v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
 }
 
 int CJSStackFrame::GetLineNumber() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->GetLineNumber();
   TRACE("CJSStackFrame::GetLineNumber {} => {}", THIS, result);
   return result;
 }
 
 int CJSStackFrame::GetColumn() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->GetColumn();
   TRACE("CJSStackFrame::GetColumn {} => {}", THIS, result);
   return result;
 }
 
 bool CJSStackFrame::IsEval() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->IsEval();
   TRACE("CJSStackFrame::IsEval {} => {}", THIS, result);
   return result;
 }
 
 bool CJSStackFrame::IsConstructor() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->IsConstructor();
   TRACE("CJSStackFrame::IsConstructor {} => {}", THIS, result);
   return result;

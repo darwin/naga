@@ -6,13 +6,13 @@
 
 static void translateJavascriptException(const CJSException& e) {
   TRACE("translateJavascriptException");
-  auto py_gil = pyu::acquireGIL();
+  auto py_gil = pyu::withGIL();
 
   if (e.GetType()) {
     PyErr_SetString(e.GetType(), e.what());
   } else {
     auto v8_isolate = v8u::getCurrentIsolate();
-    auto v8_scope = v8u::openScope(v8_isolate);
+    auto v8_scope = v8u::withScope(v8_isolate);
 
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
       auto v8_ex = e.Exception()->ToObject(v8_isolate->GetCurrentContext()).ToLocalChecked();
@@ -123,7 +123,7 @@ CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
   TRACE("CJSException::CJSException {} v8_isolate={} v8_try_catch={} raw_type={}", THIS,
         isolateref_printer{m_v8_isolate}, v8_try_catch, raw_object_printer{raw_type});
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
 
@@ -149,7 +149,7 @@ CJSException::CJSException(const std::string& msg, PyObject* raw_type) noexcept
 CJSException::CJSException(const CJSException& ex) noexcept
     : std::runtime_error(ex.what()), m_v8_isolate(ex.m_v8_isolate), m_raw_type(ex.m_raw_type) {
   TRACE("CJSException::CJSException {} ex={}", THIS, ex);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, ex.Exception());
   m_v8_stack.Reset(m_v8_isolate, ex.Stack());
@@ -174,7 +174,7 @@ std::string CJSException::GetName() {
 
   assert(m_v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   v8::String::Utf8Value msg(m_v8_isolate, v8::Local<v8::String>::Cast(
                                               Exception()
@@ -196,7 +196,7 @@ std::string CJSException::GetMessage() {
 
   assert(m_v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   v8::String::Utf8Value msg(
       m_v8_isolate,
@@ -216,7 +216,7 @@ std::string CJSException::GetScriptName() {
   TRACE("CJSException::GetScriptName {}", THIS);
   assert(m_v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   if (m_v8_message.IsEmpty() || Message()->GetScriptResourceName().IsEmpty() ||
       Message()->GetScriptResourceName()->IsUndefined()) {
@@ -232,7 +232,7 @@ std::string CJSException::GetScriptName() {
 
 int CJSException::GetLineNumber() {
   assert(m_v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetLineNumber(m_v8_isolate->GetCurrentContext()).ToChecked();
   TRACE("CJSException::GetLineNumber {} => {}", THIS, result);
   return result;
@@ -240,7 +240,7 @@ int CJSException::GetLineNumber() {
 
 int CJSException::GetStartPosition() {
   assert(m_v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetStartPosition();
   TRACE("CJSException::GetStartPosition {} => {}", THIS, result);
   return result;
@@ -248,7 +248,7 @@ int CJSException::GetStartPosition() {
 
 int CJSException::GetEndPosition() {
   assert(m_v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetEndPosition();
   TRACE("CJSException::GetEndPosition {} => {}", THIS, result);
   return result;
@@ -256,7 +256,7 @@ int CJSException::GetEndPosition() {
 
 int CJSException::GetStartColumn() {
   assert(m_v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetStartColumn();
   TRACE("CJSException::GetStartColumn {} => {}", THIS, result);
   return result;
@@ -265,7 +265,7 @@ int CJSException::GetStartColumn() {
 int CJSException::GetEndColumn() {
   TRACE("CJSException::GetEndColumn {}", THIS);
   assert(m_v8_isolate->InContext());
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetEndColumn();
   TRACE("CJSException::GetEndColumn {} => {}", THIS, result);
   return result;
@@ -275,7 +275,7 @@ std::string CJSException::GetSourceLine() {
   TRACE("CJSException::GetSourceLine {}", THIS);
   assert(m_v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   if (m_v8_message.IsEmpty() || Message()->GetSourceLine(m_v8_isolate->GetCurrentContext()).IsEmpty()) {
     return std::string();
@@ -292,7 +292,7 @@ std::string CJSException::GetStackTrace() {
   TRACE("CJSException::GetStackTrace {}", THIS);
   assert(m_v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   if (m_v8_stack.IsEmpty()) {
     return std::string();
@@ -308,7 +308,7 @@ std::string CJSException::Extract(const v8::IsolateRef& v8_isolate, const v8::Tr
   TRACE("CJSException::Extract v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
   assert(v8_isolate->InContext());
 
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   std::ostringstream oss;
 
@@ -354,7 +354,7 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
 
 void CJSException::ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
   TRACE("CJSException::ThrowIf v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
   }
@@ -369,7 +369,7 @@ void CJSException::ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
 
     if (v8_exc_obj->Has(v8_context, v8_name).ToChecked()) {
       auto v8_name_val = v8_exc_obj->Get(v8_isolate->GetCurrentContext(), v8_name).ToLocalChecked();
-      auto v8_uft = v8u::toUtf8Value(v8_isolate, v8_name_val.As<v8::String>());
+      auto v8_uft = v8u::toUTF(v8_isolate, v8_name_val.As<v8::String>());
 
       for (auto& error : g_supported_errors) {
         if (strncasecmp(error.m_name, *v8_uft, v8_uft.length()) == 0) {
@@ -384,7 +384,7 @@ void CJSException::ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
 
 void CJSException::PrintCallStack(py::object py_file) {
   TRACE("CJSException::PrintCallStack {} py_file={}", THIS, py_file);
-  auto py_gil = pyu::acquireGIL();
+  auto py_gil = pyu::withGIL();
 
   // TODO: move this into utility function
   auto raw_file = py_file.is_none() ? PySys_GetObject("stdout") : py_file.ptr();

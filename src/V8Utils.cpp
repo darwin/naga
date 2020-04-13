@@ -57,12 +57,12 @@ v8::Local<v8::String> toString(const std::wstring& str) {
   return v8::Local<v8::String>();
 }
 
-v8::String::Utf8Value toUtf8Value(const v8::IsolateRef& v8_isolate, v8::Local<v8::String> v8_string) {
+v8::String::Utf8Value toUTF(const v8::IsolateRef& v8_isolate, v8::Local<v8::String> v8_string) {
   return v8::String::Utf8Value(v8_isolate, v8_string);
 }
 
 void checkContext(const v8::IsolateRef& v8_isolate) {
-  auto scope = openScope(v8_isolate);
+  auto scope = withScope(v8_isolate);
   if (v8_isolate->GetCurrentContext().IsEmpty()) {
     throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }
@@ -85,15 +85,15 @@ v8::IsolateRef getCurrentIsolate() {
   return v8_isolate;
 }
 
-v8::HandleScope openScope(const v8::IsolateRef& v8_isolate) {
+v8::HandleScope withScope(const v8::IsolateRef& v8_isolate) {
   return v8::HandleScope(v8_isolate.get());
 }
 
-v8::EscapableHandleScope openEscapableScope(const v8::IsolateRef& v8_isolate) {
+v8::EscapableHandleScope withEscapableScope(const v8::IsolateRef& v8_isolate) {
   return v8::EscapableHandleScope(v8_isolate.get());
 }
 
-v8::TryCatch openTryCatch(const v8::IsolateRef& v8_isolate) {
+v8::TryCatch withTryCatch(const v8::IsolateRef& v8_isolate) {
   return v8::TryCatch(v8_isolate.get());
 }
 
@@ -103,6 +103,10 @@ v8::IsolateRef createIsolate() {
   auto v8_isolate = v8::Isolate::New(v8_create_params);
   assert(v8_isolate);
   return v8_isolate;
+}
+
+v8::Context::Scope withContext(v8::Local<v8::Context> v8_context) {
+  return v8::Context::Scope(v8_context);
 }
 
 }  // namespace v8u

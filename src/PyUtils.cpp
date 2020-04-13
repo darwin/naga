@@ -2,11 +2,11 @@
 
 namespace pyu {
 
-py::gil_scoped_acquire acquireGIL() {
+py::gil_scoped_acquire withGIL() {
   return py::gil_scoped_acquire();
 }
 
-py::gil_scoped_release releaseGIL() {
+py::gil_scoped_release withoutGIL() {
   return py::gil_scoped_release();
 }
 

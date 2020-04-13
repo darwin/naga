@@ -43,8 +43,8 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
   TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}",
         isolateref_printer{v8_isolate}, frame_limit, v8_options);
-  auto v8_scope = v8u::openScope(v8_isolate);
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
   if (v8_stack_trace.IsEmpty()) {
@@ -55,7 +55,7 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
 }
 
 int CJSStackTrace::GetFrameCount() const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->GetFrameCount();
   TRACE("CJSStackTrace::GetFrameCount {} => {}", THIS, result);
   return result;
@@ -63,8 +63,8 @@ int CJSStackTrace::GetFrameCount() const {
 
 CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
   TRACE("CJSStackTrace::GetFrame {} idx={}", THIS, idx);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
-  auto v8_try_catch = v8u::openTryCatch(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(m_v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
     throw CJSException("index of of range", PyExc_IndexError);
   }
@@ -87,7 +87,7 @@ CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::Sta
 
 CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
   TRACE("CJSStackTrace::CJSStackTrace {} stack_trace={}", THIS, stack_trace);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
 }
 
@@ -98,7 +98,7 @@ v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
 }
 
 void CJSStackTrace::Dump(std::ostream& os) const {
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
 
   for (int i = 0; i < GetFrameCount(); i++) {
     auto frame = GetFrame(i)->Handle();

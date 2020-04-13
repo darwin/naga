@@ -9,7 +9,7 @@
 void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::Caller v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -17,7 +17,7 @@ void CPythonObject::Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     py::object py_self;
 
     if (!v8_info.Data().IsEmpty() && v8_info.Data()->IsExternal()) {

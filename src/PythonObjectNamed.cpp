@@ -15,7 +15,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -23,9 +23,9 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
-    auto v8_utf_name = v8u::toUtf8Value(v8_isolate, v8_name.As<v8::String>());
+    auto v8_utf_name = v8u::toUTF(v8_isolate, v8_name.As<v8::String>());
 
     // TODO: use pybind
     if (PyGen_Check(py_obj.ptr())) {
@@ -80,7 +80,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -88,7 +88,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     v8::String::Utf8Value v8_utf_name(v8_isolate, v8_name);
     auto py_val = CJSObject::Wrap(v8_value);
@@ -142,7 +142,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
@@ -150,7 +150,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
 
@@ -177,7 +177,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
   }
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
@@ -185,7 +185,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
 
@@ -223,7 +223,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
 
   if (v8u::executionTerminating(v8_isolate)) {
     v8_info.GetReturnValue().Set(v8::Local<v8::Array>());
@@ -231,7 +231,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
   }
 
   auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
-    auto py_gil = pyu::acquireGIL();
+    auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_info.Holder());
     py::list keys;
     bool filter_name = false;

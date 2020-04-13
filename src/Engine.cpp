@@ -93,9 +93,9 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
   TRACE("CEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, v8_src);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   v8::Persistent<v8::String> v8_script_source(m_v8_isolate, v8_src);
 
@@ -124,9 +124,9 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
 py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   TRACE("CEngine::ExecuteScript v8_script={}", v8_script);
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::openScope(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::openTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   v8::MaybeLocal<v8::Value> v8_result;
 
@@ -170,13 +170,13 @@ CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)
 
 CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
   TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, src);
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
   TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
-  auto v8_scope = v8u::openScope(m_v8_isolate);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
