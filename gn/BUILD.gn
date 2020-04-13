@@ -144,7 +144,7 @@ config("stpyv8_features") {
 }
 
 config("stpyv8_logging") {
-  defines = ["STPYV8_ACTIVE_LOG_LEVEL=$stpyv8_active_log_level" ]
+  defines = [ "STPYV8_ACTIVE_LOG_LEVEL=$stpyv8_active_log_level" ]
 }
 
 source_set("stpyv8_src") {
@@ -186,15 +186,28 @@ source_set("stpyv8_src") {
   deps = [ "//v8:v8_headers" ]
 }
 
+group("stpyv8_v8") {
+  # here we gather our v8 dependencies
+  deps = [
+    "//v8:v8_libplatform",
+    "//v8:v8_monolith",
+  ]
+}
+
 shared_library("stpyv8") {
   output_extension = "so"
+
+  # note: after compilation we rename and move resulting file into our python virtual env
+  #       see `setup.py install` in scripts/build.sh
+  # output_name = "_STPyV8.cpython-37dm-darwin"
+  # output_prefix_override = true
+  # output_dir = "../.venv/lib/python3.7/site-packages"
 
   # add some of our own settings...
   configs += [ ":stpyv8_python_linker_flags" ]
 
   deps = [
     ":stpyv8_src",
-    "//v8:v8_libplatform",
-    "//v8:v8_monolith",
+    ":stpyv8_v8",
   ]
 }
