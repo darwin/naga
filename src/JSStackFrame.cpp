@@ -1,6 +1,8 @@
 #include "JSStackFrame.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
 void CJSStackFrame::Expose(const py::module& py_module) {
   TRACE("CJSStackFrame::Expose py_module={}", py_module);

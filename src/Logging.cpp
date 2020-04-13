@@ -32,7 +32,8 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
       lines_count++;
     }
 
-    auto last_line_length = inner_indent + text_size - last_line_start_pos;  // in single-line case this is total string length
+    auto last_line_length =
+        inner_indent + text_size - last_line_start_pos;  // in single-line case this is total string length
 
     assert(last_line_length >= 0);
     assert(lines_count > 0);

@@ -6,8 +6,8 @@
 #include "PythonDateTime.h"
 #include "Tracer.h"
 
-#define TRACE(...)    \
-  RAII_LOGGER_INDENT; \
+#define TRACE(...) \
+  LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 #pragma clang diagnostic push

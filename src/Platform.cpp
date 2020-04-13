@@ -1,6 +1,8 @@
 #include "Platform.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
 
 std::unique_ptr<v8::Platform> CPlatform::m_v8_platform;
 bool CPlatform::m_inited = false;

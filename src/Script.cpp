@@ -1,7 +1,9 @@
 #include "Script.h"
 #include "JSException.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
 
 void CScript::Expose(const py::module& py_module) {
   TRACE("CScript::Expose py_module={}", py_module);

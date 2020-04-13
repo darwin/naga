@@ -2,7 +2,9 @@
 #include "JSObject.h"
 #include "PythonExceptionGuard.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedGetter index={} v8_info={}", index, v8_info);

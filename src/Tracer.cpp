@@ -1,7 +1,7 @@
 #include "Tracer.h"
 
-#define TRACE(...)    \
-  RAII_LOGGER_INDENT; \
+#define TRACE(...) \
+  LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kV8TracingLogger), __VA_ARGS__)
 
 // TODO: do proper cleanup when isolate goes away

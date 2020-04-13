@@ -3,7 +3,9 @@
 #include "Isolate.h"
 #include "PythonExceptionGuard.h"
 
-#define TRACE(...) RAII_LOGGER_INDENT; SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);

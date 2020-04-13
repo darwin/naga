@@ -55,8 +55,9 @@ class LoggerIndent {
   LoggerIndent() { m_indent++; }
   ~LoggerIndent() { m_indent--; }
 
-  static size_t GetIndent() { return  m_indent; }
+  static size_t GetIndent() { return m_indent; }
 };
-#define LOGGER_CONCAT_(x,y) x##y
-#define LOGGER_CONCAT(x,y) LOGGER_CONCAT_(x,y)
-#define RAII_LOGGER_INDENT LoggerIndent LOGGER_CONCAT(logger_indent_, __COUNTER__)
+
+#define LOGGER_CONCAT_(x, y) x##y
+#define LOGGER_CONCAT(x, y) LOGGER_CONCAT_(x, y)
+#define LOGGER_INDENT LoggerIndent LOGGER_CONCAT(logger_indent_, __COUNTER__)

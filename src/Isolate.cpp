@@ -3,8 +3,8 @@
 #include "Context.h"
 #include "JSStackTrace.h"
 
-#define TRACE(...)    \
-  RAII_LOGGER_INDENT; \
+#define TRACE(...) \
+  LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
 
 const int kSelfDataSlotIndex = 0;

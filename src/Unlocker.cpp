@@ -2,8 +2,8 @@
 #include "PythonAllowThreadsGuard.h"
 #include "Isolate.h"
 
-#define TRACE(...)    \
-  RAII_LOGGER_INDENT; \
+#define TRACE(...) \
+  LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kLockingLogger), __VA_ARGS__)
 
 void CUnlocker::Expose(const py::module& py_module) {
