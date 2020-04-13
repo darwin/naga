@@ -164,7 +164,7 @@ bool CPythonObject::IsWrapped(v8::Local<v8::Object> v8_object) {
   return v8_object->InternalFieldCount() > 0;
 }
 
-py::object CPythonObject::GetWrapper(v8::Local<v8::Object> v8_object) {
+py::object CPythonObject::GetWrapped(v8::Local<v8::Object> v8_object) {
   TRACE("CPythonObject::GetWrapper v8_object={}", v8_object);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -190,7 +190,7 @@ void CPythonObject::Dispose(v8::Local<v8::Value> v8_value) {
 
     // TODO: revisit this
     if (IsWrapped(v8_object)) {
-      Py_DECREF(CPythonObject::GetWrapper(v8_object).ptr());
+      Py_DECREF(CPythonObject::GetWrapped(v8_object).ptr());
     }
   }
 }

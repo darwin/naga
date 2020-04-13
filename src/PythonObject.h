@@ -30,7 +30,7 @@ class CPythonObject {
 
   static bool IsWrapped(v8::Local<v8::Object> v8_object);
   static v8::Local<v8::Value> Wrap(py::handle py_handle);
-  static py::object GetWrapper(v8::Local<v8::Object> v8_object);
+  static py::object GetWrapped(v8::Local<v8::Object> v8_object);
 
   static void Dispose(v8::Local<v8::Value> v8_value);
 
