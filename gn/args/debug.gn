@@ -8,10 +8,17 @@ stpyv8_active_log_level = "TRACE"
 dcheck_always_on = true
 symbol_level = 2
 
-use_goma= false
-goma_dir= "None"
+use_goma = false
+goma_dir = "None"
 
-v8_enable_backtrace= true
-v8_enable_fast_mksnapshot= true
-v8_enable_slow_dchecks= true
+v8_enable_backtrace = true
+v8_enable_fast_mksnapshot = true
+v8_enable_slow_dchecks = true
 v8_optimized_debug = false
+
+# while it is generally a good idea to have relative paths in produced binaries (reproducibility)
+# in our particular case it is broken because after compilation we move produced binary into our Python virtual env
+# this confuses my debugger which is no longer able to find original V8 source files using relative paths
+# at least this was the case on my macOS 10.15 machine, the following settings enabled absolute paths again
+strip_absolute_paths_from_debug_symbols = false
+enable_dsyms = true
