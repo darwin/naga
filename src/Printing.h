@@ -46,7 +46,11 @@ struct fmt::formatter<v8::Local<v8::Context>> {
 
   template <typename FormatContext>
   auto format(const v8::Local<v8::Context>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::Context {} global={}", static_cast<void*>(*val), val->Global());
+    if (val.IsEmpty()) {
+      return format_to(ctx.out(), "v8::Context {} [EMPTY]", static_cast<void*>(*val));
+    } else {
+      return format_to(ctx.out(), "v8::Context {} global={}", static_cast<void*>(*val), val->Global());
+    }
   }
 };
 

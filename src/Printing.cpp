@@ -33,8 +33,10 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_context = v8_isolate->GetCurrentContext();
-  if (v8_val.IsEmpty()) {
+  auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
+  if (v8_context.IsEmpty()) {
+    os << "[NO CONTEXT]";
+  } else if (v8_val.IsEmpty()) {
     os << "[EMPTY VAL]";
   } else {
     auto v8_str = v8_val->ToDetailString(v8_context);
