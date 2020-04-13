@@ -80,6 +80,7 @@ bool executionTerminating(const v8::IsolateRef& v8_isolate) {
 
 v8::IsolateRef getCurrentIsolate() {
   auto v8_isolate = v8::Isolate::GetCurrent();
+  // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this would fail sooner
   assert(v8_isolate);
   return v8_isolate;
 }
