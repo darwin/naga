@@ -12,7 +12,7 @@ class CJSObjectFunction : public CJSObject {
 
  public:
   CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func);
-  ~CJSObjectFunction() override { m_self.Reset(); }
+  ~CJSObjectFunction() override;
 
   [[nodiscard]] v8::Local<v8::Object> Self() const;
 
@@ -35,5 +35,5 @@ class CJSObjectFunction : public CJSObject {
   [[nodiscard]] int GetLineOffset() const;
   [[nodiscard]] int GetColumnOffset() const;
 
-  [[nodiscard]] py::object GetOwner2() const;
+  [[nodiscard]] py::object GetOwner() const;
 };

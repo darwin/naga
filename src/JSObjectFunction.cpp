@@ -4,6 +4,16 @@
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
+CJSObjectFunction::CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
+    : CJSObject(func), m_self(v8u::getCurrentIsolate(), self) {}
+
+CJSObjectFunction::~CJSObjectFunction() { m_self.Reset(); }
+
+v8::Local<v8::Object> CJSObjectFunction::Self() const {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8::Local<v8::Object>::New(v8_isolate, m_self);
+}
+
 py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
   auto args_count = py_args.size();
 
@@ -228,17 +238,9 @@ int CJSObjectFunction::GetColumnOffset() const {
   return func->GetScriptOrigin().ResourceColumnOffset()->Value();
 }
 
-py::object CJSObjectFunction::GetOwner2() const {
+py::object CJSObjectFunction::GetOwner() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   return CJSObject::Wrap(Self());
-}
-
-CJSObjectFunction::CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
-    : CJSObject(func), m_self(v8u::getCurrentIsolate(), self) {}
-
-v8::Local<v8::Object> CJSObjectFunction::Self() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8::Local<v8::Object>::New(v8_isolate, m_self);
 }

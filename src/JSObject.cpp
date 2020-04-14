@@ -95,7 +95,7 @@ void CJSObject::Expose(const py::module& py_module) {
 
       .def_property("name", &CJSObjectFunction::GetName, &CJSObjectFunction::SetName,
                     "The name of function")
-      .def_property_readonly("owner", &CJSObjectFunction::GetOwner2)
+      .def_property_readonly("owner", &CJSObjectFunction::GetOwner)
 
       .def_property_readonly("linenum", &CJSObjectFunction::GetLineNumber,
                              "The line number of function in the script")
