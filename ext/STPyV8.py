@@ -40,6 +40,12 @@ __all__ = ["ReadOnly",
            "JSUnlocker",
            "JSPlatform"]
 
+refcount_addr = _STPyV8.refcount_addr
+trigger1 = _STPyV8.trigger1
+trigger2 = _STPyV8.trigger2
+trigger3 = _STPyV8.trigger3
+trigger4 = _STPyV8.trigger4
+trigger5 = _STPyV8.trigger5
 
 class JSAttribute(object):
     def __init__(self, name):
@@ -120,7 +126,6 @@ JSUndefined = _STPyV8.JSUndefined
 JSArray     = _STPyV8.JSArray
 JSFunction  = _STPyV8.JSFunction
 JSPlatform  = _STPyV8.JSPlatform
-
 
 class JSLocker(_STPyV8.JSLocker):
     def __enter__(self):

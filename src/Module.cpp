@@ -11,26 +11,29 @@
 #include "JSObjectCLJS.h"
 #include "Locker.h"
 #include "Unlocker.h"
+#include "Aux.h"
 
-PYBIND11_MODULE(_STPyV8, m) {
+PYBIND11_MODULE(_STPyV8, py_module) {
   useLogging();
 
   SPDLOG_INFO("");
   SPDLOG_INFO("=====================================================================================================");
   SPDLOG_INFO("Initializing _STPyV8 module...");
 
-  CPlatform::Expose(m);
-  CIsolate::Expose(m);
-  CJSStackFrame::Expose(m);
-  CJSStackTrace::Expose(m);
-  CJSException::Expose(m);
-  CJSObject::Expose(m);
-  CContext::Expose(m);
-  CScript::Expose(m);
-  CEngine::Expose(m);
-  CLocker::Expose(m);
-  CUnlocker::Expose(m);
+  exposeAux(&py_module);
+
+  CPlatform::Expose(py_module);
+  CIsolate::Expose(py_module);
+  CJSStackFrame::Expose(py_module);
+  CJSStackTrace::Expose(py_module);
+  CJSException::Expose(py_module);
+  CJSObject::Expose(py_module);
+  CContext::Expose(py_module);
+  CScript::Expose(py_module);
+  CEngine::Expose(py_module);
+  CLocker::Expose(py_module);
+  CUnlocker::Expose(py_module);
 #ifdef STPYV8_FEATURE_CLJS
-  CJSObjectCLJS::Expose(m);
+  CJSObjectCLJS::Expose(py_module);
 #endif
 }

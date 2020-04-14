@@ -41,6 +41,7 @@ enum Loggers {
   kJSStackTraceLogger,
   kJSObjectLogger,
   kV8TracingLogger,
+  kAuxLogger,
   kNumLoggers
 };
 
