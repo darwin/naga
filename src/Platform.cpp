@@ -25,6 +25,10 @@ void CPlatform::Init() {
     return;
   }
 
+#ifndef NDEBUG
+  v8::V8::SetFlagsFromString("--expose-gc --allow-natives-syntax --track-retaining-path");
+#endif
+
   // https://v8.dev/docs/i18n#embedding-v8
   v8::V8::InitializeICU();
   v8::V8::InitializeExternalStartupData(m_argv.c_str());
