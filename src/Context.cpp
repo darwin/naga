@@ -75,21 +75,22 @@ v8::Local<v8::Context> CContext::ToV8() const {
   return v8_result;
 }
 
-CContext::CContext(const py::object& py_global) : m_py_global(py_global) {
+CContext::CContext(const py::object& py_global) {
   TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
   m_isolate = CIsolate::FromV8(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
-  auto v8_this = v8::External::New(v8_context->GetIsolate(), this);
+  auto v8_this = v8::External::New(v8_isolate, this);
   v8_context->SetEmbedderData(kSelfEmbedderDataIndex, v8_this);
   m_v8_context.Reset(v8_isolate, v8_context);
 
   if (!py_global.is_none()) {
+    m_py_global = py::reinterpret_borrow<py::object>(py_global);
     auto v8_context_scope = v8u::withContext(v8_context);
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto v8_global = CPythonObject::Wrap(py_global);
-    ToV8()->Global()->Set(v8_context, v8_proto_key, v8_global).Check();
+    v8_context->Global()->Set(v8_context, v8_proto_key, v8_global).Check();
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "PythonObject.h"
 #include "PythonDateTime.h"
+#include "Tracer.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -398,14 +399,14 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   auto v8_scope = v8u::withScope(v8_isolate);
 
   py::object py_result;
-
-  if (v8_obj.IsEmpty()) {
+  auto traced_raw_object = detectTracedWrapper(v8_obj);
+  if (traced_raw_object) {
+    py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
+  } else if (v8_obj.IsEmpty()) {
     py_result = py::none();
   } else if (v8_obj->IsArray()) {
     auto v8_array = v8_obj.As<v8::Array>();
     py_result = Wrap(std::make_shared<CJSObjectArray>(v8_array));
-  } else if (CPythonObject::IsWrapped(v8_obj)) {
-    py_result = CPythonObject::GetWrapped(v8_obj);
   }
 #ifdef STPYV8_FEATURE_CLJS
   else if (isCLJSType(v8_obj)) {

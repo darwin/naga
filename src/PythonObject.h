@@ -28,11 +28,7 @@ class CPythonObject {
 
   static v8::Local<v8::Value> WrapInternal(py::handle py_handle);
 
-  static bool IsWrapped(v8::Local<v8::Object> v8_object);
   static v8::Local<v8::Value> Wrap(py::handle py_handle);
-  static py::object GetWrapped(v8::Local<v8::Object> v8_object);
-
-  static void Dispose(v8::Local<v8::Value> v8_value);
 
   static void ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex = py::error_already_set());
 };
