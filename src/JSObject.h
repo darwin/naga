@@ -6,8 +6,7 @@
 class CJSObject {
  protected:
   // we need to have CJSObject copyable for pybind
-  // credit: https://stackoverflow.com/a/22648552/84283
-  v8::Persistent<v8::Object, v8::CopyablePersistentTraits<v8::Object>> m_v8_obj;
+  v8::Global<v8::Object> m_v8_obj;
 
   CJSObject() = default;
 

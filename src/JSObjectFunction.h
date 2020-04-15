@@ -5,8 +5,7 @@
 
 class CJSObjectFunction : public CJSObject {
   // we need to have CJSObject copyable for pybind
-  // credit: https://stackoverflow.com/a/22648552/84283
-  v8::Persistent<v8::Object, v8::CopyablePersistentTraits<v8::Object>> m_self;
+  v8::Global<v8::Object> m_self;
 
   py::object Call(v8::Local<v8::Object> v8_self, const py::list& py_args, const py::dict& py_kwargs);
 
