@@ -41,7 +41,7 @@ TracedRawObject* detectTracedWrapper(v8::Local<v8::Object> v8_wrapper) {
   assert(v8_val->IsExternal());
   auto v8_payload = v8_val.As<v8::External>();
   auto raw_obj = static_cast<PyObject*>(v8_payload->Value());
-  TRACE("detectTracedWrapper => {}", py::handle(raw_obj));
+  TRACE("detectTracedWrapper => {}", raw_object_printer{raw_obj});
   return raw_obj;
 }
 

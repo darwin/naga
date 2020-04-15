@@ -20,7 +20,8 @@ class CPythonObject {
   static void IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info);
   static void IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info);
 
-  static void Caller(const v8::FunctionCallbackInfo<v8::Value>& v8_info);
+  static void CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Value>& v8_info);
+  static void CallPythonCallable(py::object py_fn, const v8::FunctionCallbackInfo<v8::Value>& v8_info);
 
   static void SetupObjectTemplate(const v8::IsolateRef& v8_isolate, v8::Local<v8::ObjectTemplate> v8_object_template);
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(const v8::IsolateRef& v8_isolate);

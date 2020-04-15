@@ -2,16 +2,50 @@
 #include "JSObject.h"
 #include "Isolate.h"
 #include "PythonExceptionGuard.h"
+#include "Tracer.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
+// TODO: this could be probably replaced with a single PyCallable_Check
+bool isPythonCallable(PyObject* raw_object) {
+  return PyCFunction_Check(raw_object) || PyFunction_Check(raw_object) || PyMethod_Check(raw_object) ||
+         PyType_CheckExact(raw_object);
+}
+
+// this is our custom .toString implementation for wrapper objects
+// we want to masquerade wrappers of Python callables as [object Function]
+// this is to satisfy some tests of original STPyV8 implementation which had
+// two distinct code paths for creating wrappers depending on isPythonCallable
+void toStringImpl(const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+  auto v8_isolate = v8_info.GetIsolate();
+  auto raw_wrapped_object = detectTracedWrapper(v8_info.Holder());
+  assert(raw_wrapped_object);
+  TRACE("toStringImpl v8_info={} raw_wrapped_object={}", v8_info, raw_object_printer{raw_wrapped_object});
+
+  // note this call does not require GIL
+  if (isPythonCallable(raw_wrapped_object)) {
+    // "fake it until you make it"
+    auto v8_result = v8::String::NewFromUtf8(v8_isolate, "Function").ToLocalChecked();
+    v8_info.GetReturnValue().Set(v8_result);
+    return;
+  }
+
+  // undefined value causes JS runtime to fall back to default implementation
+  v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
+}
+
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   if (v8_name->IsSymbol()) {
-    // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
+    if (v8_name->StrictEquals(v8::Symbol::GetToStringTag(v8_isolate))) {
+      toStringImpl(v8_info);
+      return;
+    }
+
+    // ignore other symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }

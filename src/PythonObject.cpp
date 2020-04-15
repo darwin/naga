@@ -123,7 +123,7 @@ void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& v8_isolate,
   v8_object_template->SetHandler(v8_handler_config);
   v8_object_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter,
                                                 IndexedEnumerator);
-  v8_object_template->SetCallAsFunctionHandler(Caller);
+  v8_object_template->SetCallAsFunctionHandler(CallWrapperAsFunction);
 }
 
 v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& v8_isolate) {
@@ -242,22 +242,6 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
     getPythonTime(py_handle, ts, ms);
     v8_result = v8::Date::New(v8_isolate->GetCurrentContext(), (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000)
                     .ToLocalChecked();
-  } else if (PyCFunction_Check(py_handle.ptr()) || PyFunction_Check(py_handle.ptr()) ||
-             PyMethod_Check(py_handle.ptr()) || PyType_CheckExact(py_handle.ptr())) {
-    auto v8_fn_template = v8::FunctionTemplate::New(v8_isolate);
-    // TODO: this leaks!
-    Py_INCREF(py_handle.ptr());
-    v8_fn_template->SetCallHandler(Caller, v8::External::New(v8_isolate, py_handle.ptr()));
-    if (PyType_Check(py_handle.ptr())) {
-      auto py_name_attr = py_handle.attr("__name__");
-      // TODO: we should do it safer here, if __name__ is not string
-      auto v8_cls_name = v8u::toString(py_name_attr);
-      v8_fn_template->SetClassName(v8_cls_name);
-    }
-    auto v8_function = v8_fn_template->GetFunction(v8_isolate->GetCurrentContext()).ToLocalChecked();
-    assert(!v8_function.IsEmpty());
-    traceWrapper(py_handle.ptr(), v8_function);
-    v8_result = v8_function;
   } else {
     auto v8_object_template = GetCachedObjectTemplateOrCreate(v8_isolate);
     auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
