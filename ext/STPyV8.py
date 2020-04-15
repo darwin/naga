@@ -46,6 +46,8 @@ trigger2 = _STPyV8.trigger2
 trigger3 = _STPyV8.trigger3
 trigger4 = _STPyV8.trigger4
 trigger5 = _STPyV8.trigger5
+trace = _STPyV8.trace
+v8_request_gc_for_testing = _STPyV8.v8_request_gc_for_testing
 
 class JSAttribute(object):
     def __init__(self, name):
