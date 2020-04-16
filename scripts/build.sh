@@ -58,6 +58,8 @@ echo_cmd ./scripts/enter_depot_shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_
 
 echo_cmd cd "$EXT_DIR"
 
+export STPYV8_V8_GIT_TAG
+
 echo_cmd python3 setup.py build "${EXTRA_BUILD_ARGS[@]}"
 
 echo_cmd python3 setup.py install "${EXTRA_INSTALL_ARGS[@]}" --prefix "$VENV_DIR"
