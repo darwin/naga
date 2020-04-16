@@ -23,7 +23,7 @@ VENV_PACKAGES_DIR="$VENV_DIR/lib/python3.7/site-packages"
 V8_HOME=${V8_HOME:-"$ROOT_DIR/gn/v8"}
 DEPOT_HOME=${DEPOT_HOME:-"$ROOT_DIR/depot_tools"}
 
-STPYV8_V8_GIT_TAG=${STPYV8_V8_GIT_TAG:-8.4.18}
+STPYV8_V8_GIT_TAG=${STPYV8_V8_GIT_TAG:-8.4.100}
 
 STPYV8_V8_GIT_URL=${STPYV8_V8_GIT_URL:-"https://chromium.googlesource.com/v8/v8.git"}
 STPYV8_DEPOT_GIT_URL=${STPYV8_DEPOT_GIT_URL:-"https://chromium.googlesource.com/chromium/tools/depot_tools.git"}
