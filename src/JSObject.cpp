@@ -393,7 +393,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
   auto v8_scope = v8u::withScope(v8_isolate);
 
   py::object py_result;
-  auto traced_raw_object = detectTracedWrapper(v8_obj);
+  auto traced_raw_object = lookupTracedObject(v8_obj);
   if (traced_raw_object) {
     py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
   } else if (v8_obj.IsEmpty()) {

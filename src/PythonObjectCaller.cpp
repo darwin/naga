@@ -13,7 +13,7 @@ void CPythonObject::CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Val
   auto v8_this = v8_info.This();
 
   // extract wrapped python object
-  auto raw_object = detectTracedWrapper(v8_this);
+  auto raw_object = lookupTracedObject(v8_this);
   assert(raw_object);
 
   // use it

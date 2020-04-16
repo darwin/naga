@@ -162,7 +162,7 @@ v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
 
-  auto v8_object = lookupTracedWrapper(py_handle.ptr());
+  auto v8_object = lookupTracedWrapper(v8_isolate, py_handle.ptr());
   if (!v8_object.IsEmpty()) {
     return v8_scope.Escape(v8_object);
   }

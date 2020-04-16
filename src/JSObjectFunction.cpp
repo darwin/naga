@@ -7,7 +7,9 @@
 CJSObjectFunction::CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func)
     : CJSObject(func), m_self(v8u::getCurrentIsolate(), self) {}
 
-CJSObjectFunction::~CJSObjectFunction() { m_self.Reset(); }
+CJSObjectFunction::~CJSObjectFunction() {
+  m_self.Reset();
+}
 
 v8::Local<v8::Object> CJSObjectFunction::Self() const {
   auto v8_isolate = v8u::getCurrentIsolate();

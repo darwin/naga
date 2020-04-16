@@ -47,16 +47,18 @@
 // TODO: learn more
 //
 // There is definitely one case when we have to assist. We have to prevent double-wrapping.
-// We want to detect cases when a JS wrapper is crossing the boundary back into Python land (detectTracedWrapper).
+// We want to detect cases when a JS wrapper is crossing the boundary back into Python land (lookupTracedObject).
 // If the the JS object is a wrapper, we simply use this cache to get the original naked Python object.
 // We must avoid wrapping the wrapper!
 
-typedef v8::Persistent<v8::Object> V8Wrapper;
+// note that we cannot use v8::Persistent here,
+// v8::Global has proper move semantics and that is needed by std::map
+typedef v8::Global<v8::Object> V8Wrapper;
 typedef PyObject TracedRawObject;
 typedef PyObject WeakRefRawObject;
 
 struct TracerRecord {
-  V8Wrapper* m_v8_wrapper;
+  V8Wrapper m_v8_wrapper;
   WeakRefRawObject* m_weak_ref;  // this field is non-null when in zombie mode
 };
 
@@ -64,16 +66,19 @@ typedef std::map<TracedRawObject*, TracerRecord> WrapperTrackingMap;
 typedef std::map<WeakRefRawObject*, TracedRawObject*> WeakRefMap;
 
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
-v8::Local<v8::Object> lookupTracedWrapper(TracedRawObject* raw_object);
-TracedRawObject* detectTracedWrapper(v8::Local<v8::Object> v8_wrapper);
+v8::Local<v8::Object> lookupTracedWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object);
+TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper);
 
 class CTracer {
   WrapperTrackingMap m_tracked_wrappers;
   WeakRefMap m_weak_refs;  // this is used for fast lookup by weak ref
 
  public:
+  CTracer();
+  ~CTracer();
+
   void TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
-  v8::Local<v8::Object> LookupWrapper(TracedRawObject* raw_object);
+  v8::Local<v8::Object> LookupWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object);
 
   void KillWrapper(PyObject* raw_object);
   void KillZombie(WeakRefRawObject* raw_weak_ref);
