@@ -46,7 +46,7 @@ Our general strategy is:
 
 ##### Make sure you have updated submodules
 
-The repo has submodules under [vendor](vendor). Initially you should have cloned the repo with `--recursive`:
+The repo has submodules under [/vendor](../vendor). Initially you should have cloned the repo with `--recursive`:
 ```bash
 git clone --recursive https://github.com/darwin/stpyv8.git
 ```
