@@ -128,8 +128,8 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject
   return v8_result;
 }
 
-void CTracer::KillWrapper(PyObject* raw_object) {
-  TRACE("CTracer::KillWrapper {} raw_object={}", THIS, raw_object_printer{raw_object});
+void CTracer::DeleteRecord(PyObject* raw_object) {
+  TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, raw_object_printer{raw_object});
 
   auto tracer_lookup = m_tracked_wrappers.find(raw_object);
   assert(tracer_lookup != m_tracked_wrappers.end());
@@ -181,7 +181,7 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
     // TODO: support better printing for Python types
     TRACE("CTracer::SwitchToZombieMode weak reference is not possible for {}",
           py::handle((PyObject*)Py_TYPE(raw_object)));
-    KillWrapper(raw_object);
+    DeleteRecord(raw_object);
     Py_DECREF(raw_object);
     return;
   }
@@ -206,7 +206,7 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
   // note both captured tracer and raw_object (PyObject*) a guaranteed to outlive this callable object
   py::cpp_function py_weak_ref_callback([this, raw_object = raw_object](const py::handle& py_weak_ref) {
     TRACE("CTracer::PythonWeakRefCallback py_weak_ref={} raw_object={}", py_weak_ref, raw_object_printer{raw_object});
-    KillWrapper(raw_object);
+    DeleteRecord(raw_object);
   });
   auto raw_weak_ref = PyWeakref_NewRef(raw_object, py_weak_ref_callback.ptr());
   assert(raw_weak_ref);
@@ -227,7 +227,7 @@ void CTracer::AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object) {
     // this is a fast path
     // if we are the last one holding the Python object
     // we can go ahead and let the V8 object die and release the Python object directly
-    KillWrapper(raw_object);
+    DeleteRecord(raw_object);
     Py_DECREF(raw_object);
   } else {
     // if there is someone else still holding the Python object

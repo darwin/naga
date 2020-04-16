@@ -84,11 +84,10 @@ class CTracer {
 
   void TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
   v8::Local<v8::Object> LookupWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object);
-
-  void KillWrapper(TracedRawObject* raw_object);
-
   void AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object);
 
+ protected:
+  void DeleteRecord(TracedRawObject* raw_object);
   void SwitchToLiveMode(WrapperTrackingMap::iterator tracer_lookup, bool cleanup = true);
   void SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup);
   void SwitchToZombieModeOrDie(TracedRawObject* raw_object);
