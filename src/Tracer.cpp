@@ -126,24 +126,17 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject
   return v8_result;
 }
 
-void CTracer::KillZombie(WeakRefRawObject* raw_weak_ref) {
-  TRACE("CTracer::KillZombie {} raw_weak_ref={}", THIS, raw_object_printer{raw_weak_ref});
-
-  auto lookup_weak_ref = m_weak_refs.find(raw_weak_ref);
-  assert(lookup_weak_ref != m_weak_refs.end());
-
-  KillWrapper(lookup_weak_ref->second);
-
-  // remove our records
-  m_weak_refs.erase(lookup_weak_ref);
-  Py_DECREF(raw_weak_ref);
-}
-
 void CTracer::KillWrapper(PyObject* raw_object) {
   TRACE("CTracer::KillWrapper {} raw_object={}", THIS, raw_object_printer{raw_object});
 
   auto tracer_lookup = m_tracked_wrappers.find(raw_object);
   assert(tracer_lookup != m_tracked_wrappers.end());
+
+  auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;
+  if (raw_weak_ref) {
+    Py_DECREF(raw_weak_ref);
+    raw_weak_ref = nullptr;
+  }
 
   // remove our record
   // note that m_v8_wrapper.Reset() will be called in its destructor
@@ -164,11 +157,10 @@ void CTracer::SwitchToLiveMode(WrapperTrackingMap::iterator tracer_lookup, bool 
 
   // perform cleanup of old weak ref, if requested
   if (cleanup) {
-    auto raw_weak_ref = tracer_lookup->second.m_weak_ref;
+    auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;
     assert(raw_weak_ref);
-    m_weak_refs.erase(raw_weak_ref);
     Py_DECREF(raw_weak_ref);
-    tracer_lookup->second.m_weak_ref = nullptr;
+    raw_weak_ref = nullptr;
   } else {
     assert(!tracer_lookup->second.m_weak_ref);
   }
@@ -208,9 +200,11 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
   tracer_lookup->second.m_v8_wrapper.AnnotateStrongRetainer("STPyV8.Tracer");
 
   // ask for a weakref to the Python object
-  py::cpp_function py_weak_ref_callback([&](const py::handle& py_weak_ref) {
-    TRACE("CTracer::PythonWeakRefCallback py_weak_ref={}", py_weak_ref);
-    KillZombie(py_weak_ref.ptr());
+  // TODO: investigate - creating python callables dynamically might be expensive
+  // note both captured tracer and raw_object (PyObject*) a guaranteed to outlive this callable object
+  py::cpp_function py_weak_ref_callback([this, raw_object = raw_object](const py::handle& py_weak_ref) {
+    TRACE("CTracer::PythonWeakRefCallback py_weak_ref={} raw_object={}", py_weak_ref, raw_object_printer{raw_object});
+    KillWrapper(raw_object);
   });
   auto raw_weak_ref = PyWeakref_NewRef(raw_object, py_weak_ref_callback.ptr());
   assert(raw_weak_ref);
@@ -218,7 +212,6 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
   // update our records
   assert(!tracer_lookup->second.m_weak_ref);
   tracer_lookup->second.m_weak_ref = raw_weak_ref;
-  m_weak_refs.insert(std::make_pair(raw_weak_ref, raw_object));
 
   // stop holding the Python object strongly
   // we will be called back via a callback when the Python object is about to die
