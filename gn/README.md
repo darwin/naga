@@ -36,12 +36,31 @@ At least that is how it works on my machine (macOS 10.15).
 
 Our general strategy is:
 
+0. update submodules
 1. install build dependencies
 2. generate "gn" project files with selected config (release/debug)
 3. enter depot shell with correct environment
 4. use ninja to build the library => Python C extension
 5. use setup.py to bundle the extension with rest of the py files => Python library
 6. optionally install the library in Python3 venv
+
+##### Make sure you have updated submodules
+
+The repo has submodules under [vendor](vendor). Initially you should have cloned the repo with `--recursive`:
+```bash
+git clone --recursive https://github.com/darwin/stpyv8.git
+```
+
+Or alternatively:
+```bash
+git clone https://github.com/darwin/stpyv8.git
+git submodule init
+```
+
+To update submodules:
+```bash
+git submodule update
+```
 
 ##### Install dependencies
 
