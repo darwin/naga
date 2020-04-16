@@ -43,7 +43,6 @@ stpyv8_source_files = [
   "Isolate.cpp",
   "JSException.cpp",
   "JSObject.cpp",
-  "JSObjectNull.cpp",
   "JSObjectUndefined.cpp",
   "JSObjectArray.cpp",
   "JSObjectFunction.cpp",

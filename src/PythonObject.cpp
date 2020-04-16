@@ -1,6 +1,5 @@
 #include "PythonObject.h"
 #include "JSObject.h"
-#include "JSObjectNull.h"
 #include "JSObjectUndefined.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
@@ -197,10 +196,6 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
     } else {
       return v8::False(v8_isolate);
     }
-  }
-
-  if (py::isinstance<CJSObjectNull>(py_handle)) {
-    return v8::Null(v8_isolate);
   }
 
   if (py::isinstance<CJSObjectUndefined>(py_handle)) {

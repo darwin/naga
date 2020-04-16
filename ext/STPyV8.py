@@ -25,7 +25,6 @@ __all__ = ["ReadOnly",
            "Internal",
            "JSError",
            "JSObject",
-           "JSNull",
            "JSUndefined",
            "JSArray",
            "JSFunction",
@@ -123,7 +122,6 @@ _STPyV8._JSError._jsclass = JSError
 _STPyV8.JSError = JSError
 
 JSObject    = _STPyV8.JSObject
-JSNull      = _STPyV8.JSNull
 JSUndefined = _STPyV8.JSUndefined
 JSArray     = _STPyV8.JSArray
 JSFunction  = _STPyV8.JSFunction

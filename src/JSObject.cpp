@@ -1,5 +1,4 @@
 #include "JSObject.h"
-#include "JSObjectNull.h"
 #include "JSObjectUndefined.h"
 #include "JSObjectArray.h"
 #include "JSObjectFunction.h"
@@ -50,11 +49,6 @@ void CJSObject::Expose(const py::module& py_module) {
                   py::arg("arguments") = py::tuple(),
                   py::arg("propertiesObject") = py::dict(),
                   "Creates a new object with the specified prototype object and properties.");
-
-  py::class_<CJSObjectNull, CJSObjectNullPtr, CJSObject>(py_module, "JSNull")
-      .def(py::init<>())
-      .def("__bool__", &CJSObjectNull::nonzero)
-      .def("__str__", &CJSObjectNull::str);
 
   py::class_<CJSObjectUndefined, CJSObjectUndefinedPtr, CJSObject>(py_module, "JSUndefined")
       .def(py::init<>())

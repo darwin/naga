@@ -929,9 +929,6 @@ class TestWrapper(unittest.TestCase):
 
     def testUndefined(self):
         class Global(STPyV8.JSClass):
-            def returnNull(self):
-                return STPyV8.JSNull()
-
             def returnUndefined(self):
                 return STPyV8.JSUndefined()
 
@@ -939,13 +936,10 @@ class TestWrapper(unittest.TestCase):
                 return None
 
         with STPyV8.JSContext(Global()) as ctxt:
-            self.assertFalse(bool(STPyV8.JSNull()))
             self.assertFalse(bool(STPyV8.JSUndefined()))
 
-            self.assertEqual("null", str(STPyV8.JSNull()))
             self.assertEqual("undefined", str(STPyV8.JSUndefined()))
 
-            self.assertTrue(ctxt.eval('null == returnNull()'))
             self.assertTrue(ctxt.eval('undefined == returnUndefined()'))
             self.assertTrue(ctxt.eval('null == returnNone()'))
 
