@@ -24,7 +24,11 @@
 // c) When in zombie mode and we get a callback from Python that the object is about to die, we remove the pair from
 //    our cache (this will let the Python object to die and zombie wrapper will be killed as well)
 // d) When in zombie mode and we observe a new lookup for Python object, we return the existing (resurrected zombie)
-//    wrapper but we must switch to "live mode" again because the wrapper could be held on JS side again
+//    wrapper but we must switch to "live mode" again because the wrapper could stay held on JS side again.
+//    That means we have to start holding the Python object strongly again and mark resurrected zombie as weak again.
+//    Note that the zombie won't die instantly under our hands because we are returning a separate reference to it back
+//    to a JS-land caller. Of course, if the caller drops it, we should get a v8WeakCallback at some later point
+//    (depends on V8 GC mood).
 //
 // Please note a few edge cases:
 // b1) When we are about to switch to "zombie mode" we can test that we are the last person holding the Python object.
@@ -32,10 +36,13 @@
 // b2) Not all Python objects can have weak refs for some reason (unfortunately!), we detect this situation and
 //     in this (hopefully) rare case we simply drop the pair from the cache. This is not optimal because next time
 //     the wrapper will have to be re-created but there is nothing much we can do without a weak reference support.
+//     Ideas?
 // b3) We rely on V8's callbacks which are not guaranteed. If V8 does not call us soon (or at all) it is not critical.
 //     The result is that we keep the pairs in the cache longer than we would had otherwise.
 //     This is a little tricky for testing because these callbacks may be non-deterministic.
 //     If you need to force garbage collection for Python tests, use `v8_request_gc_for_testing`.
+//     Also note that each tracer is owned by some isolate and it gets a chance to do cleanup before isolate
+//     goes away. So there won't be any leaks after isolate gets destroyed.
 //
 // What about the other direction?
 //
