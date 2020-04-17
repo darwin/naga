@@ -116,7 +116,7 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject
     return v8::Local<v8::Object>();
   }
 
-  auto v8_result = v8::Local<v8::Object>::New(v8_isolate, tracer_lookup->second.m_v8_wrapper);
+  auto v8_result = tracer_lookup->second.m_v8_wrapper.Get(v8_isolate);
 
   // we we are passing zombie wrapper, we have to make it live again
   // don't do this before the zombie is referenced by v8_result
