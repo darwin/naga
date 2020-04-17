@@ -48,6 +48,7 @@ stpyv8_source_files = [
   "JSObjectCLJS.cpp",
   "JSStackFrame.cpp",
   "JSStackTrace.cpp",
+  "JSNull.cpp",
   "JSUndefined.cpp",
   "Locker.cpp",
   "Logging.cpp",

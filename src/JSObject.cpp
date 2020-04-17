@@ -4,6 +4,7 @@
 #include "JSObjectCLJS.h"
 #include "JSException.h"
 #include "JSUndefined.h"
+#include "JSNull.h"
 
 #include "PythonObject.h"
 #include "PythonDateTime.h"
@@ -331,7 +332,7 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
 
   // TODO: v8_val should not be empty here, treat it as an error
   if (v8_val.IsEmpty() || v8_val->IsNull()) {
-    return py::none();
+    return py::js_null();
   }
   if (v8_val->IsUndefined()) {
     return py::js_undefined();

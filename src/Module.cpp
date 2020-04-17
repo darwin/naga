@@ -12,6 +12,7 @@
 #include "Locker.h"
 #include "Unlocker.h"
 #include "Aux.h"
+#include "JSNull.h"
 #include "JSUndefined.h"
 
 PYBIND11_MODULE(_STPyV8, py_module) {

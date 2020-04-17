@@ -116,8 +116,3 @@ void exposeJSUndefined(py::module* py_module) {
   // Javascript's undefined maps to our JSUndefined
   py_module->add_object("JSUndefined", Py_JSUndefined);
 }
-
-void exposeJSNull(py::module* py_module) {
-  // Javascript's null maps to Python's None
-  py_module->add_object("JSNull", Py_None);
-}

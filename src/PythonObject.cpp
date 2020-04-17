@@ -1,6 +1,7 @@
 #include "PythonObject.h"
 #include "JSObject.h"
 #include "JSUndefined.h"
+#include "JSNull.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
@@ -186,8 +187,11 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
     return v8::Undefined(v8_isolate);
   }
 
-  if (py_handle.is_none()) {
+  if (py_handle.ptr() == Py_JSNull) {
     return v8::Null(v8_isolate);
+  }
+  if (py_handle.ptr() == Py_JSUndefined) {
+    return v8::Undefined(v8_isolate);
   }
   if (py::isinstance<py::bool_>(py_handle)) {
     auto py_bool = py::cast<py::bool_>(py_handle);
@@ -197,11 +201,6 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
       return v8::False(v8_isolate);
     }
   }
-
-  if (py_handle.ptr() == Py_JSUndefined) {
-    return v8::Undefined(v8_isolate);
-  }
-
   if (py::isinstance<CJSObject>(py_handle)) {
     auto object = py::cast<CJSObjectPtr>(py_handle);
     assert(object.get());
