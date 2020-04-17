@@ -12,6 +12,7 @@
 #include "Locker.h"
 #include "Unlocker.h"
 #include "Aux.h"
+#include "JSUndefined.h"
 
 PYBIND11_MODULE(_STPyV8, py_module) {
   useLogging();
@@ -21,6 +22,8 @@ PYBIND11_MODULE(_STPyV8, py_module) {
   SPDLOG_INFO("Initializing _STPyV8 module...");
 
   exposeAux(&py_module);
+  exposeJSUndefined(&py_module);
+  exposeJSNull(&py_module);
 
   CPlatform::Expose(py_module);
   CIsolate::Expose(py_module);

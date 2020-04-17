@@ -1,9 +1,9 @@
 #include "JSObject.h"
-#include "JSObjectUndefined.h"
 #include "JSObjectArray.h"
 #include "JSObjectFunction.h"
 #include "JSObjectCLJS.h"
 #include "JSException.h"
+#include "JSUndefined.h"
 
 #include "PythonObject.h"
 #include "PythonDateTime.h"
@@ -49,11 +49,6 @@ void CJSObject::Expose(const py::module& py_module) {
                   py::arg("arguments") = py::tuple(),
                   py::arg("propertiesObject") = py::dict(),
                   "Creates a new object with the specified prototype object and properties.");
-
-  py::class_<CJSObjectUndefined, CJSObjectUndefinedPtr, CJSObject>(py_module, "JSUndefined")
-      .def(py::init<>())
-      .def("__bool__", &CJSObjectUndefined::nonzero)
-      .def("__str__", &CJSObjectUndefined::str);
 
   py::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
       .def(py::init<py::object>())
@@ -334,8 +329,12 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (v8_val.IsEmpty() || v8_val->IsNull() || v8_val->IsUndefined()) {
+  // TODO: v8_val should not be empty here, treat it as an error
+  if (v8_val.IsEmpty() || v8_val->IsNull()) {
     return py::none();
+  }
+  if (v8_val->IsUndefined()) {
+    return py::js_undefined();
   }
   if (v8_val->IsTrue()) {
     return py::bool_(true);

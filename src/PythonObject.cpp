@@ -1,6 +1,6 @@
 #include "PythonObject.h"
 #include "JSObject.h"
-#include "JSObjectUndefined.h"
+#include "JSUndefined.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
@@ -198,7 +198,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
     }
   }
 
-  if (py::isinstance<CJSObjectUndefined>(py_handle)) {
+  if (py_handle.ptr() == Py_JSUndefined) {
     return v8::Undefined(v8_isolate);
   }
 
