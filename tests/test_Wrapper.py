@@ -127,8 +127,8 @@ class TestWrapper(unittest.TestCase):
 
     def testJavascriptWrapper(self):
         with STPyV8.JSContext() as ctxt:
-            self.assertEqual(type(STPyV8.JSNullObject), type(ctxt.eval("null")))
-            self.assertEqual(type(STPyV8.JSUndefinedObject), type(ctxt.eval("undefined")))
+            self.assertEqual(type(STPyV8.JSNull), type(ctxt.eval("null")))
+            self.assertEqual(type(STPyV8.JSUndefined), type(ctxt.eval("undefined")))
             self.assertEqual(bool, type(ctxt.eval("true")))
             self.assertEqual(str, type(ctxt.eval("'test'")))
             self.assertEqual(int, type(ctxt.eval("123")))
@@ -444,7 +444,7 @@ class TestWrapper(unittest.TestCase):
             # array[-3:-1]                         -3^^^^^^-1
             # array[0:0]    []
 
-            self.assertEqual([6, STPyV8.JSUndefinedObject, 4], array[4:7])
+            self.assertEqual([6, STPyV8.JSUndefined, 4], array[4:7])
             self.assertEqual([3, 2], array[-3:-1])
             self.assertEqual([], array[0:0])
 
@@ -485,7 +485,7 @@ class TestWrapper(unittest.TestCase):
             self.assertTrue(ctxt.eval('array3[9] === undefined'))
 
             args = [
-                ["a = Array(7); for(i=0; i<a.length; i++) a[i] = i; a[3] = undefined; a[a.length-1]; a", "0,1,2,,4,5,6", [0, 1, 2, STPyV8.JSUndefinedObject, 4, 5, 6]],
+                ["a = Array(7); for(i=0; i<a.length; i++) a[i] = i; a[3] = undefined; a[a.length-1]; a", "0,1,2,,4,5,6", [0, 1, 2, STPyV8.JSUndefined, 4, 5, 6]],
                 ["a = Array(7); for(i=0; i<a.length - 1; i++) a[i] = i; a[a.length-1]; a", "0,1,2,3,4,5,", [0, 1, 2, 3, 4, 5, None]],
                 ["a = Array(7); for(i=1; i<a.length; i++) a[i] = i; a[a.length-1]; a", ",1,2,3,4,5,6", [None, 1, 2, 3, 4, 5, 6]]
             ]
@@ -538,8 +538,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(len(array), 4)
             self.assertEqual(ctxt.eval('array[0]'), 7)
             self.assertEqual(ctxt.eval('array[1]'), 10)
-            self.assertEqual(ctxt.eval('array[2]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[2]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
 
             array[0:7] = [0, 1, 2]
             # array         [0, 1, 2, None, None, None, None]
@@ -547,10 +547,10 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(ctxt.eval('array[0]'), 0)
             self.assertEqual(ctxt.eval('array[1]'), 1)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[4]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[6]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[4]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[6]'), STPyV8.JSUndefined)
 
             array[0:7] = [0, 1, 2, 3, 4, 5, 6]
             # array         [0, 1, 2, 3, 4, 5, 6]
@@ -566,8 +566,8 @@ class TestWrapper(unittest.TestCase):
             del array[0:2]
             # array         [None, None, 2, 3, 4, 5, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
             self.assertEqual(ctxt.eval('array[3]'), 3)
             self.assertEqual(ctxt.eval('array[4]'), 4)
@@ -577,12 +577,12 @@ class TestWrapper(unittest.TestCase):
             del array[3:7:2]
             # array         [None, None, 2, None, 4, None, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefinedObject)
-            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
             self.assertEqual(ctxt.eval('array[4]'), 4)
-            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefinedObject)
+            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefined)
             self.assertEqual(ctxt.eval('array[6]'), 6)
 
     def testMultiDimArray(self):
@@ -654,8 +654,8 @@ class TestWrapper(unittest.TestCase):
                                       'float' : 1.234,
                                       'obj' : { 'name': 'john doe' }},
                                'd': True,
-                               'e': STPyV8.JSNullObject,
-                               'f': STPyV8.JSUndefinedObject },
+                               'e': STPyV8.JSNull,
+                               'f': STPyV8.JSUndefined },
                              convert(ctxt.eval("""var x =
                              { a: 1,
                                b: [1, 2, 3],
@@ -885,7 +885,7 @@ class TestWrapper(unittest.TestCase):
 
             ctxt.eval("delete o.p;")
 
-            self.assertEqual(STPyV8.JSUndefinedObject, ctxt.eval("o.p"))
+            self.assertEqual(STPyV8.JSUndefined, ctxt.eval("o.p"))
 
             ctxt.eval("o.p = 2;")
 
@@ -926,29 +926,33 @@ class TestWrapper(unittest.TestCase):
                 self.document = Document()
 
         with STPyV8.JSContext(Global()) as ctxt:
-            self.assertEqual(STPyV8.JSUndefinedObject, ctxt.eval('document.x'))
+            self.assertEqual(STPyV8.JSUndefined, ctxt.eval('document.x'))
             self.assertRaises(TypeError, ctxt.eval, 'document.y')
 
-    def testUndefined(self):
+    def testNullAndUndefined(self):
         class Global(STPyV8.JSClass):
             def returnUndefined(self):
-                return STPyV8.JSUndefined()
+                return STPyV8.JSUndefined
+
+            def returnNull(self):
+                return STPyV8.JSNull
 
             def returnNone(self):
                 return None
 
-            def returnNull(self):
-                return STPyV8.JSNull()
-
         with STPyV8.JSContext(Global()) as ctxt:
-            self.assertEqual(STPyV8.JSUndefinedObject, ctxt.eval("undefined"))
-            self.assertEqual(STPyV8.JSNullObject, ctxt.eval("null"))
+            # JSNull maps to None
+            # JSUndefined maps to Py_JSUndefined (None-like)
+            self.assertEqual(STPyV8.JSNull, None)
 
-            self.assertFalse(bool(STPyV8.JSUndefined()))
-            self.assertFalse(bool(STPyV8.JSNull()))
+            self.assertEqual(STPyV8.JSNull, ctxt.eval("null"))
+            self.assertEqual(STPyV8.JSUndefined, ctxt.eval("undefined"))
 
-            self.assertEqual("undefined", str(STPyV8.JSUndefined()))
-            self.assertEqual("None", str(STPyV8.JSNull()))
+            self.assertFalse(bool(STPyV8.JSUndefined))
+            self.assertFalse(bool(STPyV8.JSNull))
+
+            self.assertEqual("JSUndefined", str(STPyV8.JSUndefined))
+            self.assertEqual("None", str(STPyV8.JSNull))
 
             self.assertTrue(ctxt.eval('undefined == returnUndefined()'))
             self.assertTrue(ctxt.eval('null == returnNone()'))

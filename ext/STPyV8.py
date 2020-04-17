@@ -125,21 +125,8 @@ JSObject    = _STPyV8.JSObject
 JSArray     = _STPyV8.JSArray
 JSFunction  = _STPyV8.JSFunction
 JSPlatform  = _STPyV8.JSPlatform
-
-
-# this is here to not break original contract
-def return_js_undefined():
-    return _STPyV8.JSUndefinedObject
-
-def return_js_null():
-    return _STPyV8.JSNullObject
-
-
-JSUndefined = return_js_undefined
-JSUndefinedObject = _STPyV8.JSUndefinedObject
-
-JSNull = return_js_null
-JSNullObject = _STPyV8.JSNullObject
+JSUndefined = _STPyV8.JSUndefined
+JSNull = _STPyV8.JSNull
 
 
 class JSLocker(_STPyV8.JSLocker):

@@ -10,8 +10,7 @@ so there is exactly one (which is indestructible, by the way).
 */
 
 static PyObject* jsundefined_repr(PyObject* op) {
-  // TODO: I would rather return "JSUndefined", this is here to stay compatible with previous STPyV8
-  return PyUnicode_FromString("undefined");
+  return PyUnicode_FromString("JSUndefined");
 }
 
 static void jsundefined_dealloc(PyObject* ignore) {
@@ -115,10 +114,10 @@ PyObject _Py_JSUndefinedStruct = {_PyObject_EXTRA_INIT 1, &_PyJSUndefined_Type};
 
 void exposeJSUndefined(py::module* py_module) {
   // Javascript's undefined maps to our JSUndefined
-  py_module->add_object("JSUndefinedObject", Py_JSUndefined);
+  py_module->add_object("JSUndefined", Py_JSUndefined);
 }
 
 void exposeJSNull(py::module* py_module) {
   // Javascript's null maps to Python's None
-  py_module->add_object("JSNullObject", Py_None);
+  py_module->add_object("JSNull", Py_None);
 }

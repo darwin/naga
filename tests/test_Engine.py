@@ -142,7 +142,7 @@ class TestEngine(unittest.TestCase):
                 delete d.d
             """)
             self.assertEqual(4, g.d['a']['q'])
-            self.assertEqual(STPyV8.JSUndefinedObject, ctxt.eval("d.d"))
+            self.assertEqual(STPyV8.JSUndefined, ctxt.eval("d.d"))
 
     def _testMemoryAllocationCallback(self):
         alloc = {}
