@@ -326,12 +326,12 @@ py::object CJSObject::ToPythonStr() const {
 
 py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
   TRACE("CJSObject::Wrap v8_val={} v8_self={}", v8_val, v8_self);
+  assert(!v8_val.IsEmpty());
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  // TODO: v8_val should not be empty here, treat it as an error
-  if (v8_val.IsEmpty() || v8_val->IsNull()) {
+  if (v8_val->IsNull()) {
     return py::js_null();
   }
   if (v8_val->IsUndefined()) {
