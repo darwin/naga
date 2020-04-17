@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Debug.h"
 
 // clang-format off

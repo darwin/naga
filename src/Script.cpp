@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Script.h"
 #include "JSException.h"
 

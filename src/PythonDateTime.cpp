@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "PythonDateTime.h"
 #include <datetime.h>
 

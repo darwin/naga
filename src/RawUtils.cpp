@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "RawUtils.h"
 
 v8::Local<v8::String> pythonBytesObjectToString(PyObject* py_obj) {

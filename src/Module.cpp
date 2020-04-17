@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Module.h"
 #include "Platform.h"
 #include "Isolate.h"

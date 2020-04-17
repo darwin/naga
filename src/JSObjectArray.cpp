@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "JSObjectArray.h"
 #include "PythonObject.h"
 #include "JSObjectCLJS.h"

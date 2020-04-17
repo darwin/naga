@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "JSException.h"
 
 #define TRACE(...) \

@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Platform.h"
 
 #define TRACE(...) \

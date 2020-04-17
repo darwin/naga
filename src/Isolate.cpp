@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Isolate.h"
 
 #include "Context.h"

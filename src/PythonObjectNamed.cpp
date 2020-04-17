@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "PythonObject.h"
 #include "JSObject.h"
 #include "Isolate.h"

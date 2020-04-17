@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "JSStackTrace.h"
 #include "JSStackFrame.h"
 #include "JSException.h"

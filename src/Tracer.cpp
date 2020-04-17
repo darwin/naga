@@ -1,3 +1,5 @@
+#include "_precompile.h"
+
 #include "Tracer.h"
 #include "Isolate.h"
 
