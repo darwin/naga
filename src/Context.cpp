@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "Context.h"
 #include "Engine.h"
 #include "JSObject.h"

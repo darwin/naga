@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "Unlocker.h"
 #include "PythonAllowThreadsGuard.h"
 #include "Isolate.h"

@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "Printing.h"
 #include "Context.h"
 #include "Engine.h"

@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "Engine.h"
 #include "Script.h"
 #include "JSException.h"

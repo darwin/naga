@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "JSObjectCLJS.h"
 
 #ifdef STPYV8_FEATURE_CLJS

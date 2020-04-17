@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "JSObject.h"
 #include "JSObjectUndefined.h"
 #include "JSObjectArray.h"

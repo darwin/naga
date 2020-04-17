@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "PythonAllowThreadsGuard.h"
 
 void withPythonAllowThreadsGuard(std::function<void()> fn) {

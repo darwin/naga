@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "JSObjectFunction.h"
 
 #include "PythonObject.h"

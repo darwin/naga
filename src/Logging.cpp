@@ -1,6 +1,5 @@
-#include "_precompile.h"
-
 #include "Logging.h"
+#include "Base.h"
 
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/cfg/env.h"

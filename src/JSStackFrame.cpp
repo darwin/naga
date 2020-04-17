@@ -1,5 +1,3 @@
-#include "_precompile.h"
-
 #include "JSStackFrame.h"
 
 #define TRACE(...) \
