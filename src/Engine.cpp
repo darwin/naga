@@ -133,7 +133,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   withPythonAllowThreadsGuard([&]() { v8_result = v8_script->Run(v8_context); });
 
   if (!v8_result.IsEmpty()) {
-    return CJSObject::Wrap(v8_result.ToLocalChecked());
+    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
   } else {
     if (v8_try_catch.HasCaught()) {
       if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
@@ -145,7 +145,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
     v8_result = v8::Null(m_v8_isolate);
   }
 
-  return CJSObject::Wrap(v8_result.ToLocalChecked());
+  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
 void CEngine::SetFlags(const std::string& flags) {

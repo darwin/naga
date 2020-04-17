@@ -102,7 +102,7 @@ CContext::~CContext() {
 py::object CContext::GetGlobal() const {
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto py_result = CJSObject::Wrap(ToV8()->Global());
+  auto py_result = CJSObject::Wrap(v8_isolate, ToV8()->Global());
   TRACE("CContext::GetGlobal {} => {}", THIS, py_result);
   return py_result;
 }

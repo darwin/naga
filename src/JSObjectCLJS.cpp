@@ -258,7 +258,7 @@ py::object CJSObjectCLJS::GetItemIndex(const py::object& py_index) {
   if (isSentinel(v8_result)) {
     throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
   }
-  return CJSObject::Wrap(v8_result, Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, Object());
 }
 
 py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
@@ -306,7 +306,7 @@ py::object CJSObjectCLJS::GetItemSlice(const py::object& py_slice) {
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
 
-    auto py_item = CJSObject::Wrap(v8_item, Object());
+    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, Object());
     py_result.append(py_item);
   }
 
@@ -330,7 +330,7 @@ py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
       auto msg = string_format("Unexpected: got empty result when accessing js property '%s'", *v8_utf);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
-    return CJSObject::Wrap(v8_val, Object());
+    return CJSObject::Wrap(v8_isolate, v8_val, Object());
   }
 
   // CLJS lookup
@@ -343,7 +343,7 @@ py::object CJSObjectCLJS::GetItemString(const py::object& py_str) {
   if (isSentinel(v8_result)) {
     return py::none();
   }
-  return CJSObject::Wrap(v8_result, Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, Object());
 }
 
 py::object CJSObjectCLJS::GetItem(const py::object& py_key) {

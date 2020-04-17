@@ -146,7 +146,7 @@ py::object CJSObject::GetAttr(const std::string& name) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  auto py_result = CJSObject::Wrap(v8_attr_value, Object());
+  auto py_result = CJSObject::Wrap(v8_isolate, v8_attr_value, Object());
   TRACE("CJSObject::GetAttr {} => {}", THIS, py_result);
   return py_result;
 }
@@ -205,7 +205,7 @@ py::list CJSObject::GetAttrList() const {
   for (size_t i = 0; i < props->Length(); i++) {
     auto v8_i = v8::Integer::New(v8_isolate, i);
     auto v8_prop = props->Get(v8_context, v8_i).ToLocalChecked();
-    attrs.append(CJSObject::Wrap(v8_prop));
+    attrs.append(CJSObject::Wrap(v8_isolate, v8_prop));
   }
 
   if (v8_try_catch.HasCaught()) {
@@ -324,10 +324,9 @@ py::object CJSObject::ToPythonStr() const {
   return py_result;
 }
 
-py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
-  TRACE("CJSObject::Wrap v8_val={} v8_self={}", v8_val, v8_self);
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
+  TRACE("CJSObject::Wrap v8_isolate={} v8_val={} v8_self={}", isolateref_printer{v8_isolate}, v8_val, v8_self);
   assert(!v8_val.IsEmpty());
-  auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
@@ -381,14 +380,13 @@ py::object CJSObject::Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8
 
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
-  auto py_result = Wrap(v8_obj, v8_self);
+  auto py_result = Wrap(v8_isolate, v8_obj, v8_self);
   TRACE("CJSObject::Wrap => {}", py_result);
   return py_result;
 }
 
-py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
-  TRACE("CJSObject::Wrap v8_obj={} v8_self={}", v8_obj, v8_self);
-  auto v8_isolate = v8u::getCurrentIsolate();
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
+  TRACE("CJSObject::v8_isolate={} Wrap v8_obj={} v8_self={}", isolateref_printer{v8_isolate}, v8_obj, v8_self);
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
@@ -400,31 +398,30 @@ py::object CJSObject::Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v
     py_result = py::none();
   } else if (v8_obj->IsArray()) {
     auto v8_array = v8_obj.As<v8::Array>();
-    py_result = Wrap(std::make_shared<CJSObjectArray>(v8_array));
+    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectArray>(v8_array));
   }
 #ifdef STPYV8_FEATURE_CLJS
   else if (isCLJSType(v8_obj)) {
-    py_result = Wrap(std::make_shared<CJSObjectCLJS>(v8_obj));
+    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
   }
 #endif
   else if (v8_obj->IsFunction()) {
     auto v8_fn = v8_obj.As<v8::Function>();
-    py_result = Wrap(std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
+    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
   } else {
-    py_result = Wrap(std::make_shared<CJSObject>(v8_obj));
+    py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
 
   TRACE("CJSObject::Wrap => {}", py_result);
   return py_result;
 }
 
-py::object CJSObject::Wrap(const CJSObjectPtr& obj) {
-  TRACE("CJSObject::Wrap obj={}", obj);
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
+  TRACE("CJSObject::Wrap v8_isolate={} obj={}", isolateref_printer{v8_isolate}, obj);
   auto py_gil = pyu::withGIL();
-  auto v8_isolate = v8u::getCurrentIsolate();
 
   if (v8u::executionTerminating(v8_isolate)) {
-    return py::none();
+    return py::js_null();
   }
 
   auto py_result = py::cast(obj);

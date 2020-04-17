@@ -99,7 +99,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
           CJSException::ThrowIf(v8_isolate, v8_try_catch);
         }
 
-        slice.append(CJSObject::Wrap(v8_value, Object()));
+        slice.append(CJSObject::Wrap(v8_isolate, v8_value, Object()));
       }
 
       return std::move(slice);
@@ -121,7 +121,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
       CJSException::ThrowIf(v8_isolate, v8_try_catch);
     }
 
-    return CJSObject::Wrap(v8_value, Object());
+    return CJSObject::Wrap(v8_isolate, v8_value, Object());
   }
 
   throw CJSException("list indices must be integers", PyExc_TypeError);
@@ -245,7 +245,7 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
     if (Object()->Has(v8_context, idx).ToChecked()) {
       auto v8_idx = v8::Integer::New(v8_isolate, idx);
       auto v8_obj = Object()->Get(v8_context, v8_idx).ToLocalChecked();
-      py_result = CJSObject::Wrap(v8_obj, Object());
+      py_result = CJSObject::Wrap(v8_isolate, v8_obj, Object());
     }
 
     if (!Object()->Delete(v8_context, idx).ToChecked()) {
@@ -281,7 +281,7 @@ bool CJSObjectArray::Contains(const py::object& py_key) {
       }
 
       // TODO: could this be optimized without wrapping?
-      if (py_key.is(CJSObject::Wrap(v8_val, Object()))) {
+      if (py_key.is(CJSObject::Wrap(v8_isolate, v8_val, Object()))) {
         return true;
       }
     }

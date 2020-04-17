@@ -38,9 +38,13 @@ class CJSObject {
 
   void Dump(std::ostream& os) const;
 
-  static py::object Wrap(const CJSObjectPtr& obj);
-  static py::object Wrap(v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
-  static py::object Wrap(v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
+  static py::object Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj);
+  static py::object Wrap(v8::IsolateRef v8_isolate,
+                         v8::Local<v8::Value> v8_val,
+                         v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
+  static py::object Wrap(v8::IsolateRef v8_isolate,
+                         v8::Local<v8::Object> v8_obj,
+                         v8::Local<v8::Object> v8_self = v8::Local<v8::Object>());
 
   static void Expose(const py::module& py_module);
 

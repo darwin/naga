@@ -79,7 +79,7 @@ py::object CJSObjectFunction::Call(v8::Local<v8::Object> v8_self, const py::list
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  return CJSObject::Wrap(v8_result.ToLocalChecked());
+  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
 py::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
@@ -123,7 +123,7 @@ py::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
     it++;
   }
 
-  return CJSObject::Wrap(v8_result);
+  return CJSObject::Wrap(v8_isolate, v8_result);
 }
 
 py::object CJSObjectFunction::ApplyJavascript(const CJSObjectPtr& self,
@@ -244,5 +244,5 @@ py::object CJSObjectFunction::GetOwner() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  return CJSObject::Wrap(Self());
+  return CJSObject::Wrap(v8_isolate, Self());
 }
