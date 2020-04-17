@@ -94,6 +94,11 @@ config("stpyv8_precompiled_headers") {
     } else if (is_mac) {
       precompiled_source = "../src/_precompile.h"
     }
+  } else {
+    # when we don't use precompiled headers we must ensure that
+    # the include order is the same as with precompiled headers
+    # -include option puts the include on the first line of each cpp file
+    cflags_cc = [ "-include../src/_precompile.h" ]
   }
 }
 
