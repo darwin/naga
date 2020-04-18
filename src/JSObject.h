@@ -4,7 +4,7 @@
 
 class CJSObject {
  public:
-  typedef u_int8_t RoleFlagsType;
+  typedef std::uint8_t RoleFlagsType;
   enum class Roles : RoleFlagsType {
     JSObject = 0,  // always on
     JSFunction = 1 << 0,
@@ -14,7 +14,7 @@ class CJSObject {
 
  private:
   Roles m_roles;
-  // we need to have CJSObject copyable for pybind
+  // we need to have CJSObject movable for pybind
   v8::Global<v8::Object> m_v8_obj;
 
   // JSFunction
