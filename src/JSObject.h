@@ -24,7 +24,7 @@ class CJSObject {
 
  public:
   explicit CJSObject(v8::Local<v8::Object> v8_obj);
-  virtual ~CJSObject();
+  ~CJSObject();
 
   bool HasRole(Roles roles) const;
 
@@ -95,6 +95,8 @@ class CJSObject {
   void CheckAttr(v8::Local<v8::String> v8_name) const;
 };
 
+static_assert(!std::is_polymorphic<CJSObject>::value, "CJSObject should not be polymorphic.");
+
 constexpr CJSObject::Roles operator|(CJSObject::Roles X, CJSObject::Roles Y) {
   return static_cast<CJSObject::Roles>(static_cast<CJSObject::RoleFlagsType>(X) |
                                        static_cast<CJSObject::RoleFlagsType>(Y));
@@ -109,5 +111,3 @@ inline CJSObject::Roles& operator|=(CJSObject::Roles& X, CJSObject::Roles Y) {
   X = X | Y;
   return X;
 }
-
-// static_assert(!std::is_polymorphic<CJSObject>::value, "CJSObject should not be polymorphic.");
