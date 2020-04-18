@@ -14,8 +14,6 @@ class CJSObject {
   explicit CJSObject(v8::Local<v8::Object> v8_obj);
   virtual ~CJSObject();
 
-  virtual void LazyInit() {}
-
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
   py::object GetAttr(const std::string& name);

@@ -204,7 +204,6 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
   if (py::isinstance<CJSObject>(py_handle)) {
     auto object = py::cast<CJSObjectPtr>(py_handle);
     assert(object.get());
-    object->LazyInit();
 
     if (object->Object().IsEmpty()) {
       throw CJSException("Refer to a null object", PyExc_AttributeError);

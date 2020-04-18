@@ -9,7 +9,7 @@ class CJSObjectFunction : public CJSObject {
                   std::optional<v8::Local<v8::Object>> opt_v8_this = std::nullopt);
 
  public:
-  CJSObjectFunction(v8::Local<v8::Function> v8_fn);
+  explicit CJSObjectFunction(v8::Local<v8::Function> v8_fn);
   ~CJSObjectFunction() override;
 
   static py::object CallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
@@ -30,6 +30,4 @@ class CJSObjectFunction : public CJSObject {
   [[nodiscard]] std::string GetInferredName() const;
   [[nodiscard]] int GetLineOffset() const;
   [[nodiscard]] int GetColumnOffset() const;
-
-  [[nodiscard]] py::object GetOwner() const;
 };

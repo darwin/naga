@@ -462,23 +462,24 @@ class TestWrapper(unittest.TestCase):
 
             self.assertEqual([10, None, 9, 7, 6, 8, 8, 3, 2, 1], list(array))
 
-            ctxt.locals.array1 = STPyV8.JSArray(5)
-            ctxt.locals.array2 = STPyV8.JSArray([1, 2, 3, 4, 5])
-
-            for i in range(len(ctxt.locals.array2)):
-                ctxt.locals.array1[i] = ctxt.locals.array2[i] * 10
-
-            ctxt.eval("""
-                var sum = 0;
-
-                for (i=0; i<array1.length; i++)
-                    sum += array1[i]
-
-                for (i=0; i<array2.length; i++)
-                    sum += array2[i]
-                """)
-
-            self.assertEqual(165, ctxt.locals.sum)
+            # TODO: provide similar functionality in the future
+            # ctxt.locals.array1 = STPyV8.JSArray(5)
+            # ctxt.locals.array2 = STPyV8.JSArray([1, 2, 3, 4, 5])
+            #
+            # for i in range(len(ctxt.locals.array2)):
+            #     ctxt.locals.array1[i] = ctxt.locals.array2[i] * 10
+            #
+            # ctxt.eval("""
+            #     var sum = 0;
+            #
+            #     for (i=0; i<array1.length; i++)
+            #         sum += array1[i]
+            #
+            #     for (i=0; i<array2.length; i++)
+            #         sum += array2[i]
+            #     """)
+            #
+            # self.assertEqual(165, ctxt.locals.sum)
 
             ctxt.locals.array3 = [1, 2, 3, 4, 5]
             self.assertTrue(ctxt.eval('array3[1] === 2'))
@@ -496,11 +497,12 @@ class TestWrapper(unittest.TestCase):
                 self.assertEqual(arg[1], str(array))
                 self.assertEqual(arg[2], [array[i] for i in range(len(array))])
 
-            self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(STPyV8.JSArray([1, 2, 3])))
-            self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(STPyV8.JSArray([1, 2, 3]), 1))
-            self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray([1, 2, 3])))
-            self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray((1, 2, 3))))
-            self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray(list(range(3)))))
+            # TODO: provide similar functionality in the future
+            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(STPyV8.JSArray([1, 2, 3])))
+            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(STPyV8.JSArray([1, 2, 3]), 1))
+            # self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray([1, 2, 3])))
+            # self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray((1, 2, 3))))
+            # self.assertEqual('[object Array]', ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray(list(range(3)))))
 
     def testArraySlices(self):
         with STPyV8.JSContext() as ctxt:
@@ -599,14 +601,6 @@ class TestWrapper(unittest.TestCase):
                 """).test()
 
             self.assertEqual([[1, 'abla'], [2, 'ajkss']], convert(ret))
-
-    def testLazyConstructor(self):
-        class Globals(STPyV8.JSClass):
-            def __init__(self):
-                self.array=STPyV8.JSArray([1,2,3])
-
-        with STPyV8.JSContext(Globals()) as ctxt:
-            self.assertEqual(2, ctxt.eval("""array[1]"""))
 
     def testForEach(self):
         class NamedClass(object):

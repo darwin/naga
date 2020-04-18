@@ -4,9 +4,6 @@
 #include "JSObject.h"
 
 class CJSObjectArray : public CJSObject {
-  py::object m_py_items;
-  size_t m_size;
-
  public:
   class ArrayIterator {
     CJSObjectArray* m_array_ptr;
@@ -22,8 +19,7 @@ class CJSObjectArray : public CJSObject {
     [[nodiscard]] py::object dereference() const { return m_array_ptr->GetItem(py::int_(m_idx)); }
   };
 
-  explicit CJSObjectArray(v8::Local<v8::Array> v8_array) : CJSObject(v8_array), m_size(v8_array->Length()) {}
-  explicit CJSObjectArray(py::object items) : m_py_items(std::move(items)), m_size(0) {}
+  explicit CJSObjectArray(v8::Local<v8::Array> v8_array);
 
   size_t Length();
 
@@ -34,6 +30,4 @@ class CJSObjectArray : public CJSObject {
 
   ArrayIterator begin() { return {this, 0}; }
   ArrayIterator end() { return {this, Length()}; }
-
-  void LazyInit() override;
 };

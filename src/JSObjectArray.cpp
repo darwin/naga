@@ -3,68 +3,9 @@
 #include "JSObjectCLJS.h"
 #include "JSException.h"
 
-// TODO : remove this after we get rid of python macros below
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
-void CJSObjectArray::LazyInit() {
-  if (!m_v8_obj.IsEmpty()) {
-    return;
-  }
-
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
-
-  v8::Local<v8::Array> v8_array;
-
-  if (m_py_items.is_none()) {
-    v8_array = v8::Array::New(v8_isolate, m_size);
-  } else if (PyLong_CheckExact(m_py_items.ptr())) {
-    m_size = PyLong_AsLong(m_py_items.ptr());
-    v8_array = v8::Array::New(v8_isolate, m_size);
-  } else if (PyList_Check(m_py_items.ptr())) {
-    m_size = PyList_GET_SIZE(m_py_items.ptr());
-    v8_array = v8::Array::New(v8_isolate, m_size);
-
-    for (Py_ssize_t i = 0; i < static_cast<Py_ssize_t>(m_size); i++) {
-      auto raw_item = PyList_GET_ITEM(m_py_items.ptr(), i);
-      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
-      auto item = CPythonObject::Wrap(py_item);
-      auto v8_i = v8::Uint32::New(v8_isolate, i);
-      v8_array->Set(v8_context, v8_i, item).Check();
-    }
-  } else if (PyTuple_Check(m_py_items.ptr())) {
-    m_size = PyTuple_GET_SIZE(m_py_items.ptr());
-    v8_array = v8::Array::New(v8_isolate, m_size);
-
-    for (Py_ssize_t i = 0; i < static_cast<Py_ssize_t>(m_size); i++) {
-      auto raw_item = PyTuple_GET_ITEM(m_py_items.ptr(), i);
-      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
-      auto item = CPythonObject::Wrap(py_item);
-      auto v8_i = v8::Uint32::New(v8_isolate, i);
-      v8_array->Set(v8_context, v8_i, item).Check();
-    }
-  } else if (PyGen_Check(m_py_items.ptr())) {
-    v8_array = v8::Array::New(v8_isolate);
-    auto py_iter(py::reinterpret_steal<py::object>(PyObject_GetIter(m_py_items.ptr())));
-
-    m_size = 0;
-    PyObject* raw_item;
-    while (nullptr != (raw_item = PyIter_Next(py_iter.ptr()))) {
-      auto py_item = py::object(py::reinterpret_borrow<py::object>(raw_item));
-      auto item = CPythonObject::Wrap(py_item);
-      auto v8_i = v8::Uint32::New(v8_isolate, m_size++);
-      v8_array->Set(v8_context, v8_i, item).Check();
-    }
-  }
-
-  m_v8_obj.Reset(v8_isolate, v8_array);
-}
+CJSObjectArray::CJSObjectArray(v8::Local<v8::Array> v8_array) : CJSObject(v8_array) {}
 
 size_t CJSObjectArray::Length() {
-  LazyInit();
-
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -73,8 +14,6 @@ size_t CJSObjectArray::Length() {
 }
 
 py::object CJSObjectArray::GetItem(py::object py_key) {
-  LazyInit();
-
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -107,7 +46,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
   } else if (PyLong_Check(py_key.ptr())) {
     auto idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (idx >= m_size) {
+    if (idx >= Length()) {
       throw CJSException("index of of range", PyExc_IndexError);
     }
 
@@ -128,8 +67,6 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
 }
 
 py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
-  LazyInit();
-
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -215,8 +152,6 @@ py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
 }
 
 py::object CJSObjectArray::DelItem(py::object py_key) {
-  LazyInit();
-
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -263,8 +198,6 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
 }
 
 bool CJSObjectArray::Contains(const py::object& py_key) {
-  LazyInit();
-
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -293,5 +226,3 @@ bool CJSObjectArray::Contains(const py::object& py_key) {
 
   return false;
 }
-
-#pragma clang diagnostic pop

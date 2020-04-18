@@ -52,8 +52,6 @@ void CJSObject::Expose(const py::module& py_module) {
                   "Creates a new object with the specified prototype object and properties.");
 
   py::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
-      .def(py::init<py::object>())
-
       .def("__len__", &CJSObjectArray::Length)
 
       .def("__getitem__", &CJSObjectArray::GetItem)
