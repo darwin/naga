@@ -494,13 +494,14 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
   if (traced_raw_object) {
     py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
   } else if (v8_obj.IsEmpty()) {
+    // TODO: we should not treat empty values so softly, we should throw/crash
     py_result = py::none();
   }
-#ifdef STPYV8_FEATURE_CLJS
-  else if (isCLJSType(v8_obj)) {
-    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
-  }
-#endif
+//#ifdef STPYV8_FEATURE_CLJS
+//  else if (isCLJSType(v8_obj)) {
+//    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
+//  }
+//#endif
   else {
     py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
