@@ -86,7 +86,6 @@ void CJSObject::Expose(const py::module& py_module) {
 
       .def_property("name", &CJSObjectFunction::GetName, &CJSObjectFunction::SetName,
                     "The name of function")
-      .def_property_readonly("owner", &CJSObjectFunction::GetOwner)
 
       .def_property_readonly("linenum", &CJSObjectFunction::GetLineNumber,
                              "The line number of function in the script")
@@ -324,8 +323,33 @@ py::object CJSObject::ToPythonStr() const {
   return py_result;
 }
 
-py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_self) {
-  TRACE("CJSObject::Wrap v8_isolate={} v8_val={} v8_self={}", isolateref_printer{v8_isolate}, v8_val, v8_self);
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
+  TRACE("CJSObject::Wrap v8_isolate={} v8_val={} v8_this={}", isolateref_printer{v8_isolate}, v8_val, v8_this);
+
+  if (v8_val->IsFunction()) {
+    // when v8_this is global, we can fall back to unbound function (later)
+    auto v8_context = v8_isolate->GetCurrentContext();
+    if (!v8_this->StrictEquals(v8_context->Global())) {
+      // TODO: optimize this
+      auto v8_fn = v8_val.As<v8::Function>();
+      auto v8_bind_key = v8::String::NewFromUtf8(v8_isolate, "bind").ToLocalChecked();
+      auto v8_bind_val = v8_fn->Get(v8_context, v8_bind_key).ToLocalChecked();
+      assert(v8_bind_val->IsFunction());
+      auto v8_bind_fn = v8_bind_val.As<v8::Function>();
+      v8::Local<v8::Value> args[] = {v8_this};
+      auto v8_bound_val = v8_bind_fn->Call(v8_context, v8_fn, std::size(args), args).ToLocalChecked();
+      assert(v8_bound_val->IsFunction());
+      auto v8_bound_fn = v8_bound_val.As<v8::Function>();
+      TRACE("CJSObject::Wrap v8_bound_fn={}", v8_bound_fn);
+      return Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_bound_fn));
+    }
+  }
+
+  return Wrap(v8_isolate, v8_val);
+}
+
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val) {
+  TRACE("CJSObject::Wrap v8_isolate={} v8_val={}", isolateref_printer{v8_isolate}, v8_val);
   assert(!v8_val.IsEmpty());
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -380,13 +404,13 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_va
 
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
-  auto py_result = Wrap(v8_isolate, v8_obj, v8_self);
+  auto py_result = Wrap(v8_isolate, v8_obj);
   TRACE("CJSObject::Wrap => {}", py_result);
   return py_result;
 }
 
-py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj, v8::Local<v8::Object> v8_self) {
-  TRACE("CJSObject::v8_isolate={} Wrap v8_obj={} v8_self={}", isolateref_printer{v8_isolate}, v8_obj, v8_self);
+py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
+  TRACE("CJSObject::Wrap v8_isolate={} v8_obj={}", isolateref_printer{v8_isolate}, v8_obj);
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
@@ -406,8 +430,9 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
   }
 #endif
   else if (v8_obj->IsFunction()) {
+    // creating unbound function
     auto v8_fn = v8_obj.As<v8::Function>();
-    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_self, v8_fn));
+    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_fn));
   } else {
     py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
@@ -430,6 +455,7 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
 }
 
 v8::Local<v8::Object> CJSObject::Object() const {
+  // TODO: isolate should be taken from the m_v8_obj
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_result = v8::Local<v8::Object>::New(v8_isolate, m_v8_obj);
   TRACE("CJSObject::CJSObject {} => {}", THIS, v8_result);

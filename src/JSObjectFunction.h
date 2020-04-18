@@ -4,16 +4,13 @@
 #include "JSObject.h"
 
 class CJSObjectFunction : public CJSObject {
-  // we need to have CJSObject copyable for pybind
-  v8::Global<v8::Object> m_self;
-
-  py::object Call(v8::Local<v8::Object> v8_self, const py::list& py_args, const py::dict& py_kwargs);
+  py::object Call(const py::list& py_args,
+                  const py::dict& py_kwargs,
+                  std::optional<v8::Local<v8::Object>> opt_v8_this = std::nullopt);
 
  public:
-  CJSObjectFunction(v8::Local<v8::Object> self, v8::Local<v8::Function> func);
+  CJSObjectFunction(v8::Local<v8::Function> v8_fn);
   ~CJSObjectFunction() override;
-
-  [[nodiscard]] v8::Local<v8::Object> Self() const;
 
   static py::object CallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
   static py::object CreateWithArgs(const CJSObjectFunctionPtr& proto,
