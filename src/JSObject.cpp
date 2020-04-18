@@ -1,5 +1,4 @@
 #include "JSObject.h"
-#include "JSObjectArray.h"
 #include "JSObjectCLJS.h"
 #include "JSException.h"
 #include "JSUndefined.h"
@@ -30,9 +29,9 @@ void CJSObject::Expose(const py::module& py_module) {
       .def("keys", &CJSObject::GetAttrList,
            "Get a list of the object attributes.")
 
-      .def("__getitem__", &CJSObject::GetAttr)
-      .def("__setitem__", &CJSObject::SetAttr)
-      .def("__delitem__", &CJSObject::DelAttr)
+      .def("__getitem__", &CJSObject::GetItem)
+      .def("__setitem__", &CJSObject::SetItem)
+      .def("__delitem__", &CJSObject::DelItem)
 
       .def("__contains__", &CJSObject::Contains)
 
@@ -50,7 +49,17 @@ void CJSObject::Expose(const py::module& py_module) {
                   py::arg("propertiesObject") = py::dict(),
                   "Creates a new object with the specified prototype object and properties.")
 
-      // JSFunction
+      .def_static("hasJSArrayRole", [](const CJSObjectPtr &obj) {
+          return obj->HasRole(Roles::JSArray);
+      })
+      .def_static("hasJSFunctionRole", [](const CJSObjectPtr &obj) {
+          return obj->HasRole(Roles::JSFunction);
+      })
+      .def_static("hasCLJSObjectRole", [](const CJSObjectPtr &obj) {
+          return obj->HasRole(Roles::CLJSObject);
+      })
+
+          // JSFunction
       .def("__call__", &CJSObject::CallWithArgs)
 
       .def("apply", &CJSObject::ApplyJavascript,
@@ -85,24 +94,12 @@ void CJSObject::Expose(const py::module& py_module) {
       .def_property_readonly("lineoff", &CJSObject::GetLineOffset,
                              "The line offset of function in the script")
       .def_property_readonly("coloff", &CJSObject::GetColumnOffset,
-                             "The column offset of function in the script");
+                             "The column offset of function in the script")
 
-
-;
-
-  py::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
-      .def("__len__", &CJSObjectArray::Length)
-
-      .def("__getitem__", &CJSObjectArray::GetItem)
-      .def("__setitem__", &CJSObjectArray::SetItem)
-      .def("__delitem__", &CJSObjectArray::DelItem)
-
-          // TODO:      .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
-
-      .def("__contains__", &CJSObjectArray::Contains);
-
-//  py::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
-
+          // JSArray
+      .def("__len__", &CJSObject::ArrayLength)
+    // TODO:      .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
+      ;
   // clang-format on
 }
 
@@ -127,6 +124,43 @@ bool CJSObject::HasRole(Roles roles) const {
   return (m_roles & roles) == roles;
 }
 
+bool CJSObject::Contains(const py::object& py_key) const {
+  if (HasRole(Roles::JSArray)) {
+    return ArrayContains(py_key);
+  } else {
+    return ObjectContains(py_key);
+  }
+}
+
+py::object CJSObject::GetItem(py::object py_key) const {
+  if (HasRole(Roles::JSArray)) {
+    return ArrayGetItem(py_key);
+  } else {
+    // TODO: do robust arg checking here
+    return ObjectGetAttr(py::cast<py::str>(py_key));
+  }
+}
+
+py::object CJSObject::SetItem(py::object py_key, py::object py_value) const {
+  if (HasRole(Roles::JSArray)) {
+    return ArraySetItem(py_key, py_value);
+  } else {
+    // TODO: do robust arg checking here
+    ObjectSetAttr(py::cast<py::str>(py_key), py_value);
+    return py::none();
+  }
+}
+
+py::object CJSObject::DelItem(py::object py_key) const {
+  if (HasRole(Roles::JSArray)) {
+    return ArrayDelItem(py_key);
+  } else {
+    // TODO: do robust arg checking here
+    ObjectDelAttr(py::cast<py::str>(py_key));
+    return py::none();
+  }
+}
+
 void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   TRACE("CJSObject::CheckAttr {} v8_name={}", THIS, v8_name);
   auto v8_isolate = v8u::getCurrentIsolate();
@@ -145,15 +179,39 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   }
 }
 
-py::object CJSObject::GetAttr(const std::string& name) {
-  TRACE("CJSObject::GetAttr {} name={}", THIS, name);
+py::object CJSObject::GetAttr(py::object py_key) const {
+  if (HasRole(Roles::JSArray)) {
+    throw CJSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
+  } else {
+    return ObjectGetAttr(py_key);
+  }
+}
+
+void CJSObject::SetAttr(py::object py_key, py::object py_obj) const {
+  if (HasRole(Roles::JSArray)) {
+    throw CJSException("__setattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
+  } else {
+    ObjectSetAttr(py_key, py_obj);
+  }
+}
+
+void CJSObject::DelAttr(py::object py_key) const {
+  if (HasRole(Roles::JSArray)) {
+    throw CJSException("__delattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
+  } else {
+    ObjectDelAttr(py_key);
+  }
+}
+
+py::object CJSObject::ObjectGetAttr(py::object py_key) const {
+  TRACE("CJSObject::ObjectGetAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto v8_attr_name = v8u::toString(name);
+  auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
 
   auto v8_attr_value = Object()->Get(v8_context, v8_attr_name).ToLocalChecked();
@@ -162,19 +220,19 @@ py::object CJSObject::GetAttr(const std::string& name) {
   }
 
   auto py_result = CJSObject::Wrap(v8_isolate, v8_attr_value, Object());
-  TRACE("CJSObject::GetAttr {} => {}", THIS, py_result);
+  TRACE("CJSObject::ObjectGetAttr {} => {}", THIS, py_result);
   return py_result;
 }
 
-void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
-  TRACE("CJSObject::SetAttr {} name={} py_obj={}", THIS, name, py_obj);
+void CJSObject::ObjectSetAttr(py::object py_key, py::object py_obj) const {
+  TRACE("CJSObject::ObjectSetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto v8_attr_name = v8u::toString(name);
+  auto v8_attr_name = v8u::toString(py_key);
   auto v8_attr_obj = CPythonObject::Wrap(std::move(py_obj));
 
   if (!Object()->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
@@ -182,15 +240,15 @@ void CJSObject::SetAttr(const std::string& name, py::object py_obj) const {
   }
 }
 
-void CJSObject::DelAttr(const std::string& name) {
-  TRACE("CJSObject::DelAttr {} name={}", THIS, name);
+void CJSObject::ObjectDelAttr(py::object py_key) const {
+  TRACE("CJSObject::ObjectDelAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto v8_attr_name = v8u::toString(name);
+  auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
 
   if (!Object()->Delete(v8_context, v8_attr_name).FromMaybe(false)) {
@@ -251,7 +309,7 @@ CJSObjectPtr CJSObject::Clone() const {
   return result;
 }
 
-bool CJSObject::Contains(const std::string& name) const {
+bool CJSObject::ObjectContains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -260,13 +318,13 @@ bool CJSObject::Contains(const std::string& name) const {
 
   v8::TryCatch try_catch(v8_isolate);
 
-  bool result = Object()->Has(context, v8u::toString(name)).ToChecked();
+  bool result = Object()->Has(context, v8u::toString(py_key)).ToChecked();
 
   if (try_catch.HasCaught()) {
     CJSException::ThrowIf(v8_isolate, try_catch);
   }
 
-  TRACE("CJSObject::Contains {} name={} => {}", THIS, name, result);
+  TRACE("CJSObject::Contains {} py_key={} => {}", THIS, py_key, result);
   return result;
 }
 
@@ -437,9 +495,6 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
     py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
   } else if (v8_obj.IsEmpty()) {
     py_result = py::none();
-  } else if (v8_obj->IsArray()) {
-    auto v8_array = v8_obj.As<v8::Array>();
-    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectArray>(v8_array));
   }
 #ifdef STPYV8_FEATURE_CLJS
   else if (isCLJSType(v8_obj)) {

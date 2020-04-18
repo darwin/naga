@@ -122,7 +122,7 @@ _STPyV8._JSError._jsclass = JSError
 _STPyV8.JSError = JSError
 
 JSObject    = _STPyV8.JSObject
-JSArray     = _STPyV8.JSArray
+JSArray     = _STPyV8.JSObject # for backward compatibility
 JSFunction  = _STPyV8.JSObject # for backward compatibility
 JSPlatform  = _STPyV8.JSPlatform
 JSUndefined = _STPyV8.JSUndefined

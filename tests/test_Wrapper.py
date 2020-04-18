@@ -12,11 +12,11 @@ import STPyV8
 
 
 def convert(obj):
-    if isinstance(obj, STPyV8.JSArray):
-        return [convert(v) for v in obj]
-
     if isinstance(obj, STPyV8.JSObject):
-        return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])
+        if STPyV8.JSObject.hasJSArrayRole(obj):
+            return [convert(v) for v in obj]
+        else:
+            return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])
 
     return obj
 

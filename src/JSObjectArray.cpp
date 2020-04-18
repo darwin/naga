@@ -1,11 +1,9 @@
-#include "JSObjectArray.h"
+#include "JSObject.h"
 #include "PythonObject.h"
 #include "JSObjectCLJS.h"
 #include "JSException.h"
 
-CJSObjectArray::CJSObjectArray(v8::Local<v8::Array> v8_array) : CJSObject(v8_array) {}
-
-size_t CJSObjectArray::Length() {
+size_t CJSObject::ArrayLength() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -13,7 +11,7 @@ size_t CJSObjectArray::Length() {
   return result;
 }
 
-py::object CJSObjectArray::GetItem(py::object py_key) {
+py::object CJSObject::ArrayGetItem(py::object py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -46,7 +44,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
   } else if (PyLong_Check(py_key.ptr())) {
     auto idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (idx >= Length()) {
+    if (idx >= ArrayLength()) {
       throw CJSException("index of of range", PyExc_IndexError);
     }
 
@@ -66,7 +64,7 @@ py::object CJSObjectArray::GetItem(py::object py_key) {
   throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
-py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
+py::object CJSObject::ArraySetItem(py::object py_key, py::object py_value) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -151,7 +149,7 @@ py::object CJSObjectArray::SetItem(py::object py_key, py::object py_value) {
   return py_value;
 }
 
-py::object CJSObjectArray::DelItem(py::object py_key) {
+py::object CJSObject::ArrayDelItem(py::object py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -197,14 +195,14 @@ py::object CJSObjectArray::DelItem(py::object py_key) {
   throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
-bool CJSObjectArray::Contains(const py::object& py_key) {
+bool CJSObject::ArrayContains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  for (size_t i = 0; i < Length(); i++) {
+  for (size_t i = 0; i < ArrayLength(); i++) {
     if (Object()->Has(v8_context, i).ToChecked()) {
       auto v8_i = v8::Integer::New(v8_isolate, i);
       auto v8_val = Object()->Get(v8_context, v8_i).ToLocalChecked();

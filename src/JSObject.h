@@ -2,7 +2,6 @@
 
 #include "Base.h"
 
-// https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html#std-shared-ptr
 class CJSObject {
  public:
   typedef u_int8_t RoleFlagsType;
@@ -31,15 +30,24 @@ class CJSObject {
 
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
-  py::object GetAttr(const std::string& name);
-  void SetAttr(const std::string& name, py::object py_obj) const;
-  void DelAttr(const std::string& name);
+  py::object GetAttr(py::object py_key) const;
+  void SetAttr(py::object py_key, py::object py_obj) const;
+  void DelAttr(py::object py_key) const;
+
+  py::object ObjectGetAttr(py::object py_key) const;
+  void ObjectSetAttr(py::object py_key, py::object py_obj) const;
+  void ObjectDelAttr(py::object py_key) const;
+
+  py::object GetItem(py::object py_key) const;
+  py::object SetItem(py::object py_key, py::object py_value) const;
+  py::object DelItem(py::object py_key) const;
 
   [[nodiscard]] py::list GetAttrList() const;
   [[nodiscard]] int GetIdentityHash() const;
   [[nodiscard]] CJSObjectPtr Clone() const;
 
-  [[nodiscard]] bool Contains(const std::string& name) const;
+  bool Contains(const py::object& py_key) const;
+  [[nodiscard]] bool ObjectContains(const py::object& py_key) const;
 
   [[nodiscard]] py::object ToPythonInt() const;
   [[nodiscard]] py::object ToPythonFloat() const;
@@ -75,6 +83,13 @@ class CJSObject {
   [[nodiscard]] std::string GetInferredName() const;
   [[nodiscard]] int GetLineOffset() const;
   [[nodiscard]] int GetColumnOffset() const;
+
+  // JSArray
+  size_t ArrayLength() const;
+  py::object ArrayGetItem(py::object py_key) const;
+  py::object ArraySetItem(py::object py_key, py::object py_value) const;
+  py::object ArrayDelItem(py::object py_key) const;
+  bool ArrayContains(const py::object& py_key) const;
 
  protected:
   void CheckAttr(v8::Local<v8::String> v8_name) const;
