@@ -1,6 +1,5 @@
 #include "JSObject.h"
 #include "JSObjectArray.h"
-#include "JSObjectFunction.h"
 #include "JSObjectCLJS.h"
 #include "JSException.h"
 #include "JSUndefined.h"
@@ -45,11 +44,51 @@ void CJSObject::Expose(const py::module& py_module) {
       .def("__eq__", &CJSObject::Equals)
       .def("__ne__", &CJSObject::Unequals)
 
-      .def_static("create", &CJSObjectFunction::CreateWithArgs,
+      .def_static("create", &CJSObject::CreateWithArgs,
                   py::arg("constructor"),
                   py::arg("arguments") = py::tuple(),
                   py::arg("propertiesObject") = py::dict(),
-                  "Creates a new object with the specified prototype object and properties.");
+                  "Creates a new object with the specified prototype object and properties.")
+
+      // JSFunction
+      .def("__call__", &CJSObject::CallWithArgs)
+
+      .def("apply", &CJSObject::ApplyJavascript,
+           py::arg("self"),
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
+           "Performs a function call using the parameters.")
+      .def("apply", &CJSObject::ApplyPython,
+           py::arg("self"),
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
+           "Performs a function call using the parameters.")
+      .def("invoke", &CJSObject::Invoke,
+           py::arg("args") = py::list(),
+           py::arg("kwds") = py::dict(),
+           "Performs a binding method call using the parameters.")
+
+// TODO: revisit this, there is a clash with normal attribute lookups
+//      .def("setName", &CJSObject::SetName)
+//
+//      .def_property("name", &CJSObject::GetName, &CJSObject::SetName,
+//                    "The name of function")
+
+      .def_property_readonly("linenum", &CJSObject::GetLineNumber,
+                             "The line number of function in the script")
+      .def_property_readonly("colnum", &CJSObject::GetColumnNumber,
+                             "The column number of function in the script")
+      .def_property_readonly("resname", &CJSObject::GetResourceName,
+                             "The resource name of script")
+      .def_property_readonly("inferredname", &CJSObject::GetInferredName,
+                             "Name inferred from variable or property assignment of this function")
+      .def_property_readonly("lineoff", &CJSObject::GetLineOffset,
+                             "The line offset of function in the script")
+      .def_property_readonly("coloff", &CJSObject::GetColumnOffset,
+                             "The column offset of function in the script");
+
+
+;
 
   py::class_<CJSObjectArray, CJSObjectArrayPtr, CJSObject>(py_module, "JSArray")
       .def("__len__", &CJSObjectArray::Length)
@@ -62,51 +101,30 @@ void CJSObject::Expose(const py::module& py_module) {
 
       .def("__contains__", &CJSObjectArray::Contains);
 
-  py::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
-      .def("__call__", &CJSObjectFunction::CallWithArgs)
+//  py::class_<CJSObjectFunction, CJSObjectFunctionPtr, CJSObject>(py_module, "JSFunction")
 
-      .def("apply", &CJSObjectFunction::ApplyJavascript,
-           py::arg("self"),
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a function call using the parameters.")
-      .def("apply", &CJSObjectFunction::ApplyPython,
-           py::arg("self"),
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a function call using the parameters.")
-      .def("invoke", &CJSObjectFunction::Invoke,
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a binding method call using the parameters.")
-
-      .def("setName", &CJSObjectFunction::SetName)
-
-      .def_property("name", &CJSObjectFunction::GetName, &CJSObjectFunction::SetName,
-                    "The name of function")
-
-      .def_property_readonly("linenum", &CJSObjectFunction::GetLineNumber,
-                             "The line number of function in the script")
-      .def_property_readonly("colnum", &CJSObjectFunction::GetColumnNumber,
-                             "The column number of function in the script")
-      .def_property_readonly("resname", &CJSObjectFunction::GetResourceName,
-                             "The resource name of script")
-      .def_property_readonly("inferredname", &CJSObjectFunction::GetInferredName,
-                             "Name inferred from variable or property assignment of this function")
-      .def_property_readonly("lineoff", &CJSObjectFunction::GetLineOffset,
-                             "The line offset of function in the script")
-      .def_property_readonly("coloff", &CJSObjectFunction::GetColumnOffset,
-                             "The column offset of function in the script");
   // clang-format on
 }
 
-CJSObject::CJSObject(v8::Local<v8::Object> v8_obj) : m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
-  TRACE("CJSObject::CJSObject {} v8_obj={}", THIS, v8_obj);
+CJSObject::CJSObject(v8::Local<v8::Object> v8_obj)
+    : m_roles(Roles::JSObject), m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
+  // detect supported object roles
+  if (v8_obj->IsFunction()) {
+    m_roles |= Roles::JSFunction;
+  }
+  if (v8_obj->IsArray()) {
+    m_roles |= Roles::JSArray;
+  }
+  TRACE("CJSObject::CJSObject {} v8_obj={} roles={}", THIS, v8_obj, roles_printer{m_roles});
 }
 
 CJSObject::~CJSObject() {
   TRACE("CJSObject::~CJSObject {}", THIS);
   m_v8_obj.Reset();
+}
+
+bool CJSObject::HasRole(Roles roles) const {
+  return (m_roles & roles) == roles;
 }
 
 void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
@@ -339,7 +357,8 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_va
       assert(v8_bound_val->IsFunction());
       auto v8_bound_fn = v8_bound_val.As<v8::Function>();
       TRACE("CJSObject::Wrap v8_bound_fn={}", v8_bound_fn);
-      return Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_bound_fn));
+      // TODO: mark as function role?
+      return Wrap(v8_isolate, std::make_shared<CJSObject>(v8_bound_fn));
     }
   }
 
@@ -427,11 +446,7 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
     py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
   }
 #endif
-  else if (v8_obj->IsFunction()) {
-    // creating unbound function
-    auto v8_fn = v8_obj.As<v8::Function>();
-    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectFunction>(v8_fn));
-  } else {
+  else {
     py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
 

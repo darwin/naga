@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "JSObject.h"
 
 #define THIS voidThis(this)
 
@@ -199,5 +200,26 @@ struct fmt::formatter<raw_object_printer> {
   template <typename FormatContext>
   auto format(const raw_object_printer& val, FormatContext& ctx) {
     return format_to(ctx.out(), "PyObject {}", static_cast<void*>(val.m_raw_object));
+  }
+};
+
+struct roles_printer {
+  CJSObject::Roles m_roles;
+};
+
+template <>
+struct fmt::formatter<roles_printer> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const roles_printer& val, FormatContext& ctx) {
+    std::vector<const char*> flags;
+    if ((val.m_roles & CJSObject::Roles::JSFunction) == CJSObject::Roles::JSFunction) {
+      flags.push_back("Function");
+    }
+    if ((val.m_roles & CJSObject::Roles::JSArray) == CJSObject::Roles::JSArray) {
+      flags.push_back("Array");
+    }
+    return format_to(ctx.out(), "[{}]", fmt::join(flags, ","));
   }
 };

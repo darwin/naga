@@ -195,8 +195,8 @@ class TestWrapper(unittest.TestCase):
             # func.name = "hello"
             # self.assertEqual("hello", func.name)
 
-            func.setName("hello")
-            self.assertEqual("hello", func.name)
+            # func.setName("hello")
+            # self.assertEqual("hello", func.name)
 
     def testCall(self):
         class Hello(object):

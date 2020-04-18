@@ -1,14 +1,10 @@
-#include "JSObjectFunction.h"
+#include "JSObject.h"
 
 #include "PythonObject.h"
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
-CJSObjectFunction::CJSObjectFunction(v8::Local<v8::Function> v8_fn) : CJSObject(v8_fn) {}
-
-CJSObjectFunction::~CJSObjectFunction() {}
-
-py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
+py::object CJSObject::CallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
   auto args_count = py_args.size();
 
   if (args_count == 0) {
@@ -16,8 +12,9 @@ py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& p
   }
 
   auto py_self = py_args[0];
-  if (!py::isinstance<CJSObjectFunction>(py_self)) {
-    throw CJSException("self argument must be a js function", PyExc_TypeError);
+
+  if (!py::isinstance<CJSObject>(py_self)) {
+    throw CJSException("self argument must be a JSObject", PyExc_TypeError);
   }
 
   auto v8_isolate = v8u::getCurrentIsolate();
@@ -25,8 +22,12 @@ py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& p
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto fn = py::cast<CJSObjectFunctionPtr>(py_self);
+  auto fn = py::cast<CJSObjectPtr>(py_self);
   assert(fn.get());
+  if (!fn->HasRole(CJSObject::Roles::JSFunction)) {
+    throw CJSException("self argument must be a js function", PyExc_TypeError);
+  }
+
   // TODO: move this into a helper function
   auto raw_args_without_self_tuple = PyTuple_GetSlice(py_args.ptr(), 1, args_count);
   auto py_args_without_self_tuple = py::reinterpret_steal<py::list>(raw_args_without_self_tuple);
@@ -34,7 +35,9 @@ py::object CJSObjectFunction::CallWithArgs(py::args py_args, const py::kwargs& p
   return fn->Call(py_args_without_self, py_kwargs);
 }
 
-py::object CJSObjectFunction::Call(const py::list& py_args, const py::dict& py_kwargs, std::optional<v8::Local<v8::Object>> opt_v8_this) {
+py::object CJSObject::Call(const py::list& py_args,
+                           const py::dict& py_kwargs,
+                           std::optional<v8::Local<v8::Object>> opt_v8_this) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -82,9 +85,7 @@ py::object CJSObjectFunction::Call(const py::list& py_args, const py::dict& py_k
   return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
-py::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
-                                             const py::tuple& py_args,
-                                             const py::dict& py_kwds) {
+py::object CJSObject::CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -126,16 +127,14 @@ py::object CJSObjectFunction::CreateWithArgs(const CJSObjectFunctionPtr& proto,
   return CJSObject::Wrap(v8_isolate, v8_result);
 }
 
-py::object CJSObjectFunction::ApplyJavascript(const CJSObjectPtr& self,
-                                              const py::list& py_args,
-                                              const py::dict& py_kwds) {
+py::object CJSObject::ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   return Call(py_args, py_kwds, self->Object());
 }
 
-py::object CJSObjectFunction::ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObject::ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -145,14 +144,14 @@ py::object CJSObjectFunction::ApplyPython(py::object py_self, const py::list& py
   return Call(py_args, py_kwds, v8_this);
 }
 
-py::object CJSObjectFunction::Invoke(const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObject::Invoke(const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   return Call(py_args, py_kwds);
 }
 
-std::string CJSObjectFunction::GetName() const {
+std::string CJSObject::GetName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -164,7 +163,7 @@ std::string CJSObjectFunction::GetName() const {
   return std::string(*name, name.length());
 }
 
-void CJSObjectFunction::SetName(const std::string& name) {
+void CJSObject::SetName(const std::string& name) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -175,7 +174,7 @@ void CJSObjectFunction::SetName(const std::string& name) {
       v8::String::NewFromUtf8(v8_isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
 }
 
-int CJSObjectFunction::GetLineNumber() const {
+int CJSObject::GetLineNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -185,7 +184,7 @@ int CJSObjectFunction::GetLineNumber() const {
   return func->GetScriptLineNumber();
 }
 
-int CJSObjectFunction::GetColumnNumber() const {
+int CJSObject::GetColumnNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -195,7 +194,7 @@ int CJSObjectFunction::GetColumnNumber() const {
   return func->GetScriptColumnNumber();
 }
 
-std::string CJSObjectFunction::GetResourceName() const {
+std::string CJSObject::GetResourceName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -207,7 +206,7 @@ std::string CJSObjectFunction::GetResourceName() const {
   return std::string(*name, name.length());
 }
 
-std::string CJSObjectFunction::GetInferredName() const {
+std::string CJSObject::GetInferredName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -219,7 +218,7 @@ std::string CJSObjectFunction::GetInferredName() const {
   return std::string(*name, name.length());
 }
 
-int CJSObjectFunction::GetLineOffset() const {
+int CJSObject::GetLineOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -229,7 +228,7 @@ int CJSObjectFunction::GetLineOffset() const {
   return func->GetScriptOrigin().ResourceLineOffset()->Value();
 }
 
-int CJSObjectFunction::GetColumnOffset() const {
+int CJSObject::GetColumnOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);

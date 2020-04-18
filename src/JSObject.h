@@ -4,15 +4,30 @@
 
 // https://pybind11.readthedocs.io/en/stable/advanced/smart_ptrs.html#std-shared-ptr
 class CJSObject {
- protected:
+ public:
+  typedef u_int8_t RoleFlagsType;
+  enum class Roles : RoleFlagsType {
+    JSObject = 0,  // always on
+    JSFunction = 1 << 0,
+    JSArray = 1 << 1,
+    CLJSObject = 1 << 2
+  };
+
+ private:
+  Roles m_roles;
   // we need to have CJSObject copyable for pybind
   v8::Global<v8::Object> m_v8_obj;
 
-  CJSObject() = default;
+  // JSFunction
+  py::object Call(const py::list& py_args,
+                  const py::dict& py_kwargs,
+                  std::optional<v8::Local<v8::Object>> opt_v8_this = std::nullopt);
 
  public:
   explicit CJSObject(v8::Local<v8::Object> v8_obj);
   virtual ~CJSObject();
+
+  bool HasRole(Roles roles) const;
 
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
@@ -43,6 +58,41 @@ class CJSObject {
 
   static void Expose(const py::module& py_module);
 
+  // JSFunction
+  static py::object CallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
+  static py::object CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+
+  py::object ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds);
+  py::object ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
+  py::object Invoke(const py::list& py_args, const py::dict& py_kwds);
+
+  [[nodiscard]] std::string GetName() const;
+  void SetName(const std::string& name);
+
+  [[nodiscard]] int GetLineNumber() const;
+  [[nodiscard]] int GetColumnNumber() const;
+  [[nodiscard]] std::string GetResourceName() const;
+  [[nodiscard]] std::string GetInferredName() const;
+  [[nodiscard]] int GetLineOffset() const;
+  [[nodiscard]] int GetColumnOffset() const;
+
  protected:
   void CheckAttr(v8::Local<v8::String> v8_name) const;
 };
+
+constexpr CJSObject::Roles operator|(CJSObject::Roles X, CJSObject::Roles Y) {
+  return static_cast<CJSObject::Roles>(static_cast<CJSObject::RoleFlagsType>(X) |
+                                       static_cast<CJSObject::RoleFlagsType>(Y));
+}
+
+constexpr CJSObject::Roles operator&(CJSObject::Roles X, CJSObject::Roles Y) {
+  return static_cast<CJSObject::Roles>(static_cast<CJSObject::RoleFlagsType>(X) &
+                                       static_cast<CJSObject::RoleFlagsType>(Y));
+}
+
+inline CJSObject::Roles& operator|=(CJSObject::Roles& X, CJSObject::Roles Y) {
+  X = X | Y;
+  return X;
+}
+
+// static_assert(!std::is_polymorphic<CJSObject>::value, "CJSObject should not be polymorphic.");

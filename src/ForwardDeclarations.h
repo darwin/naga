@@ -10,7 +10,6 @@ class CJSStackFrame;
 class CJSException;
 class CJSObject;
 class CJSObjectArray;
-class CJSObjectFunction;
 class CJSObjectCLJS;
 
 typedef std::shared_ptr<CPlatform> CPlatformPtr;
@@ -22,7 +21,6 @@ typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
 typedef std::shared_ptr<CJSException> CJSExceptionPtr;
 typedef std::shared_ptr<CJSObject> CJSObjectPtr;
 typedef std::shared_ptr<CJSObjectArray> CJSObjectArrayPtr;
-typedef std::shared_ptr<CJSObjectFunction> CJSObjectFunctionPtr;
 typedef std::shared_ptr<CJSObjectCLJS> CJSObjectCLJSPtr;
 
 namespace v8 {
