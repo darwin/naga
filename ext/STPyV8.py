@@ -128,6 +128,7 @@ JSPlatform  = _STPyV8.JSPlatform
 JSUndefined = _STPyV8.JSUndefined
 JSNull = _STPyV8.JSNull
 
+toolkit = _STPyV8.toolkit
 
 class JSLocker(_STPyV8.JSLocker):
     def __enter__(self):

@@ -14,6 +14,7 @@
 #include "Aux.h"
 #include "JSNull.h"
 #include "JSUndefined.h"
+#include "JSToolkitExpose.h"
 
 PYBIND11_MODULE(_STPyV8, py_module) {
   useLogging();
@@ -27,6 +28,7 @@ PYBIND11_MODULE(_STPyV8, py_module) {
   exposeJSNull(py_module);
 
   exposeJSObject(py_module);
+  exposeJSToolkit(py_module);
 
   CPlatform::Expose(py_module);
   CIsolate::Expose(py_module);

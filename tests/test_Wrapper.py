@@ -13,7 +13,7 @@ import STPyV8
 
 def convert(obj):
     if isinstance(obj, STPyV8.JSObject):
-        if STPyV8.JSObject.hasJSArrayRole(obj):
+        if STPyV8.toolkit.hasJSArrayRole(obj):
             return [convert(v) for v in obj]
         else:
             return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])
@@ -28,7 +28,7 @@ class TestWrapper(unittest.TestCase):
 
             self.assertTrue(hash(o) > 0)
 
-            o1 = STPyV8.JSObject.clone(o)
+            o1 = STPyV8.toolkit.clone(o)
 
             self.assertEqual(hash(o1), hash(o))
             self.assertTrue(o != o1)
@@ -180,12 +180,12 @@ class TestWrapper(unittest.TestCase):
 
             func = ctxt.eval("(function test() {})")
 
-            self.assertEqual("test", STPyV8.JSObject.getName(func))
-            self.assertEqual("", STPyV8.JSObject.resname(func))
-            self.assertEqual(0, STPyV8.JSObject.linenum(func))
-            self.assertEqual(14, STPyV8.JSObject.colnum(func))
-            self.assertEqual(0, STPyV8.JSObject.lineoff(func))
-            self.assertEqual(0, STPyV8.JSObject.coloff(func))
+            self.assertEqual("test", STPyV8.toolkit.get_name(func))
+            self.assertEqual("", STPyV8.toolkit.resname(func))
+            self.assertEqual(0, STPyV8.toolkit.linenum(func))
+            self.assertEqual(14, STPyV8.toolkit.colnum(func))
+            self.assertEqual(0, STPyV8.toolkit.lineoff(func))
+            self.assertEqual(0, STPyV8.toolkit.coloff(func))
 
             # FIXME
             # Why the setter doesn't work?
@@ -213,7 +213,7 @@ class TestWrapper(unittest.TestCase):
 
             self.assertTrue(isinstance(hello, STPyV8.JSFunction))
             self.assertEqual("Hello world", hello('world'))
-            self.assertEqual("Hello world", STPyV8.JSObject.invoke(hello, ['world']))
+            self.assertEqual("Hello world", STPyV8.toolkit.invoke(hello, ['world']))
 
             obj = ctxt.eval("({ 'name': 'world', 'hello': function (name) { return 'Hello ' + name + ' from ' + this.name; }})")
             hello = obj.hello
@@ -221,8 +221,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual("Hello world from world", hello('world'))
 
             tester = ctxt.eval("({ 'name': 'tester' })")
-            self.assertEqual("Hello world from tester", STPyV8.JSObject.apply(hello, tester, ['world']))
-            self.assertEqual("Hello world from json", STPyV8.JSObject.apply(hello, { 'name': 'json' }, ['world']))
+            self.assertEqual("Hello world from tester", STPyV8.toolkit.apply(hello, tester, ['world']))
+            self.assertEqual("Hello world from json", STPyV8.toolkit.apply(hello, { 'name': 'json' }, ['world']))
 
     def testConstructor(self):
         with STPyV8.JSContext() as ctx:
@@ -241,16 +241,16 @@ class TestWrapper(unittest.TestCase):
 
             self.assertTrue(isinstance(ctx.locals.Test, STPyV8.JSFunction))
 
-            test = STPyV8.JSObject.create(ctx.locals.Test)
+            test = STPyV8.toolkit.create(ctx.locals.Test)
 
             self.assertTrue(isinstance(ctx.locals.Test, STPyV8.JSObject))
             self.assertEqual("soirv8", test.name);
 
-            test2 = STPyV8.JSObject.create(ctx.locals.Test2, ('John', 'Doe'))
+            test2 = STPyV8.toolkit.create(ctx.locals.Test2, ('John', 'Doe'))
 
             self.assertEqual("John Doe", test2.name);
 
-            test3 = STPyV8.JSObject.create(ctx.locals.Test2, ('John', 'Doe'), { 'email': 'john.doe@randommail.com' })
+            test3 = STPyV8.toolkit.create(ctx.locals.Test2, ('John', 'Doe'), { 'email': 'john.doe@randommail.com' })
 
             self.assertEqual("john.doe@randommail.com", test3.email);
 

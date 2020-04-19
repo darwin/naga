@@ -1,28 +1,8 @@
-#include "JSObject.h"
+#include "JSObjectExpose.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
-
-// CallInstance is a helper class which redirects static calls to instance calls (expects first arg to be instance)
-// in python: JSObject.something(instance, arg1, arg2, ...)
-// calls (via pybind) our wrapper's operator(), and we in turn call
-// instance->Something(arg1, arg2, ...)
-// credit: https://stackoverflow.com/a/46533854/84283
-template <auto CJSObjectAPI::*F>
-struct CallInstance {};
-
-// this is a specialization for const member functions
-template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...) const->RET>
-struct CallInstance<F> {
-  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
-};
-
-// this is a specialization for non-const member functions
-template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...)->RET>
-struct CallInstance<F> {
-  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
-};
 
 void exposeJSObject(py::module py_module) {
   TRACE("exposeJSObject py_module={}", py_module);
@@ -59,72 +39,15 @@ void exposeJSObject(py::module py_module) {
       .def("__eq__", &CJSObjectAPI::PythonEquals)
       .def("__ne__", &CJSObjectAPI::PythonNotEquals)
       .def("__call__", &CJSObjectAPI::PythonCallWithArgs)
-          // --- end of protected section ---
+      // TODO: .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
 
-      .def_static("linenum", CallInstance<&CJSObjectAPI::PythonLineNumber>{},
-                  py::arg("this"),
-                  "The line number of function in the script")
-      .def_static("colnum", CallInstance<&CJSObjectAPI::PythonColumnNumber>{},
-                  py::arg("this"),
-                  "The column number of function in the script")
-      .def_static("resname", CallInstance<&CJSObjectAPI::PythonResourceName>{},
-                  py::arg("this"),
-                  "The resource name of script")
-      .def_static("inferredname", CallInstance<&CJSObjectAPI::PythonInferredName>{},
-                  py::arg("this"),
-                  "Name inferred from variable or property assignment of this function")
-      .def_static("lineoff", CallInstance<&CJSObjectAPI::PythonLineOffset>{},
-                  py::arg("this"),
-                  "The line offset of function in the script")
-      .def_static("coloff", CallInstance<&CJSObjectAPI::PythonColumnOffset>{},
-                  py::arg("this"),
-                  "The column offset of function in the script")
-      .def_static("setName", CallInstance<&CJSObjectAPI::PythonSetName>{},
-                  py::arg("this"),
-                  py::arg("name"))
-      .def_static("getName", CallInstance<&CJSObjectAPI::PythonGetName>{},
-                  py::arg("this"))
+      // Emulating dict object
+      // TODO: I'm not sure about this, revisit
+      // this should go away when we implement __iter__
+      //      .def("keys", &CJSObjectAPI::PythonGetAttrList,
+      //           "Get a list of the object attributes.")
 
-          // Emulating dict object
-          // TODO: I'm not sure about this, revisit
-          // this should go away when we implement __iter__
-//      .def("keys", &CJSObjectAPI::PythonGetAttrList,
-//           "Get a list of the object attributes.")
-
-      .def_static("apply", CallInstance<&CJSObjectAPI::PythonApply>{},
-                  py::arg("this"),
-                  py::arg("self"),
-                  py::arg("args") = py::list(),
-                  py::arg("kwds") = py::dict(),
-                  "Performs a function call using the parameters.")
-      .def_static("invoke", CallInstance<&CJSObjectAPI::PythonInvoke>{},
-                  py::arg("this"),
-                  py::arg("args") = py::list(),
-                  py::arg("kwds") = py::dict(),
-                  "Performs a binding method call using the parameters.")
-
-      .def_static("clone", CallInstance<&CJSObjectAPI::PythonClone>{},
-                  py::arg("this"),
-                  "Clone the object.")
-
-      .def_static("create", &CJSObjectAPI::PythonCreateWithArgs,
-                  py::arg("constructor"),
-                  py::arg("arguments") = py::tuple(),
-                  py::arg("propertiesObject") = py::dict(),
-                  "Creates a new object with the specified prototype object and properties.")
-
-      .def_static("hasJSArrayRole", [](const CJSObjectPtr &obj) {
-          return obj->HasRole(CJSObjectBase::Roles::JSArray);
-      })
-      .def_static("hasJSFunctionRole", [](const CJSObjectPtr &obj) {
-          return obj->HasRole(CJSObjectBase::Roles::JSFunction);
-      })
-      .def_static("hasCLJSObjectRole", [](const CJSObjectPtr &obj) {
-          return obj->HasRole(CJSObjectBase::Roles::CLJSObject);
-      })
-
-
-    // TODO:      .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
+      // --- end of protected section ---
       ;
   // clang-format on
 }
