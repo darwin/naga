@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base.h"
+
 // enable all features by default, to work with full source set during development
 #define STPYV8_FEATURE_CLJS 1
 

@@ -1,11 +1,6 @@
-#include "JSObject.h"
+#include "JSObjectGenericImpl.h"
 #include "JSException.h"
-#include "JSUndefined.h"
-#include "JSNull.h"
-
 #include "PythonObject.h"
-#include "PythonDateTime.h"
-#include "Tracer.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

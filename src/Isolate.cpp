@@ -1,6 +1,7 @@
 #include "Isolate.h"
 
 #include "Context.h"
+#include "Tracer.h"
 #include "JSStackTrace.h"
 
 #define TRACE(...) \

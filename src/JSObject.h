@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base.h"
-
 #include "JSObjectAPI.h"
 
 // We want to avoid having a C++ class hierarchy providing various wrappers to Python side [1]

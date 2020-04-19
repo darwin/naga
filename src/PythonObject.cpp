@@ -2,6 +2,7 @@
 #include "JSObject.h"
 #include "JSUndefined.h"
 #include "JSNull.h"
+#include "JSException.h"
 #include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"

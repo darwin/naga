@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base.h"
-#include "Engine.h"
 
 class CScript {
   const CEngine& m_engine;

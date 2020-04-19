@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base.h"
-
 #include "JSObjectBase.h"
 #include "JSObjectGenericImpl.h"
 #include "JSObjectFunctionImpl.h"

@@ -1,5 +1,4 @@
-#include "JSObject.h"
-
+#include "JSObjectFunctionImpl.h"
 #include "PythonObject.h"
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"

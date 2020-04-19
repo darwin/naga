@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Base.h"
-#include "JSException.h"
-#include "Tracer.h"
 
 enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 

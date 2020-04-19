@@ -1,6 +1,6 @@
 #include "PythonObject.h"
 #include "JSObject.h"
-#include "Isolate.h"
+#include "JSException.h"
 #include "PythonExceptionGuard.h"
 #include "Tracer.h"
 

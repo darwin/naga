@@ -1,4 +1,5 @@
 #include "Script.h"
+#include "Engine.h"
 #include "JSException.h"
 
 #define TRACE(...) \

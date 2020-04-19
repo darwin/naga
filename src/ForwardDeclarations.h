@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base.h"
+
 class CPlatform;
 class CContext;
 class CEngine;
@@ -8,6 +10,7 @@ class CScript;
 class CJSStackTrace;
 class CJSStackFrame;
 class CJSException;
+class CTracer;
 class CJSObject;
 class CJSObjectBase;
 class CJSObjectGenericImpl;

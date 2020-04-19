@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Base.h"
+
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 #define SPDLOG_FUNCTION __PRETTY_FUNCTION__
 

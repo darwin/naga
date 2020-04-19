@@ -1,5 +1,4 @@
-#include "JSObject.h"
-
+#include "JSObjectCLJSImpl.h"
 #include "PythonObject.h"
 #include "JSException.h"
 
