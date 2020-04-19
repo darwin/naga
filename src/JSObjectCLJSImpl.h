@@ -4,7 +4,7 @@
 
 class CJSObjectCLJSImpl {
  public:
-  CJSObjectBase* m_base;
+  CJSObjectBase& m_base;
 
   // CLJSObject
   size_t CLJSLength() const;

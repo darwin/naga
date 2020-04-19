@@ -14,10 +14,10 @@ void CJSObjectGenericImpl::CheckAttr(v8::Local<v8::String> v8_name) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
-  if (!m_base->Object()->Has(context, v8_name).FromMaybe(false)) {
+  if (!m_base.Object()->Has(context, v8_name).FromMaybe(false)) {
     std::ostringstream msg;
 
-    msg << "'" << *v8::String::Utf8Value(v8_isolate, m_base->Object()->ObjectProtoToString(context).ToLocalChecked())
+    msg << "'" << *v8::String::Utf8Value(v8_isolate, m_base.Object()->ObjectProtoToString(context).ToLocalChecked())
         << "' object has no attribute '" << *v8::String::Utf8Value(v8_isolate, v8_name) << "'";
 
     throw CJSException(msg.str(), PyExc_AttributeError);
@@ -35,12 +35,12 @@ py::object CJSObjectGenericImpl::ObjectGetAttr(py::object py_key) const {
   auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
 
-  auto v8_attr_value = m_base->Object()->Get(v8_context, v8_attr_name).ToLocalChecked();
+  auto v8_attr_value = m_base.Object()->Get(v8_context, v8_attr_name).ToLocalChecked();
   if (v8_attr_value.IsEmpty()) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  auto py_result = CJSObject::Wrap(v8_isolate, v8_attr_value, m_base->Object());
+  auto py_result = CJSObject::Wrap(v8_isolate, v8_attr_value, m_base.Object());
   TRACE("CJSObjectGenericImpl::ObjectGetAttr {} => {}", THIS, py_result);
   return py_result;
 }
@@ -56,7 +56,7 @@ void CJSObjectGenericImpl::ObjectSetAttr(py::object py_key, py::object py_obj) c
   auto v8_attr_name = v8u::toString(py_key);
   auto v8_attr_obj = CPythonObject::Wrap(std::move(py_obj));
 
-  if (!m_base->Object()->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
+  if (!m_base.Object()->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 }
@@ -72,7 +72,7 @@ void CJSObjectGenericImpl::ObjectDelAttr(py::object py_key) const {
   auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
 
-  if (!m_base->Object()->Delete(v8_context, v8_attr_name).FromMaybe(false)) {
+  if (!m_base.Object()->Delete(v8_context, v8_attr_name).FromMaybe(false)) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 }
@@ -86,7 +86,7 @@ bool CJSObjectGenericImpl::ObjectContains(const py::object& py_key) const {
 
   v8::TryCatch try_catch(v8_isolate);
 
-  bool result = m_base->Object()->Has(context, v8u::toString(py_key)).ToChecked();
+  bool result = m_base.Object()->Has(context, v8u::toString(py_key)).ToChecked();
 
   if (try_catch.HasCaught()) {
     CJSException::ThrowIf(v8_isolate, try_catch);

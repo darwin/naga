@@ -10,10 +10,10 @@
 // this class maintains CJSObject API exposed to Python
 class CJSObjectAPI : public CJSObjectBase {
  protected:
-  CJSObjectGenericImpl m_generic_impl{this};
-  CJSObjectFunctionImpl m_function_impl{this};
-  CJSObjectArrayImpl m_array_impl{this};
-  CJSObjectCLJSImpl m_cljs_impl{this};
+  CJSObjectGenericImpl m_generic_impl{*this};
+  CJSObjectFunctionImpl m_function_impl{*this};
+  CJSObjectArrayImpl m_array_impl{*this};
+  CJSObjectCLJSImpl m_cljs_impl{*this};
 
  public:
   explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj) : CJSObjectBase(v8_obj) {}

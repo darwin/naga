@@ -105,7 +105,7 @@ size_t CJSObjectCLJSImpl::CLJSLength() const {
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "len";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -125,7 +125,7 @@ py::object CJSObjectCLJSImpl::CLJSStr() const {
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "str";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -146,7 +146,7 @@ py::object CJSObjectCLJSImpl::CLJSRepr() const {
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "repr";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -170,14 +170,14 @@ py::object CJSObjectCLJSImpl::CLJSGetItemIndex(const py::object& py_index) const
   auto v8_idx = v8::Uint32::New(v8_isolate, idx);
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_idx};
   auto fn_name = "get_item_index";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
   if (isSentinel(v8_result)) {
     throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, m_base->Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
 }
 
 py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const {
@@ -201,7 +201,7 @@ py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const
 
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_start, v8_stop, v8_step};
   auto fn_name = "get_item_slice";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -225,7 +225,7 @@ py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
 
-    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, m_base->Object());
+    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, m_base.Object());
     py_result.append(py_item);
   }
 
@@ -242,27 +242,27 @@ py::object CJSObjectCLJSImpl::CLJSGetItemString(const py::object& py_str) const 
   auto v8_str = v8u::toString(py_str);
 
   // JS object lookup
-  if (m_base->Object()->Has(v8_context, v8_str).FromMaybe(false)) {
-    auto v8_val = m_base->Object()->Get(v8_context, v8_str).ToLocalChecked();
+  if (m_base.Object()->Has(v8_context, v8_str).FromMaybe(false)) {
+    auto v8_val = m_base.Object()->Get(v8_context, v8_str).ToLocalChecked();
     if (v8_val.IsEmpty()) {
       auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_val);
       auto msg = string_format("Unexpected: got empty result when accessing js property '%s'", *v8_utf);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
-    return CJSObject::Wrap(v8_isolate, v8_val, m_base->Object());
+    return CJSObject::Wrap(v8_isolate, v8_val, m_base.Object());
   }
 
   // CLJS lookup
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_str};
   auto fn_name = "get_item_string";
-  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base.Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
   if (isSentinel(v8_result)) {
     return py::none();
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, m_base->Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
 }
 
 py::object CJSObjectCLJSImpl::CLJSGetItem(const py::object& py_key) const {

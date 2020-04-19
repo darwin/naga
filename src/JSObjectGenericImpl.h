@@ -4,7 +4,7 @@
 
 class CJSObjectGenericImpl {
  public:
-  CJSObjectBase* m_base;
+  CJSObjectBase& m_base;
 
   [[nodiscard]] bool ObjectContains(const py::object& py_key) const;
   py::object ObjectGetAttr(py::object py_key) const;

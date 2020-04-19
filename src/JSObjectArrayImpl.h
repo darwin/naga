@@ -4,7 +4,7 @@
 
 class CJSObjectArrayImpl {
  public:
-  CJSObjectBase* m_base;
+  CJSObjectBase& m_base;
 
   size_t ArrayLength() const;
   py::object ArrayGetItem(py::object py_key) const;

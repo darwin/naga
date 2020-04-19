@@ -11,7 +11,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_fn = m_base->Object().As<v8::Function>();
+  auto v8_fn = m_base.Object().As<v8::Function>();
 
   auto args_count = py_args.size();
   auto kwargs_count = py_kwargs.size();
@@ -68,7 +68,7 @@ std::string CJSObjectFunctionImpl::GetName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetName()));
 
@@ -80,7 +80,7 @@ void CJSObjectFunctionImpl::SetName(const std::string& name) {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   func->SetName(
       v8::String::NewFromUtf8(v8_isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
@@ -91,7 +91,7 @@ int CJSObjectFunctionImpl::GetLineNumber() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   return func->GetScriptLineNumber();
 }
@@ -101,7 +101,7 @@ int CJSObjectFunctionImpl::GetColumnNumber() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   return func->GetScriptColumnNumber();
 }
@@ -111,7 +111,7 @@ std::string CJSObjectFunctionImpl::GetResourceName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
 
@@ -123,7 +123,7 @@ std::string CJSObjectFunctionImpl::GetInferredName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
@@ -135,7 +135,7 @@ int CJSObjectFunctionImpl::GetLineOffset() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   return func->GetScriptOrigin().ResourceLineOffset()->Value();
 }
@@ -145,7 +145,7 @@ int CJSObjectFunctionImpl::GetColumnOffset() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base->Object());
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
   return func->GetScriptOrigin().ResourceColumnOffset()->Value();
 }

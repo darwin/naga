@@ -4,7 +4,7 @@
 
 class CJSObjectFunctionImpl {
  public:
-  CJSObjectBase* m_base;
+  CJSObjectBase& m_base;
 
   py::object Call(const py::list& py_args,
                   const py::dict& py_kwargs,
