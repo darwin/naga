@@ -1,12 +1,7 @@
 #include "JSObject.h"
 #include "JSException.h"
-#include "JSUndefined.h"
-#include "JSNull.h"
-
 #include "PythonAllowThreadsGuard.h"
 #include "PythonObject.h"
-#include "PythonDateTime.h"
-#include "Tracer.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -63,20 +58,13 @@ void CJSObjectAPI::Expose(const py::module& py_module) {
           return obj->HasRole(Roles::CLJSObject);
       })
 
-          // JSFunction
       .def("__call__", &CJSObjectAPI::PythonCallWithArgs)
-
-      .def("apply", &CJSObjectAPI::ApplyJavascript,
+      .def("apply", &CJSObjectAPI::PythonApply,
            py::arg("self"),
            py::arg("args") = py::list(),
            py::arg("kwds") = py::dict(),
            "Performs a function call using the parameters.")
-      .def("apply", &CJSObjectAPI::ApplyPython,
-           py::arg("self"),
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a function call using the parameters.")
-      .def("invoke", &CJSObjectAPI::Invoke,
+      .def("invoke", &CJSObjectAPI::PythonInvoke,
            py::arg("args") = py::list(),
            py::arg("kwds") = py::dict(),
            "Performs a binding method call using the parameters.")
@@ -393,39 +381,27 @@ py::object CJSObjectAPI::PythonCreateWithArgs(const CJSObjectPtr& proto,
   return Wrap(v8_isolate, v8_result);
 }
 
-py::object CJSObjectAPI::ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObjectAPI::PythonApply(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
   if (HasRole(Roles::JSFunction)) {
-    py_result = m_function_impl.ApplyJavascript(self, py_args, py_kwds);
+    py_result = m_function_impl.Apply(py_self, py_args, py_kwds);
   } else {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::ApplyJavascript {} => {}", THIS, py_result);
+  TRACE("CJSObjectAPI::PythonApply {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObjectAPI::ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObjectAPI::PythonInvoke(const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
   if (HasRole(Roles::JSFunction)) {
-    py_result = m_function_impl.ApplyPython(py_self, py_args, py_kwds);
+    py_result = m_function_impl.Call(py_args, py_kwds);
   } else {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::ApplyPython {} => {}", THIS, py_result);
-  return py_result;
-}
-
-py::object CJSObjectAPI::Invoke(const py::list& py_args, const py::dict& py_kwds) {
-  py::object py_result;
-  if (HasRole(Roles::JSFunction)) {
-    py_result = m_function_impl.Invoke(py_args, py_kwds);
-  } else {
-    throw CJSException("expect JSObject with Function role", PyExc_TypeError);
-  }
-
-  TRACE("CJSObjectAPI::Invoke {} => {}", THIS, py_result);
+  TRACE("CJSObjectAPI::PythonInvoke {} => {}", THIS, py_result);
   return py_result;
 }
 

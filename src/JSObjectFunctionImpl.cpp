@@ -53,16 +53,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
-py::object CJSObjectFunctionImpl::ApplyJavascript(const CJSObjectPtr& self,
-                                                  const py::list& py_args,
-                                                  const py::dict& py_kwds) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::withScope(v8_isolate);
-  return Call(py_args, py_kwds, self->Object());
-}
-
-py::object CJSObjectFunctionImpl::ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObjectFunctionImpl::Apply(py::object py_self, const py::list& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -70,13 +61,6 @@ py::object CJSObjectFunctionImpl::ApplyPython(py::object py_self, const py::list
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_this = CPythonObject::Wrap(std::move(py_self))->ToObject(v8_context).ToLocalChecked();
   return Call(py_args, py_kwds, v8_this);
-}
-
-py::object CJSObjectFunctionImpl::Invoke(const py::list& py_args, const py::dict& py_kwds) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::withScope(v8_isolate);
-  return Call(py_args, py_kwds);
 }
 
 std::string CJSObjectFunctionImpl::GetName() const {

@@ -48,10 +48,8 @@ class CJSObjectAPI : public CJSObjectBase {
   // TODO: naming
   static py::object PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
   py::object PythonCallWithArgs(const py::args& py_args, const py::kwargs& py_kwargs);
-
-  py::object ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds);
-  py::object ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
-  py::object Invoke(const py::list& py_args, const py::dict& py_kwds);
+  py::object PythonApply(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
+  py::object PythonInvoke(const py::list& py_args, const py::dict& py_kwds);
 
   [[nodiscard]] std::string GetName() const;
   void SetName(const std::string& name);
