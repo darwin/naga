@@ -1,4 +1,5 @@
 #include "JSObjectExpose.h"
+#include "JSObjectAPI.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -8,14 +9,14 @@ void exposeJSObject(py::module py_module) {
   TRACE("exposeJSObject py_module={}", py_module);
   // clang-format off
   py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
-      // --- start of protected section ---
-      //   please be aware that this wrapper object implements generic lookup of properties on
-      //   underlying JS objects, so binding new names here on wrapper instance increases risks
-      //   of clashing with some existing JS names
-      //   note that __name__ are relatively safe because it is unlikely that javascript names would clash
+      // Please be aware that this wrapper object implements generic lookup of properties on
+      // underlying JS objects, so binding new names here on wrapper instance increases risks
+      // of clashing with some existing JS names.
+      // Note that internal Python slots in the form of "__name__" are relatively safe names because it is
+      // very unlikely that Javascript names would clash.
       //
-      //   solution: prefer def_static with passing instance as the first "self" argument
-      //             see below for examples
+      // solution: If you want to expose additional functionality, do it as a plain helper function in toolkit module.
+      //           The helper can take instance as the first argument and operate on it.
       .def("__getattr__", &CJSObjectAPI::PythonGetAttr)
       .def("__setattr__", &CJSObjectAPI::PythonSetAttr)
       .def("__delattr__", &CJSObjectAPI::PythonDelAttr)
@@ -47,7 +48,6 @@ void exposeJSObject(py::module py_module) {
       //      .def("keys", &CJSObjectAPI::PythonGetAttrList,
       //           "Get a list of the object attributes.")
 
-      // --- end of protected section ---
       ;
   // clang-format on
 }
