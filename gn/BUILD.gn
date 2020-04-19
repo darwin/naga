@@ -14,6 +14,9 @@ declare_args() {
   python_abiflags = getenv("STPYV8_PYTHON_ABIFLAGS")
 
   stpyv8_enable_precompiled_headers = true
+
+  # this is enabled when we are generating compile_commands.json
+  stpyv8_gen_compile_commands = false
 }
 
 declare_args() {
@@ -168,7 +171,6 @@ source_set("stpyv8_src") {
 
   # add some of our own settings...
   configs += [
-    ":stpyv8_precompiled_headers",
     ":stpyv8_python_compiler_flags",
     ":stpyv8_compiler_flags",
     ":stpyv8_spdlog_compiler_flags",
@@ -177,6 +179,11 @@ source_set("stpyv8_src") {
     ":stpyv8_features",
     ":stpyv8_logging",
   ]
+  if (!stpyv8_gen_compile_commands) {
+    # precompiled headers are set via command-line options and this didn't play well with CLion
+    # which expects all includes to be visible in the code
+    configs += [ ":stpyv8_precompiled_headers" ]
+  }
 
   # this is very important
   # this will ensure our build uses the same headers as V8 build
