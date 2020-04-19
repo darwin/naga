@@ -21,15 +21,15 @@ void exposeJSObject(py::module py_module) {
       .def("__setattr__", &CJSObjectAPI::PythonSetAttr)
       .def("__delattr__", &CJSObjectAPI::PythonDelAttr)
 
-      .def("__hash__", &CJSObjectAPI::PythonIdentityHash)
-      .def("__dir__", &CJSObjectAPI::PythonGetAttrList)
+      .def("__hash__", &CJSObjectAPI::PythonHash)
+      .def("__dir__", &CJSObjectAPI::PythonDir)
 
       .def("__getitem__", &CJSObjectAPI::PythonGetItem)
       .def("__setitem__", &CJSObjectAPI::PythonSetItem)
       .def("__delitem__", &CJSObjectAPI::PythonDelItem)
       .def("__contains__", &CJSObjectAPI::PythonContains)
 
-      .def("__len__", &CJSObjectAPI::PythonLength)
+      .def("__len__", &CJSObjectAPI::PythonLen)
 
       .def("__int__", &CJSObjectAPI::PythonInt)
       .def("__float__", &CJSObjectAPI::PythonFloat)
@@ -37,15 +37,15 @@ void exposeJSObject(py::module py_module) {
       .def("__repr__", &CJSObjectAPI::PythonRepr)
       .def("__bool__", &CJSObjectAPI::PythonBool)
 
-      .def("__eq__", &CJSObjectAPI::PythonEquals)
-      .def("__ne__", &CJSObjectAPI::PythonNotEquals)
-      .def("__call__", &CJSObjectAPI::PythonCallWithArgs)
+      .def("__eq__", &CJSObjectAPI::PythonEQ)
+      .def("__ne__", &CJSObjectAPI::PythonNE)
+      .def("__call__", &CJSObjectAPI::PythonCall)
       // TODO: .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
 
       // Emulating dict object
       // TODO: I'm not sure about this, revisit
       // this should go away when we implement __iter__
-      //      .def("keys", &CJSObjectAPI::PythonGetAttrList,
+      //      .def("keys", &CJSObjectAPI::PythonDir,
       //           "Get a list of the object attributes.")
 
       ;

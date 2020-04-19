@@ -22,29 +22,29 @@ class CJSObjectAPI : public CJSObjectBase {
   py::object PythonGetAttr(const py::object& py_key) const;
   void PythonSetAttr(const py::object& py_key, const py::object& py_obj) const;
   void PythonDelAttr(const py::object& py_key) const;
-  [[nodiscard]] py::list PythonGetAttrList() const;
+  [[nodiscard]] py::list PythonDir() const;
 
   py::object PythonGetItem(const py::object& py_key) const;
   py::object PythonSetItem(const py::object& py_key, const py::object& py_value) const;
   py::object PythonDelItem(const py::object& py_key) const;
   bool PythonContains(const py::object& py_key) const;
 
-  [[nodiscard]] int PythonIdentityHash() const;
+  [[nodiscard]] int PythonHash() const;
   [[nodiscard]] CJSObjectPtr PythonClone() const;
 
-  [[nodiscard]] size_t PythonLength() const;
+  [[nodiscard]] size_t PythonLen() const;
   [[nodiscard]] py::object PythonInt() const;
   [[nodiscard]] py::object PythonFloat() const;
   [[nodiscard]] py::object PythonBool() const;
   [[nodiscard]] py::object PythonStr() const;
   [[nodiscard]] py::object PythonRepr() const;
 
-  [[nodiscard]] bool PythonEquals(const CJSObjectPtr& other) const;
-  [[nodiscard]] bool PythonNotEquals(const CJSObjectPtr& other) const;
+  [[nodiscard]] bool PythonEQ(const CJSObjectPtr& other) const;
+  [[nodiscard]] bool PythonNE(const CJSObjectPtr& other) const;
 
   static py::object PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 
-  py::object PythonCallWithArgs(const py::args& py_args, const py::kwargs& py_kwargs);
+  py::object PythonCall(const py::args& py_args, const py::kwargs& py_kwargs);
   py::object PythonApply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds);
   py::object PythonInvoke(const py::list& py_args, const py::dict& py_kwds);
 

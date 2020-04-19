@@ -36,8 +36,8 @@ void CJSObjectAPI::PythonDelAttr(const py::object& py_key) const {
   }
 }
 
-py::list CJSObjectAPI::PythonGetAttrList() const {
-  TRACE("CJSObjectAPI::PythonGetAttrList {}", THIS);
+py::list CJSObjectAPI::PythonDir() const {
+  TRACE("CJSObjectAPI::PythonDir {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -65,7 +65,7 @@ py::list CJSObjectAPI::PythonGetAttrList() const {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  TRACE("CJSObjectAPI::PythonGetAttrList {} => {}", THIS, attrs);
+  TRACE("CJSObjectAPI::PythonDir {} => {}", THIS, attrs);
   return attrs;
 }
 
@@ -114,13 +114,13 @@ bool CJSObjectAPI::PythonContains(const py::object& py_key) const {
   return result;
 }
 
-int CJSObjectAPI::PythonIdentityHash() const {
+int CJSObjectAPI::PythonHash() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = Object()->GetIdentityHash();
-  TRACE("CJSObjectAPI::PythonIdentityHash {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonHash {} => {}", THIS, result);
   return result;
 }
 
@@ -134,7 +134,7 @@ CJSObjectPtr CJSObjectAPI::PythonClone() const {
   return result;
 }
 
-bool CJSObjectAPI::PythonEquals(const CJSObjectPtr& other) const {
+bool CJSObjectAPI::PythonEQ(const CJSObjectPtr& other) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -142,12 +142,12 @@ bool CJSObjectAPI::PythonEquals(const CJSObjectPtr& other) const {
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   auto result = other.get() && Object()->Equals(context, other->Object()).ToChecked();
-  TRACE("CJSObjectAPI::PythonEquals {} other={} => {}", THIS, other, result);
+  TRACE("CJSObjectAPI::PythonEQ {} other={} => {}", THIS, other, result);
   return result;
 }
 
-bool CJSObjectAPI::PythonNotEquals(const CJSObjectPtr& other) const {
-  return !PythonEquals(other);
+bool CJSObjectAPI::PythonNE(const CJSObjectPtr& other) const {
+  return !PythonEQ(other);
 }
 
 py::object CJSObjectAPI::PythonInt() const {
@@ -225,7 +225,7 @@ py::object CJSObjectAPI::PythonRepr() const {
   return py_result;
 }
 
-size_t CJSObjectAPI::PythonLength() const {
+size_t CJSObjectAPI::PythonLen() const {
   size_t result;
   if (HasRole(Roles::JSArray)) {
     result = m_array_impl.ArrayLength();
@@ -235,11 +235,11 @@ size_t CJSObjectAPI::PythonLength() const {
     result = 0;
   }
 
-  TRACE("CJSObjectAPI::PythonLength {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonLen {} => {}", THIS, result);
   return result;
 }
 
-py::object CJSObjectAPI::PythonCallWithArgs(const py::args& py_args, const py::kwargs& py_kwargs) {
+py::object CJSObjectAPI::PythonCall(const py::args& py_args, const py::kwargs& py_kwargs) {
   py::object py_result;
   if (HasRole(Roles::JSFunction)) {
     py_result = m_function_impl.Call(py_args, py_kwargs);
@@ -247,7 +247,7 @@ py::object CJSObjectAPI::PythonCallWithArgs(const py::args& py_args, const py::k
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::PythonCallWithArgs {} => {}", THIS, py_result);
+  TRACE("CJSObjectAPI::PythonCall {} => {}", THIS, py_result);
   return py_result;
 }
 
