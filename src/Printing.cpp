@@ -22,6 +22,11 @@ std::ostream& operator<<(std::ostream& os, const CJSObject& obj) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& obj) {
+  obj.Dump(os);
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
   if (!obj) {
     os << "[N/A]";

@@ -98,7 +98,7 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
   return v8_res_sym->SameValue(v8_sentinel);
 }
 
-size_t CJSObject::CLJSLength() const {
+size_t CJSObjectCLJSImpl::CLJSLength() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -106,7 +106,7 @@ size_t CJSObject::CLJSLength() const {
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "len";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -119,14 +119,14 @@ size_t CJSObject::CLJSLength() const {
   return val.ToChecked();
 }
 
-py::object CJSObject::CLJSStr() const {
+py::object CJSObjectCLJSImpl::CLJSStr() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "str";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -140,14 +140,14 @@ py::object CJSObject::CLJSStr() const {
   return py::cast<py::object>(raw_str);
 }
 
-py::object CJSObject::CLJSRepr() const {
+py::object CJSObjectCLJSImpl::CLJSRepr() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "repr";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -161,7 +161,7 @@ py::object CJSObject::CLJSRepr() const {
   return py::cast<py::object>(raw_str);
 }
 
-py::object CJSObject::CLJSGetItemIndex(const py::object& py_index) const {
+py::object CJSObjectCLJSImpl::CLJSGetItemIndex(const py::object& py_index) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -171,17 +171,17 @@ py::object CJSObject::CLJSGetItemIndex(const py::object& py_index) const {
   auto v8_idx = v8::Uint32::New(v8_isolate, idx);
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_idx};
   auto fn_name = "get_item_index";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
   if (isSentinel(v8_result)) {
     throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, m_base->Object());
 }
 
-py::object CJSObject::CLJSGetItemSlice(const py::object& py_slice) const {
+py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -202,7 +202,7 @@ py::object CJSObject::CLJSGetItemSlice(const py::object& py_slice) const {
 
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_start, v8_stop, v8_step};
   auto fn_name = "get_item_slice";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
@@ -226,14 +226,14 @@ py::object CJSObject::CLJSGetItemSlice(const py::object& py_slice) const {
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
 
-    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, Object());
+    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, m_base->Object());
     py_result.append(py_item);
   }
 
   return std::move(py_result);
 }
 
-py::object CJSObject::CLJSGetItemString(const py::object& py_str) const {
+py::object CJSObjectCLJSImpl::CLJSGetItemString(const py::object& py_str) const {
   assert(PyUnicode_Check(py_str.ptr()));
 
   auto v8_isolate = v8u::getCurrentIsolate();
@@ -243,30 +243,30 @@ py::object CJSObject::CLJSGetItemString(const py::object& py_str) const {
   auto v8_str = v8u::toString(py_str);
 
   // JS object lookup
-  if (Object()->Has(v8_context, v8_str).FromMaybe(false)) {
-    auto v8_val = Object()->Get(v8_context, v8_str).ToLocalChecked();
+  if (m_base->Object()->Has(v8_context, v8_str).FromMaybe(false)) {
+    auto v8_val = m_base->Object()->Get(v8_context, v8_str).ToLocalChecked();
     if (v8_val.IsEmpty()) {
       auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_val);
       auto msg = string_format("Unexpected: got empty result when accessing js property '%s'", *v8_utf);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
-    return CJSObject::Wrap(v8_isolate, v8_val, Object());
+    return CJSObject::Wrap(v8_isolate, v8_val, m_base->Object());
   }
 
   // CLJS lookup
   auto v8_params = std::vector<v8::Local<v8::Value>>{v8_str};
   auto fn_name = "get_item_string";
-  auto v8_result = callBridge(v8_isolate, fn_name, Object(), v8_params);
+  auto v8_result = callBridge(v8_isolate, fn_name, m_base->Object(), v8_params);
 
   validateBridgeResult(v8_result, fn_name);
 
   if (isSentinel(v8_result)) {
     return py::none();
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, Object());
+  return CJSObject::Wrap(v8_isolate, v8_result, m_base->Object());
 }
 
-py::object CJSObject::CLJSGetItem(const py::object& py_key) const {
+py::object CJSObjectCLJSImpl::CLJSGetItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
@@ -281,7 +281,7 @@ py::object CJSObject::CLJSGetItem(const py::object& py_key) const {
   throw CJSException("indices must be integers or slices", PyExc_TypeError);
 }
 
-py::object CJSObject::CLJSGetAttr(const py::object& py_key) const {
+py::object CJSObjectCLJSImpl::CLJSGetAttr(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
