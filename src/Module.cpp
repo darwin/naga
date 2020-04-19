@@ -8,7 +8,6 @@
 #include "JSStackTrace.h"
 #include "JSException.h"
 #include "JSObject.h"
-#include "JSObjectCLJS.h"
 #include "Locker.h"
 #include "Unlocker.h"
 #include "Aux.h"
@@ -37,7 +36,4 @@ PYBIND11_MODULE(_STPyV8, py_module) {
   CEngine::Expose(py_module);
   CLocker::Expose(py_module);
   CUnlocker::Expose(py_module);
-//#ifdef STPYV8_FEATURE_CLJS
-//  CJSObjectCLJS::Expose(py_module);
-//#endif
 }

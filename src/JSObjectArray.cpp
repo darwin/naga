@@ -1,6 +1,5 @@
 #include "JSObject.h"
 #include "PythonObject.h"
-#include "JSObjectCLJS.h"
 #include "JSException.h"
 
 size_t CJSObject::ArrayLength() const {

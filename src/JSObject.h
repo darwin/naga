@@ -49,10 +49,12 @@ class CJSObject {
   bool Contains(const py::object& py_key) const;
   [[nodiscard]] bool ObjectContains(const py::object& py_key) const;
 
+  [[nodiscard]] size_t PythonLength() const;
   [[nodiscard]] py::object ToPythonInt() const;
   [[nodiscard]] py::object ToPythonFloat() const;
   [[nodiscard]] py::object ToPythonBool() const;
   [[nodiscard]] py::object ToPythonStr() const;
+  [[nodiscard]] py::object ToPythonRepr() const;
 
   [[nodiscard]] bool Equals(const CJSObjectPtr& other) const;
   [[nodiscard]] bool Unequals(const CJSObjectPtr& other) const { return !Equals(other); }
@@ -91,23 +93,21 @@ class CJSObject {
   py::object ArrayDelItem(py::object py_key) const;
   bool ArrayContains(const py::object& py_key) const;
 
- protected:
+  // CLJSObject
+  size_t CLJSLength() const;
+  py::object CLJSRepr() const;
+  py::object CLJSStr() const;
+  py::object CLJSGetItem(const py::object& py_key) const;
+  py::object CLJSGetAttr(const py::object& py_key) const;
+
+ private:
+  py::object CLJSGetItemSlice(const py::object& py_slice) const;
+  py::object CLJSGetItemIndex(const py::object& py_index) const;
+  py::object CLJSGetItemString(const py::object& py_str) const;
+
   void CheckAttr(v8::Local<v8::String> v8_name) const;
 };
 
 static_assert(!std::is_polymorphic<CJSObject>::value, "CJSObject should not be polymorphic.");
 
-constexpr CJSObject::Roles operator|(CJSObject::Roles X, CJSObject::Roles Y) {
-  return static_cast<CJSObject::Roles>(static_cast<CJSObject::RoleFlagsType>(X) |
-                                       static_cast<CJSObject::RoleFlagsType>(Y));
-}
-
-constexpr CJSObject::Roles operator&(CJSObject::Roles X, CJSObject::Roles Y) {
-  return static_cast<CJSObject::Roles>(static_cast<CJSObject::RoleFlagsType>(X) &
-                                       static_cast<CJSObject::RoleFlagsType>(Y));
-}
-
-inline CJSObject::Roles& operator|=(CJSObject::Roles& X, CJSObject::Roles Y) {
-  X = X | Y;
-  return X;
-}
+#include "JSObjectAux.h"

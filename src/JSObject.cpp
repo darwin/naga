@@ -1,5 +1,4 @@
 #include "JSObject.h"
-#include "JSObjectCLJS.h"
 #include "JSException.h"
 #include "JSUndefined.h"
 #include "JSNull.h"
@@ -11,6 +10,33 @@
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+
+bool isCLJSType(v8::Local<v8::Object> v8_obj) {
+  if (v8_obj.IsEmpty()) {
+    return false;
+  }
+
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+
+  auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();
+  auto v8_ctor_val = v8_obj->Get(v8_context, v8_ctor_key).ToLocalChecked();
+
+  if (v8_ctor_val.IsEmpty() || !v8_ctor_val->IsObject()) {
+    return false;
+  }
+
+  auto v8_ctor_obj = v8::Local<v8::Object>::Cast(v8_ctor_val);
+  auto v8_cljs_key = v8::String::NewFromUtf8(v8_isolate, "cljs$lang$type").ToLocalChecked();
+  auto v8_cljs_val = v8_ctor_obj->Get(v8_context, v8_cljs_key).ToLocalChecked();
+
+  return !(v8_cljs_val.IsEmpty() || !v8_cljs_val->IsBoolean());
+
+  // note:
+  // we should cast cljs_val to object and check cljs_obj->BooleanValue()
+  // but we assume existence of property means true value
+}
 
 void CJSObject::Expose(const py::module& py_module) {
   TRACE("CJSObject::Expose py_module={}", py_module);
@@ -34,10 +60,12 @@ void CJSObject::Expose(const py::module& py_module) {
       .def("__delitem__", &CJSObject::DelItem)
 
       .def("__contains__", &CJSObject::Contains)
+      .def("__len__", &CJSObject::PythonLength)
 
       .def("__int__", &CJSObject::ToPythonInt)
       .def("__float__", &CJSObject::ToPythonFloat)
       .def("__str__", &CJSObject::ToPythonStr)
+      .def("__repr__", &CJSObject::ToPythonRepr)
 
       .def("__bool__", &CJSObject::ToPythonBool)
       .def("__eq__", &CJSObject::Equals)
@@ -96,8 +124,6 @@ void CJSObject::Expose(const py::module& py_module) {
       .def_property_readonly("coloff", &CJSObject::GetColumnOffset,
                              "The column offset of function in the script")
 
-          // JSArray
-      .def("__len__", &CJSObject::ArrayLength)
     // TODO:      .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
       ;
   // clang-format on
@@ -112,6 +138,11 @@ CJSObject::CJSObject(v8::Local<v8::Object> v8_obj)
   if (v8_obj->IsArray()) {
     m_roles |= Roles::JSArray;
   }
+#ifdef STPYV8_FEATURE_CLJS
+  if (isCLJSType(v8_obj)) {
+    m_roles |= Roles::CLJSObject;
+  }
+#endif
   TRACE("CJSObject::CJSObject {} v8_obj={} roles={}", THIS, v8_obj, roles_printer{m_roles});
 }
 
@@ -125,20 +156,28 @@ bool CJSObject::HasRole(Roles roles) const {
 }
 
 bool CJSObject::Contains(const py::object& py_key) const {
+  bool result;
   if (HasRole(Roles::JSArray)) {
-    return ArrayContains(py_key);
+    result = ArrayContains(py_key);
   } else {
-    return ObjectContains(py_key);
+    result = ObjectContains(py_key);
   }
+  TRACE("CJSObject::Contains {} => {}", THIS, result);
+  return result;
 }
 
 py::object CJSObject::GetItem(py::object py_key) const {
+  py::object py_result;
   if (HasRole(Roles::JSArray)) {
-    return ArrayGetItem(py_key);
+    py_result = ArrayGetItem(py_key);
+  } else if (HasRole(Roles::CLJSObject)) {
+    py_result = CLJSGetItem(py_key);
   } else {
     // TODO: do robust arg checking here
-    return ObjectGetAttr(py::cast<py::str>(py_key));
+    py_result = ObjectGetAttr(py::cast<py::str>(py_key));
   }
+  TRACE("CJSObject::GetItem {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObject::SetItem(py::object py_key, py::object py_value) const {
@@ -180,11 +219,16 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
 }
 
 py::object CJSObject::GetAttr(py::object py_key) const {
+  py::object py_result;
   if (HasRole(Roles::JSArray)) {
     throw CJSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
+  } else if (HasRole(Roles::JSArray)) {
+    py_result = CLJSGetAttr(py_key);
   } else {
-    return ObjectGetAttr(py_key);
+    py_result = ObjectGetAttr(py_key);
   }
+  TRACE("CJSObject::GetAttr {} => {}", THIS, py_result);
+  return py_result;
 }
 
 void CJSObject::SetAttr(py::object py_key, py::object py_obj) const {
@@ -390,11 +434,44 @@ py::object CJSObject::ToPythonBool() const {
 }
 
 py::object CJSObject::ToPythonStr() const {
-  std::stringstream ss;
-  ss << *this;
-  auto py_result = py::cast(ss.str());
+  py::object py_result;
+  if (HasRole(Roles::CLJSObject)) {
+    py_result = CLJSStr();
+  } else {
+    std::stringstream ss;
+    ss << *this;
+    py_result = py::cast(ss.str());
+  }
+
   TRACE("CJSObject::ToPythonStr {} => {}", THIS, py_result);
   return py_result;
+}
+
+py::object CJSObject::ToPythonRepr() const {
+  py::object py_result;
+  if (HasRole(Roles::CLJSObject)) {
+    py_result = CLJSRepr();
+  } else {
+    auto s = fmt::format("JSObject{}", roles_printer{m_roles});
+    py_result = py::cast(s);
+  }
+
+  TRACE("CJSObject::ToPythonRepr {} => {}", THIS, py_result);
+  return py_result;
+}
+
+size_t CJSObject::PythonLength() const {
+  size_t result;
+  if (HasRole(Roles::JSArray)) {
+    result = ArrayLength();
+  } else if (HasRole(Roles::CLJSObject)) {
+    result = CLJSLength();
+  } else {
+    result = 0;
+  }
+
+  TRACE("CJSObject::PythonLength {} => {}", THIS, result);
+  return result;
 }
 
 py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
@@ -497,11 +574,11 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
     // TODO: we should not treat empty values so softly, we should throw/crash
     py_result = py::none();
   }
-//#ifdef STPYV8_FEATURE_CLJS
-//  else if (isCLJSType(v8_obj)) {
-//    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
-//  }
-//#endif
+  //#ifdef STPYV8_FEATURE_CLJS
+  //  else if (isCLJSType(v8_obj)) {
+  //    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
+  //  }
+  //#endif
   else {
     py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
