@@ -70,22 +70,22 @@ void CJSObjectAPI::Expose(const py::module& py_module) {
            "Performs a binding method call using the parameters.")
 
 // TODO: revisit this, there is a clash with normal attribute lookups
-//      .def("setName", &CJSObjectAPI::SetName)
+//      .def("setName", &CJSObjectAPI::PythonSetName)
 //
-//      .def_property("name", &CJSObjectAPI::GetName, &CJSObjectAPI::SetName,
+//      .def_property("name", &CJSObjectAPI::PythonGetName, &CJSObjectAPI::PythonSetName,
 //                    "The name of function")
 
-      .def_property_readonly("linenum", &CJSObjectAPI::GetLineNumber,
+      .def_property_readonly("linenum", &CJSObjectAPI::PythonLineNumber,
                              "The line number of function in the script")
-      .def_property_readonly("colnum", &CJSObjectAPI::GetColumnNumber,
+      .def_property_readonly("colnum", &CJSObjectAPI::PythonColumnNumber,
                              "The column number of function in the script")
-      .def_property_readonly("resname", &CJSObjectAPI::GetResourceName,
+      .def_property_readonly("resname", &CJSObjectAPI::PythonResourceName,
                              "The resource name of script")
-      .def_property_readonly("inferredname", &CJSObjectAPI::GetInferredName,
+      .def_property_readonly("inferredname", &CJSObjectAPI::PythonInferredName,
                              "Name inferred from variable or property assignment of this function")
-      .def_property_readonly("lineoff", &CJSObjectAPI::GetLineOffset,
+      .def_property_readonly("lineoff", &CJSObjectAPI::PythonLineOffset,
                              "The line offset of function in the script")
-      .def_property_readonly("coloff", &CJSObjectAPI::GetColumnOffset,
+      .def_property_readonly("coloff", &CJSObjectAPI::PythonColumnOffset,
                              "The column offset of function in the script")
 
     // TODO:      .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
@@ -405,7 +405,7 @@ py::object CJSObjectAPI::PythonInvoke(const py::list& py_args, const py::dict& p
   return py_result;
 }
 
-std::string CJSObjectAPI::GetName() const {
+std::string CJSObjectAPI::PythonGetName() const {
   std::string result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetName();
@@ -413,12 +413,12 @@ std::string CJSObjectAPI::GetName() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetName {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonGetName {} => {}", THIS, result);
   return result;
 }
 
-void CJSObjectAPI::SetName(const std::string& name) {
-  TRACE("CJSObjectAPI::SetName {} name={}", THIS, name);
+void CJSObjectAPI::PythonSetName(const std::string& name) {
+  TRACE("CJSObjectAPI::PythonSetName {} name={}", THIS, name);
   if (HasRole(Roles::JSFunction)) {
     m_function_impl.SetName(name);
   } else {
@@ -426,7 +426,7 @@ void CJSObjectAPI::SetName(const std::string& name) {
   }
 }
 
-int CJSObjectAPI::GetLineNumber() const {
+int CJSObjectAPI::PythonLineNumber() const {
   int result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetLineNumber();
@@ -434,11 +434,11 @@ int CJSObjectAPI::GetLineNumber() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetLineNumber {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonLineNumber {} => {}", THIS, result);
   return result;
 }
 
-int CJSObjectAPI::GetColumnNumber() const {
+int CJSObjectAPI::PythonColumnNumber() const {
   int result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetColumnNumber();
@@ -446,11 +446,11 @@ int CJSObjectAPI::GetColumnNumber() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetColumnNumber {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonColumnNumber {} => {}", THIS, result);
   return result;
 }
 
-std::string CJSObjectAPI::GetResourceName() const {
+std::string CJSObjectAPI::PythonResourceName() const {
   std::string result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetResourceName();
@@ -458,11 +458,11 @@ std::string CJSObjectAPI::GetResourceName() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetResourceName {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonResourceName {} => {}", THIS, result);
   return result;
 }
 
-std::string CJSObjectAPI::GetInferredName() const {
+std::string CJSObjectAPI::PythonInferredName() const {
   std::string result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetInferredName();
@@ -470,11 +470,11 @@ std::string CJSObjectAPI::GetInferredName() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetInferredName {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonInferredName {} => {}", THIS, result);
   return result;
 }
 
-int CJSObjectAPI::GetLineOffset() const {
+int CJSObjectAPI::PythonLineOffset() const {
   int result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetLineOffset();
@@ -482,11 +482,11 @@ int CJSObjectAPI::GetLineOffset() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetLineOffset {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonLineOffset {} => {}", THIS, result);
   return result;
 }
 
-int CJSObjectAPI::GetColumnOffset() const {
+int CJSObjectAPI::PythonColumnOffset() const {
   int result;
   if (HasRole(Roles::JSFunction)) {
     result = m_function_impl.GetColumnOffset();
@@ -494,6 +494,6 @@ int CJSObjectAPI::GetColumnOffset() const {
     throw CJSException("expect JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("CJSObjectAPI::GetColumnOffset {} => {}", THIS, result);
+  TRACE("CJSObjectAPI::PythonColumnOffset {} => {}", THIS, result);
   return result;
 }

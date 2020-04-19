@@ -20,7 +20,7 @@ class CJSObjectAPI : public CJSObjectBase {
 
   static void Expose(const py::module& py_module);
 
-  // Exposed Python API
+  // exposed Python API
   py::object PythonGetAttr(py::object py_key) const;
   void PythonSetAttr(py::object py_key, py::object py_obj) const;
   void PythonDelAttr(py::object py_key) const;
@@ -45,19 +45,19 @@ class CJSObjectAPI : public CJSObjectBase {
   [[nodiscard]] bool PythonEquals(const CJSObjectPtr& other) const;
   [[nodiscard]] bool PythonNotEquals(const CJSObjectPtr& other) const;
 
-  // TODO: naming
   static py::object PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+
   py::object PythonCallWithArgs(const py::args& py_args, const py::kwargs& py_kwargs);
   py::object PythonApply(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
   py::object PythonInvoke(const py::list& py_args, const py::dict& py_kwds);
 
-  [[nodiscard]] std::string GetName() const;
-  void SetName(const std::string& name);
+  [[nodiscard]] std::string PythonGetName() const;
+  void PythonSetName(const std::string& name);
 
-  [[nodiscard]] int GetLineNumber() const;
-  [[nodiscard]] int GetColumnNumber() const;
-  [[nodiscard]] std::string GetResourceName() const;
-  [[nodiscard]] std::string GetInferredName() const;
-  [[nodiscard]] int GetLineOffset() const;
-  [[nodiscard]] int GetColumnOffset() const;
+  [[nodiscard]] int PythonLineNumber() const;
+  [[nodiscard]] int PythonColumnNumber() const;
+  [[nodiscard]] int PythonLineOffset() const;
+  [[nodiscard]] int PythonColumnOffset() const;
+  [[nodiscard]] std::string PythonResourceName() const;
+  [[nodiscard]] std::string PythonInferredName() const;
 };
