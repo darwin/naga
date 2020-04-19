@@ -12,6 +12,8 @@ void exposeJSObject(py::module py_module) {
       //   please be aware that this wrapper object implements generic lookup of properties on
       //   underlying JS objects, so binding new names here on wrapper instance increases risks
       //   of clashing with some existing JS names
+      //   note that __name__ are relatively safe because it is unlikely that javascript names would clash
+      //
       //   solution: prefer def_static with passing instance as the first "self" argument
       //             see below for examples
       .def("__getattr__", &CJSObjectAPI::PythonGetAttr)
@@ -58,9 +60,6 @@ void exposeJSObject(py::module py_module) {
       .def("keys", &CJSObjectAPI::PythonGetAttrList,
            "Get a list of the object attributes.")
 
-      .def("clone", &CJSObjectAPI::PythonClone,
-           "Clone the object.")
-
       .def("apply", &CJSObjectAPI::PythonApply,
            py::arg("self"),
            py::arg("args") = py::list(),
@@ -77,7 +76,11 @@ void exposeJSObject(py::module py_module) {
 //      .def_property("name", &CJSObjectAPI::PythonGetName, &CJSObjectAPI::PythonSetName,
 //                    "The name of function")
 
-      // ---
+          // ---
+
+      .def_static("clone", [](const CJSObjectPtr &obj) {
+        return obj->PythonClone();
+      }, "Clone the object.")
 
       .def_static("create", &CJSObjectAPI::PythonCreateWithArgs,
                   py::arg("constructor"),

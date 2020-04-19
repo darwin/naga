@@ -28,12 +28,10 @@ class TestWrapper(unittest.TestCase):
 
             self.assertTrue(hash(o) > 0)
 
-            o1 = o.clone()
+            o1 = STPyV8.JSObject.clone(o)
 
             self.assertEqual(hash(o1), hash(o))
             self.assertTrue(o != o1)
-
-        self.assertRaises(UnboundLocalError, o.clone)
 
     def testAutoConverter(self):
         with STPyV8.JSContext() as ctxt:
