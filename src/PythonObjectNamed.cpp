@@ -56,7 +56,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     auto v8_utf_name = v8u::toUTF(v8_isolate, v8_name.As<v8::String>());
@@ -121,7 +121,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value v8_utf_name(v8_isolate, v8_name);
@@ -183,7 +183,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
@@ -218,7 +218,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
@@ -264,7 +264,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     py::list keys;

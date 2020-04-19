@@ -16,7 +16,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
 
@@ -69,7 +69,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
 
@@ -108,7 +108,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Integer>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
 
@@ -154,7 +154,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Boolean>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
 
@@ -186,7 +186,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Array>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
     auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;

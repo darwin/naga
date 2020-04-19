@@ -63,7 +63,7 @@ py::object CJSObject::Call(const py::list& py_args,
     it++;
   }
 
-  auto v8_result = withPythonAllowThreadsGuard<v8::MaybeLocal<v8::Value>>([&]() {
+  auto v8_result = withPythonAllowThreadsGuard([&]() {
     if (!opt_v8_this) {
       return v8_fn->Call(v8_context, v8_context->Global(), v8_params.size(), v8_params.data());
     } else {

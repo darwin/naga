@@ -32,7 +32,7 @@ void CPythonObject::CallPythonCallable(py::object py_fn, const v8::FunctionCallb
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard<v8::Local<v8::Value>>(v8_isolate, [&]() {
+  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     py::object py_result;
 

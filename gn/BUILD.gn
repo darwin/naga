@@ -55,8 +55,6 @@ stpyv8_source_files = [
   "Module.cpp",
   "Platform.cpp",
   "Printing.cpp",
-  "PythonAllowThreadsGuard.cpp",
-  "PythonExceptionGuard.cpp",
   "PythonDateTime.cpp",
   "PythonObject.cpp",
   "PythonObjectCaller.cpp",
