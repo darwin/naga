@@ -83,7 +83,7 @@ class TestContext(unittest.TestCase):
             env2.securityToken = "foo"
 
             with env2:
-                result = spy.apply(env2.locals)
+                result = STPyV8.JSObject.apply(spy, env2.locals)
                 self.assertTrue(isinstance(result, STPyV8.JSFunction))
 
             env2.securityToken = "bar"
@@ -91,7 +91,7 @@ class TestContext(unittest.TestCase):
             # FIXME
             # Call cross_domain_call, it should throw an exception
             # with env2:
-            #    self.assertRaises(STPyV8.JSError, spy2.apply, env2.locals)
+            #    self.assertRaises(STPyV8.JSError, STPyV8.JSObject.apply(spy2), env2.locals)
 
 
 if __name__ == '__main__':

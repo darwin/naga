@@ -4,6 +4,26 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
+// CallInstance is a helper class which redirects static calls to instance calls (expects first arg to be instance)
+// in python: JSObject.something(instance, arg1, arg2, ...)
+// calls (via pybind) our wrapper's operator(), and we in turn call
+// instance->Something(arg1, arg2, ...)
+// credit: https://stackoverflow.com/a/46533854/84283
+template <auto CJSObjectAPI::*F>
+struct CallInstance {};
+
+// this is a specialization for const member functions
+template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...) const->RET>
+struct CallInstance<F> {
+  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
+};
+
+// this is a specialization for non-const member functions
+template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...)->RET>
+struct CallInstance<F> {
+  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
+};
+
 void exposeJSObject(py::module py_module) {
   TRACE("exposeJSObject py_module={}", py_module);
   // clang-format off
@@ -61,12 +81,14 @@ void exposeJSObject(py::module py_module) {
 //      .def("keys", &CJSObjectAPI::PythonGetAttrList,
 //           "Get a list of the object attributes.")
 
-      .def("apply", &CJSObjectAPI::PythonApply,
+      .def_static("apply", CallInstance<&CJSObjectAPI::PythonApply>{},
+           py::arg("this"),
            py::arg("self"),
            py::arg("args") = py::list(),
            py::arg("kwds") = py::dict(),
            "Performs a function call using the parameters.")
-      .def("invoke", &CJSObjectAPI::PythonInvoke,
+      .def_static("invoke", CallInstance<&CJSObjectAPI::PythonInvoke>{},
+           py::arg("this"),
            py::arg("args") = py::list(),
            py::arg("kwds") = py::dict(),
            "Performs a binding method call using the parameters.")
@@ -79,9 +101,9 @@ void exposeJSObject(py::module py_module) {
 
           // ---
 
-      .def_static("clone", [](const CJSObjectPtr &obj) {
-        return obj->PythonClone();
-      }, "Clone the object.")
+      .def_static("clone", CallInstance<&CJSObjectAPI::PythonClone>{},
+           py::arg("this"),
+           "Clone the object.")
 
       .def_static("create", &CJSObjectAPI::PythonCreateWithArgs,
                   py::arg("constructor"),

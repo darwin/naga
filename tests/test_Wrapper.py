@@ -213,7 +213,7 @@ class TestWrapper(unittest.TestCase):
 
             self.assertTrue(isinstance(hello, STPyV8.JSFunction))
             self.assertEqual("Hello world", hello('world'))
-            self.assertEqual("Hello world", hello.invoke(['world']))
+            self.assertEqual("Hello world", STPyV8.JSObject.invoke(hello, ['world']))
 
             obj = ctxt.eval("({ 'name': 'world', 'hello': function (name) { return 'Hello ' + name + ' from ' + this.name; }})")
             hello = obj.hello
@@ -221,8 +221,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual("Hello world from world", hello('world'))
 
             tester = ctxt.eval("({ 'name': 'tester' })")
-            self.assertEqual("Hello world from tester", hello.apply(tester, ['world']))
-            self.assertEqual("Hello world from json", hello.apply({ 'name': 'json' }, ['world']))
+            self.assertEqual("Hello world from tester", STPyV8.JSObject.apply(hello, tester, ['world']))
+            self.assertEqual("Hello world from json", STPyV8.JSObject.apply(hello, { 'name': 'json' }, ['world']))
 
     def testConstructor(self):
         with STPyV8.JSContext() as ctx:
