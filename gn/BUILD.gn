@@ -52,6 +52,7 @@ stpyv8_source_files = [
   "JSObjectArrayImpl.cpp",
   "JSObjectFunctionImpl.cpp",
   "JSObjectCLJSImpl.cpp",
+  "JSObjectExpose.cpp",
   "JSStackFrame.cpp",
   "JSStackTrace.cpp",
   "JSNull.cpp",

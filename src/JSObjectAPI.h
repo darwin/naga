@@ -18,8 +18,6 @@ class CJSObjectAPI : public CJSObjectBase {
  public:
   explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj) : CJSObjectBase(v8_obj) {}
 
-  static void Expose(const py::module& py_module);
-
   // exposed Python API
   py::object PythonGetAttr(py::object py_key) const;
   void PythonSetAttr(py::object py_key, py::object py_obj) const;
