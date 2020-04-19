@@ -112,7 +112,7 @@ PyTypeObject _PyJSUndefined_Type = {
 
 PyObject _Py_JSUndefinedStruct = {_PyObject_EXTRA_INIT 1, &_PyJSUndefined_Type};
 
-void exposeJSUndefined(py::module* py_module) {
+void exposeJSUndefined(py::module py_module) {
   // Javascript's undefined maps to our JSUndefined
-  py_module->add_object("JSUndefined", Py_JSUndefined);
+  py_module.add_object("JSUndefined", Py_JSUndefined);
 }

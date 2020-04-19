@@ -9,7 +9,7 @@ class CScript {
   v8::Persistent<v8::Script> m_v8_script;
 
  public:
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 
   CScript(v8::IsolateRef v8_isolate,
           const CEngine& engine,

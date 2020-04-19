@@ -10,7 +10,7 @@
 
 const int kSelfDataSlotIndex = 0;
 
-void CIsolate::Expose(const py::module& py_module) {
+void CIsolate::Expose(py::module py_module) {
   TRACE("CIsolate::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")

@@ -22,9 +22,9 @@ PYBIND11_MODULE(_STPyV8, py_module) {
   SPDLOG_INFO("=====================================================================================================");
   SPDLOG_INFO("Initializing _STPyV8 module...");
 
-  exposeAux(&py_module);
-  exposeJSUndefined(&py_module);
-  exposeJSNull(&py_module);
+  exposeAux(py_module);
+  exposeJSUndefined(py_module);
+  exposeJSNull(py_module);
 
   exposeJSObject(py_module);
 

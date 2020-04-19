@@ -43,7 +43,7 @@ class CJSException : public std::runtime_error {
   void PrintCallStack(py::object py_file);
   static void ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

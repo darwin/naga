@@ -11,7 +11,7 @@
 
 const int kSelfEmbedderDataIndex = 0;
 
-void CContext::Expose(const py::module& py_module) {
+void CContext::Expose(py::module py_module) {
   TRACE("CContext::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")

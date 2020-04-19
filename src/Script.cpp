@@ -6,7 +6,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
 
-void CScript::Expose(const py::module& py_module) {
+void CScript::Expose(py::module py_module) {
   TRACE("CScript::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")

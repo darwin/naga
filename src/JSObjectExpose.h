@@ -7,4 +7,4 @@
 #include "JSObjectArrayImpl.h"
 #include "JSObjectCLJSImpl.h"
 
-void exposeJSObject(const py::module& py_module);
+void exposeJSObject(py::module py_module);

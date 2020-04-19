@@ -40,5 +40,5 @@ class CJSStackTrace {
 
   [[nodiscard]] py::object ToPythonStr() const;
 
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 };

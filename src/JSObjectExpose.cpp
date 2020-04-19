@@ -4,7 +4,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
-void exposeJSObject(const py::module& py_module) {
+void exposeJSObject(py::module py_module) {
   TRACE("exposeJSObject py_module={}", py_module);
   // clang-format off
   py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")

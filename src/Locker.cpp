@@ -6,7 +6,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kLockingLogger), __VA_ARGS__)
 
-void CLocker::Expose(const py::module& py_module) {
+void CLocker::Expose(py::module py_module) {
   TRACE("CLocker::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CLocker>(py_module, "JSLocker")

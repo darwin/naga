@@ -15,5 +15,5 @@ class CUnlocker {
   void Enter();
   void Leave();
 
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 };

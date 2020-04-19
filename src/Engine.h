@@ -25,7 +25,7 @@ class CEngine {
 
   static bool IsDead();
 
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 
   void Dump(std::ostream& os) const;
 };

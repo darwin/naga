@@ -28,5 +28,5 @@ class CIsolate : public std::enable_shared_from_this<CIsolate> {
 
   bool IsLocked();
 
-  static void Expose(const py::module& py_module);
+  static void Expose(py::module py_module);
 };

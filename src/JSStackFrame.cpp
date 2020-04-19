@@ -4,7 +4,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
-void CJSStackFrame::Expose(const py::module& py_module) {
+void CJSStackFrame::Expose(py::module py_module) {
   TRACE("CJSStackFrame::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CJSStackFrame, CJSStackFramePtr>(py_module, "JSStackFrame")

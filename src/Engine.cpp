@@ -8,7 +8,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kEngineLogger), __VA_ARGS__)
 
-void CEngine::Expose(const py::module& py_module) {
+void CEngine::Expose(py::module py_module) {
   TRACE("CEngine::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")

@@ -85,7 +85,7 @@ static void translateException(std::exception_ptr p) {
 }
 #pragma clang diagnostic pop
 
-void CJSException::Expose(const py::module& py_module) {
+void CJSException::Expose(py::module py_module) {
   TRACE("CJSException::Expose py_module={}", py_module);
 
   py::register_exception_translator(&translateException);

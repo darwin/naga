@@ -5,7 +5,7 @@
 // JSNull maps exactly to Python's None
 #define Py_JSNull Py_None
 
-void exposeJSNull(py::module* py_module);
+void exposeJSNull(py::module py_module);
 
 // -- pybind wrapper --------------------------------------------------------------------------------------------------
 
