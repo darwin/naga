@@ -57,8 +57,9 @@ void exposeJSObject(py::module py_module) {
 
           // Emulating dict object
           // TODO: I'm not sure about this, revisit
-      .def("keys", &CJSObjectAPI::PythonGetAttrList,
-           "Get a list of the object attributes.")
+          // this should go away when we implement __iter__
+//      .def("keys", &CJSObjectAPI::PythonGetAttrList,
+//           "Get a list of the object attributes.")
 
       .def("apply", &CJSObjectAPI::PythonApply,
            py::arg("self"),
