@@ -59,21 +59,31 @@ void exposeJSObject(py::module py_module) {
       .def("__eq__", &CJSObjectAPI::PythonEquals)
       .def("__ne__", &CJSObjectAPI::PythonNotEquals)
       .def("__call__", &CJSObjectAPI::PythonCallWithArgs)
-      // --- end of protected section ---
+          // --- end of protected section ---
 
-      // TODO: convert this to static
-      .def_property_readonly("linenum", &CJSObjectAPI::PythonLineNumber,
-                             "The line number of function in the script")
-      .def_property_readonly("colnum", &CJSObjectAPI::PythonColumnNumber,
-                             "The column number of function in the script")
-      .def_property_readonly("resname", &CJSObjectAPI::PythonResourceName,
-                             "The resource name of script")
-      .def_property_readonly("inferredname", &CJSObjectAPI::PythonInferredName,
-                             "Name inferred from variable or property assignment of this function")
-      .def_property_readonly("lineoff", &CJSObjectAPI::PythonLineOffset,
-                             "The line offset of function in the script")
-      .def_property_readonly("coloff", &CJSObjectAPI::PythonColumnOffset,
-                             "The column offset of function in the script")
+      .def_static("linenum", CallInstance<&CJSObjectAPI::PythonLineNumber>{},
+                  py::arg("this"),
+                  "The line number of function in the script")
+      .def_static("colnum", CallInstance<&CJSObjectAPI::PythonColumnNumber>{},
+                  py::arg("this"),
+                  "The column number of function in the script")
+      .def_static("resname", CallInstance<&CJSObjectAPI::PythonResourceName>{},
+                  py::arg("this"),
+                  "The resource name of script")
+      .def_static("inferredname", CallInstance<&CJSObjectAPI::PythonInferredName>{},
+                  py::arg("this"),
+                  "Name inferred from variable or property assignment of this function")
+      .def_static("lineoff", CallInstance<&CJSObjectAPI::PythonLineOffset>{},
+                  py::arg("this"),
+                  "The line offset of function in the script")
+      .def_static("coloff", CallInstance<&CJSObjectAPI::PythonColumnOffset>{},
+                  py::arg("this"),
+                  "The column offset of function in the script")
+      .def_static("setName", CallInstance<&CJSObjectAPI::PythonSetName>{},
+                  py::arg("this"),
+                  py::arg("name"))
+      .def_static("getName", CallInstance<&CJSObjectAPI::PythonGetName>{},
+                  py::arg("this"))
 
           // Emulating dict object
           // TODO: I'm not sure about this, revisit
@@ -82,28 +92,20 @@ void exposeJSObject(py::module py_module) {
 //           "Get a list of the object attributes.")
 
       .def_static("apply", CallInstance<&CJSObjectAPI::PythonApply>{},
-           py::arg("this"),
-           py::arg("self"),
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a function call using the parameters.")
+                  py::arg("this"),
+                  py::arg("self"),
+                  py::arg("args") = py::list(),
+                  py::arg("kwds") = py::dict(),
+                  "Performs a function call using the parameters.")
       .def_static("invoke", CallInstance<&CJSObjectAPI::PythonInvoke>{},
-           py::arg("this"),
-           py::arg("args") = py::list(),
-           py::arg("kwds") = py::dict(),
-           "Performs a binding method call using the parameters.")
-
-// TODO: revisit this, there is a clash with normal attribute lookups
-//      .def("setName", &CJSObjectAPI::PythonSetName)
-//
-//      .def_property("name", &CJSObjectAPI::PythonGetName, &CJSObjectAPI::PythonSetName,
-//                    "The name of function")
-
-          // ---
+                  py::arg("this"),
+                  py::arg("args") = py::list(),
+                  py::arg("kwds") = py::dict(),
+                  "Performs a binding method call using the parameters.")
 
       .def_static("clone", CallInstance<&CJSObjectAPI::PythonClone>{},
-           py::arg("this"),
-           "Clone the object.")
+                  py::arg("this"),
+                  "Clone the object.")
 
       .def_static("create", &CJSObjectAPI::PythonCreateWithArgs,
                   py::arg("constructor"),

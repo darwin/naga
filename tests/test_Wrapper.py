@@ -180,12 +180,12 @@ class TestWrapper(unittest.TestCase):
 
             func = ctxt.eval("(function test() {})")
 
-            self.assertEqual("test", func.name)
-            self.assertEqual("", func.resname)
-            self.assertEqual(0, func.linenum)
-            self.assertEqual(14, func.colnum)
-            self.assertEqual(0, func.lineoff)
-            self.assertEqual(0, func.coloff)
+            self.assertEqual("test", STPyV8.JSObject.getName(func))
+            self.assertEqual("", STPyV8.JSObject.resname(func))
+            self.assertEqual(0, STPyV8.JSObject.linenum(func))
+            self.assertEqual(14, STPyV8.JSObject.colnum(func))
+            self.assertEqual(0, STPyV8.JSObject.lineoff(func))
+            self.assertEqual(0, STPyV8.JSObject.coloff(func))
 
             # FIXME
             # Why the setter doesn't work?

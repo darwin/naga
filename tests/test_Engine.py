@@ -64,11 +64,12 @@ class TestEngine(unittest.TestCase):
 
                 self.assertTrue(isinstance(func, STPyV8.JSFunction))
 
-                self.assertEqual(func_name, func.name)
-                self.assertEqual("", func.resname)
-                self.assertEqual(1, func.linenum)
-                self.assertEqual(0, func.lineoff)
-                self.assertEqual(0, func.coloff)
+
+                self.assertEqual(func_name, STPyV8.JSObject.getName(func))
+                self.assertEqual("", STPyV8.JSObject.resname(func))
+                self.assertEqual(1, STPyV8.JSObject.linenum(func))
+                self.assertEqual(0, STPyV8.JSObject.lineoff(func))
+                self.assertEqual(0, STPyV8.JSObject.coloff(func))
 
                 var_name = u'变量'
 
@@ -76,7 +77,7 @@ class TestEngine(unittest.TestCase):
 
                 self.assertEqual(6, func())
 
-                self.assertEqual("func", ctxt.locals.func.inferredname)
+                self.assertEqual("func", STPyV8.JSObject.inferredname(ctxt.locals.func))
 
     def testEval(self):
         with STPyV8.JSContext() as ctxt:
