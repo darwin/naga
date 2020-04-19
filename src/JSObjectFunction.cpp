@@ -4,7 +4,7 @@
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
-py::object CJSObject::CallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
+py::object CJSObject::PythonCallWithArgs(py::args py_args, const py::kwargs& py_kwargs) {
   auto args_count = py_args.size();
 
   if (args_count == 0) {
@@ -85,7 +85,7 @@ py::object CJSObject::Call(const py::list& py_args,
   return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
-py::object CJSObject::CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
+py::object CJSObject::PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);

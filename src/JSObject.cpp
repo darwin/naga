@@ -42,36 +42,38 @@ void CJSObject::Expose(const py::module& py_module) {
   TRACE("CJSObject::Expose py_module={}", py_module);
   // clang-format off
   py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
-      .def("__getattr__", &CJSObject::GetAttr)
-      .def("__setattr__", &CJSObject::SetAttr)
-      .def("__delattr__", &CJSObject::DelAttr)
+      .def("__getattr__", &CJSObject::PythonGetAttr)
+      .def("__setattr__", &CJSObject::PythonSetAttr)
+      .def("__delattr__", &CJSObject::PythonDelAttr)
 
-      .def("__hash__", &CJSObject::GetIdentityHash)
-      .def("clone", &CJSObject::Clone,
+      .def("__hash__", &CJSObject::PythonIdentityHash)
+      // TODO: I'm not sure about this, revisit
+      .def("clone", &CJSObject::PythonClone,
            "Clone the object.")
-      .def("__dir__", &CJSObject::GetAttrList)
+      .def("__dir__", &CJSObject::PythonGetAttrList)
 
-          // Emulating dict object
-      .def("keys", &CJSObject::GetAttrList,
+      // Emulating dict object
+      // TODO: I'm not sure about this, revisit
+      .def("keys", &CJSObject::PythonGetAttrList,
            "Get a list of the object attributes.")
 
-      .def("__getitem__", &CJSObject::GetItem)
-      .def("__setitem__", &CJSObject::SetItem)
-      .def("__delitem__", &CJSObject::DelItem)
+      .def("__getitem__", &CJSObject::PythonGetItem)
+      .def("__setitem__", &CJSObject::PythonSetItem)
+      .def("__delitem__", &CJSObject::PythonDelItem)
 
-      .def("__contains__", &CJSObject::Contains)
+      .def("__contains__", &CJSObject::PythonContains)
       .def("__len__", &CJSObject::PythonLength)
 
-      .def("__int__", &CJSObject::ToPythonInt)
-      .def("__float__", &CJSObject::ToPythonFloat)
-      .def("__str__", &CJSObject::ToPythonStr)
-      .def("__repr__", &CJSObject::ToPythonRepr)
+      .def("__int__", &CJSObject::PythonInt)
+      .def("__float__", &CJSObject::PythonFloat)
+      .def("__str__", &CJSObject::PythonStr)
+      .def("__repr__", &CJSObject::PythonRepr)
+      .def("__bool__", &CJSObject::PythonBool)
 
-      .def("__bool__", &CJSObject::ToPythonBool)
-      .def("__eq__", &CJSObject::Equals)
-      .def("__ne__", &CJSObject::Unequals)
+      .def("__eq__", &CJSObject::PythonEquals)
+      .def("__ne__", &CJSObject::PythonNotEquals)
 
-      .def_static("create", &CJSObject::CreateWithArgs,
+      .def_static("create", &CJSObject::PythonCreateWithArgs,
                   py::arg("constructor"),
                   py::arg("arguments") = py::tuple(),
                   py::arg("propertiesObject") = py::dict(),
@@ -88,7 +90,7 @@ void CJSObject::Expose(const py::module& py_module) {
       })
 
           // JSFunction
-      .def("__call__", &CJSObject::CallWithArgs)
+      .def("__call__", &CJSObject::PythonCallWithArgs)
 
       .def("apply", &CJSObject::ApplyJavascript,
            py::arg("self"),
@@ -155,18 +157,18 @@ bool CJSObject::HasRole(Roles roles) const {
   return (m_roles & roles) == roles;
 }
 
-bool CJSObject::Contains(const py::object& py_key) const {
+bool CJSObject::PythonContains(const py::object& py_key) const {
   bool result;
   if (HasRole(Roles::JSArray)) {
     result = ArrayContains(py_key);
   } else {
     result = ObjectContains(py_key);
   }
-  TRACE("CJSObject::Contains {} => {}", THIS, result);
+  TRACE("CJSObject::PythonContains {} => {}", THIS, result);
   return result;
 }
 
-py::object CJSObject::GetItem(py::object py_key) const {
+py::object CJSObject::PythonGetItem(py::object py_key) const {
   py::object py_result;
   if (HasRole(Roles::JSArray)) {
     py_result = ArrayGetItem(py_key);
@@ -176,11 +178,11 @@ py::object CJSObject::GetItem(py::object py_key) const {
     // TODO: do robust arg checking here
     py_result = ObjectGetAttr(py::cast<py::str>(py_key));
   }
-  TRACE("CJSObject::GetItem {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonGetItem {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObject::SetItem(py::object py_key, py::object py_value) const {
+py::object CJSObject::PythonSetItem(py::object py_key, py::object py_value) const {
   if (HasRole(Roles::JSArray)) {
     return ArraySetItem(py_key, py_value);
   } else {
@@ -190,7 +192,7 @@ py::object CJSObject::SetItem(py::object py_key, py::object py_value) const {
   }
 }
 
-py::object CJSObject::DelItem(py::object py_key) const {
+py::object CJSObject::PythonDelItem(py::object py_key) const {
   if (HasRole(Roles::JSArray)) {
     return ArrayDelItem(py_key);
   } else {
@@ -218,7 +220,7 @@ void CJSObject::CheckAttr(v8::Local<v8::String> v8_name) const {
   }
 }
 
-py::object CJSObject::GetAttr(py::object py_key) const {
+py::object CJSObject::PythonGetAttr(py::object py_key) const {
   py::object py_result;
   if (HasRole(Roles::JSArray)) {
     throw CJSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
@@ -227,11 +229,11 @@ py::object CJSObject::GetAttr(py::object py_key) const {
   } else {
     py_result = ObjectGetAttr(py_key);
   }
-  TRACE("CJSObject::GetAttr {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonGetAttr {} => {}", THIS, py_result);
   return py_result;
 }
 
-void CJSObject::SetAttr(py::object py_key, py::object py_obj) const {
+void CJSObject::PythonSetAttr(py::object py_key, py::object py_obj) const {
   if (HasRole(Roles::JSArray)) {
     throw CJSException("__setattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
@@ -239,7 +241,7 @@ void CJSObject::SetAttr(py::object py_key, py::object py_obj) const {
   }
 }
 
-void CJSObject::DelAttr(py::object py_key) const {
+void CJSObject::PythonDelAttr(py::object py_key) const {
   if (HasRole(Roles::JSArray)) {
     throw CJSException("__delattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
@@ -300,8 +302,8 @@ void CJSObject::ObjectDelAttr(py::object py_key) const {
   }
 }
 
-py::list CJSObject::GetAttrList() const {
-  TRACE("CJSObject::GetAttrList {}", THIS);
+py::list CJSObject::PythonGetAttrList() const {
+  TRACE("CJSObject::PythonGetAttrList {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -329,27 +331,27 @@ py::list CJSObject::GetAttrList() const {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
   }
 
-  TRACE("CJSObject::GetAttrList {} => {}", THIS, attrs);
+  TRACE("CJSObject::PythonGetAttrList {} => {}", THIS, attrs);
   return attrs;
 }
 
-int CJSObject::GetIdentityHash() const {
+int CJSObject::PythonIdentityHash() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = Object()->GetIdentityHash();
-  TRACE("CJSObject::GetIdentityHash {} => {}", THIS, result);
+  TRACE("CJSObject::PythonIdentityHash {} => {}", THIS, result);
   return result;
 }
 
-CJSObjectPtr CJSObject::Clone() const {
+CJSObjectPtr CJSObject::PythonClone() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = std::make_shared<CJSObject>(Object()->Clone());
-  TRACE("CJSObject::Clone {} => {}", THIS, result);
+  TRACE("CJSObject::PythonClone {} => {}", THIS, result);
   return result;
 }
 
@@ -368,11 +370,11 @@ bool CJSObject::ObjectContains(const py::object& py_key) const {
     CJSException::ThrowIf(v8_isolate, try_catch);
   }
 
-  TRACE("CJSObject::Contains {} py_key={} => {}", THIS, py_key, result);
+  TRACE("CJSObject::ObjectContains {} py_key={} => {}", THIS, py_key, result);
   return result;
 }
 
-bool CJSObject::Equals(const CJSObjectPtr& other) const {
+bool CJSObject::PythonEquals(const CJSObjectPtr& other) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -380,11 +382,15 @@ bool CJSObject::Equals(const CJSObjectPtr& other) const {
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
   auto result = other.get() && Object()->Equals(context, other->Object()).ToChecked();
-  TRACE("CJSObject::Equals {} other={} => {}", THIS, other, result);
+  TRACE("CJSObject::PythonEquals {} other={} => {}", THIS, other, result);
   return result;
 }
 
-py::object CJSObject::ToPythonInt() const {
+bool CJSObject::PythonNotEquals(const CJSObjectPtr& other) const {
+  return !PythonEquals(other);
+}
+
+py::object CJSObject::PythonInt() const {
   TRACE("CJSObject::ToPythonInt {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
@@ -397,12 +403,11 @@ py::object CJSObject::ToPythonInt() const {
 
   auto val = Object()->Int32Value(v8_context).ToChecked();
   auto py_result = py::cast(val);
-  TRACE("CJSObject::ToPythonInt {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonInt {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObject::ToPythonFloat() const {
-  TRACE("CJSObject::ToPythonFloat {}", THIS);
+py::object CJSObject::PythonFloat() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -414,11 +419,11 @@ py::object CJSObject::ToPythonFloat() const {
 
   auto val = Object()->NumberValue(v8_context).ToChecked();
   auto py_result = py::cast(val);
-  TRACE("CJSObject::ToPythonInt {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonFloat {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObject::ToPythonBool() const {
+py::object CJSObject::PythonBool() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -429,11 +434,11 @@ py::object CJSObject::ToPythonBool() const {
   }
 
   auto py_result = py::cast(val);
-  TRACE("CJSObject::ToPythonBool {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonBool {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObject::ToPythonStr() const {
+py::object CJSObject::PythonStr() const {
   py::object py_result;
   if (HasRole(Roles::CLJSObject)) {
     py_result = CLJSStr();
@@ -443,11 +448,11 @@ py::object CJSObject::ToPythonStr() const {
     py_result = py::cast(ss.str());
   }
 
-  TRACE("CJSObject::ToPythonStr {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonStr {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObject::ToPythonRepr() const {
+py::object CJSObject::PythonRepr() const {
   py::object py_result;
   if (HasRole(Roles::CLJSObject)) {
     py_result = CLJSRepr();
@@ -456,7 +461,7 @@ py::object CJSObject::ToPythonRepr() const {
     py_result = py::cast(s);
   }
 
-  TRACE("CJSObject::ToPythonRepr {} => {}", THIS, py_result);
+  TRACE("CJSObject::PythonRepr {} => {}", THIS, py_result);
   return py_result;
 }
 
@@ -573,13 +578,7 @@ py::object CJSObject::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_o
   } else if (v8_obj.IsEmpty()) {
     // TODO: we should not treat empty values so softly, we should throw/crash
     py_result = py::none();
-  }
-  //#ifdef STPYV8_FEATURE_CLJS
-  //  else if (isCLJSType(v8_obj)) {
-  //    py_result = Wrap(v8_isolate, std::make_shared<CJSObjectCLJS>(v8_obj));
-  //  }
-  //#endif
-  else {
+  } else {
     py_result = Wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
 
@@ -604,7 +603,7 @@ v8::Local<v8::Object> CJSObject::Object() const {
   // TODO: isolate should be taken from the m_v8_obj
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_result = v8::Local<v8::Object>::New(v8_isolate, m_v8_obj);
-  TRACE("CJSObject::CJSObject {} => {}", THIS, v8_result);
+  TRACE("CJSObject::Object {} => {}", THIS, v8_result);
   return v8_result;
 }
 

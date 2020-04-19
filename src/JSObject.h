@@ -30,47 +30,52 @@ class CJSObject {
 
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
-  py::object GetAttr(py::object py_key) const;
-  void SetAttr(py::object py_key, py::object py_obj) const;
-  void DelAttr(py::object py_key) const;
+  // Exposed Python API
+  py::object PythonGetAttr(py::object py_key) const;
+  void PythonSetAttr(py::object py_key, py::object py_obj) const;
+  void PythonDelAttr(py::object py_key) const;
 
-  py::object ObjectGetAttr(py::object py_key) const;
-  void ObjectSetAttr(py::object py_key, py::object py_obj) const;
-  void ObjectDelAttr(py::object py_key) const;
+  py::object PythonGetItem(py::object py_key) const;
+  py::object PythonSetItem(py::object py_key, py::object py_value) const;
+  py::object PythonDelItem(py::object py_key) const;
 
-  py::object GetItem(py::object py_key) const;
-  py::object SetItem(py::object py_key, py::object py_value) const;
-  py::object DelItem(py::object py_key) const;
+  [[nodiscard]] py::list PythonGetAttrList() const;
+  [[nodiscard]] int PythonIdentityHash() const;
+  [[nodiscard]] CJSObjectPtr PythonClone() const;
 
-  [[nodiscard]] py::list GetAttrList() const;
-  [[nodiscard]] int GetIdentityHash() const;
-  [[nodiscard]] CJSObjectPtr Clone() const;
-
-  bool Contains(const py::object& py_key) const;
-  [[nodiscard]] bool ObjectContains(const py::object& py_key) const;
+  bool PythonContains(const py::object& py_key) const;
 
   [[nodiscard]] size_t PythonLength() const;
-  [[nodiscard]] py::object ToPythonInt() const;
-  [[nodiscard]] py::object ToPythonFloat() const;
-  [[nodiscard]] py::object ToPythonBool() const;
-  [[nodiscard]] py::object ToPythonStr() const;
-  [[nodiscard]] py::object ToPythonRepr() const;
+  [[nodiscard]] py::object PythonInt() const;
+  [[nodiscard]] py::object PythonFloat() const;
+  [[nodiscard]] py::object PythonBool() const;
+  [[nodiscard]] py::object PythonStr() const;
+  [[nodiscard]] py::object PythonRepr() const;
 
-  [[nodiscard]] bool Equals(const CJSObjectPtr& other) const;
-  [[nodiscard]] bool Unequals(const CJSObjectPtr& other) const { return !Equals(other); }
+  [[nodiscard]] bool PythonEquals(const CJSObjectPtr& other) const;
+  [[nodiscard]] bool PythonNotEquals(const CJSObjectPtr& other) const;
+
+  // ---
 
   void Dump(std::ostream& os) const;
+  static void Expose(const py::module& py_module);
 
   static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this);
   static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val);
   static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj);
   static py::object Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj);
 
-  static void Expose(const py::module& py_module);
+  // Default JSObject implementations
+  static py::object PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+
+  [[nodiscard]] bool ObjectContains(const py::object& py_key) const;
+
+  py::object ObjectGetAttr(py::object py_key) const;
+  void ObjectSetAttr(py::object py_key, py::object py_obj) const;
+  void ObjectDelAttr(py::object py_key) const;
 
   // JSFunction
-  static py::object CallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
-  static py::object CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+  static py::object PythonCallWithArgs(py::args py_args, const py::kwargs& py_kwargs);
 
   py::object ApplyJavascript(const CJSObjectPtr& self, const py::list& py_args, const py::dict& py_kwds);
   py::object ApplyPython(py::object py_self, const py::list& py_args, const py::dict& py_kwds);
