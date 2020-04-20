@@ -41,7 +41,6 @@ if (stpyv8_verbose_build) {
 stpyv8_source_files = [
   "Aux.cpp",
   "Context.cpp",
-  "Debug.cpp",
   "Engine.cpp",
   "Isolate.cpp",
   "JSException.cpp",
