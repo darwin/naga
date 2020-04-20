@@ -315,7 +315,7 @@ class JSContext(_STPyV8.JSContext):
         del self
 
 
-v8_default_platform = JSPlatform()
+v8_default_platform = JSPlatform.instance
 v8_default_platform.init()
 
 v8_default_isolate = JSIsolate()

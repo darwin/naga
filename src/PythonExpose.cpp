@@ -156,10 +156,13 @@ void exposeJSObject(py::module py_module) {
 void exposeJSPlatform(py::module py_module) {
   TRACE("exposeJSPlatform py_module={}", py_module);
   // clang-format off
-  py::class_<CPlatform, CPlatformPtr>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
-      .def(py::init<std::string>(),
-           py::arg("argv") = std::string())
+  py::class_<CPlatform>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
+      .def_property_readonly_static("instance", [](const py::object &) { return CPlatform::Instance(); },
+                                    "Access to platform singleton instance")
+      .def_property_readonly("initialized", &CPlatform::Initialized,
+                             "Returns true if the init was already called on platform.")
       .def("init", &CPlatform::Init,
+           py::arg("argv") = std::string(),
            "Initializes the platform");
   // clang-format on
 }
@@ -190,7 +193,7 @@ void exposeJSIsolate(py::module py_module) {
 }
 
 void exposeJSError(py::module py_module) {
-  TRACE("CJSException::Expose py_module={}", py_module);
+  TRACE("exposeJSError py_module={}", py_module);
 
   py::register_exception_translator(&translateException);
 

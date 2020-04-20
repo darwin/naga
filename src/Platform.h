@@ -4,15 +4,21 @@
 
 class CPlatform {
  private:
-  static bool m_inited;
-  std::string m_argv;
-  static std::unique_ptr<v8::Platform> m_v8_platform;
+  bool m_initialized{false};
+  std::unique_ptr<v8::Platform> m_v8_platform;
+
+  // CPlatform is a singleton => make the constructor private, disable copy/move
+ private:
+  CPlatform() = default;
 
  public:
-  CPlatform() = default;
-  ~CPlatform() = default;
+  CPlatform(const CPlatform&) = delete;
+  CPlatform& operator=(const CPlatform&) = delete;
+  CPlatform(CPlatform&&) = delete;
+  CPlatform& operator=(CPlatform&&) = delete;
 
-  explicit CPlatform(std::string argv);
+  static CPlatform* Instance();
 
-  void Init();
+  bool Initialized() const { return m_initialized; }
+  bool Init(std::string argv);
 };

@@ -19,7 +19,6 @@ class CJSObjectArrayImpl;
 class CJSObjectCLJSImpl;
 class CJSObjectAPI;
 
-typedef std::shared_ptr<CPlatform> CPlatformPtr;
 typedef std::shared_ptr<CContext> CContextPtr;
 typedef std::shared_ptr<CIsolate> CIsolatePtr;
 typedef std::shared_ptr<CScript> CScriptPtr;

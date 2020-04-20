@@ -4,14 +4,23 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
 
-std::unique_ptr<v8::Platform> CPlatform::m_v8_platform;
-bool CPlatform::m_inited = false;
+// enforce singleton contract
+constexpr auto singleton_invariants = !std::is_constructible<CPlatform>::value &&          //
+                                      !std::is_assignable<CPlatform, CPlatform>::value &&  //
+                                      !std::is_swappable<CPlatform>::value;                //
+static_assert(singleton_invariants, "CPlatform should be a singleton.");
 
-void CPlatform::Init() {
-  TRACE("CPlatform::Init {}", THIS);
-  if (m_inited) {
-    TRACE("CPlatform::Init {} => [already inited]", THIS);
-    return;
+CPlatform* CPlatform::Instance() {
+  static CPlatform g_platform;
+  TRACE("CPlatform::Instance => {}", (void*)&g_platform);
+  return &g_platform;
+}
+
+bool CPlatform::Init(std::string argv) {
+  TRACE("CPlatform::Init {} argv='{}'", THIS, argv);
+  if (m_initialized) {
+    TRACE("CPlatform::Init {} => [already initialized]", THIS);
+    return false;
   }
 
 #ifndef NDEBUG
@@ -20,16 +29,13 @@ void CPlatform::Init() {
 
   // https://v8.dev/docs/i18n#embedding-v8
   v8::V8::InitializeICU();
-  v8::V8::InitializeExternalStartupData(m_argv.c_str());
+  v8::V8::InitializeExternalStartupData(argv.c_str());
 
   m_v8_platform = v8::platform::NewDefaultPlatform();
 
   v8::V8::InitializePlatform(m_v8_platform.get());
   v8::V8::Initialize();
 
-  m_inited = true;
-}
-
-CPlatform::CPlatform(std::string argv) : m_argv(std::move(argv)) {
-  TRACE("CPlatform::CPlatform {} argv={}", THIS, m_argv);
+  m_initialized = true;
+  return true;
 }
