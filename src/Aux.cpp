@@ -45,14 +45,3 @@ void v8RequestGarbageCollectionForTesting() {
   v8_isolate->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
   TRACE("v8Cleanup done");
 }
-
-void exposeAux(py::module py_module) {
-  py_module.def("refcount_addr", &refCountAddr);
-  py_module.def("trigger1", &trigger1);
-  py_module.def("trigger2", &trigger2);
-  py_module.def("trigger3", &trigger3);
-  py_module.def("trigger4", &trigger4);
-  py_module.def("trigger5", &trigger5);
-  py_module.def("trace", &trace);
-  py_module.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
-}

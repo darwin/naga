@@ -16,6 +16,4 @@ class CLocker {
   void Leave();
   static bool IsLocked();
   static bool IsActive();
-
-  static void Expose(py::module py_module);
 };

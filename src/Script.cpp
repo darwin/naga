@@ -1,22 +1,9 @@
 #include "Script.h"
 #include "Engine.h"
-#include "JSException.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
-
-void CScript::Expose(py::module py_module) {
-  TRACE("CScript::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
-      .def_property_readonly("source", &CScript::GetSource,
-                             "the source code")
-
-      .def("run", &CScript::Run,
-           "Execute the compiled code.");
-  // clang-format on
-}
 
 CScript::CScript(v8::IsolateRef v8_isolate,
                  const CEngine& engine,
@@ -29,7 +16,6 @@ CScript::CScript(v8::IsolateRef v8_isolate,
   TRACE("CScript::CScript {} v8_isolate={} engine={} v8_source={} v8_script={}", THIS, isolateref_printer{v8_isolate},
         engine, v8_source, v8_script);
 }
-
 CScript::CScript(const CScript& script) : m_engine(script.m_engine), m_v8_isolate(script.m_v8_isolate) {
   TRACE("CScript::CScript {} script={}", THIS, script);
   auto v8_scope = v8u::withScope(m_v8_isolate);

@@ -11,51 +11,6 @@
 
 const int kSelfEmbedderDataIndex = 0;
 
-void CContext::Expose(py::module py_module) {
-  TRACE("CContext::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
-      .def(py::init<py::object>())
-
-      .def_property("securityToken", &CContext::GetSecurityToken, &CContext::SetSecurityToken)
-
-      .def_property_readonly("locals", &CContext::GetGlobal,
-                             "Local variables within context")
-
-      .def_property_readonly_static("entered", [](const py::object &) { return CContext::GetEntered(); },
-                                    "The last entered context.")
-      .def_property_readonly_static("current", [](const py::object &) { return CContext::GetCurrent(); },
-                                    "The context that is on the top of the stack.")
-      .def_property_readonly_static("calling", [](const py::object &) { return CContext::GetCalling(); },
-                                    "The context of the calling JavaScript code.")
-      .def_property_readonly_static("inContext", [](const py::object &) { return CContext::InContext(); },
-                                    "Returns true if V8 has a current context.")
-
-      .def_static("eval", &CContext::Evaluate,
-                  py::arg("source"),
-                  py::arg("name") = std::string(),
-                  py::arg("line") = -1,
-                  py::arg("col") = -1)
-      .def_static("eval", &CContext::EvaluateW,
-                  py::arg("source"),
-                  py::arg("name") = std::wstring(),
-                  py::arg("line") = -1,
-                  py::arg("col") = -1)
-
-      .def("enter", &CContext::Enter,
-           "Enter this context. "
-           "After entering a context, all code compiled and "
-           "run is compiled and run in this context.")
-      .def("leave", &CContext::Leave,
-           "Exit this context. "
-           "Exiting the current context restores the context "
-           "that was in place when entering the current context.")
-
-      .def("__bool__", &CContext::IsEntered,
-           "the context has been entered.");
-  // clang-format on
-}
-
 CContextPtr CContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
   assert(v8_context->GetNumberOfEmbedderDataFields() > kSelfEmbedderDataIndex);

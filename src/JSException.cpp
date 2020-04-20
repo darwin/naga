@@ -73,7 +73,7 @@ static void translateJavascriptException(const CJSException& e) {
 #pragma ide diagnostic ignored "performance-unnecessary-value-param"
 // TODO: raise question in pybind issues
 // clang-tidy suggests "const std::exception_ptr& p" signature but register_exception_translator won't accept it
-static void translateException(std::exception_ptr p) {
+void translateException(std::exception_ptr p) {
   TRACE("translateException");
   try {
     if (p) {
@@ -84,40 +84,6 @@ static void translateException(std::exception_ptr p) {
   }
 }
 #pragma clang diagnostic pop
-
-void CJSException::Expose(py::module py_module) {
-  TRACE("CJSException::Expose py_module={}", py_module);
-
-  py::register_exception_translator(&translateException);
-
-  // clang-format off
-  py::class_<CJSException>(py_module, "_JSError")
-      .def("__str__", &CJSException::ToPythonStr)
-
-      .def_property_readonly("name", &CJSException::GetName,
-                             "The exception name.")
-      .def_property_readonly("message", &CJSException::GetMessage,
-                             "The exception message.")
-      .def_property_readonly("scriptName", &CJSException::GetScriptName,
-                             "The script name which throw the exception.")
-      .def_property_readonly("lineNum", &CJSException::GetLineNumber, "The line number of error statement.")
-      .def_property_readonly("startPos", &CJSException::GetStartPosition,
-                             "The start position of error statement in the script.")
-      .def_property_readonly("endPos", &CJSException::GetEndPosition,
-                             "The end position of error statement in the script.")
-      .def_property_readonly("startCol", &CJSException::GetStartColumn,
-                             "The start column of error statement in the script.")
-      .def_property_readonly("endCol", &CJSException::GetEndColumn,
-                             "The end column of error statement in the script.")
-      .def_property_readonly("sourceLine", &CJSException::GetSourceLine,
-                             "The source line of error statement.")
-      .def_property_readonly("stackTrace", &CJSException::GetStackTrace,
-                             "The stack trace of error statement.")
-      .def("print_tb", &CJSException::PrintCallStack,
-           py::arg("file") = py::none(),
-           "Print the stack trace of error statement.");
-  // clang-format on
-}
 
 CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {

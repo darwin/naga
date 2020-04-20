@@ -15,6 +15,4 @@ class CPlatform {
   explicit CPlatform(std::string argv);
 
   void Init();
-
-  static void Expose(py::module py_module);
 };

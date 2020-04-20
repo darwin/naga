@@ -12,8 +12,6 @@ PyAPI_DATA(PyObject) _Py_JSUndefinedStruct; /* Don't use this directly */
 
 #define Py_RETURN_JSUndefined return Py_INCREF(Py_JSUndefined), Py_JSUndefined
 
-void exposeJSUndefined(py::module py_module);
-
 // -- pybind wrapper --------------------------------------------------------------------------------------------------
 
 // this is similar to py::none

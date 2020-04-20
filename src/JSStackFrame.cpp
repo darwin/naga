@@ -4,19 +4,6 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
-void CJSStackFrame::Expose(py::module py_module) {
-  TRACE("CJSStackFrame::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CJSStackFrame, CJSStackFramePtr>(py_module, "JSStackFrame")
-      .def_property_readonly("lineNum", &CJSStackFrame::GetLineNumber)
-      .def_property_readonly("column", &CJSStackFrame::GetColumn)
-      .def_property_readonly("scriptName", &CJSStackFrame::GetScriptName)
-      .def_property_readonly("funcName", &CJSStackFrame::GetFunctionName)
-      .def_property_readonly("isEval", &CJSStackFrame::IsEval)
-      .def_property_readonly("isConstructor", &CJSStackFrame::IsConstructor);
-  // clang-format on
-}
-
 std::string CJSStackFrame::GetScriptName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value name(m_v8_isolate, Handle()->GetScriptName());

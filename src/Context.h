@@ -41,6 +41,4 @@ class CContext : public std::enable_shared_from_this<CContext> {
                               const std::wstring& name = std::wstring(),
                               int line = -1,
                               int col = -1);
-
-  static void Expose(py::module py_module);
 };

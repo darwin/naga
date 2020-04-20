@@ -6,17 +6,6 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kLockingLogger), __VA_ARGS__)
 
-void CUnlocker::Expose(py::module py_module) {
-  TRACE("CUnlocker::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CUnlocker>(py_module, "JSUnlocker")
-      .def(py::init<>())
-      .def("entered", &CUnlocker::IsEntered)
-      .def("enter", &CUnlocker::Enter)
-      .def("leave", &CUnlocker::Leave);
-  // clang-format on
-}
-
 bool CUnlocker::IsEntered() {
   auto result = static_cast<bool>(m_v8_unlocker.get());
   TRACE("CUnlocker::IsEntered {} => {}", THIS, result);

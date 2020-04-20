@@ -7,17 +7,6 @@
 std::unique_ptr<v8::Platform> CPlatform::m_v8_platform;
 bool CPlatform::m_inited = false;
 
-void CPlatform::Expose(py::module py_module) {
-  TRACE("CPlatform::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CPlatform, CPlatformPtr>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
-      .def(py::init<std::string>(),
-           py::arg("argv") = std::string())
-      .def("init", &CPlatform::Init,
-           "Initializes the platform");
-  // clang-format on
-}
-
 void CPlatform::Init() {
   TRACE("CPlatform::Init {}", THIS);
   if (m_inited) {

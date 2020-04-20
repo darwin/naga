@@ -6,30 +6,6 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__)
 
-void CJSStackTrace::Expose(py::module py_module) {
-  TRACE("CJSStackTrace::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CJSStackTrace, CJSStackTracePtr>(py_module, "JSStackTrace")
-      .def("__len__", &CJSStackTrace::GetFrameCount)
-      .def("__getitem__", &CJSStackTrace::GetFrame)
-
-          // TODO: .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
-
-      .def("__str__", &CJSStackTrace::ToPythonStr);
-
-  py::enum_<v8::StackTrace::StackTraceOptions>(py_module, "JSStackTraceOptions")
-      .value("LineNumber", v8::StackTrace::kLineNumber)
-      .value("ColumnOffset", v8::StackTrace::kColumnOffset)
-      .value("ScriptName", v8::StackTrace::kScriptName)
-      .value("FunctionName", v8::StackTrace::kFunctionName)
-      .value("IsEval", v8::StackTrace::kIsEval)
-      .value("IsConstructor", v8::StackTrace::kIsConstructor)
-      .value("Overview", v8::StackTrace::kOverview)
-      .value("Detailed", v8::StackTrace::kDetailed)
-      .export_values();
-  // clang-format on
-}
-
 py::object CJSStackTrace::ToPythonStr() const {
   std::stringstream ss;
   ss << *this;

@@ -2,6 +2,8 @@
 
 #include "Base.h"
 
+void translateException(std::exception_ptr p);
+
 class CJSException : public std::runtime_error {
   v8::IsolateRef m_v8_isolate;
   PyObject* m_raw_type;
@@ -42,8 +44,6 @@ class CJSException : public std::runtime_error {
 
   void PrintCallStack(py::object py_file);
   static void ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
-
-  static void Expose(py::module py_module);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

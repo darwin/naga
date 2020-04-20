@@ -114,6 +114,7 @@ static void initLoggers() {
   g_loggers[kJSObjectLogger] = std::make_shared<spdlog::logger>("stpyv8_jso", logger_file_sink);
   g_loggers[kV8TracingLogger] = std::make_shared<spdlog::logger>("stpyv8_v8t", logger_file_sink);
   g_loggers[kAuxLogger] = std::make_shared<spdlog::logger>("stpyv8_aux", logger_file_sink);
+  g_loggers[kExposeLogger] = std::make_shared<spdlog::logger>("stpyv8_exp", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);
