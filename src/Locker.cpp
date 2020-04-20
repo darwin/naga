@@ -14,7 +14,7 @@ bool CLocker::IsEntered() {
 
 void CLocker::Enter() {
   TRACE("CLocker::Enter {}", THIS);
-  withPythonAllowThreadsGuard([&]() {
+  withAllowedPythonThreads([&]() {
     auto v8_isolate = v8u::getCurrentIsolate();
     m_isolate = CIsolate::FromV8(v8_isolate);
     m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
@@ -23,7 +23,7 @@ void CLocker::Enter() {
 
 void CLocker::Leave() {
   TRACE("CLocker::Leave {}", THIS);
-  withPythonAllowThreadsGuard([&]() {
+  withAllowedPythonThreads([&]() {
     m_v8_locker.reset();
     m_isolate.reset();
   });

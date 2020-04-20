@@ -273,7 +273,7 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
 
   v8::Local<v8::Object> v8_result;
 
-  withPythonAllowThreadsGuard(
+  withAllowedPythonThreads(
       [&]() { v8_result = fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
 
   if (v8_result.IsEmpty()) {

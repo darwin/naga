@@ -36,7 +36,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
     it++;
   }
 
-  auto v8_result = withPythonAllowThreadsGuard([&]() {
+  auto v8_result = withAllowedPythonThreads([&]() {
     if (!opt_v8_this) {
       return v8_fn->Call(v8_context, v8_context->Global(), v8_params.size(), v8_params.data());
     } else {

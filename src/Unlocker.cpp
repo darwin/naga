@@ -14,7 +14,7 @@ bool CUnlocker::IsEntered() {
 
 void CUnlocker::Enter() {
   TRACE("CUnlocker::Enter {}", THIS);
-  withPythonAllowThreadsGuard([&]() {
+  withAllowedPythonThreads([&]() {
     auto v8_isolate = v8u::getCurrentIsolate();
     m_isolate = CIsolate::FromV8(v8_isolate);
     m_v8_unlocker = std::make_unique<v8::Unlocker>(v8_isolate);
@@ -23,7 +23,7 @@ void CUnlocker::Enter() {
 
 void CUnlocker::Leave() {
   TRACE("CUnlocker::Leave {}", THIS);
-  withPythonAllowThreadsGuard([&]() {
+  withAllowedPythonThreads([&]() {
     m_v8_unlocker.reset();
     m_isolate.reset();
   });

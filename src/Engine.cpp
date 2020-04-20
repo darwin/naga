@@ -68,7 +68,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_result = withPythonAllowThreadsGuard([&]() { return v8_script->Run(v8_context); });
+  auto v8_result = withAllowedPythonThreads([&]() { return v8_script->Run(v8_context); });
 
   if (v8_result.IsEmpty()) {
     if (v8_try_catch.HasCaught()) {
@@ -102,7 +102,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_script = withPythonAllowThreadsGuard([&]() {
+  auto v8_script = withAllowedPythonThreads([&]() {
     auto v8_line = v8u::toPositiveInteger(v8_isolate, line);
     auto v8_col = v8u::toPositiveInteger(v8_isolate, col);
     auto v8_script_origin = v8u::createScriptOrigin(v8_name, v8_line, v8_col);
