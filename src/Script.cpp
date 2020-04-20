@@ -16,13 +16,6 @@ CScript::CScript(v8::IsolateRef v8_isolate,
   TRACE("CScript::CScript {} v8_isolate={} engine={} v8_source={} v8_script={}", THIS, isolateref_printer{v8_isolate},
         engine, v8_source, v8_script);
 }
-CScript::CScript(const CScript& script) : m_engine(script.m_engine), m_v8_isolate(script.m_v8_isolate) {
-  TRACE("CScript::CScript {} script={}", THIS, script);
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-
-  m_v8_source.Reset(m_v8_isolate, script.Source());
-  m_v8_script.Reset(m_v8_isolate, script.Script());
-}
 
 CScript::~CScript() {
   TRACE("CScript::~CScript {}", THIS);

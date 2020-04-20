@@ -8,12 +8,7 @@ class CUnlocker {
   CIsolatePtr m_isolate;
 
  public:
-  CUnlocker() = default;
-  ~CUnlocker() = default;
-
   bool IsEntered();
   void Enter();
   void Leave();
-
-  static void Expose(py::module py_module);
 };

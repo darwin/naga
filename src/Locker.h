@@ -8,9 +8,6 @@ class CLocker {
   CIsolatePtr m_isolate;
 
  public:
-  CLocker() = default;
-  ~CLocker() = default;
-
   bool IsEntered();
   void Enter();
   void Leave();

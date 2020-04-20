@@ -9,13 +9,10 @@ class CScript {
   v8::Persistent<v8::Script> m_v8_script;
 
  public:
-  static void Expose(py::module py_module);
-
   CScript(v8::IsolateRef v8_isolate,
           const CEngine& engine,
           v8::Local<v8::String> v8_source,
           v8::Local<v8::Script> v8_script);
-  CScript(const CScript& script);
   ~CScript();
 
   [[nodiscard]] v8::Local<v8::String> Source() const;
