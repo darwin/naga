@@ -16,8 +16,8 @@ class CJSObjectFunctionImpl {
 
   [[nodiscard]] int GetLineNumber() const;
   [[nodiscard]] int GetColumnNumber() const;
-  [[nodiscard]] std::string GetResourceName() const;
-  [[nodiscard]] std::string GetInferredName() const;
   [[nodiscard]] int GetLineOffset() const;
   [[nodiscard]] int GetColumnOffset() const;
+  [[nodiscard]] std::string GetResourceName() const;
+  [[nodiscard]] std::string GetInferredName() const;
 };

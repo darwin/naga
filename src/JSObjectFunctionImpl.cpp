@@ -106,6 +106,26 @@ int CJSObjectFunctionImpl::GetColumnNumber() const {
   return func->GetScriptColumnNumber();
 }
 
+int CJSObjectFunctionImpl::GetLineOffset() const {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8u::checkContext(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
+
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
+
+  return func->GetScriptOrigin().ResourceLineOffset()->Value();
+}
+
+int CJSObjectFunctionImpl::GetColumnOffset() const {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8u::checkContext(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
+
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
+
+  return func->GetScriptOrigin().ResourceColumnOffset()->Value();
+}
+
 std::string CJSObjectFunctionImpl::GetResourceName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
@@ -128,24 +148,4 @@ std::string CJSObjectFunctionImpl::GetInferredName() const {
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
   return std::string(*name, name.length());
-}
-
-int CJSObjectFunctionImpl::GetLineOffset() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::withScope(v8_isolate);
-
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
-
-  return func->GetScriptOrigin().ResourceLineOffset()->Value();
-}
-
-int CJSObjectFunctionImpl::GetColumnOffset() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-  auto v8_scope = v8u::withScope(v8_isolate);
-
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
-
-  return func->GetScriptOrigin().ResourceColumnOffset()->Value();
 }
