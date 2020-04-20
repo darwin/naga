@@ -3,9 +3,14 @@
 #include "JSException.h"
 #include "PythonAllowThreadsGuard.h"
 
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+
 py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
                                        const py::dict& py_kwargs,
                                        std::optional<v8::Local<v8::Object>> opt_v8_this) const {
+  TRACE("CJSObjectFunctionImpl::Call {} py_args={} py_kwargs={}", THIS, py_args, py_kwargs);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -54,6 +59,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
 }
 
 py::object CJSObjectFunctionImpl::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
+  TRACE("CJSObjectFunctionImpl::Apply {} py_self={} py_args={} py_kwds={}", THIS, py_self, py_args, py_kwds);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -64,6 +70,7 @@ py::object CJSObjectFunctionImpl::Apply(const py::object& py_self, const py::lis
 }
 
 std::string CJSObjectFunctionImpl::GetName() const {
+  TRACE("CJSObjectFunctionImpl::GetName {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -76,6 +83,7 @@ std::string CJSObjectFunctionImpl::GetName() const {
 }
 
 void CJSObjectFunctionImpl::SetName(const std::string& name) {
+  TRACE("CJSObjectFunctionImpl::SetName {} => {}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -93,7 +101,9 @@ int CJSObjectFunctionImpl::GetLineNumber() const {
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
-  return func->GetScriptLineNumber();
+  auto result = func->GetScriptLineNumber();
+  TRACE("CJSObjectFunctionImpl::GetLineNumber {} => {}", THIS, result);
+  return result;
 }
 
 int CJSObjectFunctionImpl::GetColumnNumber() const {
@@ -103,7 +113,9 @@ int CJSObjectFunctionImpl::GetColumnNumber() const {
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
-  return func->GetScriptColumnNumber();
+  auto result = func->GetScriptColumnNumber();
+  TRACE("CJSObjectFunctionImpl::GetColumnNumber {} => {}", THIS, result);
+  return result;
 }
 
 int CJSObjectFunctionImpl::GetLineOffset() const {
@@ -113,7 +125,9 @@ int CJSObjectFunctionImpl::GetLineOffset() const {
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
-  return func->GetScriptOrigin().ResourceLineOffset()->Value();
+  auto result = func->GetScriptOrigin().ResourceLineOffset()->Value();
+  TRACE("CJSObjectFunctionImpl::GetLineOffset {} => {}", THIS, result);
+  return result;
 }
 
 int CJSObjectFunctionImpl::GetColumnOffset() const {
@@ -123,7 +137,9 @@ int CJSObjectFunctionImpl::GetColumnOffset() const {
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object());
 
-  return func->GetScriptOrigin().ResourceColumnOffset()->Value();
+  auto result = func->GetScriptOrigin().ResourceColumnOffset()->Value();
+  TRACE("CJSObjectFunctionImpl::GetColumnOffset {} => {}", THIS, result);
+  return result;
 }
 
 std::string CJSObjectFunctionImpl::GetResourceName() const {
@@ -135,7 +151,9 @@ std::string CJSObjectFunctionImpl::GetResourceName() const {
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
 
-  return std::string(*name, name.length());
+  auto result = std::string(*name, name.length());
+  TRACE("CJSObjectFunctionImpl::GetResourceName {} => {}", THIS, result);
+  return result;
 }
 
 std::string CJSObjectFunctionImpl::GetInferredName() const {
@@ -147,5 +165,7 @@ std::string CJSObjectFunctionImpl::GetInferredName() const {
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
-  return std::string(*name, name.length());
+  auto result = std::string(*name, name.length());
+  TRACE("CJSObjectFunctionImpl::GetInferredName {} => {}", THIS, result);
+  return result;
 }
