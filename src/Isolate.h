@@ -27,6 +27,4 @@ class CIsolate : public std::enable_shared_from_this<CIsolate> {
   void Dispose();
 
   bool IsLocked();
-
-  static void Expose(py::module py_module);
 };

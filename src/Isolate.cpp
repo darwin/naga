@@ -10,31 +10,6 @@
 
 const int kSelfDataSlotIndex = 0;
 
-void CIsolate::Expose(py::module py_module) {
-  TRACE("CIsolate::Expose py_module={}", py_module);
-  // clang-format off
-  py::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
-      .def(py::init<>())
-
-      .def_property_readonly_static(
-          "current", [](const py::object&) { return CIsolate::GetCurrent(); },
-          "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")
-
-      .def_property_readonly("locked", &CIsolate::IsLocked)
-
-      .def("GetCurrentStackTrace", &CIsolate::GetCurrentStackTrace)
-
-      .def("enter", &CIsolate::Enter,
-           "Sets this isolate as the entered one for the current thread. "
-           "Saves the previously entered one (if any), so that it can be "
-           "restored when exiting.  Re-entering an isolate is allowed.")
-
-      .def("leave", &CIsolate::Leave,
-           "Exits this isolate by restoring the previously entered one in the current thread. "
-           "The isolate may still stay the same, if it was entered more than once.");
-  // clang-format on
-}
-
 CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
   // FromV8 may be called only on isolates created by our constructor
   assert(v8_isolate->GetNumberOfDataSlots() > kSelfDataSlotIndex);
