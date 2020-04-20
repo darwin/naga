@@ -13,7 +13,7 @@ import STPyV8
 
 def convert(obj):
     if isinstance(obj, STPyV8.JSObject):
-        if STPyV8.toolkit.hasJSArrayRole(obj):
+        if STPyV8.toolkit.has_role_array(obj):
             return [convert(v) for v in obj]
         else:
             return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])

@@ -215,10 +215,10 @@ struct fmt::formatter<roles_printer> {
   template <typename FormatContext>
   auto format(const roles_printer& val, FormatContext& ctx) {
     std::vector<const char*> flags;
-    if ((val.m_roles & CJSObject::Roles::JSFunction) == CJSObject::Roles::JSFunction) {
+    if ((val.m_roles & CJSObject::Roles::Function) == CJSObject::Roles::Function) {
       flags.push_back("Function");
     }
-    if ((val.m_roles & CJSObject::Roles::JSArray) == CJSObject::Roles::JSArray) {
+    if ((val.m_roles & CJSObject::Roles::Array) == CJSObject::Roles::Array) {
       flags.push_back("Array");
     }
     return format_to(ctx.out(), "[{}]", fmt::join(flags, ","));

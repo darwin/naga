@@ -6,10 +6,10 @@ class CJSObjectBase {
  public:
   typedef std::uint8_t RoleFlagsType;
   enum class Roles : RoleFlagsType {
-    JSObject = 0,  // always on
-    JSFunction = 1 << 0,
-    JSArray = 1 << 1,
-    CLJSObject = 1 << 2
+    Generic = 0,  // always on
+    Function = 1 << 0,
+    Array = 1 << 1,
+    CLJS = 1 << 2
   };
 
  protected:

@@ -90,9 +90,9 @@ void exposeJSToolkit(py::module py_module) {
         py::arg("propertiesObject") = py::dict(),
         "Creates a new object with the specified prototype object and properties.");
 
-  m.def("hasJSArrayRole", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::JSArray); });
-  m.def("hasJSFunctionRole", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::JSFunction); });
-  m.def("hasCLJSObjectRole", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::CLJSObject); });
+  m.def("has_role_array", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::Array); });
+  m.def("has_role_function", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::Function); });
+  m.def("has_role_cljs", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::CLJS); });
   // clang-format on
 }
 

@@ -36,17 +36,17 @@ static bool isCLJSType(v8::Local<v8::Object> v8_obj) {
 }
 
 CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
-    : m_roles(Roles::JSObject), m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
+    : m_roles(Roles::Generic), m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
   // detect supported object roles
   if (v8_obj->IsFunction()) {
-    m_roles |= Roles::JSFunction;
+    m_roles |= Roles::Function;
   }
   if (v8_obj->IsArray()) {
-    m_roles |= Roles::JSArray;
+    m_roles |= Roles::Array;
   }
 #ifdef STPYV8_FEATURE_CLJS
   if (isCLJSType(v8_obj)) {
-    m_roles |= Roles::CLJSObject;
+    m_roles |= Roles::CLJS;
   }
 #endif
   TRACE("CJSObjectBase::CJSObjectBase {} v8_obj={} roles={}", THIS, v8_obj, roles_printer{m_roles});
