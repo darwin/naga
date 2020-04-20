@@ -2,6 +2,10 @@
 #include "PythonObject.h"
 #include "JSException.h"
 
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
@@ -71,6 +75,7 @@ static v8::Local<v8::Value> callBridge(v8::IsolateRef v8_isolate,
                                        const char* name,
                                        v8::Local<v8::Object> v8_self,
                                        std::vector<v8::Local<v8::Value>> v8_params) {
+  TRACE("callBridge v8_isolate={} name={}", isolateref_printer{v8_isolate}, name);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_fn = lookupBridgeFn(name);
@@ -114,8 +119,9 @@ size_t CJSObjectCLJSImpl::Length() const {
     throw CJSException(msg, PyExc_TypeError);
   }
 
-  auto val = v8_result->Uint32Value(v8_context);
-  return val.ToChecked();
+  auto result = v8_result->Uint32Value(v8_context).ToChecked();
+  TRACE("CJSObjectCLJSImpl::Length {} => {}", THIS, result);
+  return result;
 }
 
 py::object CJSObjectCLJSImpl::Str() const {
@@ -136,7 +142,9 @@ py::object CJSObjectCLJSImpl::Str() const {
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
   auto raw_str = PyUnicode_FromString(*v8_utf);
-  return py::cast<py::object>(raw_str);
+  auto py_result = py::cast<py::object>(raw_str);
+  TRACE("CJSObjectCLJSImpl::Str {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObjectCLJSImpl::Repr() const {
@@ -157,7 +165,9 @@ py::object CJSObjectCLJSImpl::Repr() const {
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
   auto raw_str = PyUnicode_FromString(*v8_utf);
-  return py::cast<py::object>(raw_str);
+  auto py_result = py::cast<py::object>(raw_str);
+  TRACE("CJSObjectCLJSImpl::Repr {} => {}", THIS, py_result);
+  return py_result;
 }
 
 py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
@@ -177,7 +187,9 @@ py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   if (isSentinel(v8_result)) {
     throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  auto py_result = CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  TRACE("CJSObjectCLJSImpl::GetItemIndex {} py_index={} => {}", THIS, py_index, py_result);
+  return py_result;
 }
 
 py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
@@ -229,6 +241,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
     py_result.append(py_item);
   }
 
+  TRACE("CJSObjectCLJSImpl::GetItemSlice {} py_slice={} => {}", THIS, py_slice, py_result);
   return std::move(py_result);
 }
 
@@ -262,10 +275,13 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   if (isSentinel(v8_result)) {
     return py::none();
   }
-  return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  auto py_result = CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  TRACE("CJSObjectCLJSImpl::GetItemString {} py_str={} => {}", THIS, py_str, py_result);
+  return py_result;
 }
 
 py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
+  TRACE("CJSObjectCLJSImpl::GetItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
@@ -281,6 +297,7 @@ py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
 }
 
 py::object CJSObjectCLJSImpl::GetAttr(const py::object& py_key) const {
+  TRACE("CJSObjectCLJSImpl::GetAttr {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
