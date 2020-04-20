@@ -359,11 +359,11 @@ void CJSException::PrintCallStack(py::object py_file) {
   Message()->PrintCurrentStackTrace(m_v8_isolate, fdopen(fd, "w+"));
 }
 
-py::object CJSException::ToPythonStr() const {
+py::object CJSException::Str() const {
   std::stringstream ss;
   ss << *this;
   auto result = py::cast(ss.str());
-  TRACE("CJSException::ToPythonStr {} => {}", THIS, result);
+  TRACE("CJSException::Str {} => {}", THIS, result);
   return result;
 }
 

@@ -215,7 +215,7 @@ void exposeJSException(py::module py_module) {
 
   // clang-format off
   py::class_<CJSException>(py_module, "JSException")
-      .def("__str__", &CJSException::ToPythonStr)
+      .def("__str__", &CJSException::Str)
 
       .def_property_readonly("name", &CJSException::GetName,
                              "The exception name.")
@@ -264,7 +264,7 @@ void exposeJSStackTrace(py::module py_module) {
 
           // TODO: .def("__iter__", py::range(&CJavascriptStackTrace::begin, &CJavascriptStackTrace::end))
 
-      .def("__str__", &CJSStackTrace::ToPythonStr);
+      .def("__str__", &CJSStackTrace::Str);
 
   py::enum_<v8::StackTrace::StackTraceOptions>(py_module, "JSStackTraceOptions")
       .value("LineNumber", v8::StackTrace::kLineNumber)

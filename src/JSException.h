@@ -40,7 +40,7 @@ class CJSException : public std::runtime_error {
   std::string GetSourceLine();
   std::string GetStackTrace();
 
-  [[nodiscard]] py::object ToPythonStr() const;
+  [[nodiscard]] py::object Str() const;
 
   void PrintCallStack(py::object py_file);
   static void ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);

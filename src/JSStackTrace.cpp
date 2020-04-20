@@ -6,11 +6,11 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__)
 
-py::object CJSStackTrace::ToPythonStr() const {
+py::object CJSStackTrace::Str() const {
   std::stringstream ss;
   ss << *this;
   auto result = py::cast(ss.str());
-  TRACE("CJSStackTrace::ToPythonStr {} => {}", THIS, result);
+  TRACE("CJSStackTrace::Str {} => {}", THIS, result);
   return result;
 }
 
