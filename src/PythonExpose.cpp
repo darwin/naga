@@ -99,7 +99,7 @@ void exposeJSToolkit(py::module py_module) {
 void exposeAux(py::module py_module) {
   TRACE("exposeAux py_module={}", py_module);
   py::module m = py_module.def_submodule("aux", "Aux tools");
-  
+
   m.def("refcount_addr", &refCountAddr);
   m.def("trigger1", &trigger1);
   m.def("trigger2", &trigger2);
@@ -112,7 +112,7 @@ void exposeAux(py::module py_module) {
 
 void exposeJSNull(py::module py_module) {
   TRACE("exposeJSNull py_module={}", py_module);
-// Javascript's null maps to Python's None
+  // Javascript's null maps to Python's None
   py_module.add_object("JSNull", Py_JSNull);
 }
 

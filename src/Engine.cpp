@@ -103,15 +103,10 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_script = withPythonAllowThreadsGuard([&]() {
-    if (line >= 0 && col >= 0) {
-      auto v8_line = v8::Integer::New(m_v8_isolate, line);
-      auto v8_col = v8::Integer::New(m_v8_isolate, col);
-      v8::ScriptOrigin v8_script_origin(v8_name, v8_line, v8_col);
-      return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
-    } else {
-      v8::ScriptOrigin v8_script_origin(v8_name);
-      return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
-    }
+    auto v8_line = v8u::toPositiveInteger(v8_isolate, line);
+    auto v8_col = v8u::toPositiveInteger(v8_isolate, col);
+    auto v8_script_origin = v8u::createScriptOrigin(v8_name, v8_line, v8_col);
+    return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
   });
 
   if (v8_script.IsEmpty()) {

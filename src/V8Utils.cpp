@@ -57,6 +57,14 @@ v8::Local<v8::String> toString(const std::wstring& str) {
   return v8::Local<v8::String>();
 }
 
+v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i) {
+  if (i >= 0) {
+    return v8::Integer::New(v8_isolate, i);
+  } else {
+    return v8::Local<v8::Integer>();  // empty value
+  }
+}
+
 v8::String::Utf8Value toUTF(const v8::IsolateRef& v8_isolate, v8::Local<v8::String> v8_string) {
   return v8::String::Utf8Value(v8_isolate, v8_string);
 }
@@ -107,6 +115,12 @@ v8::IsolateRef createIsolate() {
 
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context) {
   return v8::Context::Scope(v8_context);
+}
+
+v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
+                                    v8::Local<v8::Integer> v8_line,
+                                    v8::Local<v8::Integer> v8_col) {
+  return v8::ScriptOrigin(v8_name, v8_line, v8_col);
 }
 
 }  // namespace v8u

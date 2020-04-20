@@ -251,9 +251,7 @@ py::object CJSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwar
   return py_result;
 }
 
-py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto,
-                                              const py::tuple& py_args,
-                                              const py::dict& py_kwds) {
+py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
