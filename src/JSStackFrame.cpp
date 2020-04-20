@@ -6,16 +6,16 @@
 
 std::string CJSStackFrame::GetScriptName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  v8::String::Utf8Value name(m_v8_isolate, Handle()->GetScriptName());
-  auto result = std::string(*name, name.length());
+  auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetScriptName());
+  auto result = std::string(*v8_name, v8_name.length());
   TRACE("CJSStackFrame::GetScriptName {} => {}", THIS, result);
   return result;
 }
 
 std::string CJSStackFrame::GetFunctionName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  v8::String::Utf8Value name(m_v8_isolate, Handle()->GetFunctionName());
-  auto result = std::string(*name, name.length());
+  auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetFunctionName());
+  auto result = std::string(*v8_name, v8_name.length());
   TRACE("CJSStackFrame::GetFunctionName {} => {}", THIS, result);
   return result;
 }

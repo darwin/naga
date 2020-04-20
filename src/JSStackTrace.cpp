@@ -21,7 +21,6 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
         isolateref_printer{v8_isolate}, frame_limit, v8_options);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
   if (v8_stack_trace.IsEmpty()) {
     CJSException::ThrowIf(v8_isolate, v8_try_catch);
@@ -45,7 +44,6 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
     throw CJSException("index of of range", PyExc_IndexError);
   }
   auto v8_stack_frame = Handle()->GetFrame(m_v8_isolate, idx);
-
   if (v8_stack_frame.IsEmpty()) {
     CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
   }
@@ -77,24 +75,26 @@ void CJSStackTrace::Dump(std::ostream& os) const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
 
   for (int i = 0; i < GetFrameCount(); i++) {
-    auto frame = GetFrame(i)->Handle();
-
-    v8::String::Utf8Value funcName(m_v8_isolate, frame->GetFunctionName()),
-        scriptName(m_v8_isolate, frame->GetScriptName());
+    auto v8_frame = GetFrame(i)->Handle();
+    auto v8_func_name = v8u::toUTF(m_v8_isolate, v8_frame->GetFunctionName());
+    auto v8_script_name = v8u::toUTF(m_v8_isolate, v8_frame->GetScriptName());
 
     os << "\tat ";
 
-    if (funcName.length()) {
-      os << std::string(*funcName, funcName.length()) << " (";
+    if (v8_func_name.length()) {
+      os << std::string(*v8_func_name, v8_func_name.length())  //
+         << " (";                                              //
     }
-
-    if (frame->IsEval()) {
+    if (v8_frame->IsEval()) {
       os << "(eval)";
     } else {
-      os << std::string(*scriptName, scriptName.length()) << ":" << frame->GetLineNumber() << ":" << frame->GetColumn();
+      os << std::string(*v8_script_name, v8_script_name.length())  //
+         << ":"                                                    //
+         << v8_frame->GetLineNumber()                              //
+         << ":"                                                    //
+         << v8_frame->GetColumn();                                 //
     }
-
-    if (funcName.length()) {
+    if (v8_func_name.length()) {
       os << ")";
     }
 
