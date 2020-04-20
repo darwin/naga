@@ -8,18 +8,17 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kEngineLogger), __VA_ARGS__)
 
-bool CEngine::IsDead() {
-  TRACE("CEngine::IsDead");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto result = v8_isolate->IsDead();
-  TRACE("CEngine::IsDead => {}", result);
-  return result;
+CEngine::CEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
+  TRACE("CEngine::CEngine");
 }
 
-void CEngine::TerminateAllThreads() {
-  TRACE("CEngine::TerminateAllThreads");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8_isolate->TerminateExecution();
+CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
+  TRACE("CEngine::CEngine v8_isolate={}", isolateref_printer{m_v8_isolate});
+}
+
+void CEngine::SetFlags(const std::string& flags) {
+  TRACE("CEngine::SetFlags flags={}", flags);
+  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
 }
 
 void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
@@ -40,6 +39,66 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   v8_isolate->SetStackLimit(stack_limit);
+}
+
+const char* CEngine::GetVersion() {
+  TRACE("CEngine::GetVersion");
+  auto result = v8::V8::GetVersion();
+  TRACE("CEngine::GetVersion => {}", result);
+  return result;
+}
+
+void CEngine::TerminateAllThreads() {
+  TRACE("CEngine::TerminateAllThreads");
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8_isolate->TerminateExecution();
+}
+
+bool CEngine::IsDead() {
+  TRACE("CEngine::IsDead");
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto result = v8_isolate->IsDead();
+  TRACE("CEngine::IsDead => {}", result);
+  return result;
+}
+
+py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
+  TRACE("CEngine::ExecuteScript v8_script={}", v8_script);
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+
+  v8::MaybeLocal<v8::Value> v8_result;
+
+  withPythonAllowThreadsGuard([&]() { v8_result = v8_script->Run(v8_context); });
+
+  if (!v8_result.IsEmpty()) {
+    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
+  } else {
+    if (v8_try_catch.HasCaught()) {
+      if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
+        throw py::error_already_set();
+      }
+
+      CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
+    }
+    v8_result = v8::Null(m_v8_isolate);
+  }
+
+  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
+}
+
+CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
+  TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, src);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
+}
+
+CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
+  TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
@@ -71,65 +130,6 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   }
 
   return std::make_shared<CScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
-}
-
-py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
-  TRACE("CEngine::ExecuteScript v8_script={}", v8_script);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-
-  v8::MaybeLocal<v8::Value> v8_result;
-
-  withPythonAllowThreadsGuard([&]() { v8_result = v8_script->Run(v8_context); });
-
-  if (!v8_result.IsEmpty()) {
-    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
-  } else {
-    if (v8_try_catch.HasCaught()) {
-      if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
-        throw py::error_already_set();
-      }
-
-      CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
-    }
-    v8_result = v8::Null(m_v8_isolate);
-  }
-
-  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
-}
-
-void CEngine::SetFlags(const std::string& flags) {
-  TRACE("CEngine::SetFlags flags={}", flags);
-  v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
-}
-
-const char* CEngine::GetVersion() {
-  TRACE("CEngine::GetVersion");
-  auto result = v8::V8::GetVersion();
-  TRACE("CEngine::GetVersion => {}", result);
-  return result;
-}
-
-CEngine::CEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
-  TRACE("CEngine::CEngine");
-}
-
-CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
-  TRACE("CEngine::CEngine v8_isolate={}", isolateref_printer{m_v8_isolate});
-}
-
-CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
-  TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, src);
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
-}
-
-CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 void CEngine::Dump(std::ostream& os) const {
