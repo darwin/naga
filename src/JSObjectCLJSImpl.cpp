@@ -13,7 +13,7 @@ static const auto sentinel_name = "bcljs-bridge-sentinel";
 
 static inline void validateBridgeResult(v8::Local<v8::Value> v8_val, const char* fn_name) {
   if (v8_val.IsEmpty()) {
-    throw CJSException(string_format("Unexpected: got empty result from bcljs.bridge.%s call", fn_name),
+    throw CJSException(fmt::format("Unexpected: got empty result from bcljs.bridge.{} call", fn_name),
                        PyExc_UnboundLocalError);
   }
 }
@@ -59,12 +59,12 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
   auto v8_fn_val = v8_bridge_obj->Get(v8_context, v8_fn_key).ToLocalChecked();
 
   if (v8_fn_val.IsEmpty() || v8_fn_val->IsNullOrUndefined()) {
-    auto msg = string_format("Unable to retrieve bcljs.bridge.%s", name);
+    auto msg = fmt::format("Unable to retrieve bcljs.bridge.{}", name);
     throw CJSException(msg, PyExc_UnboundLocalError);
   }
 
   if (!v8_fn_val->IsFunction()) {
-    auto msg = string_format("Unexpected: bcljs.bridge.%s must be a js function", name);
+    auto msg = fmt::format("Unexpected: bcljs.bridge.{} must be a js function", name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
@@ -115,7 +115,7 @@ size_t CJSObjectCLJSImpl::Length() const {
   validateBridgeResult(v8_result, fn_name);
 
   if (!v8_result->IsNumber()) {
-    auto msg = string_format("Unexpected: bcljs.bridge.%s expected to return a number", fn_name);
+    auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a number", fn_name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
@@ -136,7 +136,7 @@ py::object CJSObjectCLJSImpl::Str() const {
   validateBridgeResult(v8_result, fn_name);
 
   if (!v8_result->IsString()) {
-    auto msg = string_format("Unexpected: bcljs.bridge.%s expected to return a string", fn_name);
+    auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a string", fn_name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
@@ -159,7 +159,7 @@ py::object CJSObjectCLJSImpl::Repr() const {
   validateBridgeResult(v8_result, fn_name);
 
   if (!v8_result->IsString()) {
-    auto msg = string_format("Unexpected: bcljs.bridge.%s expected to return a string", fn_name);
+    auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a string", fn_name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
@@ -218,7 +218,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   validateBridgeResult(v8_result, fn_name);
 
   if (!v8_result->IsArray()) {
-    auto msg = string_format("Unexpected: bcljs.bridge.%s must return a js array", fn_name);
+    auto msg = fmt::format("Unexpected: bcljs.bridge.{} must return a js array", fn_name);
     throw CJSException(msg, PyExc_TypeError);
   }
 
@@ -233,7 +233,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
     auto v8_item = v8_result_arr->Get(v8_context, v8_i).ToLocalChecked();
 
     if (v8_item.IsEmpty()) {
-      auto msg = string_format("Got empty value at index %d when processing slice", i);
+      auto msg = fmt::format("Got empty value at index {} when processing slice", i);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
 
@@ -259,7 +259,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
     auto v8_val = m_base.Object()->Get(v8_context, v8_str).ToLocalChecked();
     if (v8_val.IsEmpty()) {
       auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_val);
-      auto msg = string_format("Unexpected: got empty result when accessing js property '%s'", *v8_utf);
+      auto msg = fmt::format("Unexpected: got empty result when accessing js property '{}'", *v8_utf);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
     return CJSObject::Wrap(v8_isolate, v8_val, m_base.Object());
