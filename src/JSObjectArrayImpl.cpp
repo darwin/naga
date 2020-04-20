@@ -2,15 +2,21 @@
 #include "PythonObject.h"
 #include "JSException.h"
 
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+
 size_t CJSObjectArrayImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto result = m_base.Object().As<v8::Array>()->Length();
+  TRACE("CJSObjectArrayImpl::Length {} => {}", THIS, result);
   return result;
 }
 
 py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
+  TRACE("CJSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -64,6 +70,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 }
 
 py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
+  TRACE("CJSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -151,6 +158,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
 }
 
 py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
+  TRACE("CJSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -197,6 +205,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
 }
 
 bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
+  TRACE("CJSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
