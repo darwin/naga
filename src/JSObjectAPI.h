@@ -18,43 +18,42 @@ class CJSObjectAPI : public CJSObjectBase {
  public:
   explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj) : CJSObjectBase(v8_obj) {}
 
-  // exposed Python API
-  py::object PythonGetAttr(const py::object& py_key) const;
-  void PythonSetAttr(const py::object& py_key, const py::object& py_obj) const;
-  void PythonDelAttr(const py::object& py_key) const;
-  [[nodiscard]] py::list PythonDir() const;
+  static py::object CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 
-  py::object PythonGetItem(const py::object& py_key) const;
-  py::object PythonSetItem(const py::object& py_key, const py::object& py_value) const;
-  py::object PythonDelItem(const py::object& py_key) const;
-  bool PythonContains(const py::object& py_key) const;
+  py::object GetAttr(const py::object& py_key) const;
+  void SetAttr(const py::object& py_key, const py::object& py_obj) const;
+  void DelAttr(const py::object& py_key) const;
+  [[nodiscard]] py::list Dir() const;
 
-  [[nodiscard]] int PythonHash() const;
-  [[nodiscard]] CJSObjectPtr PythonClone() const;
+  py::object GetItem(const py::object& py_key) const;
+  py::object SetItem(const py::object& py_key, const py::object& py_value) const;
+  py::object DelItem(const py::object& py_key) const;
+  bool Contains(const py::object& py_key) const;
 
-  [[nodiscard]] size_t PythonLen() const;
-  [[nodiscard]] py::object PythonInt() const;
-  [[nodiscard]] py::object PythonFloat() const;
-  [[nodiscard]] py::object PythonBool() const;
-  [[nodiscard]] py::object PythonStr() const;
-  [[nodiscard]] py::object PythonRepr() const;
+  [[nodiscard]] int Hash() const;
+  [[nodiscard]] CJSObjectPtr Clone() const;
 
-  [[nodiscard]] bool PythonEQ(const CJSObjectPtr& other) const;
-  [[nodiscard]] bool PythonNE(const CJSObjectPtr& other) const;
+  [[nodiscard]] size_t Len() const;
+  [[nodiscard]] py::object Int() const;
+  [[nodiscard]] py::object Float() const;
+  [[nodiscard]] py::object Bool() const;
+  [[nodiscard]] py::object Str() const;
+  [[nodiscard]] py::object Repr() const;
 
-  static py::object PythonCreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+  [[nodiscard]] bool EQ(const CJSObjectPtr& other) const;
+  [[nodiscard]] bool NE(const CJSObjectPtr& other) const;
 
-  py::object PythonCall(const py::args& py_args, const py::kwargs& py_kwargs);
-  py::object PythonApply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds);
-  py::object PythonInvoke(const py::list& py_args, const py::dict& py_kwds);
+  py::object Call(const py::args& py_args, const py::kwargs& py_kwargs);
+  py::object Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds);
+  py::object Invoke(const py::list& py_args, const py::dict& py_kwds);
 
-  [[nodiscard]] std::string PythonGetName() const;
-  void PythonSetName(const std::string& name);
+  [[nodiscard]] std::string GetName() const;
+  void SetName(const std::string& name);
 
-  [[nodiscard]] int PythonLineNumber() const;
-  [[nodiscard]] int PythonColumnNumber() const;
-  [[nodiscard]] int PythonLineOffset() const;
-  [[nodiscard]] int PythonColumnOffset() const;
-  [[nodiscard]] std::string PythonResourceName() const;
-  [[nodiscard]] std::string PythonInferredName() const;
+  [[nodiscard]] int LineNumber() const;
+  [[nodiscard]] int ColumnNumber() const;
+  [[nodiscard]] int LineOffset() const;
+  [[nodiscard]] int ColumnOffset() const;
+  [[nodiscard]] std::string ResourceName() const;
+  [[nodiscard]] std::string InferredName() const;
 };

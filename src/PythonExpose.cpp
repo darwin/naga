@@ -45,46 +45,46 @@ void exposeJSToolkit(py::module py_module) {
   py::module m = py_module.def_submodule("toolkit", "Javascript Toolkit");
 
   // clang-format off
-  m.def("linenum", ForwardToThis<&CJSObjectAPI::PythonLineNumber>{},
+  m.def("linenum", ForwardToThis<&CJSObjectAPI::LineNumber>{},
         py::arg("this"),
         "The line number of function in the script");
-  m.def("colnum", ForwardToThis<&CJSObjectAPI::PythonColumnNumber>{},
+  m.def("colnum", ForwardToThis<&CJSObjectAPI::ColumnNumber>{},
         py::arg("this"),
         "The column number of function in the script");
-  m.def("resname", ForwardToThis<&CJSObjectAPI::PythonResourceName>{},
+  m.def("resname", ForwardToThis<&CJSObjectAPI::ResourceName>{},
         py::arg("this"),
         "The resource name of script");
-  m.def("inferredname", ForwardToThis<&CJSObjectAPI::PythonInferredName>{},
+  m.def("inferredname", ForwardToThis<&CJSObjectAPI::InferredName>{},
         py::arg("this"),
         "Name inferred from variable or property assignment of this function");
-  m.def("lineoff", ForwardToThis<&CJSObjectAPI::PythonLineOffset>{},
+  m.def("lineoff", ForwardToThis<&CJSObjectAPI::LineOffset>{},
         py::arg("this"),
         "The line offset of function in the script");
-  m.def("coloff", ForwardToThis<&CJSObjectAPI::PythonColumnOffset>{},
+  m.def("coloff", ForwardToThis<&CJSObjectAPI::ColumnOffset>{},
         py::arg("this"),
         "The column offset of function in the script");
-  m.def("set_name", ForwardToThis<&CJSObjectAPI::PythonSetName>{},
+  m.def("set_name", ForwardToThis<&CJSObjectAPI::SetName>{},
         py::arg("this"),
         py::arg("name"));
-  m.def("get_name", ForwardToThis<&CJSObjectAPI::PythonGetName>{},
+  m.def("get_name", ForwardToThis<&CJSObjectAPI::GetName>{},
         py::arg("this"));
 
-  m.def("apply", ForwardToThis<&CJSObjectAPI::PythonApply>{},
+  m.def("apply", ForwardToThis<&CJSObjectAPI::Apply>{},
         py::arg("this"),
         py::arg("self"),
         py::arg("args") = py::list(),
         py::arg("kwds") = py::dict(),
         "Performs a function call using the parameters.");
-  m.def("invoke", ForwardToThis<&CJSObjectAPI::PythonInvoke>{},
+  m.def("invoke", ForwardToThis<&CJSObjectAPI::Invoke>{},
         py::arg("this"),
         py::arg("args") = py::list(),
         py::arg("kwds") = py::dict(),
         "Performs a binding method call using the parameters.");
-  m.def("clone", ForwardToThis<&CJSObjectAPI::PythonClone>{},
+  m.def("clone", ForwardToThis<&CJSObjectAPI::Clone>{},
         py::arg("this"),
         "Clone the object.");
 
-  m.def("create", &CJSObjectAPI::PythonCreateWithArgs,
+  m.def("create", &CJSObjectAPI::CreateWithArgs,
         py::arg("constructor"),
         py::arg("arguments") = py::tuple(),
         py::arg("propertiesObject") = py::dict(),
@@ -118,35 +118,35 @@ void exposeJSObject(py::module py_module) {
       //
       // solution: If you want to expose additional functionality, do it as a plain helper function in toolkit module.
       //           The helper can take instance as the first argument and operate on it.
-      .def("__getattr__", &CJSObjectAPI::PythonGetAttr)
-      .def("__setattr__", &CJSObjectAPI::PythonSetAttr)
-      .def("__delattr__", &CJSObjectAPI::PythonDelAttr)
+      .def("__getattr__", &CJSObjectAPI::GetAttr)
+      .def("__setattr__", &CJSObjectAPI::SetAttr)
+      .def("__delattr__", &CJSObjectAPI::DelAttr)
 
-      .def("__hash__", &CJSObjectAPI::PythonHash)
-      .def("__dir__", &CJSObjectAPI::PythonDir)
+      .def("__hash__", &CJSObjectAPI::Hash)
+      .def("__dir__", &CJSObjectAPI::Dir)
 
-      .def("__getitem__", &CJSObjectAPI::PythonGetItem)
-      .def("__setitem__", &CJSObjectAPI::PythonSetItem)
-      .def("__delitem__", &CJSObjectAPI::PythonDelItem)
-      .def("__contains__", &CJSObjectAPI::PythonContains)
+      .def("__getitem__", &CJSObjectAPI::GetItem)
+      .def("__setitem__", &CJSObjectAPI::SetItem)
+      .def("__delitem__", &CJSObjectAPI::DelItem)
+      .def("__contains__", &CJSObjectAPI::Contains)
 
-      .def("__len__", &CJSObjectAPI::PythonLen)
+      .def("__len__", &CJSObjectAPI::Len)
 
-      .def("__int__", &CJSObjectAPI::PythonInt)
-      .def("__float__", &CJSObjectAPI::PythonFloat)
-      .def("__str__", &CJSObjectAPI::PythonStr)
-      .def("__repr__", &CJSObjectAPI::PythonRepr)
-      .def("__bool__", &CJSObjectAPI::PythonBool)
+      .def("__int__", &CJSObjectAPI::Int)
+      .def("__float__", &CJSObjectAPI::Float)
+      .def("__str__", &CJSObjectAPI::Str)
+      .def("__repr__", &CJSObjectAPI::Repr)
+      .def("__bool__", &CJSObjectAPI::Bool)
 
-      .def("__eq__", &CJSObjectAPI::PythonEQ)
-      .def("__ne__", &CJSObjectAPI::PythonNE)
-      .def("__call__", &CJSObjectAPI::PythonCall)
+      .def("__eq__", &CJSObjectAPI::EQ)
+      .def("__ne__", &CJSObjectAPI::NE)
+      .def("__call__", &CJSObjectAPI::Call)
       // TODO: .def("__iter__", &CJSObjectArray::begin, &CJSObjectArray::end)
 
       // Emulating dict object
       // TODO: I'm not sure about this, revisit
       // this should go away when we implement __iter__
-      //      .def("keys", &CJSObjectAPI::PythonDir,
+      //      .def("keys", &CJSObjectAPI::Dir,
       //           "Get a list of the object attributes.")
 
       ;
