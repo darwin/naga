@@ -63,8 +63,12 @@ static void translateJavascriptException(const CJSException& e) {
     auto m = py::module::import("_STPyV8");
     auto py_error_class = m.attr("JSError");
     auto py_error_instance = py_error_class(e);
-    // TODO: review this inc_ref, I'm not sure about this
-    py_error_instance.inc_ref();
+    //
+    // https://docs.python.org/3.7/extending/extending.html?highlight=extending#intermezzo-errors-and-exceptions
+    // The most general function is
+    // `PyErr_SetObject`, which takes two object arguments, the exception and
+    // its associated value.  You don't need to `Py_INCREF` the objects passed
+    // to any of these functions.
     PyErr_SetObject(py_error_class.ptr(), py_error_instance.ptr());
   }
 }
