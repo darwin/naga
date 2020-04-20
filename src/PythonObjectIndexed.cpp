@@ -53,7 +53,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     return v8::Undefined(v8_isolate).As<v8::Value>();
   });
 
-  auto v8_final_result = value_or(v8_result, [&]() { return v8::Undefined(v8_isolate); });
+  auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Undefined(v8_isolate));
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
@@ -94,7 +94,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
     return v8_value;
   });
 
-  auto v8_final_result = value_or(v8_result, [&]() { return v8::Undefined(v8_isolate); });
+  auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Undefined(v8_isolate));
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
@@ -140,7 +140,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
     return v8::Local<v8::Integer>();
   });
 
-  auto v8_final_result = value_or(v8_result, [&]() { return v8::Local<v8::Integer>(); });
+  auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Local<v8::Integer>());
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
@@ -172,7 +172,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
     return v8::Local<v8::Boolean>();
   });
 
-  auto v8_final_result = value_or(v8_result, [&]() { return v8::Local<v8::Boolean>(); });
+  auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Local<v8::Boolean>());
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
@@ -200,6 +200,6 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     return v8_array;
   });
 
-  auto v8_final_result = value_or(v8_result, [&]() { return v8::Local<v8::Array>(); });
+  auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Local<v8::Array>());
   v8_info.GetReturnValue().Set(v8_final_result);
 }
