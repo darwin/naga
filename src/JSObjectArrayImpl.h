@@ -7,8 +7,8 @@ class CJSObjectArrayImpl {
   CJSObjectBase& m_base;
 
   size_t Length() const;
-  py::object GetItem(py::object py_key) const;
-  py::object SetItem(py::object py_key, py::object py_value) const;
-  py::object DelItem(py::object py_key) const;
+  py::object GetItem(const py::object& py_key) const;
+  py::object SetItem(const py::object& py_key, const py::object& py_value) const;
+  py::object DelItem(const py::object& py_key) const;
   bool Contains(const py::object& py_key) const;
 };

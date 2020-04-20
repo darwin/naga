@@ -24,7 +24,7 @@ void CJSObjectGenericImpl::CheckAttr(v8::Local<v8::String> v8_name) const {
   }
 }
 
-py::object CJSObjectGenericImpl::GetAttr(py::object py_key) const {
+py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
   TRACE("CJSObjectGenericImpl::GetAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -45,7 +45,7 @@ py::object CJSObjectGenericImpl::GetAttr(py::object py_key) const {
   return py_result;
 }
 
-void CJSObjectGenericImpl::SetAttr(py::object py_key, py::object py_obj) const {
+void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& py_obj) const {
   TRACE("CJSObjectGenericImpl::SetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -61,7 +61,7 @@ void CJSObjectGenericImpl::SetAttr(py::object py_key, py::object py_obj) const {
   }
 }
 
-void CJSObjectGenericImpl::DelAttr(py::object py_key) const {
+void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
   TRACE("CJSObjectGenericImpl::DelAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);

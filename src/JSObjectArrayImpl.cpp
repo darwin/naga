@@ -10,7 +10,7 @@ size_t CJSObjectArrayImpl::Length() const {
   return result;
 }
 
-py::object CJSObjectArrayImpl::GetItem(py::object py_key) const {
+py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -63,7 +63,7 @@ py::object CJSObjectArrayImpl::GetItem(py::object py_key) const {
   throw CJSException("list indices must be integers", PyExc_TypeError);
 }
 
-py::object CJSObjectArrayImpl::SetItem(py::object py_key, py::object py_value) const {
+py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -150,7 +150,7 @@ py::object CJSObjectArrayImpl::SetItem(py::object py_key, py::object py_value) c
   return py_value;
 }
 
-py::object CJSObjectArrayImpl::DelItem(py::object py_key) const {
+py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
