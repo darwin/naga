@@ -1,6 +1,4 @@
 #include "Isolate.h"
-
-#include "Context.h"
 #include "Tracer.h"
 #include "JSStackTrace.h"
 
@@ -32,8 +30,12 @@ CIsolate::~CIsolate() {
   m_tracer.reset();
 
   // isolate could be entered, we cannot dispose unless we exit it completely
+  int defensive_counter = 0;
   while (m_v8_isolate->IsInUse()) {
     Leave();
+    if (++defensive_counter > 100) {
+      break;
+    }
   }
   Dispose();
   TRACE("CIsolate::~CIsolate {} [COMPLETED]", THIS);
