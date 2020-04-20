@@ -68,14 +68,9 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_result = withPythonAllowThreadsGuard([&]() { return v8_script->Run(v8_context); });
 
-  v8::MaybeLocal<v8::Value> v8_result;
-
-  withPythonAllowThreadsGuard([&]() { v8_result = v8_script->Run(v8_context); });
-
-  if (!v8_result.IsEmpty()) {
-    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
-  } else {
+  if (v8_result.IsEmpty()) {
     if (v8_try_catch.HasCaught()) {
       if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
         throw py::error_already_set();
@@ -107,21 +102,15 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-
-  v8::Persistent<v8::String> v8_script_source(m_v8_isolate, v8_src);
-
-  v8::MaybeLocal<v8::Script> v8_script;
-  auto v8_source = v8::Local<v8::String>::New(m_v8_isolate, v8_script_source);
-
-  withPythonAllowThreadsGuard([&]() {
+  auto v8_script = withPythonAllowThreadsGuard([&]() {
     if (line >= 0 && col >= 0) {
       auto v8_line = v8::Integer::New(m_v8_isolate, line);
       auto v8_col = v8::Integer::New(m_v8_isolate, col);
       v8::ScriptOrigin v8_script_origin(v8_name, v8_line, v8_col);
-      v8_script = v8::Script::Compile(v8_context, v8_source, &v8_script_origin);
+      return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
     } else {
       v8::ScriptOrigin v8_script_origin(v8_name);
-      v8_script = v8::Script::Compile(v8_context, v8_source, &v8_script_origin);
+      return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
     }
   });
 
