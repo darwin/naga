@@ -46,7 +46,7 @@ CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
 
 CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()) {
   TRACE("CIsolate::CIsolate {}", THIS);
-  m_tracer = new CTracer();
+  m_tracer = std::make_unique<CTracer>();
   m_v8_isolate->SetData(kSelfDataSlotIndex, this);
 }
 
@@ -54,8 +54,7 @@ CIsolate::~CIsolate() {
   TRACE("CIsolate::~CIsolate {}", THIS);
 
   // tracer has to die and do cleanup before we call dispose
-  delete m_tracer;
-  m_tracer = nullptr;
+  m_tracer.reset();
 
   // isolate could be entered, we cannot dispose unless we exit it completely
   while (m_v8_isolate->IsInUse()) {
@@ -105,6 +104,6 @@ void CIsolate::Dispose() {
 }
 
 CTracer* CIsolate::Tracer() {
-  TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer);
-  return m_tracer;
+  TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
+  return m_tracer.get();
 }

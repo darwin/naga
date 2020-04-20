@@ -6,7 +6,7 @@ enum IsolateDataSlot { kReserved = 0, kJSObjectTemplate = 1 };
 
 class CIsolate : public std::enable_shared_from_this<CIsolate> {
   v8::IsolateRef m_v8_isolate;
-  CTracer* m_tracer;
+  std::unique_ptr<CTracer> m_tracer;
 
  public:
   CIsolate();
