@@ -8,7 +8,7 @@ void exposeJSUndefined(py::module py_module);
 void exposeJSObject(py::module py_module);
 void exposeJSPlatform(py::module py_module);
 void exposeJSIsolate(py::module py_module);
-void exposeJSError(py::module py_module);
+void exposeJSException(py::module py_module);
 void exposeJSStackFrame(py::module py_module);
 void exposeJSStackTrace(py::module py_module);
 void exposeJSEngine(py::module py_module);

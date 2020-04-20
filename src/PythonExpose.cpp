@@ -192,13 +192,13 @@ void exposeJSIsolate(py::module py_module) {
   // clang-format on
 }
 
-void exposeJSError(py::module py_module) {
+void exposeJSException(py::module py_module) {
   TRACE("exposeJSError py_module={}", py_module);
 
   py::register_exception_translator(&translateException);
 
   // clang-format off
-  py::class_<CJSException>(py_module, "_JSError")
+  py::class_<CJSException>(py_module, "JSException")
       .def("__str__", &CJSException::ToPythonStr)
 
       .def_property_readonly("name", &CJSException::GetName,

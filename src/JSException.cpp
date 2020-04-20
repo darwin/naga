@@ -55,15 +55,15 @@ static void translateJavascriptException(const CJSException& e) {
       }
     }
 
-    // TODO: revisit if we can do better with pybind
-    // Boost Python doesn't support inheriting from Python class,
-    // so, just use some workaround to throw our custom exception
-    //
-    // http://www.language-binding.net/pyplusplus/troubleshooting_guide/exceptions/exceptions.html
-
+    // This is a workaround for the fact that we cannot inherit from pure Python classes.
+    // Ideally we would like to inherit JSException from JSError and set JSException as the final error.
+    // Our approach here is to instead wrap JSException in JSError (we pass it as argument when
+    // creating JSError instance). JSError then forwards some functionality to the wrapped class.
+    // See STPyV8.py.
     auto m = py::module::import("_STPyV8");
     auto py_error_class = m.attr("JSError");
     auto py_error_instance = py_error_class(e);
+    // TODO: review this inc_ref, I'm not sure about this
     py_error_instance.inc_ref();
     PyErr_SetObject(py_error_class.ptr(), py_error_instance.ptr());
   }

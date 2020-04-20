@@ -65,9 +65,9 @@ Internal   = JSAttribute(name = 'internal')
 
 
 class JSError(Exception):
-    def __init__(self, impl):
+    def __init__(self, js_exception):
         Exception.__init__(self)
-        self._impl = impl
+        self._impl = js_exception
 
     def __str__(self):
         return str(self._impl)
@@ -118,7 +118,8 @@ class JSError(Exception):
     def frames(self):
         return self.parse_stack(self.stackTrace)
 
-_STPyV8._JSError._jsclass = JSError
+# C++ code relies on this class, it uses it as final wrapper of JSException object
+# this gives us flexibility to implement some JSException functionality in pure Python
 _STPyV8.JSError = JSError
 
 JSObject    = _STPyV8.JSObject
