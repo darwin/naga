@@ -41,7 +41,7 @@ struct ForwardToThis<F> {
 };
 
 void exposeJSToolkit(py::module py_module) {
-  TRACE("exposeJSObject py_module={}", py_module);
+  TRACE("exposeJSToolkit py_module={}", py_module);
   py::module m = py_module.def_submodule("toolkit", "Javascript Toolkit");
 
   // clang-format off
@@ -96,12 +96,28 @@ void exposeJSToolkit(py::module py_module) {
   // clang-format on
 }
 
+void exposeAux(py::module py_module) {
+  TRACE("exposeAux py_module={}", py_module);
+  py::module m = py_module.def_submodule("aux", "Aux tools");
+  
+  m.def("refcount_addr", &refCountAddr);
+  m.def("trigger1", &trigger1);
+  m.def("trigger2", &trigger2);
+  m.def("trigger3", &trigger3);
+  m.def("trigger4", &trigger4);
+  m.def("trigger5", &trigger5);
+  m.def("trace", &trace);
+  m.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
+}
+
 void exposeJSNull(py::module py_module) {
-  // Javascript's null maps to Python's None
+  TRACE("exposeJSNull py_module={}", py_module);
+// Javascript's null maps to Python's None
   py_module.add_object("JSNull", Py_JSNull);
 }
 
 void exposeJSUndefined(py::module py_module) {
+  TRACE("exposeJSUndefined py_module={}", py_module);
   // Javascript's undefined maps to our JSUndefined
   py_module.add_object("JSUndefined", Py_JSUndefined);
 }
@@ -396,15 +412,4 @@ void exposeJSContext(py::module py_module) {
       .def("__bool__", &CContext::IsEntered,
            "the context has been entered.");
   // clang-format on
-}
-
-void exposeAux(py::module py_module) {
-  py_module.def("refcount_addr", &refCountAddr);
-  py_module.def("trigger1", &trigger1);
-  py_module.def("trigger2", &trigger2);
-  py_module.def("trigger3", &trigger3);
-  py_module.def("trigger4", &trigger4);
-  py_module.def("trigger5", &trigger5);
-  py_module.def("trace", &trace);
-  py_module.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
 }

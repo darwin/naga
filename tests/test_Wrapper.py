@@ -732,7 +732,7 @@ class TestWrapper(unittest.TestCase):
 
             del ctxt
 
-        STPyV8.v8_request_gc_for_testing()
+        STPyV8.aux.v8_request_gc_for_testing()
         self.assertEqual(g_refs, sys.getrefcount(g))
 
     def testProperty(self):
