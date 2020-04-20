@@ -6,15 +6,14 @@ class CJSObjectCLJSImpl {
  public:
   CJSObjectBase& m_base;
 
-  // CLJSObject
-  size_t CLJSLength() const;
-  py::object CLJSRepr() const;
-  py::object CLJSStr() const;
-  py::object CLJSGetItem(const py::object& py_key) const;
-  py::object CLJSGetAttr(const py::object& py_key) const;
+  size_t Length() const;
+  py::object Repr() const;
+  py::object Str() const;
+  py::object GetItem(const py::object& py_key) const;
+  py::object GetAttr(const py::object& py_key) const;
 
  private:
-  py::object CLJSGetItemSlice(const py::object& py_slice) const;
-  py::object CLJSGetItemIndex(const py::object& py_index) const;
-  py::object CLJSGetItemString(const py::object& py_str) const;
+  py::object GetItemSlice(const py::object& py_slice) const;
+  py::object GetItemIndex(const py::object& py_index) const;
+  py::object GetItemString(const py::object& py_str) const;
 };

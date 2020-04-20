@@ -24,8 +24,8 @@ void CJSObjectGenericImpl::CheckAttr(v8::Local<v8::String> v8_name) const {
   }
 }
 
-py::object CJSObjectGenericImpl::ObjectGetAttr(py::object py_key) const {
-  TRACE("CJSObjectGenericImpl::ObjectGetAttr {} name={}", THIS, py_key);
+py::object CJSObjectGenericImpl::GetAttr(py::object py_key) const {
+  TRACE("CJSObjectGenericImpl::GetAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -45,8 +45,8 @@ py::object CJSObjectGenericImpl::ObjectGetAttr(py::object py_key) const {
   return py_result;
 }
 
-void CJSObjectGenericImpl::ObjectSetAttr(py::object py_key, py::object py_obj) const {
-  TRACE("CJSObjectGenericImpl::ObjectSetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
+void CJSObjectGenericImpl::SetAttr(py::object py_key, py::object py_obj) const {
+  TRACE("CJSObjectGenericImpl::SetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -61,8 +61,8 @@ void CJSObjectGenericImpl::ObjectSetAttr(py::object py_key, py::object py_obj) c
   }
 }
 
-void CJSObjectGenericImpl::ObjectDelAttr(py::object py_key) const {
-  TRACE("CJSObjectGenericImpl::ObjectDelAttr {} name={}", THIS, py_key);
+void CJSObjectGenericImpl::DelAttr(py::object py_key) const {
+  TRACE("CJSObjectGenericImpl::DelAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
@@ -77,7 +77,7 @@ void CJSObjectGenericImpl::ObjectDelAttr(py::object py_key) const {
   }
 }
 
-bool CJSObjectGenericImpl::ObjectContains(const py::object& py_key) const {
+bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -92,6 +92,6 @@ bool CJSObjectGenericImpl::ObjectContains(const py::object& py_key) const {
     CJSException::ThrowIf(v8_isolate, try_catch);
   }
 
-  TRACE("CJSObjectGenericImpl::ObjectContains {} py_key={} => {}", THIS, py_key, result);
+  TRACE("CJSObjectGenericImpl::Contains {} py_key={} => {}", THIS, py_key, result);
   return result;
 }

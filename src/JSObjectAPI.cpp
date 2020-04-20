@@ -12,9 +12,9 @@ py::object CJSObjectAPI::PythonGetAttr(const py::object& py_key) const {
   if (HasRole(Roles::Array)) {
     throw CJSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else if (HasRole(Roles::Array)) {
-    py_result = m_cljs_impl.CLJSGetAttr(py_key);
+    py_result = m_cljs_impl.GetAttr(py_key);
   } else {
-    py_result = m_generic_impl.ObjectGetAttr(py_key);
+    py_result = m_generic_impl.GetAttr(py_key);
   }
   TRACE("CJSObjectAPI::PythonGetAttr {} => {}", THIS, py_result);
   return py_result;
@@ -24,7 +24,7 @@ void CJSObjectAPI::PythonSetAttr(const py::object& py_key, const py::object& py_
   if (HasRole(Roles::Array)) {
     throw CJSException("__setattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
-    m_generic_impl.ObjectSetAttr(py_key, py_obj);
+    m_generic_impl.SetAttr(py_key, py_obj);
   }
 }
 
@@ -32,7 +32,7 @@ void CJSObjectAPI::PythonDelAttr(const py::object& py_key) const {
   if (HasRole(Roles::Array)) {
     throw CJSException("__delattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
-    m_generic_impl.ObjectDelAttr(py_key);
+    m_generic_impl.DelAttr(py_key);
   }
 }
 
@@ -72,12 +72,12 @@ py::list CJSObjectAPI::PythonDir() const {
 py::object CJSObjectAPI::PythonGetItem(const py::object& py_key) const {
   py::object py_result;
   if (HasRole(Roles::Array)) {
-    py_result = m_array_impl.ArrayGetItem(py_key);
+    py_result = m_array_impl.GetItem(py_key);
   } else if (HasRole(Roles::CLJS)) {
-    py_result = m_cljs_impl.CLJSGetItem(py_key);
+    py_result = m_cljs_impl.GetItem(py_key);
   } else {
     // TODO: do robust arg checking here
-    py_result = m_generic_impl.ObjectGetAttr(py::cast<py::str>(py_key));
+    py_result = m_generic_impl.GetAttr(py::cast<py::str>(py_key));
   }
   TRACE("CJSObjectAPI::PythonGetItem {} => {}", THIS, py_result);
   return py_result;
@@ -85,20 +85,20 @@ py::object CJSObjectAPI::PythonGetItem(const py::object& py_key) const {
 
 py::object CJSObjectAPI::PythonSetItem(const py::object& py_key, const py::object& py_value) const {
   if (HasRole(Roles::Array)) {
-    return m_array_impl.ArraySetItem(py_key, py_value);
+    return m_array_impl.SetItem(py_key, py_value);
   } else {
     // TODO: do robust arg checking here
-    m_generic_impl.ObjectSetAttr(py::cast<py::str>(py_key), py_value);
+    m_generic_impl.SetAttr(py::cast<py::str>(py_key), py_value);
     return py::none();
   }
 }
 
 py::object CJSObjectAPI::PythonDelItem(const py::object& py_key) const {
   if (HasRole(Roles::Array)) {
-    return m_array_impl.ArrayDelItem(py_key);
+    return m_array_impl.DelItem(py_key);
   } else {
     // TODO: do robust arg checking here
-    m_generic_impl.ObjectDelAttr(py::cast<py::str>(py_key));
+    m_generic_impl.DelAttr(py::cast<py::str>(py_key));
     return py::none();
   }
 }
@@ -106,9 +106,9 @@ py::object CJSObjectAPI::PythonDelItem(const py::object& py_key) const {
 bool CJSObjectAPI::PythonContains(const py::object& py_key) const {
   bool result;
   if (HasRole(Roles::Array)) {
-    result = m_array_impl.ArrayContains(py_key);
+    result = m_array_impl.Contains(py_key);
   } else {
-    result = m_generic_impl.ObjectContains(py_key);
+    result = m_generic_impl.Contains(py_key);
   }
   TRACE("CJSObjectAPI::PythonContains {} => {}", THIS, result);
   return result;
@@ -201,7 +201,7 @@ py::object CJSObjectAPI::PythonBool() const {
 py::object CJSObjectAPI::PythonStr() const {
   py::object py_result;
   if (HasRole(Roles::CLJS)) {
-    py_result = m_cljs_impl.CLJSStr();
+    py_result = m_cljs_impl.Str();
   } else {
     std::stringstream ss;
     ss << *this;
@@ -215,7 +215,7 @@ py::object CJSObjectAPI::PythonStr() const {
 py::object CJSObjectAPI::PythonRepr() const {
   py::object py_result;
   if (HasRole(Roles::CLJS)) {
-    py_result = m_cljs_impl.CLJSRepr();
+    py_result = m_cljs_impl.Repr();
   } else {
     auto s = fmt::format("JSObject{}", roles_printer{m_roles});
     py_result = py::cast(s);
@@ -228,9 +228,9 @@ py::object CJSObjectAPI::PythonRepr() const {
 size_t CJSObjectAPI::PythonLen() const {
   size_t result;
   if (HasRole(Roles::Array)) {
-    result = m_array_impl.ArrayLength();
+    result = m_array_impl.Length();
   } else if (HasRole(Roles::CLJS)) {
-    result = m_cljs_impl.CLJSLength();
+    result = m_cljs_impl.Length();
   } else {
     result = 0;
   }

@@ -97,7 +97,7 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
   return v8_res_sym->SameValue(v8_sentinel);
 }
 
-size_t CJSObjectCLJSImpl::CLJSLength() const {
+size_t CJSObjectCLJSImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -118,7 +118,7 @@ size_t CJSObjectCLJSImpl::CLJSLength() const {
   return val.ToChecked();
 }
 
-py::object CJSObjectCLJSImpl::CLJSStr() const {
+py::object CJSObjectCLJSImpl::Str() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -139,7 +139,7 @@ py::object CJSObjectCLJSImpl::CLJSStr() const {
   return py::cast<py::object>(raw_str);
 }
 
-py::object CJSObjectCLJSImpl::CLJSRepr() const {
+py::object CJSObjectCLJSImpl::Repr() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -160,7 +160,7 @@ py::object CJSObjectCLJSImpl::CLJSRepr() const {
   return py::cast<py::object>(raw_str);
 }
 
-py::object CJSObjectCLJSImpl::CLJSGetItemIndex(const py::object& py_index) const {
+py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -180,12 +180,12 @@ py::object CJSObjectCLJSImpl::CLJSGetItemIndex(const py::object& py_index) const
   return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
 }
 
-py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const {
+py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  Py_ssize_t length = CLJSLength();
+  Py_ssize_t length = Length();
   Py_ssize_t start;
   Py_ssize_t stop;
   Py_ssize_t step;
@@ -232,7 +232,7 @@ py::object CJSObjectCLJSImpl::CLJSGetItemSlice(const py::object& py_slice) const
   return std::move(py_result);
 }
 
-py::object CJSObjectCLJSImpl::CLJSGetItemString(const py::object& py_str) const {
+py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   assert(PyUnicode_Check(py_str.ptr()));
 
   auto v8_isolate = v8u::getCurrentIsolate();
@@ -265,27 +265,27 @@ py::object CJSObjectCLJSImpl::CLJSGetItemString(const py::object& py_str) const 
   return CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
 }
 
-py::object CJSObjectCLJSImpl::CLJSGetItem(const py::object& py_key) const {
+py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
   if (PyLong_Check(py_key.ptr()) != 0) {
-    return CLJSGetItemIndex(py_key);
+    return GetItemIndex(py_key);
   }
 
   if (PySlice_Check(py_key.ptr()) != 0) {
-    return CLJSGetItemSlice(py_key);
+    return GetItemSlice(py_key);
   }
 
   throw CJSException("indices must be integers or slices", PyExc_TypeError);
 }
 
-py::object CJSObjectCLJSImpl::CLJSGetAttr(const py::object& py_key) const {
+py::object CJSObjectCLJSImpl::GetAttr(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {
-    return CLJSGetItemString(py_key);
+    return GetItemString(py_key);
   }
 
   throw CJSException("attr names must be strings", PyExc_TypeError);

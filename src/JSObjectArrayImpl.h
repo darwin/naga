@@ -6,9 +6,9 @@ class CJSObjectArrayImpl {
  public:
   CJSObjectBase& m_base;
 
-  size_t ArrayLength() const;
-  py::object ArrayGetItem(py::object py_key) const;
-  py::object ArraySetItem(py::object py_key, py::object py_value) const;
-  py::object ArrayDelItem(py::object py_key) const;
-  bool ArrayContains(const py::object& py_key) const;
+  size_t Length() const;
+  py::object GetItem(py::object py_key) const;
+  py::object SetItem(py::object py_key, py::object py_value) const;
+  py::object DelItem(py::object py_key) const;
+  bool Contains(const py::object& py_key) const;
 };
