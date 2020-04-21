@@ -3,6 +3,7 @@
 #include "JSException.h"
 #include "JSObject.h"
 #include "PythonAllowThreadsGuard.h"
+#include "JSNull.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -68,20 +69,19 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+
   auto v8_result = withAllowedPythonThreads([&]() { return v8_script->Run(v8_context); });
-
-  if (v8_result.IsEmpty()) {
-    if (v8_try_catch.HasCaught()) {
-      if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
-        throw py::error_already_set();
-      }
-
-      CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
-    }
-    v8_result = v8::Null(m_v8_isolate);
+  if (!v8_result.IsEmpty()) {
+    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
   }
 
-  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
+  if (v8_try_catch.HasCaught()) {
+    if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
+      throw py::error_already_set();
+    }
+    CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
+  }
+  return py::js_null();
 }
 
 CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
