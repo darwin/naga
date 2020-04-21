@@ -16,6 +16,14 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
+static v8::Eternal<v8::Private> privateAPIForType(v8::IsolateRef v8_isolate) {
+  return v8u::createEternalPrivateAPI(v8_isolate, "exc_type");
+}
+
+static v8::Eternal<v8::Private> privateAPIForValue(v8::IsolateRef v8_isolate) {
+  return v8u::createEternalPrivateAPI(v8_isolate, "exc_value");
+}
+
 void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowIf");
   auto py_gil = pyu::withGIL();
@@ -67,20 +75,22 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
   }
 
   v8::Local<v8::Value> v8_error;
+  auto raw_type = py_type.ptr();
+  auto raw_value = py_value.ptr();
 
-  if (PyErr_GivenExceptionMatches(py_type.ptr(), PyExc_IndexError)) {
+  if (PyErr_GivenExceptionMatches(raw_type, PyExc_IndexError)) {
     auto v8_msg =
         v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
     v8_error = v8::Exception::RangeError(v8_msg);
-  } else if (PyErr_GivenExceptionMatches(py_type.ptr(), PyExc_AttributeError)) {
+  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_AttributeError)) {
     auto v8_msg =
         v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
     v8_error = v8::Exception::ReferenceError(v8_msg);
-  } else if (PyErr_GivenExceptionMatches(py_type.ptr(), PyExc_SyntaxError)) {
+  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_SyntaxError)) {
     auto v8_msg =
         v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
     v8_error = v8::Exception::SyntaxError(v8_msg);
-  } else if (PyErr_GivenExceptionMatches(py_type.ptr(), PyExc_TypeError)) {
+  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_TypeError)) {
     auto v8_msg =
         v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
     v8_error = v8::Exception::TypeError(v8_msg);
@@ -94,49 +104,37 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
     auto v8_error_object = v8_error.As<v8::Object>();
     auto v8_context = v8_isolate->GetCurrentContext();
 
-    auto v8_type_api = lookupEternal<v8::Private>(
-        v8_isolate, CEternals::kJSExceptionType,
-        [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_type"); });
-    auto v8_value_api = lookupEternal<v8::Private>(
-        v8_isolate, CEternals::kJSExceptionValue,
-        [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_value"); });
-
-    auto v8_exc_type_external = v8::External::New(v8_isolate, py_type.ptr());
-    auto v8_exc_value_external = v8::External::New(v8_isolate, py_value.ptr());
-
+    auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
+    auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
     v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
+
+    auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
+    auto v8_exc_value_external = v8::External::New(v8_isolate, raw_value);
     v8_error_object->SetPrivate(v8_context, v8_value_api, v8_exc_value_external);
 
-    Py_INCREF(py_type.ptr());
-    Py_INCREF(py_value.ptr());
+    // this must match Py_DECREFs below !!!
+    Py_INCREF(raw_type);
+    Py_INCREF(raw_value);
 
     hospitalizePatient(v8_error_object, [](v8::Local<v8::Object> v8_patient) {
+      // note we cannot capture anything in this lambda, this would not match hospitalizePatient signature
       TRACE("doing cleanup of v8_error {}", v8_patient);
       auto v8_isolate = v8_patient->GetIsolate();
       auto v8_context = v8_isolate->GetCurrentContext();
 
-      auto v8_type_api = lookupEternal<v8::Private>(
-          v8_isolate, CEternals::kJSExceptionType,
-          [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_type"); });
-      auto v8_value_api = lookupEternal<v8::Private>(
-          v8_isolate, CEternals::kJSExceptionValue,
-          [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_value"); });
-
-      auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api);
-      auto v8_value_val = v8_patient->GetPrivate(v8_context, v8_value_api);
-
-      auto v8_type = v8_type_val.ToLocalChecked();
-      assert(v8_type->IsExternal());
-      auto type_val = v8_type.As<v8::External>()->Value();
-      auto raw_type = static_cast<PyObject*>(type_val);
+      auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
+      auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api).ToLocalChecked();
+      assert(v8_type_val->IsExternal());
+      auto raw_type = static_cast<PyObject*>(v8_type_val.As<v8::External>()->Value());
       assert(raw_type);
 
-      auto v8_value = v8_value_val.ToLocalChecked();
-      assert(v8_value->IsExternal());
-      auto value_val = v8_value.As<v8::External>()->Value();
-      auto raw_value = static_cast<PyObject*>(value_val);
+      auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
+      auto v8_value_val = v8_patient->GetPrivate(v8_context, v8_value_api).ToLocalChecked();
+      assert(v8_value_val->IsExternal());
+      auto raw_value = static_cast<PyObject*>(v8_value_val.As<v8::External>()->Value());
       assert(raw_value);
 
+      // this must match Py_INCREFs above !!!
       Py_DECREF(raw_type);
       Py_DECREF(raw_value);
     });
