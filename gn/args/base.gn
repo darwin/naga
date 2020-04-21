@@ -9,3 +9,6 @@ v8_enable_i18n_support = true
 v8_use_external_startup_data = false
 
 fatal_linker_warnings = false
+
+# this is needed for std::any under macOS
+mac_deployment_target = "10.14.0"
