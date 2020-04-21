@@ -7,6 +7,7 @@ import re
 if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
     input("Waiting for debugger, please hit ENTER when ready...")
 
+# noinspection PyUnresolvedReferences
 import _STPyV8
 
 __version__ = '0.1'
@@ -65,15 +66,15 @@ class JSError(Exception):
             return super(JSError, self).__getattribute__(attr)
 
     RE_FRAME = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?\)")
-    RE_FUNC = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^\)]+)\)")
+    RE_FUNC = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^)]+)\)")
     RE_FILE = re.compile(r"\s+at\s(?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?")
 
     @staticmethod
     def parse_stack(value):
         stack = []
 
-        def int_or_nul(value):
-            return int(value) if value else None
+        def int_or_nul(v):
+            return int(v) if v else None
 
         for line in value.split('\n')[1:]:
             m = JSError.RE_FRAME.match(line)
@@ -151,6 +152,7 @@ class JSUnlocker(_STPyV8.JSUnlocker):
         return self.entered()
 
 
+# noinspection PyPep8Naming
 class JSClass(object):
     __properties__ = {}
     __watchpoints__ = {}
@@ -178,53 +180,56 @@ class JSClass(object):
         return object.__setattr__(self, name, value)
 
     def toString(self):
-        "Returns a string representation of an object."
+        """Returns a string representation of an object."""
         return "[object %s]" % self.__class__.__name__
 
     def toLocaleString(self):
-        "Returns a value as a string value appropriate to the host environment's current locale."
+        """Returns a value as a string value appropriate to the host environment's current locale."""
         return self.toString()
 
     def valueOf(self):
-        "Returns the primitive value of the specified object."
+        """Returns the primitive value of the specified object."""
         return self
 
     def hasOwnProperty(self, name):
-        "Returns a Boolean value indicating whether an object has a property with the specified name."
+        """Returns a Boolean value indicating whether an object has a property with the specified name."""
         return hasattr(self, name)
 
     def isPrototypeOf(self, obj):
-        "Returns a Boolean value indicating whether an object exists in the prototype chain of another object."
+        """Returns a Boolean value indicating whether an object exists in the prototype chain of another object."""
         raise NotImplementedError()
 
     def __defineGetter__(self, name, getter):
-        "Binds an object's property to a function to be called when that property is looked up."
+        """Binds an object's property to a function to be called when that property is looked up."""
         self.__properties__[name] = (getter, self.__lookupSetter__(name))
 
     def __lookupGetter__(self, name):
-        "Return the function bound as a getter to the specified property."
+        """Return the function bound as a getter to the specified property."""
         return self.__properties__.get(name, (None, None))[0]
 
     def __defineSetter__(self, name, setter):
-        "Binds an object's property to a function to be called when an attempt is made to set that property."
+        """Binds an object's property to a function to be called when an attempt is made to set that property."""
         self.__properties__[name] = (self.__lookupGetter__(name), setter)
 
     def __lookupSetter__(self, name):
-        "Return the function bound as a setter to the specified property."
+        """Return the function bound as a setter to the specified property."""
         return self.__properties__.get(name, (None, None))[1]
 
     def watch(self, prop, handler):
-        "Watches for a property to be assigned a value and runs a function when that occurs."
+        """Watches for a property to be assigned a value and runs a function when that occurs."""
         self.__watchpoints__[prop] = handler
 
     def unwatch(self, prop):
-        "Removes a watchpoint set with the watch method."
+        """Removes a watchpoint set with the watch method."""
         del self.__watchpoints__[prop]
 
 
 class JSClassConstructor(JSClass):
     def __init__(self, cls):
         self.cls = cls
+
+    def isPrototypeOf(self, obj):
+        raise NotImplementedError()
 
     @property
     def name(self):
@@ -238,8 +243,12 @@ class JSClassConstructor(JSClass):
 
 
 class JSClassPrototype(JSClass):
+
     def __init__(self, cls):
         self.cls = cls
+
+    def isPrototypeOf(self, obj):
+        raise NotImplementedError()
 
     @property
     def constructor(self):
