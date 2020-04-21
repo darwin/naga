@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import logging
 import sys
 import unittest
-import logging
 
 import STPyV8
 
@@ -11,22 +14,22 @@ class TestMultithread(unittest.TestCase):
             self.assertFalse(STPyV8.JSLocker.active)
             self.assertFalse(STPyV8.JSLocker.locked)
 
-            with STPyV8.JSLocker() as outter_locker:
+            with STPyV8.JSLocker() as outer_locker:
                 self.assertTrue(STPyV8.JSLocker.active)
                 self.assertTrue(STPyV8.JSLocker.locked)
 
-                self.assertTrue(outter_locker)
+                self.assertTrue(outer_locker)
 
                 with STPyV8.JSLocker() as inner_locker:
                     self.assertTrue(STPyV8.JSLocker.locked)
 
-                    self.assertTrue(outter_locker)
+                    self.assertTrue(outer_locker)
                     self.assertTrue(inner_locker)
 
                     with STPyV8.JSUnlocker():
                         self.assertFalse(STPyV8.JSLocker.locked)
 
-                        self.assertTrue(outter_locker)
+                        self.assertTrue(outer_locker)
                         self.assertTrue(inner_locker)
 
                     self.assertTrue(STPyV8.JSLocker.locked)
@@ -43,7 +46,8 @@ class TestMultithread(unittest.TestCase):
         del locker
 
     def testMultiPythonThread(self):
-        import time, threading
+        import time
+        import threading
 
         class Global:
             count = 0
@@ -71,12 +75,12 @@ class TestMultithread(unittest.TestCase):
                         finished.release();
                     """)
 
-        threading.Thread(target = run).start()
+        threading.Thread(target=run).start()
 
         now = time.time()
 
         self.assertEqual(0, g.count)
-        
+
         g.started.set()
         g.finished.acquire()
 
@@ -85,7 +89,8 @@ class TestMultithread(unittest.TestCase):
         self.assertTrue((time.time() - now) >= 1)
 
     def _testMultiJavascriptThread(self):
-        import time, threading
+        import time
+        import threading
 
         class Global:
             result = []
@@ -105,10 +110,10 @@ class TestMultithread(unittest.TestCase):
                         add(i);
                 """)
 
-        threads = [threading.Thread(target = run), threading.Thread(target = run)]
+        threads = [threading.Thread(target=run), threading.Thread(target=run)]
 
         with STPyV8.JSLocker():
-            for t in threads: 
+            for t in threads:
                 t.start()
 
         for t in threads:
@@ -119,5 +124,5 @@ class TestMultithread(unittest.TestCase):
 
 if __name__ == '__main__':
     level = logging.DEBUG if "-v" in sys.argv else logging.WARN
-    logging.basicConfig(level = level, format = '%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=level, format='%(asctime)s %(levelname)s %(message)s')
     unittest.main()

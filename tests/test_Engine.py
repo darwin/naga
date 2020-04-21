@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import os
 import unittest
 import logging
 
@@ -63,7 +62,6 @@ class TestEngine(unittest.TestCase):
                 func = getattr(ctxt.locals, func_name)
 
                 self.assertTrue(isinstance(func, STPyV8.JSFunction))
-
 
                 self.assertEqual(func_name, STPyV8.toolkit.get_name(func))
                 self.assertEqual("", STPyV8.toolkit.resname(func))
@@ -154,10 +152,12 @@ class TestEngine(unittest.TestCase):
         STPyV8.JSEngine.setMemoryAllocationCallback(callback)
 
         with STPyV8.JSContext() as ctxt:
+            # noinspection PyUnresolvedReferences
             self.assertFalse((STPyV8.JSObjectSpace.Code, STPyV8.JSAllocationAction.alloc) in alloc)
 
             ctxt.eval("var o = new Array(1000);")
 
+            # noinspection PyUnresolvedReferences
             self.assertTrue((STPyV8.JSObjectSpace.Code, STPyV8.JSAllocationAction.alloc) in alloc)
 
         STPyV8.JSEngine.setMemoryAllocationCallback(None)
@@ -182,18 +182,20 @@ class TestEngine(unittest.TestCase):
             STPyV8.JSEngine.setStackLimit(256 * 1024)
 
             with STPyV8.JSContext() as ctxt:
-                oldStackSize = ctxt.eval("var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
+                old_stack_size = ctxt.eval(
+                    "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
         with STPyV8.JSIsolate():
             STPyV8.JSEngine.setStackLimit(512 * 1024)
 
             with STPyV8.JSContext() as ctxt:
-                newStackSize = ctxt.eval("var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
+                newStackSize = ctxt.eval(
+                    "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
-        self.assertTrue(newStackSize > oldStackSize * 2)
+        self.assertTrue(newStackSize > old_stack_size * 2)
 
 
 if __name__ == '__main__':
     level = logging.DEBUG if "-v" in sys.argv else logging.WARN
-    logging.basicConfig(level = level, format = '%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=level, format='%(asctime)s %(levelname)s %(message)s')
     unittest.main()

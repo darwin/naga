@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
 import unittest
 import logging
@@ -28,11 +31,11 @@ class TestContext(unittest.TestCase):
             class Local(object):
                 name = "local"
 
-            l = Local()
+            local = Local()
 
-            with STPyV8.JSContext(l):
+            with STPyV8.JSContext(local):
                 self.assertTrue(bool(STPyV8.JSContext.inContext))
-                self.assertEqual(l.name, str(STPyV8.JSContext.entered.locals.name))
+                self.assertEqual(local.name, str(STPyV8.JSContext.entered.locals.name))
 
             self.assertTrue(bool(STPyV8.JSContext.inContext))
             self.assertEqual(g.name, str(STPyV8.JSContext.current.locals.name))
@@ -96,5 +99,5 @@ class TestContext(unittest.TestCase):
 
 if __name__ == '__main__':
     level = logging.DEBUG if "-v" in sys.argv else logging.WARN
-    logging.basicConfig(level = level, format = '%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=level, format='%(asctime)s %(levelname)s %(message)s')
     unittest.main()

@@ -195,9 +195,10 @@ class JSClass(object):
         """Returns a Boolean value indicating whether an object has a property with the specified name."""
         return hasattr(self, name)
 
+    # noinspection PyMethodMayBeStatic
     def isPrototypeOf(self, obj):
         """Returns a Boolean value indicating whether an object exists in the prototype chain of another object."""
-        raise NotImplementedError()
+        return False
 
     def __defineGetter__(self, name, getter):
         """Binds an object's property to a function to be called when that property is looked up."""
@@ -228,9 +229,6 @@ class JSClassConstructor(JSClass):
     def __init__(self, cls):
         self.cls = cls
 
-    def isPrototypeOf(self, obj):
-        raise NotImplementedError()
-
     @property
     def name(self):
         return self.cls.__name__
@@ -246,9 +244,6 @@ class JSClassPrototype(JSClass):
 
     def __init__(self, cls):
         self.cls = cls
-
-    def isPrototypeOf(self, obj):
-        raise NotImplementedError()
 
     @property
     def constructor(self):

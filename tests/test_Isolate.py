@@ -15,7 +15,8 @@ class TestIsolate(unittest.TestCase):
         with STPyV8.JSIsolate() as isolate:
             self.assertIsNotNone(isolate.current)
 
+
 if __name__ == '__main__':
     level = logging.DEBUG if "-v" in sys.argv else logging.WARN
-    logging.basicConfig(level = level, format = '%(asctime)s %(levelname)s %(message)s')
+    logging.basicConfig(level=level, format='%(asctime)s %(levelname)s %(message)s')
     unittest.main()
