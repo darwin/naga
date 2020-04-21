@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import os
 import re
-import collections.abc
 
 if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
     input("Waiting for debugger, please hit ENTER when ready...")
@@ -168,7 +167,7 @@ class JSClass(object):
 
         prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
 
-        if prop and isinstance(prop[0], collections.abc.Callable):
+        if prop and callable(prop[0]):
             return prop[0]()
 
         raise AttributeError(name)
@@ -176,7 +175,7 @@ class JSClass(object):
     def __setattr__(self, name, value):
         prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
 
-        if prop and isinstance(prop[1], collections.abc.Callable):
+        if prop and callable(prop[1]):
             return prop[1](value)
 
         return object.__setattr__(self, name, value)
