@@ -5,8 +5,8 @@
 class CScript {
   const CEngine& m_engine;
   v8::IsolateRef m_v8_isolate;
-  v8::Persistent<v8::String> m_v8_source;
-  v8::Persistent<v8::Script> m_v8_script;
+  v8::Global<v8::String> m_v8_source;
+  v8::Global<v8::Script> m_v8_script;
 
  public:
   CScript(v8::IsolateRef v8_isolate,

@@ -8,9 +8,9 @@ class CJSException : public std::runtime_error {
   v8::IsolateRef m_v8_isolate;
   PyObject* m_raw_type;
 
-  v8::Persistent<v8::Value> m_v8_exception;
-  v8::Persistent<v8::Value> m_v8_stack;
-  v8::Persistent<v8::Message> m_v8_message;
+  v8::Global<v8::Value> m_v8_exception;
+  v8::Global<v8::Value> m_v8_stack;
+  v8::Global<v8::Message> m_v8_message;
 
   static std::string Extract(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 
