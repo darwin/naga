@@ -16,14 +16,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-static v8::Eternal<v8::Private> privateAPIForType(v8::IsolateRef v8_isolate) {
-  return v8u::createEternalPrivateAPI(v8_isolate, "exc_type");
-}
-
-static v8::Eternal<v8::Private> privateAPIForValue(v8::IsolateRef v8_isolate) {
-  return v8u::createEternalPrivateAPI(v8_isolate, "exc_value");
-}
-
 void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowIf");
   auto py_gil = pyu::withGIL();

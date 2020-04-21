@@ -1,8 +1,17 @@
 #include "JSException.h"
+#include "Eternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSExceptionLogger), __VA_ARGS__)
+
+v8::Eternal<v8::Private> privateAPIForType(v8::IsolateRef v8_isolate) {
+  return v8u::createEternalPrivateAPI(v8_isolate, "JSException##exc_type");
+}
+
+v8::Eternal<v8::Private> privateAPIForValue(v8::IsolateRef v8_isolate) {
+  return v8u::createEternalPrivateAPI(v8_isolate, "JSException##exc_value");
+}
 
 static void translateJavascriptException(const CJSException& e) {
   TRACE("translateJavascriptException");
@@ -15,15 +24,12 @@ static void translateJavascriptException(const CJSException& e) {
     auto v8_scope = v8u::withScope(v8_isolate);
 
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
-      auto v8_ex = e.Exception()->ToObject(v8_isolate->GetCurrentContext()).ToLocalChecked();
+      auto v8_ex = e.Exception().As<v8::Object>();
 
-      // TODO: optimize
-      auto v8_ex_type_key = v8::String::NewFromUtf8(v8_isolate, "exc_type").ToLocalChecked();
-      auto v8_ex_type_api = v8::Private::ForApi(v8_isolate, v8_ex_type_key);
+      auto v8_ex_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
       auto v8_ex_type_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_type_api);
 
-      auto v8_ex_value_key = v8::String::NewFromUtf8(v8_isolate, "exc_value").ToLocalChecked();
-      auto v8_ex_value_api = v8::Private::ForApi(v8_isolate, v8_ex_value_key);
+      auto v8_ex_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
       auto v8_ex_value_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_value_api);
 
       if (!v8_ex_type_val.IsEmpty() && !v8_ex_value_val.IsEmpty()) {

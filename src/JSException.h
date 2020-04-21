@@ -4,6 +4,9 @@
 
 void translateException(std::exception_ptr p);
 
+v8::Eternal<v8::Private> privateAPIForType(v8::IsolateRef v8_isolate);
+v8::Eternal<v8::Private> privateAPIForValue(v8::IsolateRef v8_isolate);
+
 class CJSException : public std::runtime_error {
   v8::IsolateRef m_v8_isolate;
   PyObject* m_raw_type;
