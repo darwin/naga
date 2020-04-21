@@ -4,13 +4,9 @@
 from __future__ import with_statement
 from __future__ import print_function
 
-import sys
 import os
 import re
-import logging
 import collections.abc
-import functools
-import json
 
 if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
     input("Waiting for debugger, please hit ENTER when ready...")
