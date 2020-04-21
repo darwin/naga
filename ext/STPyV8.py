@@ -39,6 +39,7 @@ __all__ = ["ReadOnly",
            "JSUnlocker",
            "JSPlatform"]
 
+
 class JSAttribute(object):
     def __init__(self, name):
         self.name = name
@@ -49,10 +50,10 @@ class JSAttribute(object):
         return func
 
 
-ReadOnly   = JSAttribute(name = 'readonly')
-DontEnum   = JSAttribute(name = 'dontenum')
-DontDelete = JSAttribute(name = 'dontdel')
-Internal   = JSAttribute(name = 'internal')
+ReadOnly = JSAttribute(name='readonly')
+DontEnum = JSAttribute(name='dontenum')
+DontDelete = JSAttribute(name='dontdel')
+Internal = JSAttribute(name='internal')
 
 
 class JSError(Exception):
@@ -72,8 +73,8 @@ class JSError(Exception):
             return super(JSError, self).__getattribute__(attr)
 
     RE_FRAME = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?\)")
-    RE_FUNC  = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^\)]+)\)")
-    RE_FILE  = re.compile(r"\s+at\s(?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?")
+    RE_FUNC = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^\)]+)\)")
+    RE_FILE = re.compile(r"\s+at\s(?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?")
 
     @staticmethod
     def parse_stack(value):
@@ -109,19 +110,21 @@ class JSError(Exception):
     def frames(self):
         return self.parse_stack(self.stackTrace)
 
+
 # C++ code relies on this class, it uses it as final wrapper of JSException object
 # this gives us flexibility to implement some JSException functionality in pure Python
 _STPyV8.JSError = JSError
 
-JSObject    = _STPyV8.JSObject
-JSArray     = _STPyV8.JSObject # for backward compatibility
-JSFunction  = _STPyV8.JSObject # for backward compatibility
-JSPlatform  = _STPyV8.JSPlatform
+JSObject = _STPyV8.JSObject
+JSArray = _STPyV8.JSObject  # for backward compatibility
+JSFunction = _STPyV8.JSObject  # for backward compatibility
+JSPlatform = _STPyV8.JSPlatform
 JSUndefined = _STPyV8.JSUndefined
 JSNull = _STPyV8.JSNull
 
 toolkit = _STPyV8.toolkit
 aux = _STPyV8.aux
+
 
 class JSLocker(_STPyV8.JSLocker):
     def __enter__(self):
@@ -269,7 +272,8 @@ class JSEngine(_STPyV8.JSEngine):
 JSScript = _STPyV8.JSScript
 JSStackTrace = _STPyV8.JSStackTrace
 JSStackTrace.Options = _STPyV8.JSStackTraceOptions
-JSStackTrace.GetCurrentStackTrace = staticmethod(lambda frame_limit, options: _STPyV8.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
+JSStackTrace.GetCurrentStackTrace = staticmethod(
+    lambda frame_limit, options: _STPyV8.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
 JSStackFrame = _STPyV8.JSStackFrame
 
 
@@ -284,7 +288,7 @@ class JSIsolate(_STPyV8.JSIsolate):
 
 
 class JSContext(_STPyV8.JSContext):
-    def __init__(self, obj = None, ctxt = None):
+    def __init__(self, obj=None, ctxt=None):
         if JSLocker.active:
             self.lock = JSLocker()
             self.lock.enter()
