@@ -123,4 +123,10 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
   return v8::ScriptOrigin(v8_name, v8_line, v8_col);
 }
 
+v8::Eternal<v8::Private> createEternalPrivateAPI(const v8::IsolateRef& v8_isolate, const char* name) {
+  auto v8_key = v8::String::NewFromUtf8(v8_isolate, name).ToLocalChecked();
+  auto v8_private_api = v8::Private::ForApi(v8_isolate, v8_key);
+  return v8::Eternal<v8::Private>(v8_isolate, v8_private_api);
+}
+
 }  // namespace v8u

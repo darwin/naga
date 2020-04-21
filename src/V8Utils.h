@@ -24,5 +24,6 @@ v8::IsolateRef createIsolate();
 v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
                                     v8::Local<v8::Integer> v8_line,
                                     v8::Local<v8::Integer> v8_col);
+v8::Eternal<v8::Private> createEternalPrivateAPI(const v8::IsolateRef& v8_isolate, const char* name);
 
 }  // namespace v8u

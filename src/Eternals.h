@@ -8,7 +8,7 @@
 
 class CEternals {
  public:
-  enum EternalID { kJSObjectTemplate = 0, kNumEternals };
+  enum EternalID { kJSObjectTemplate = 0, kJSExceptionType, kJSExceptionValue, kNumEternals };
 
   template <typename T>
   using EternalCreateFn = v8::Eternal<T>(v8::IsolateRef v8_isolate);
@@ -40,11 +40,12 @@ class CEternals {
 };
 
 template <typename T>
-v8::Eternal<T> getCachedEternal(v8::IsolateRef v8_isolate,
-                                CEternals::EternalID id,
-                                CEternals::EternalCreateFn<T>* create_fn = nullptr) {
-  HTRACE(kEternalsLogger, "getCachedEternal v8_isolate={} id={}", isolateref_printer{v8_isolate},
+v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
+                           CEternals::EternalID id,
+                           CEternals::EternalCreateFn<T>* create_fn = nullptr) {
+  HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", isolateref_printer{v8_isolate},
          magic_enum::enum_name(id));
   auto isolate = CIsolate::FromV8(v8_isolate);
-  return isolate->Eternals()->Get(id, create_fn);
+  auto v8_eternal_val = isolate->Eternals()->Get(id, create_fn);
+  return v8_eternal_val.Get(v8_isolate);
 }

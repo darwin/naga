@@ -94,18 +94,18 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
     auto v8_error_object = v8_error.As<v8::Object>();
     auto v8_context = v8_isolate->GetCurrentContext();
 
-    // TODO: optimize
-    auto v8_exc_type_key = v8::String::NewFromUtf8(v8_isolate, "exc_type").ToLocalChecked();
-    auto v8_exc_value_key = v8::String::NewFromUtf8(v8_isolate, "exc_value").ToLocalChecked();
-
-    auto v8_exc_type_api = v8::Private::ForApi(v8_isolate, v8_exc_type_key);
-    auto v8_exc_value_api = v8::Private::ForApi(v8_isolate, v8_exc_value_key);
+    auto v8_type_api = lookupEternal<v8::Private>(
+        v8_isolate, CEternals::kJSExceptionType,
+        [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_type"); });
+    auto v8_value_api = lookupEternal<v8::Private>(
+        v8_isolate, CEternals::kJSExceptionValue,
+        [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_value"); });
 
     auto v8_exc_type_external = v8::External::New(v8_isolate, py_type.ptr());
     auto v8_exc_value_external = v8::External::New(v8_isolate, py_value.ptr());
 
-    v8_error_object->SetPrivate(v8_context, v8_exc_type_api, v8_exc_type_external);
-    v8_error_object->SetPrivate(v8_context, v8_exc_value_api, v8_exc_value_external);
+    v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
+    v8_error_object->SetPrivate(v8_context, v8_value_api, v8_exc_value_external);
 
     Py_INCREF(py_type.ptr());
     Py_INCREF(py_value.ptr());
@@ -113,15 +113,17 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
     hospitalizePatient(v8_error_object, [](v8::Local<v8::Object> v8_patient) {
       TRACE("doing cleanup of v8_error {}", v8_patient);
       auto v8_isolate = v8_patient->GetIsolate();
+      auto v8_context = v8_isolate->GetCurrentContext();
 
-      // TODO: optimize
-      auto v8_type_key = v8::String::NewFromUtf8(v8_isolate, "exc_type").ToLocalChecked();
-      auto v8_type_api = v8::Private::ForApi(v8_isolate, v8_type_key);
-      auto v8_type_val = v8_patient->GetPrivate(v8_isolate->GetCurrentContext(), v8_type_api);
+      auto v8_type_api = lookupEternal<v8::Private>(
+          v8_isolate, CEternals::kJSExceptionType,
+          [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_type"); });
+      auto v8_value_api = lookupEternal<v8::Private>(
+          v8_isolate, CEternals::kJSExceptionValue,
+          [](v8::IsolateRef v8_isolate) { return v8u::createEternalPrivateAPI(v8_isolate, "exc_value"); });
 
-      auto v8_value_key = v8::String::NewFromUtf8(v8_isolate, "exc_value").ToLocalChecked();
-      auto v8_value_api = v8::Private::ForApi(v8_isolate, v8_value_key);
-      auto v8_value_val = v8_patient->GetPrivate(v8_isolate->GetCurrentContext(), v8_value_api);
+      auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api);
+      auto v8_value_val = v8_patient->GetPrivate(v8_context, v8_value_api);
 
       auto v8_type = v8_type_val.ToLocalChecked();
       assert(v8_type->IsExternal());
@@ -169,12 +171,12 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::Isol
 v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto v8_eternal_val =
-      getCachedEternal<v8::ObjectTemplate>(v8_isolate, CEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
+  auto v8_object_template =
+      lookupEternal<v8::ObjectTemplate>(v8_isolate, CEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
         auto v8_born_template = CreateObjectTemplate(v8_isolate);
         return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
       });
-  return v8_scope.Escape(v8_eternal_val.Get(v8_isolate));
+  return v8_scope.Escape(v8_object_template);
 }
 
 v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {

@@ -98,6 +98,16 @@ struct fmt::formatter<v8::Local<v8::ObjectTemplate>> {
 };
 
 template <>
+struct fmt::formatter<v8::Local<v8::Private>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::Private>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::Private {}", static_cast<void*>(*val));
+  }
+};
+
+template <>
 struct fmt::formatter<v8::Local<v8::Message>> {
   [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
 
