@@ -46,6 +46,7 @@ enum Loggers {
   kAuxLogger,
   kExposeLogger,
   kHospitalLogger,
+  kEternalsLogger,
   kNumLoggers
 };
 
@@ -66,3 +67,7 @@ class LoggerIndent {
 #define LOGGER_CONCAT_(x, y) x##y
 #define LOGGER_CONCAT(x, y) LOGGER_CONCAT_(x, y)
 #define LOGGER_INDENT LoggerIndent LOGGER_CONCAT(logger_indent_, __COUNTER__)
+
+#define HTRACE(logger, ...) \
+  LOGGER_INDENT;            \
+  SPDLOG_LOGGER_TRACE(getLogger(logger), __VA_ARGS__)

@@ -1,6 +1,7 @@
 #include "Isolate.h"
 #include "Tracer.h"
 #include "Hospital.h"
+#include "Eternals.h"
 #include "JSStackTrace.h"
 
 #define TRACE(...) \
@@ -20,6 +21,7 @@ CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
 
 CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()) {
   TRACE("CIsolate::CIsolate {}", THIS);
+  m_eternals = std::make_unique<CEternals>(m_v8_isolate);
   m_tracer = std::make_unique<CTracer>();
   m_hospital = std::make_unique<CHospital>(m_v8_isolate);
   m_v8_isolate->SetData(kSelfDataSlotIndex, this);
@@ -27,12 +29,6 @@ CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()) {
 
 CIsolate::~CIsolate() {
   TRACE("CIsolate::~CIsolate {}", THIS);
-
-  // hospital has to die and do cleanup before we call dispose
-  m_hospital.reset();
-
-  // tracer has to die and do cleanup before we call dispose
-  m_tracer.reset();
 
   // isolate could be entered, we cannot dispose unless we exit it completely
   int defensive_counter = 0;
@@ -42,6 +38,15 @@ CIsolate::~CIsolate() {
       break;
     }
   }
+
+  // hospital has to die and do cleanup before we call dispose
+  m_hospital.reset();
+
+  // tracer has to die and do cleanup before we call dispose
+  m_tracer.reset();
+
+  m_eternals.reset();
+
   Dispose();
   TRACE("CIsolate::~CIsolate {} [COMPLETED]", THIS);
 }
@@ -93,4 +98,9 @@ CTracer* CIsolate::Tracer() {
 CHospital* CIsolate::Hospital() {
   TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
   return m_hospital.get();
+}
+
+CEternals* CIsolate::Eternals() {
+  TRACE("CIsolate::Eternals {} => {}", THIS, (void*)m_eternals.get());
+  return m_eternals.get();
 }

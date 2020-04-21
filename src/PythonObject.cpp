@@ -7,6 +7,7 @@
 #include "PythonDateTime.h"
 #include "Tracer.h"
 #include "Hospital.h"
+#include "Eternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -161,32 +162,19 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::Isol
   TRACE("CPythonObject::CreateObjectTemplate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_class = v8::ObjectTemplate::New(v8_isolate);
-
   SetupObjectTemplate(v8_isolate, v8_class);
-
   return v8_scope.Escape(v8_class);
 }
 
 v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate) {
   TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  // retrieve cached object template from the isolate
-  auto template_ptr = v8_isolate->GetData(kJSObjectTemplate);
-  if (!template_ptr) {
-    TRACE("  => creating template");
-    // it hasn't been created yet = > go create it and cache it in the isolate
-    auto v8_born_template = CreateObjectTemplate(v8_isolate);
-    auto v8_eternal_born_template = new v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
-    assert(v8_isolate->GetNumberOfDataSlots() > kJSObjectTemplate);
-    v8_isolate->SetData(kJSObjectTemplate, v8_eternal_born_template);
-    template_ptr = v8_eternal_born_template;
-  }
-  // convert raw pointer to pointer to eternal handle
-  auto v8_eternal_val = static_cast<v8::Eternal<v8::ObjectTemplate>*>(template_ptr);
-  assert(v8_eternal_val);
-  // retrieve local handle from eternal handle
-  auto v8_template = v8_eternal_val->Get(v8_isolate);
-  return v8_scope.Escape(v8_template);
+  auto v8_eternal_val =
+      getCachedEternal<v8::ObjectTemplate>(v8_isolate, CEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
+        auto v8_born_template = CreateObjectTemplate(v8_isolate);
+        return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
+      });
+  return v8_scope.Escape(v8_eternal_val.Get(v8_isolate));
 }
 
 v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {

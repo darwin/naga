@@ -12,6 +12,7 @@ class CJSStackFrame;
 class CJSException;
 class CTracer;
 class CHospital;
+class CEternals;
 class CJSObject;
 class CJSObjectBase;
 class CJSObjectGenericImpl;

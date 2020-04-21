@@ -12,30 +12,30 @@
 // is emptied before. The reasons why we have to do that are described in more detail in Tracer.h.
 
 using V8Patient = v8::Global<v8::Object>;
-using ClenupFunctionSignature = void(v8::Local<v8::Object>);
+using PatientClenupFn = void(v8::Local<v8::Object>);
 
 struct HospitalRecord {
   V8Patient m_v8_patient;
-  ClenupFunctionSignature* m_cleanup_fn;
+  PatientClenupFn* m_cleanup_fn;
 
-  HospitalRecord(v8::Local<v8::Object> v8_patient, ClenupFunctionSignature* cleanup_fn) : m_cleanup_fn(cleanup_fn) {
+  HospitalRecord(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) : m_cleanup_fn(cleanup_fn) {
     m_v8_patient.Reset(v8_patient->GetIsolate(), v8_patient);
   }
 };
 
 typedef std::unordered_set<HospitalRecord*> HospitalRecords;
 
-void hospitalizePatient(v8::Local<v8::Object> v8_patient, ClenupFunctionSignature* cleanup_fn);
+void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
 
 class CHospital {
-  HospitalRecords m_records;
   v8::IsolateRef m_v8_isolate;
+  HospitalRecords m_records;
 
  public:
   explicit CHospital(v8::IsolateRef v8_isolate);
   ~CHospital();
 
-  void AcceptPatient(v8::Local<v8::Object> v8_patient, ClenupFunctionSignature* cleanup_fn);
+  void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
   void PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord* record);
 
  protected:

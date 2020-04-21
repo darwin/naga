@@ -5,7 +5,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kHospitalLogger), __VA_ARGS__)
 
-void hospitalizePatient(v8::Local<v8::Object> v8_patient, ClenupFunctionSignature* cleanup_fn) {
+void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
   TRACE("hospitalizePatient v8_patient={} cleanup_fn={}", v8_patient, (void*)cleanup_fn);
   auto v8_isolate = v8_patient->GetIsolate();
   auto isolate = CIsolate::FromV8(v8_isolate);
@@ -36,7 +36,7 @@ CHospital::~CHospital() {
   }
 }
 
-void CHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, ClenupFunctionSignature* cleanup_fn) {
+void CHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
   TRACE("CHospital::AcceptPatient {} v8_patient={} cleanup_fn={}", THIS, v8_patient, (void*)cleanup_fn);
   auto record = new HospitalRecord(v8_patient, cleanup_fn);
   m_records.insert(record);

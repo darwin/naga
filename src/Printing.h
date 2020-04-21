@@ -42,6 +42,17 @@ struct fmt::formatter<v8::Local<T>> {
   }
 };
 
+template <typename T>
+struct fmt::formatter<v8::Eternal<T>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Eternal<T>& val, FormatContext& ctx) {
+    // TODO: we should probably pass isolate from outside
+    return format_to(ctx.out(), "[ETERNAL] {}", val.Get(v8u::getCurrentIsolate()));
+  }
+};
+
 template <>
 struct fmt::formatter<v8::Local<v8::Context>> {
   [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
@@ -73,6 +84,16 @@ struct fmt::formatter<v8::TryCatch> {
   template <typename FormatContext>
   auto format(const v8::TryCatch& val, FormatContext& ctx) {
     return format_to(ctx.out(), "v8::TryCatch Message=[{}]", val.Message());
+  }
+};
+
+template <>
+struct fmt::formatter<v8::Local<v8::ObjectTemplate>> {
+  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+
+  template <typename FormatContext>
+  auto format(const v8::Local<v8::ObjectTemplate>& val, FormatContext& ctx) {
+    return format_to(ctx.out(), "v8::ObjectTemplate {}", static_cast<void*>(*val));
   }
 };
 
