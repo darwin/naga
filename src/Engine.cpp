@@ -33,7 +33,7 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
   // above the (downwards-growing) stack. In such case we alert the user
   // that the new stack limit is not going to be set and return
   if (stack_limit > reinterpret_cast<uintptr_t>(&here)) {
-    std::cerr << "[ERROR] Attempted to set a stack limit greater than available memory" << std::endl;
+    SPDLOG_ERROR("[ERROR] Attempted to set a stack limit greater than available memory");
     return;
   }
 

@@ -11,7 +11,7 @@ static bool initPythonDateTime() {
     PyDateTime_IMPORT;
     return true;
   } catch (...) {
-    std::cerr << "Fatal error: unable to initialize PyDateTimeAPI";
+    SPDLOG_ERROR("Fatal error: unable to initialize PyDateTimeAPI");
     exit(13);
   }
 }
