@@ -3,7 +3,6 @@
 #include "JSUndefined.h"
 #include "JSNull.h"
 #include "JSException.h"
-#include "Isolate.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
 #include "Hospital.h"
@@ -82,6 +81,7 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
   }
 
   if (v8_error->IsObject()) {
+    // see general explanation in translateJavascriptException
     auto v8_error_object = v8_error.As<v8::Object>();
     auto v8_context = v8_isolate->GetCurrentContext();
 

@@ -23,6 +23,30 @@ static void translateJavascriptException(const CJSException& e) {
     auto v8_isolate = v8u::getCurrentIsolate();
     auto v8_scope = v8u::withScope(v8_isolate);
 
+    // This code has something to do with propagating original Python errors through JS land.
+    // Imagine a Python function, calling a JS function which calls a Python function which throws:
+    //
+    // Python entry:
+    //   pyfn1
+    //    -- boundary1
+    //     jsfn1
+    //      -- boundary2
+    //       pyfn2
+    //         throw!
+    //
+    // 1. Python exception is thrown in pyfn2
+    // 2. It will bubble up the stack and on boundary2 it must be wrapped into a JS error object and enter the JS land.
+    //    This wrapping is done in CPythonObject::ThrowIf.
+    // 3. If JS code does not catch it or if it catches it and rethrows the wrapper...
+    // 4. It will continue bubbling up the stack and on boundary1 it must be converted into Python error
+    // 5. In this special case we don't want to do translation of JS Error object but rather we want to restore the
+    //    original Python error as it was present on boundary2.
+    //
+    // Technically in #2 we attach Python error object(s) to JS error object.
+    // We store them as v8::External into Private API fields.
+    // And here in #4 we look into those private fields and extract the info (if avail).
+    // Note that Python objects lifetime extensions are guaranteed because the JS error object is put to Hospital.
+    //
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
       auto v8_ex = e.Exception().As<v8::Object>();
 
@@ -63,10 +87,10 @@ static void translateJavascriptException(const CJSException& e) {
     auto py_error_instance = py_error_class(e);
     //
     // https://docs.python.org/3.7/extending/extending.html?highlight=extending#intermezzo-errors-and-exceptions
-    // The most general function is
-    // `PyErr_SetObject`, which takes two object arguments, the exception and
-    // its associated value.  You don't need to `Py_INCREF` the objects passed
-    // to any of these functions.
+    // Quote:
+    //   The most general function is `PyErr_SetObject`, which takes two object arguments, the exception and
+    //   its associated value.  You don't need to `Py_INCREF` the objects passed to any of these functions.
+    //
     PyErr_SetObject(py_error_class.ptr(), py_error_instance.ptr());
   }
 }
