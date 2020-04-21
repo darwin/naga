@@ -31,7 +31,7 @@ CHospital::~CHospital() {
   // let all patients die
   auto it = m_records.begin();
   while (it != m_records.end()) {
-    KillPatient(*it);
+    UnplugPatient(*it);
     it++;
   }
 }
@@ -54,16 +54,16 @@ void CHospital::PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord* r
   // remove our records
   m_records.erase(record);
 
-  KillPatient(record);
+  UnplugPatient(record);
 }
 
-void CHospital::KillPatient(HospitalRecord* record) {
-  TRACE("CHospital::KillPatient {} record={} ", THIS, (void*)record);
+void CHospital::UnplugPatient(HospitalRecord* record) {
+  TRACE("CHospital::UnplugPatient {} record={} ", THIS, (void*)record);
 
   // call custom cleanup function
   record->m_cleanup_fn(record->m_v8_patient.Get(m_v8_isolate));
 
-  // let him die
+  // unplug him
   record->m_v8_patient.Reset();
 
   delete record;
