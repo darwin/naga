@@ -40,11 +40,6 @@ v8::Local<v8::String> toString(py::handle py_str) {
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> toString(const std::string& str) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
-}
-
 v8::Local<v8::String> toString(const std::wstring& str) {
   auto raw_unicode = PyUnicode_FromWideChar(str.c_str(), str.size());  // may be NULL
   auto py_obj = py::reinterpret_steal<py::object>(raw_unicode);
@@ -56,6 +51,16 @@ v8::Local<v8::String> toString(const std::wstring& str) {
   // all attempts failed, return empty value
   return v8::Local<v8::String>();
 }
+
+v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const std::string& str) {
+  return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
+}
+
+v8::Local<v8::String> toString(const std::string& str) {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return toString(v8_isolate, str);
+}
+
 
 v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i) {
   if (i >= 0) {

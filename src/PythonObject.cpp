@@ -33,7 +33,8 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
   py::object py_type(py_ex.type());
   py::object py_value(py_ex.value());
 
-  PyObject* raw_val = py_value.ptr();
+  auto raw_type = py_type.ptr();
+  auto raw_value = py_value.ptr();
 
   //  TODO: investigate: shall we call normalize, pybind does not call it
   //  PyErr_NormalizeException(&raw_exc, &raw_val, &raw_trb);
@@ -58,13 +59,13 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
     if (py::isinstance<py::str>(py_msg)) {
       msg += py::cast<py::str>(py_msg);
     }
-  } else if (raw_val) {
+  } else if (raw_value) {
     // TODO: use pybind
-    if (PyBytes_CheckExact(raw_val)) {
-      msg = PyBytes_AS_STRING(raw_val);
-    } else if (PyTuple_CheckExact(raw_val)) {
-      for (int i = 0; i < PyTuple_GET_SIZE(raw_val); i++) {
-        auto raw_item = PyTuple_GET_ITEM(raw_val, i);
+    if (PyBytes_CheckExact(raw_value)) {
+      msg = PyBytes_AS_STRING(raw_value);
+    } else if (PyTuple_CheckExact(raw_value)) {
+      for (int i = 0; i < PyTuple_GET_SIZE(raw_value); i++) {
+        auto raw_item = PyTuple_GET_ITEM(raw_value, i);
 
         if (raw_item && PyBytes_CheckExact(raw_item)) {
           msg = PyBytes_AS_STRING(raw_item);
@@ -75,29 +76,17 @@ void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_al
   }
 
   v8::Local<v8::Value> v8_error;
-  auto raw_type = py_type.ptr();
-  auto raw_value = py_value.ptr();
 
   if (PyErr_GivenExceptionMatches(raw_type, PyExc_IndexError)) {
-    auto v8_msg =
-        v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
-    v8_error = v8::Exception::RangeError(v8_msg);
+    v8_error = v8::Exception::RangeError(v8u::toString(v8_isolate, msg));
   } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_AttributeError)) {
-    auto v8_msg =
-        v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
-    v8_error = v8::Exception::ReferenceError(v8_msg);
+    v8_error = v8::Exception::ReferenceError(v8u::toString(v8_isolate, msg));
   } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_SyntaxError)) {
-    auto v8_msg =
-        v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
-    v8_error = v8::Exception::SyntaxError(v8_msg);
+    v8_error = v8::Exception::SyntaxError(v8u::toString(v8_isolate, msg));
   } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_TypeError)) {
-    auto v8_msg =
-        v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
-    v8_error = v8::Exception::TypeError(v8_msg);
+    v8_error = v8::Exception::TypeError(v8u::toString(v8_isolate, msg));
   } else {
-    auto v8_msg =
-        v8::String::NewFromUtf8(v8_isolate, msg.c_str(), v8::NewStringType::kNormal, msg.size()).ToLocalChecked();
-    v8_error = v8::Exception::Error(v8_msg);
+    v8_error = v8::Exception::Error(v8u::toString(v8_isolate, msg));
   }
 
   if (v8_error->IsObject()) {
