@@ -42,6 +42,7 @@ stpyv8_source_files = [
   "Aux.cpp",
   "Context.cpp",
   "Engine.cpp",
+  "Hospital.cpp",
   "Isolate.cpp",
   "JSException.cpp",
   "JSNull.cpp",

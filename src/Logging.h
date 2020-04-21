@@ -45,6 +45,7 @@ enum Loggers {
   kV8TracingLogger,
   kAuxLogger,
   kExposeLogger,
+  kHospitalLogger,
   kNumLoggers
 };
 

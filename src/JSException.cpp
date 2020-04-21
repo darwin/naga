@@ -17,6 +17,7 @@ static void translateJavascriptException(const CJSException& e) {
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
       auto v8_ex = e.Exception()->ToObject(v8_isolate->GetCurrentContext()).ToLocalChecked();
 
+      // TODO: optimize
       auto v8_ex_type_key = v8::String::NewFromUtf8(v8_isolate, "exc_type").ToLocalChecked();
       auto v8_ex_type_api = v8::Private::ForApi(v8_isolate, v8_ex_type_key);
       auto v8_ex_type_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_type_api);
@@ -29,28 +30,19 @@ static void translateJavascriptException(const CJSException& e) {
         auto v8_ex_type = v8_ex_type_val.ToLocalChecked();
         PyObject* raw_type = nullptr;
         if (v8_ex_type->IsExternal()) {
-          auto type_val = v8::Local<v8::External>::Cast(v8_ex_type)->Value();
+          auto type_val = v8_ex_type.As<v8::External>()->Value();
           raw_type = static_cast<PyObject*>(type_val);
         }
         auto v8_ex_value = v8_ex_value_val.ToLocalChecked();
         PyObject* raw_value = nullptr;
         if (v8_ex_value->IsExternal()) {
-          auto value_val = v8::Local<v8::External>::Cast(v8_ex_value)->Value();
+          auto value_val = v8_ex_value.As<v8::External>()->Value();
           raw_value = static_cast<PyObject*>(value_val);
         }
 
-        // TODO: remove manual refcounting
         if (raw_type && raw_value) {
           PyErr_SetObject(raw_type, raw_value);
-          Py_DECREF(raw_type);
-          Py_DECREF(raw_value);
           return;
-        }
-        if (raw_type) {
-          Py_DECREF(raw_type);
-        }
-        if (raw_value) {
-          Py_DECREF(raw_value);
         }
       }
     }

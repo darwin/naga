@@ -1,5 +1,6 @@
 #include "Isolate.h"
 #include "Tracer.h"
+#include "Hospital.h"
 #include "JSStackTrace.h"
 
 #define TRACE(...) \
@@ -20,11 +21,15 @@ CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
 CIsolate::CIsolate() : m_v8_isolate(v8u::createIsolate()) {
   TRACE("CIsolate::CIsolate {}", THIS);
   m_tracer = std::make_unique<CTracer>();
+  m_hospital = std::make_unique<CHospital>(m_v8_isolate);
   m_v8_isolate->SetData(kSelfDataSlotIndex, this);
 }
 
 CIsolate::~CIsolate() {
   TRACE("CIsolate::~CIsolate {}", THIS);
+
+  // hospital has to die and do cleanup before we call dispose
+  m_hospital.reset();
 
   // tracer has to die and do cleanup before we call dispose
   m_tracer.reset();
@@ -83,4 +88,9 @@ void CIsolate::Dispose() {
 CTracer* CIsolate::Tracer() {
   TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
   return m_tracer.get();
+}
+
+CHospital* CIsolate::Hospital() {
+  TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
+  return m_hospital.get();
 }

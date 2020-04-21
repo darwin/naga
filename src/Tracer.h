@@ -58,8 +58,6 @@
 // If the the JS object is a wrapper, we simply use this cache to get the original naked Python object.
 // We must avoid wrapping the wrapper!
 
-// note that we cannot use v8::Persistent here,
-// v8::Global has proper move semantics and that is needed by std::map
 typedef v8::Global<v8::Object> V8Wrapper;
 typedef PyObject TracedRawObject;
 typedef PyObject WeakRefRawObject;
