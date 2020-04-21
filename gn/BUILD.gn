@@ -147,6 +147,10 @@ config("stpyv8_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
 
+config("stpyv8_magic_enum_compiler_flags") {
+  include_dirs = [ "../vendor/magic_enum/include" ]
+}
+
 config("stpyv8_features") {
   defines = []
   if (stpyv8_disable_feature_cljs) {
@@ -177,6 +181,7 @@ source_set("stpyv8_src") {
     ":stpyv8_spdlog_compiler_flags",
     ":stpyv8_gsl_lite_compiler_flags",
     ":stpyv8_pybind11_compiler_flags",
+    ":stpyv8_magic_enum_compiler_flags",
     ":stpyv8_features",
     ":stpyv8_logging",
   ]

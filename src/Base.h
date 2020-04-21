@@ -29,6 +29,7 @@ namespace py = pybind11;
 #include "libplatform/libplatform.h"
 
 #include <gsl/gsl-lite.hpp>
+#include <magic_enum.hpp>
 
 #include "ForwardDeclarations.h"
 #include "Logging.h"
