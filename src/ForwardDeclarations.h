@@ -2,7 +2,7 @@
 
 #include "Base.h"
 
-class CPlatform;
+class CJSPlatform;
 class CJSContext;
 class CJSEngine;
 class CJSIsolate;

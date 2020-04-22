@@ -2,22 +2,22 @@
 
 #include "Base.h"
 
-class CPlatform {
+class CJSPlatform {
  private:
   bool m_initialized{false};
   std::unique_ptr<v8::Platform> m_v8_platform;
 
   // CPlatform is a singleton => make the constructor private, disable copy/move
  private:
-  CPlatform() = default;
+  CJSPlatform() = default;
 
  public:
-  CPlatform(const CPlatform&) = delete;
-  CPlatform& operator=(const CPlatform&) = delete;
-  CPlatform(CPlatform&&) = delete;
-  CPlatform& operator=(CPlatform&&) = delete;
+  CJSPlatform(const CJSPlatform&) = delete;
+  CJSPlatform& operator=(const CJSPlatform&) = delete;
+  CJSPlatform(CJSPlatform&&) = delete;
+  CJSPlatform& operator=(CJSPlatform&&) = delete;
 
-  static CPlatform* Instance();
+  static CJSPlatform* Instance();
 
   bool Initialized() const { return m_initialized; }
   bool Init(std::string argv);

@@ -172,12 +172,12 @@ void exposeJSObject(py::module py_module) {
 void exposeJSPlatform(py::module py_module) {
   TRACE("exposeJSPlatform py_module={}", py_module);
   // clang-format off
-  py::class_<CPlatform>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
-      .def_property_readonly_static("instance", [](const py::object &) { return CPlatform::Instance(); },
+  py::class_<CJSPlatform>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
+      .def_property_readonly_static("instance", [](const py::object &) { return CJSPlatform::Instance(); },
                                     "Access to platform singleton instance")
-      .def_property_readonly("initialized", &CPlatform::Initialized,
+      .def_property_readonly("initialized", &CJSPlatform::Initialized,
                              "Returns true if the init was already called on platform.")
-      .def("init", &CPlatform::Init,
+      .def("init", &CJSPlatform::Init,
            py::arg("argv") = std::string(),
            "Initializes the platform");
   // clang-format on

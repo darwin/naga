@@ -5,18 +5,18 @@
   SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
 
 // enforce singleton contract
-constexpr auto singleton_invariants = !std::is_constructible<CPlatform>::value &&          //
-                                      !std::is_assignable<CPlatform, CPlatform>::value &&  //
-                                      !std::is_swappable<CPlatform>::value;                //
+constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&          //
+                                      !std::is_assignable<CJSPlatform, CJSPlatform>::value &&  //
+                                      !std::is_swappable<CJSPlatform>::value;                //
 static_assert(singleton_invariants, "CPlatform should be a singleton.");
 
-CPlatform* CPlatform::Instance() {
-  static CPlatform g_platform;
+CJSPlatform* CJSPlatform::Instance() {
+  static CJSPlatform g_platform;
   TRACE("CPlatform::Instance => {}", (void*)&g_platform);
   return &g_platform;
 }
 
-bool CPlatform::Init(std::string argv) {
+bool CJSPlatform::Init(std::string argv) {
   TRACE("CPlatform::Init {} argv='{}'", THIS, argv);
   if (m_initialized) {
     TRACE("CPlatform::Init {} => [already initialized]", THIS);
