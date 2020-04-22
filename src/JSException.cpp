@@ -50,10 +50,10 @@ static void translateJavascriptException(const CJSException& e) {
     if (!e.Exception().IsEmpty() && e.Exception()->IsObject()) {
       auto v8_ex = e.Exception().As<v8::Object>();
 
-      auto v8_ex_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
+      auto v8_ex_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
       auto v8_ex_type_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_type_api);
 
-      auto v8_ex_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
+      auto v8_ex_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
       auto v8_ex_value_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_value_api);
 
       if (!v8_ex_type_val.IsEmpty() && !v8_ex_value_val.IsEmpty()) {

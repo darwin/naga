@@ -6,7 +6,7 @@
 // We maintain a table of eternal objects for fast access
 // We keep one table per isolate and destroy the table before isolate goes away
 
-class CEternals {
+class CJSEternals {
  public:
   enum EternalID { kJSObjectTemplate = 0, kJSExceptionType, kJSExceptionValue, kNumEternals };
 
@@ -21,8 +21,8 @@ class CEternals {
   std::array<std::any, kNumEternals> m_cache;
 
  public:
-  explicit CEternals(v8::IsolateRef v8_isolate);
-  ~CEternals();
+  explicit CJSEternals(v8::IsolateRef v8_isolate);
+  ~CJSEternals();
 
   template <typename T>
   v8::Eternal<T> Get(EternalID id, EternalCreateFn<T>* create_fn = nullptr) {
@@ -42,8 +42,8 @@ class CEternals {
 
 template <typename T>
 v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
-                           CEternals::EternalID id,
-                           CEternals::EternalCreateFn<T>* create_fn = nullptr) {
+                           CJSEternals::EternalID id,
+                           CJSEternals::EternalCreateFn<T>* create_fn = nullptr) {
   HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));
   auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_eternal_val = isolate->Eternals().Get(id, create_fn);

@@ -85,11 +85,11 @@ void CPythonObject::ThrowJSException(const v8::IsolateRef& v8_isolate, const py:
     auto v8_error_object = v8_error.As<v8::Object>();
     auto v8_context = v8_isolate->GetCurrentContext();
 
-    auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
+    auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
     auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
     v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
 
-    auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
+    auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
     auto v8_exc_value_external = v8::External::New(v8_isolate, raw_value);
     v8_error_object->SetPrivate(v8_context, v8_value_api, v8_exc_value_external);
 
@@ -103,13 +103,13 @@ void CPythonObject::ThrowJSException(const v8::IsolateRef& v8_isolate, const py:
       auto v8_isolate = v8_patient->GetIsolate();
       auto v8_context = v8_isolate->GetCurrentContext();
 
-      auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionType, privateAPIForType);
+      auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
       auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api).ToLocalChecked();
       assert(v8_type_val->IsExternal());
       auto raw_type = static_cast<PyObject*>(v8_type_val.As<v8::External>()->Value());
       assert(raw_type);
 
-      auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CEternals::kJSExceptionValue, privateAPIForValue);
+      auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
       auto v8_value_val = v8_patient->GetPrivate(v8_context, v8_value_api).ToLocalChecked();
       assert(v8_value_val->IsExternal());
       auto raw_value = static_cast<PyObject*>(v8_value_val.As<v8::External>()->Value());
@@ -151,7 +151,7 @@ v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(con
   TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_object_template =
-      lookupEternal<v8::ObjectTemplate>(v8_isolate, CEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
+      lookupEternal<v8::ObjectTemplate>(v8_isolate, CJSEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
         auto v8_born_template = CreateObjectTemplate(v8_isolate);
         return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
       });
