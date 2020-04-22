@@ -5,7 +5,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
 
-CScript::CScript(v8::IsolateRef v8_isolate,
+CJSScript::CJSScript(v8::IsolateRef v8_isolate,
                  const CEngine& engine,
                  v8::Local<v8::String> v8_source,
                  v8::Local<v8::Script> v8_script)
@@ -20,25 +20,25 @@ CScript::CScript(v8::IsolateRef v8_isolate,
         traceMore(v8_source), v8_script);
 }
 
-CScript::~CScript() {
+CJSScript::~CJSScript() {
   TRACE("CScript::~CScript {}", THIS);
   m_v8_source.Reset();
   m_v8_script.Reset();
 }
 
-v8::Local<v8::String> CScript::Source() const {
+v8::Local<v8::String> CJSScript::Source() const {
   auto result = v8::Local<v8::String>::New(m_v8_isolate, m_v8_source);
   TRACE("CScript::Source {} => {}", THIS, traceText(result));
   return result;
 }
 
-v8::Local<v8::Script> CScript::Script() const {
+v8::Local<v8::Script> CJSScript::Script() const {
   auto result = v8::Local<v8::Script>::New(m_v8_isolate, m_v8_script);
   TRACE("CScript::Script {} => {}", THIS, result);
   return result;
 }
 
-std::string CScript::GetSource() const {
+std::string CJSScript::GetSource() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value source(m_v8_isolate, Source());
   auto result = std::string(*source, source.length());
@@ -46,7 +46,7 @@ std::string CScript::GetSource() const {
   return result;
 }
 
-py::object CScript::Run() {
+py::object CJSScript::Run() {
   TRACE("CScript::Run {}", THIS);
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_engine.ExecuteScript(Script());
@@ -54,6 +54,6 @@ py::object CScript::Run() {
   return result;
 }
 
-void CScript::Dump(std::ostream& os) const {
+void CJSScript::Dump(std::ostream& os) const {
   fmt::print(os, "CScript {}", THIS);
 }

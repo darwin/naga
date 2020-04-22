@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& os, const CEngine& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CScript& v) {
+std::ostream& operator<<(std::ostream& os, const CJSScript& v) {
   v.Dump(os);
   return os;
 }

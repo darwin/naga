@@ -330,11 +330,11 @@ void exposeJSEngine(py::module py_module) {
 void exposeJSScript(py::module py_module) {
   TRACE("exposeJSScript py_module={}", py_module);
   // clang-format off
-  py::class_<CScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
-      .def_property_readonly("source", &CScript::GetSource,
+  py::class_<CJSScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
+      .def_property_readonly("source", &CJSScript::GetSource,
                              "the source code")
 
-      .def("run", &CScript::Run,
+      .def("run", &CJSScript::Run,
            "Execute the compiled code.");
   // clang-format on
 }

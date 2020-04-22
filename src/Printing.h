@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& os, const CJSObject& v);
 std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& v);
 std::ostream& operator<<(std::ostream& os, const CContext& v);
 std::ostream& operator<<(std::ostream& os, const CEngine& v);
-std::ostream& operator<<(std::ostream& os, const CScript& v);
+std::ostream& operator<<(std::ostream& os, const CJSScript& v);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
 std::ostream& operator<<(std::ostream& os, const CJSObject::Roles& v);
 std::ostream& operator<<(std::ostream& os, const PyObject* v);

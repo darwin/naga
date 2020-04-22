@@ -113,7 +113,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
     CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
   }
 
-  return std::make_shared<CScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
+  return std::make_shared<CJSScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 
 void CEngine::Dump(std::ostream& os) const {
