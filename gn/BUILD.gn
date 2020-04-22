@@ -2,43 +2,43 @@ import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
 
 declare_args() {
-  stpyv8_verbose_build = false
+  naga_verbose_build = false
 
-  stpyv8_disable_feature_cljs = true
+  naga_disable_feature_cljs = true
 
-  stpyv8_active_log_level = "INFO"
+  naga_active_log_level = "INFO"
 
-  python_includes = string_split(getenv("STPYV8_PYTHON_INCLUDES"), " ")
-  python_libs = string_split(getenv("STPYV8_PYTHON_LIBS"), " ")
-  python_ldflags = string_split(getenv("STPYV8_PYTHON_LDFLAGS"), " ")
-  python_abiflags = getenv("STPYV8_PYTHON_ABIFLAGS")
+  python_includes = string_split(getenv("NAGA_PYTHON_INCLUDES"), " ")
+  python_libs = string_split(getenv("NAGA_PYTHON_LIBS"), " ")
+  python_ldflags = string_split(getenv("NAGA_PYTHON_LDFLAGS"), " ")
+  python_abiflags = getenv("NAGA_PYTHON_ABIFLAGS")
 
-  stpyv8_enable_precompiled_headers = true
+  naga_enable_precompiled_headers = true
 
   # this is enabled when we are generating compile_commands.json
-  stpyv8_gen_compile_commands = false
+  naga_gen_compile_commands = false
 }
 
 declare_args() {
   # should be true when running with debug build of Python
   # reason: https://github.com/pybind/pybind11/pull/1438
-  # we retrieve STPYV8_PYTHON_ABIFLAGS via `python3-config --abiflags`
+  # we retrieve NAGA_PYTHON_ABIFLAGS via `python3-config --abiflags`
   #   "dm" means debug-multithreaded
   #   "m" means multithreaded (normal release build)
-  stpyv8_using_debug_python = python_abiflags == "dm"
+  naga_using_debug_python = python_abiflags == "dm"
 }
 
-if (stpyv8_verbose_build) {
-  print("using active log level", stpyv8_active_log_level)
-  print("using precompiled headers", stpyv8_enable_precompiled_headers)
-  print("using disable cljs", stpyv8_disable_feature_cljs)
+if (naga_verbose_build) {
+  print("using active log level", naga_active_log_level)
+  print("using precompiled headers", naga_enable_precompiled_headers)
+  print("using disable cljs", naga_disable_feature_cljs)
   print("using python_includes", python_includes)
   print("using python_libs", python_libs)
   print("using python_ldflags", python_ldflags)
   print("using python_abiflags", python_abiflags)
 }
 
-stpyv8_source_files = [
+naga_source_files = [
   "Aux.cpp",
   "Context.cpp",
   "Engine.cpp",
@@ -77,14 +77,14 @@ stpyv8_source_files = [
   "V8Utils.cpp",
 ]
 
-stpyv8_source_file_paths = []
+naga_source_file_paths = []
 
-foreach(source, stpyv8_source_files) {
-  stpyv8_source_file_paths += [ "../src/$source" ]
+foreach(source, naga_source_files) {
+  naga_source_file_paths += [ "../src/$source" ]
 }
 
-config("stpyv8_precompiled_headers") {
-  if (stpyv8_enable_precompiled_headers) {
+config("naga_precompiled_headers") {
+  if (naga_enable_precompiled_headers) {
     if (is_win) {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
@@ -109,7 +109,7 @@ config("stpyv8_precompiled_headers") {
   }
 }
 
-config("stpyv8_compiler_flags") {
+config("naga_compiler_flags") {
   cflags_cc = [
     "-Wno-c++98-compat-extra-semi",
     "-Wno-error=unused-variable",
@@ -121,50 +121,50 @@ config("stpyv8_compiler_flags") {
   ]
 }
 
-config("stpyv8_python_compiler_flags") {
+config("naga_python_compiler_flags") {
   cflags = python_includes
 
-  if (stpyv8_using_debug_python) {
-    if (stpyv8_verbose_build) {
+  if (naga_using_debug_python) {
+    if (naga_verbose_build) {
       print("using debug python")
     }
     defines = [ "Py_DEBUG" ]
   }
 }
 
-config("stpyv8_python_linker_flags") {
+config("naga_python_linker_flags") {
   ldflags = python_ldflags
 }
 
-config("stpyv8_spdlog_compiler_flags") {
+config("naga_spdlog_compiler_flags") {
   include_dirs = [ "../vendor/spdlog/include" ]
 }
 
-config("stpyv8_gsl_lite_compiler_flags") {
+config("naga_gsl_lite_compiler_flags") {
   include_dirs = [ "../vendor/gsl-lite/include" ]
 }
 
-config("stpyv8_pybind11_compiler_flags") {
+config("naga_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
 
-config("stpyv8_magic_enum_compiler_flags") {
+config("naga_magic_enum_compiler_flags") {
   include_dirs = [ "../vendor/magic_enum/include" ]
 }
 
-config("stpyv8_features") {
+config("naga_features") {
   defines = []
-  if (stpyv8_disable_feature_cljs) {
-    defines += [ "STPYV8_DISABLE_FEATURE_CLJS" ]
+  if (naga_disable_feature_cljs) {
+    defines += [ "NAGA_DISABLE_FEATURE_CLJS" ]
   }
 }
 
-config("stpyv8_logging") {
-  defines = [ "STPYV8_ACTIVE_LOG_LEVEL=$stpyv8_active_log_level" ]
+config("naga_logging") {
+  defines = [ "NAGA_ACTIVE_LOG_LEVEL=$naga_active_log_level" ]
 }
 
-source_set("stpyv8_src") {
-  sources = stpyv8_source_file_paths
+source_set("naga_src") {
+  sources = naga_source_file_paths
 
   # don't use the default configs that BUILDCONFIG applied to us.
   configs -= [
@@ -177,19 +177,19 @@ source_set("stpyv8_src") {
 
   # add some of our own settings...
   configs += [
-    ":stpyv8_python_compiler_flags",
-    ":stpyv8_compiler_flags",
-    ":stpyv8_spdlog_compiler_flags",
-    ":stpyv8_gsl_lite_compiler_flags",
-    ":stpyv8_pybind11_compiler_flags",
-    ":stpyv8_magic_enum_compiler_flags",
-    ":stpyv8_features",
-    ":stpyv8_logging",
+    ":naga_python_compiler_flags",
+    ":naga_compiler_flags",
+    ":naga_spdlog_compiler_flags",
+    ":naga_gsl_lite_compiler_flags",
+    ":naga_pybind11_compiler_flags",
+    ":naga_magic_enum_compiler_flags",
+    ":naga_features",
+    ":naga_logging",
   ]
-  if (!stpyv8_gen_compile_commands) {
+  if (!naga_gen_compile_commands) {
     # precompiled headers are set via command-line options and this didn't play well with CLion
     # which expects all includes to be visible in the code
-    configs += [ ":stpyv8_precompiled_headers" ]
+    configs += [ ":naga_precompiled_headers" ]
   }
 
   # this is very important
@@ -200,7 +200,7 @@ source_set("stpyv8_src") {
   deps = [ "//v8:v8_headers" ]
 }
 
-group("stpyv8_v8") {
+group("naga_v8") {
   # here we gather our v8 dependencies
   deps = [
     "//v8:v8_libplatform",
@@ -218,10 +218,10 @@ shared_library("stpyv8") {
   # output_dir = "../.venv/lib/python3.7/site-packages"
 
   # add some of our own settings...
-  configs += [ ":stpyv8_python_linker_flags" ]
+  configs += [ ":naga_python_linker_flags" ]
 
   deps = [
-    ":stpyv8_src",
-    ":stpyv8_v8",
+    ":naga_src",
+    ":naga_v8",
   ]
 }

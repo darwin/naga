@@ -12,7 +12,7 @@ source "$VENV_DIR/bin/activate"
 detect_python_build_settings
 
 # export variables with our prefix
-for name in "${!STPYV8_@}"; do
+for name in "${!NAGA_@}"; do
   export "${name?}"
 done
 
@@ -25,7 +25,7 @@ if [[ $# == 0 ]]; then
   export BASH_SILENCE_DEPRECATION_WARNING=1
   # TODO: it would be nice to support user's default shell here
   #       unfortunately I don't know how to prevent/pass init file in general
-  exec bash --rcfile <(echo "PS1='gn: ';env | sort | grep ^STPYV8_") -i
+  exec bash --rcfile <(echo "PS1='gn: ';env | sort | grep ^NAGA_") -i
 else
   echo_info "in depot shell"
   echo_cmd "$@"

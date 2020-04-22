@@ -23,7 +23,7 @@ COLOR_CYAN='\033[0;36m'   # Cyan
 COLOR_WHITE='\033[0;37m'  # White
 
 echo_with_color() {
-  if [[ $STPYV8_BASH_COLORS == yes ]]; then
+  if [[ $NAGA_BASH_COLORS == yes ]]; then
     echo -e "${1}${2}${COLOR_OFF}"
   else
     echo -e "${2}"
@@ -44,11 +44,11 @@ echo_err() {
 }
 
 detect_python_build_settings() {
-  STPYV8_PYTHON_INCLUDES=${STPYV8_PYTHON_INCLUDES:-$(python3-config --includes)}
-  STPYV8_PYTHON_LIBS=${STPYV8_PYTHON_LIBS:-$(python3-config --libs)}
-  STPYV8_PYTHON_CFLAGS=${STPYV8_PYTHON_CFLAGS:-$(python3-config --cflags)}
-  STPYV8_PYTHON_LDFLAGS=${STPYV8_PYTHON_LDFLAGS:-$(python3-config --ldflags)}
-  STPYV8_PYTHON_ABIFLAGS=${STPYV8_PYTHON_ABIFLAGS:-$(python3-config --abiflags)}
+  NAGA_PYTHON_INCLUDES=${NAGA_PYTHON_INCLUDES:-$(python3-config --includes)}
+  NAGA_PYTHON_LIBS=${NAGA_PYTHON_LIBS:-$(python3-config --libs)}
+  NAGA_PYTHON_CFLAGS=${NAGA_PYTHON_CFLAGS:-$(python3-config --cflags)}
+  NAGA_PYTHON_LDFLAGS=${NAGA_PYTHON_LDFLAGS:-$(python3-config --ldflags)}
+  NAGA_PYTHON_ABIFLAGS=${NAGA_PYTHON_ABIFLAGS:-$(python3-config --abiflags)}
 }
 
 # https://stackoverflow.com/a/53400482/84283

@@ -17,12 +17,12 @@ if [ "$(uname)" != "Darwin" ]; then
   exit 1
 fi
 
-if [[ ! -d "$STPYV8_CPYTHON_REPO_DIR" ]]; then
-  echo_err "CPython source directory is expected at '$STPYV8_CPYTHON_REPO_DIR' (change it via STPYV8_CPYTHON_REPO_DIR)"
+if [[ ! -d "$NAGA_CPYTHON_REPO_DIR" ]]; then
+  echo_err "CPython source directory is expected at '$NAGA_CPYTHON_REPO_DIR' (change it via NAGA_CPYTHON_REPO_DIR)"
   exit 2
 fi
 
-echo_cmd cd "$STPYV8_CPYTHON_REPO_DIR"
+echo_cmd cd "$NAGA_CPYTHON_REPO_DIR"
 
 # macOS: use openssl from homebrew
 # brew install tcl-tk openssl

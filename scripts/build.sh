@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
 
   case $key in
   -v | --verbose)
-    STPYV8_VERBOSE=1
+    NAGA_VERBOSE=1
     shift
     ;;
   *) # unknown option
@@ -26,12 +26,12 @@ set -- "${POSITIONAL_OPTS[@]}" # restore positional parameters
 BUILD_CONFIG=${1:-release}
 
 EXTRA_GEN_BUILD_ARGS=()
-if [[ -n "$STPYV8_VERBOSE" ]]; then
+if [[ -n "$NAGA_VERBOSE" ]]; then
   EXTRA_GEN_BUILD_ARGS+=("--verbose")
 fi
 
 EXTRA_NINJA_ARGS=()
-if [[ -n "$STPYV8_VERBOSE" ]]; then
+if [[ -n "$NAGA_VERBOSE" ]]; then
   EXTRA_NINJA_ARGS+=("-v")
 fi
 
@@ -39,16 +39,16 @@ EXTRA_BUILD_ARGS=()
 if [[ "$BUILD_CONFIG" == "debug" ]]; then
   EXTRA_BUILD_ARGS+=("--debug")
 fi
-if [[ -n "$STPYV8_VERBOSE" ]]; then
+if [[ -n "$NAGA_VERBOSE" ]]; then
   EXTRA_BUILD_ARGS+=("--verbose")
 fi
 
 EXTRA_INSTALL_ARGS=()
-if [[ -n "$STPYV8_VERBOSE" ]]; then
+if [[ -n "$NAGA_VERBOSE" ]]; then
   EXTRA_INSTALL_ARGS+=("--verbose")
 fi
 
-OUT_DIR="_out/$STPYV8_V8_GIT_TAG/$BUILD_CONFIG"
+OUT_DIR="_out/$NAGA_V8_GIT_TAG/$BUILD_CONFIG"
 
 cd "$ROOT_DIR"
 
@@ -58,7 +58,7 @@ echo_cmd ./scripts/enter_depot_shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_
 
 echo_cmd cd "$EXT_DIR"
 
-export STPYV8_V8_GIT_TAG
+export NAGA_V8_GIT_TAG
 
 echo_cmd python3 setup.py build "${EXTRA_BUILD_ARGS[@]}"
 

@@ -7,12 +7,12 @@ import unittest
 import logging
 import datetime
 
-import STPyV8
+import naga
 
 
 def convert(obj):
-    if isinstance(obj, STPyV8.JSObject):
-        if STPyV8.toolkit.has_role_array(obj):
+    if isinstance(obj, naga.JSObject):
+        if naga.toolkit.has_role_array(obj):
             return [convert(v) for v in obj]
         else:
             return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])
@@ -22,18 +22,18 @@ def convert(obj):
 
 class TestWrapper(unittest.TestCase):
     def testObject(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             o = ctxt.eval("new Object()")
 
             self.assertTrue(hash(o) > 0)
 
-            o1 = STPyV8.toolkit.clone(o)
+            o1 = naga.toolkit.clone(o)
 
             self.assertEqual(hash(o1), hash(o))
             self.assertTrue(o != o1)
 
     def testAutoConverter(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             ctxt.eval("""
                 var_i = 1;
                 var_f = 1.0;
@@ -80,16 +80,16 @@ class TestWrapper(unittest.TestCase):
             self.assertTrue("var_f_obj" in attrs)
 
     def testExactConverter(self):
-        class MyInteger(int, STPyV8.JSClass):
+        class MyInteger(int, naga.JSClass):
             pass
 
-        class MyString(str, STPyV8.JSClass):
+        class MyString(str, naga.JSClass):
             pass
 
-        class MyDateTime(datetime.time, STPyV8.JSClass):
+        class MyDateTime(datetime.time, naga.JSClass):
             pass
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             var_bool = True
             var_int = 1
             var_float = 1.0
@@ -102,7 +102,7 @@ class TestWrapper(unittest.TestCase):
             var_mystr = MyString('mystr')
             var_mytime = MyDateTime()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             typename = ctxt.eval("(function (name) { return this[name].constructor.name; })")
             typeof = ctxt.eval("(function (name) { return typeof(this[name]); })")
 
@@ -123,20 +123,20 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual('function', typeof('var_mytime'))
 
     def testJavascriptWrapper(self):
-        with STPyV8.JSContext() as ctxt:
-            self.assertEqual(type(STPyV8.JSNull), type(ctxt.eval("null")))
-            self.assertEqual(type(STPyV8.JSUndefined), type(ctxt.eval("undefined")))
+        with naga.JSContext() as ctxt:
+            self.assertEqual(type(naga.JSNull), type(ctxt.eval("null")))
+            self.assertEqual(type(naga.JSUndefined), type(ctxt.eval("undefined")))
             self.assertEqual(bool, type(ctxt.eval("true")))
             self.assertEqual(str, type(ctxt.eval("'test'")))
             self.assertEqual(int, type(ctxt.eval("123")))
             self.assertEqual(float, type(ctxt.eval("3.14")))
             self.assertEqual(datetime.datetime, type(ctxt.eval("new Date()")))
-            self.assertEqual(STPyV8.JSArray, type(ctxt.eval("[1, 2, 3]")))
-            self.assertEqual(STPyV8.JSFunction, type(ctxt.eval("(function() {})")))
-            self.assertEqual(STPyV8.JSObject, type(ctxt.eval("new Object()")))
+            self.assertEqual(naga.JSArray, type(ctxt.eval("[1, 2, 3]")))
+            self.assertEqual(naga.JSFunction, type(ctxt.eval("(function() {})")))
+            self.assertEqual(naga.JSObject, type(ctxt.eval("new Object()")))
 
     def testPythonWrapper(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             typeof = ctxt.eval("(function type(value) { return typeof value; })")
             protoof = ctxt.eval("(function protoof(value) { return Object.prototype.toString.apply(value); })")
 
@@ -160,7 +160,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual('[object Function]', protoof(int))
 
     def testFunction(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             func = ctxt.eval("""
                 (function ()
                 {
@@ -179,12 +179,12 @@ class TestWrapper(unittest.TestCase):
 
             func = ctxt.eval("(function test() {})")
 
-            self.assertEqual("test", STPyV8.toolkit.get_name(func))
-            self.assertEqual("", STPyV8.toolkit.resname(func))
-            self.assertEqual(0, STPyV8.toolkit.linenum(func))
-            self.assertEqual(14, STPyV8.toolkit.colnum(func))
-            self.assertEqual(0, STPyV8.toolkit.lineoff(func))
-            self.assertEqual(0, STPyV8.toolkit.coloff(func))
+            self.assertEqual("test", naga.toolkit.get_name(func))
+            self.assertEqual("", naga.toolkit.resname(func))
+            self.assertEqual(0, naga.toolkit.linenum(func))
+            self.assertEqual(14, naga.toolkit.colnum(func))
+            self.assertEqual(0, naga.toolkit.lineoff(func))
+            self.assertEqual(0, naga.toolkit.coloff(func))
 
             # FIXME
             # Why the setter doesn't work?
@@ -200,32 +200,32 @@ class TestWrapper(unittest.TestCase):
             def __call__(self, name):
                 return "hello " + name
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             hello = Hello()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             self.assertEqual("hello world", ctxt.eval("hello('world')"))
 
     def testJSFunction(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             hello = ctxt.eval("(function (name) { return 'Hello ' + name; })")
 
-            self.assertTrue(isinstance(hello, STPyV8.JSFunction))
+            self.assertTrue(isinstance(hello, naga.JSFunction))
             self.assertEqual("Hello world", hello('world'))
-            self.assertEqual("Hello world", STPyV8.toolkit.invoke(hello, ['world']))
+            self.assertEqual("Hello world", naga.toolkit.invoke(hello, ['world']))
 
             obj = ctxt.eval(
                 "({ 'name': 'world', 'hello': function (name) { return 'Hello ' + name + ' from ' + this.name; }})")
             hello = obj.hello
-            self.assertTrue(isinstance(hello, STPyV8.JSFunction))
+            self.assertTrue(isinstance(hello, naga.JSFunction))
             self.assertEqual("Hello world from world", hello('world'))
 
             tester = ctxt.eval("({ 'name': 'tester' })")
-            self.assertEqual("Hello world from tester", STPyV8.toolkit.apply(hello, tester, ['world']))
-            self.assertEqual("Hello world from json", STPyV8.toolkit.apply(hello, {'name': 'json'}, ['world']))
+            self.assertEqual("Hello world from tester", naga.toolkit.apply(hello, tester, ['world']))
+            self.assertEqual("Hello world from json", naga.toolkit.apply(hello, {'name': 'json'}, ['world']))
 
     def testConstructor(self):
-        with STPyV8.JSContext() as ctx:
+        with naga.JSContext() as ctx:
             ctx.eval("""
                 var Test = function() {
                     this.trySomething();
@@ -239,33 +239,33 @@ class TestWrapper(unittest.TestCase):
                 };
                 """)
 
-            self.assertTrue(isinstance(ctx.locals.Test, STPyV8.JSFunction))
+            self.assertTrue(isinstance(ctx.locals.Test, naga.JSFunction))
 
-            test = STPyV8.toolkit.create(ctx.locals.Test)
+            test = naga.toolkit.create(ctx.locals.Test)
 
-            self.assertTrue(isinstance(ctx.locals.Test, STPyV8.JSObject))
+            self.assertTrue(isinstance(ctx.locals.Test, naga.JSObject))
             self.assertEqual("soirv8", test.name)
 
-            test2 = STPyV8.toolkit.create(ctx.locals.Test2, ('John', 'Doe'))
+            test2 = naga.toolkit.create(ctx.locals.Test2, ('John', 'Doe'))
 
             self.assertEqual("John Doe", test2.name)
 
-            test3 = STPyV8.toolkit.create(ctx.locals.Test2, ('John', 'Doe'), {'email': 'john.doe@randommail.com'})
+            test3 = naga.toolkit.create(ctx.locals.Test2, ('John', 'Doe'), {'email': 'john.doe@randommail.com'})
 
             self.assertEqual("john.doe@randommail.com", test3.email)
 
     def testJSError(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             # noinspection PyBroadException
             try:
                 ctxt.eval('throw "test"')
                 self.fail()
             except Exception:
-                self.assertTrue(STPyV8.JSError, sys.exc_info()[0])
+                self.assertTrue(naga.JSError, sys.exc_info()[0])
 
     def testErrorInfo(self):
-        with STPyV8.JSContext():
-            with STPyV8.JSEngine() as engine:
+        with naga.JSContext():
+            with naga.JSEngine() as engine:
                 try:
                     engine.compile("""
                         function hello()
@@ -275,7 +275,7 @@ class TestWrapper(unittest.TestCase):
 
                         hello();""", "test", 10, 10).run()
                     self.fail()
-                except STPyV8.JSError as e:
+                except naga.JSError as e:
                     self.assertTrue("JSError: Error: hello world ( test @ 14 : 28 )  ->" in str(e))
                     self.assertEqual("Error", e.name)
                     self.assertEqual("hello world", e.message)
@@ -300,7 +300,7 @@ class TestWrapper(unittest.TestCase):
             ('g', 'test2', 1, 15),
             (None, 'test3', 1, None),
             (None, 'test3', 1, 1),
-        ], STPyV8.JSError.parse_stack("""Error: err
+        ], naga.JSError.parse_stack("""Error: err
             at Error (unknown source)
             at test (native)
             at new <anonymous> (test0:3:5)
@@ -311,11 +311,11 @@ class TestWrapper(unittest.TestCase):
 
     def testStackTrace(self):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def GetCurrentStackTrace(self, _limit):
-                return STPyV8.JSStackTrace.GetCurrentStackTrace(4, STPyV8.JSStackTrace.Options.Detailed)
+                return naga.JSStackTrace.GetCurrentStackTrace(4, naga.JSStackTrace.Options.Detailed)
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             st = ctxt.eval("""
                 function a()
                 {
@@ -342,11 +342,11 @@ class TestWrapper(unittest.TestCase):
 
     def testPythonException(self):
         # noinspection PyPep8Naming
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def raiseException(self):
                 raise RuntimeError("Hello")
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             ctxt.eval("""
                 msg ="";
                 try
@@ -368,7 +368,7 @@ class TestWrapper(unittest.TestCase):
             pass
 
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def raiseIndexError(self):
                 return [1, 2, 3][5]
 
@@ -389,7 +389,7 @@ class TestWrapper(unittest.TestCase):
             def raiseExceptions(self):
                 raise TestException()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             ctxt.eval("try { this.raiseIndexError(); } catch (e) { msg = e; }")
 
             self.assertEqual("RangeError: list index out of range", str(ctxt.locals.msg))
@@ -415,7 +415,7 @@ class TestWrapper(unittest.TestCase):
             self.assertRaises(TestException, ctxt.eval, "this.raiseExceptions();")
 
     def testArray(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             array = ctxt.eval("""
                 var array = new Array();
 
@@ -427,7 +427,7 @@ class TestWrapper(unittest.TestCase):
                 array;
                 """)
 
-            self.assertTrue(isinstance(array, STPyV8.JSArray))
+            self.assertTrue(isinstance(array, naga.JSArray))
             self.assertEqual(10, len(array))
 
             self.assertTrue(5 in array)
@@ -451,7 +451,7 @@ class TestWrapper(unittest.TestCase):
             # array[-3:-1]                         -3^^^^^^-1
             # array[0:0]    []
 
-            self.assertEqual([6, STPyV8.JSUndefined, 4], array[4:7])
+            self.assertEqual([6, naga.JSUndefined, 4], array[4:7])
             self.assertEqual([3, 2], array[-3:-1])
             self.assertEqual([], array[0:0])
 
@@ -470,8 +470,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual([10, None, 9, 7, 6, 8, 8, 3, 2, 1], list(array))
 
             # TODO: provide similar functionality in the future
-            # ctxt.locals.array1 = STPyV8.JSArray(5)
-            # ctxt.locals.array2 = STPyV8.JSArray([1, 2, 3, 4, 5])
+            # ctxt.locals.array1 = naga.JSArray(5)
+            # ctxt.locals.array2 = naga.JSArray([1, 2, 3, 4, 5])
             #
             # for i in range(len(ctxt.locals.array2)):
             #     ctxt.locals.array1[i] = ctxt.locals.array2[i] * 10
@@ -494,7 +494,7 @@ class TestWrapper(unittest.TestCase):
 
             args = [
                 ["a = Array(7); for(i=0; i<a.length; i++) a[i] = i; a[3] = undefined; a[a.length-1]; a", "0,1,2,,4,5,6",
-                 [0, 1, 2, STPyV8.JSUndefined, 4, 5, 6]],
+                 [0, 1, 2, naga.JSUndefined, 4, 5, 6]],
                 ["a = Array(7); for(i=0; i<a.length - 1; i++) a[i] = i; a[a.length-1]; a", "0,1,2,3,4,5,",
                  [0, 1, 2, 3, 4, 5, None]],
                 ["a = Array(7); for(i=1; i<a.length; i++) a[i] = i; a[a.length-1]; a", ",1,2,3,4,5,6",
@@ -508,18 +508,18 @@ class TestWrapper(unittest.TestCase):
                 self.assertEqual(arg[2], [array[i] for i in range(len(array))])
 
             # TODO: provide similar functionality in the future
-            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(STPyV8.JSArray([1, 2, 3])))
-            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(STPyV8.JSArray([1, 2, 3]), 1))
+            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(naga.JSArray([1, 2, 3])))
+            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(naga.JSArray([1, 2, 3]), 1))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray([1, 2, 3])))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(naga.JSArray([1, 2, 3])))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(STPyV8.JSArray((1, 2, 3))))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(naga.JSArray((1, 2, 3))))
             # self.assertEqual('[object Array]',
             # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")
-            # (STPyV8.JSArray(list(range(3)))))
+            # (naga.JSArray(list(range(3)))))
 
     def testArraySlices(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             array = ctxt.eval("""
                 var array = new Array();
                 array;
@@ -554,8 +554,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(len(array), 4)
             self.assertEqual(ctxt.eval('array[0]'), 7)
             self.assertEqual(ctxt.eval('array[1]'), 10)
-            self.assertEqual(ctxt.eval('array[2]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[2]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
 
             array[0:7] = [0, 1, 2]
             # array         [0, 1, 2, None, None, None, None]
@@ -563,10 +563,10 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(ctxt.eval('array[0]'), 0)
             self.assertEqual(ctxt.eval('array[1]'), 1)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[4]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[6]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[4]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[5]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[6]'), naga.JSUndefined)
 
             array[0:7] = [0, 1, 2, 3, 4, 5, 6]
             # array         [0, 1, 2, 3, 4, 5, 6]
@@ -582,8 +582,8 @@ class TestWrapper(unittest.TestCase):
             del array[0:2]
             # array         [None, None, 2, 3, 4, 5, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[0]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), naga.JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
             self.assertEqual(ctxt.eval('array[3]'), 3)
             self.assertEqual(ctxt.eval('array[4]'), 4)
@@ -593,16 +593,16 @@ class TestWrapper(unittest.TestCase):
             del array[3:7:2]
             # array         [None, None, 2, None, 4, None, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), STPyV8.JSUndefined)
-            self.assertEqual(ctxt.eval('array[1]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[0]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), naga.JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
             self.assertEqual(ctxt.eval('array[4]'), 4)
-            self.assertEqual(ctxt.eval('array[5]'), STPyV8.JSUndefined)
+            self.assertEqual(ctxt.eval('array[5]'), naga.JSUndefined)
             self.assertEqual(ctxt.eval('array[6]'), 6)
 
     def testMultiDimArray(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             ret = ctxt.eval("""
                 ({
                     'test': function(){
@@ -631,7 +631,7 @@ class TestWrapper(unittest.TestCase):
             for i in range(x):
                 yield i
 
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             func = ctxt.eval("""(function (k) {
                 var result = [];
                 for (var prop in k) {
@@ -649,7 +649,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(["0", "1", "2"], list(func(list(gen(3)))))
 
     def testDict(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             obj = ctxt.eval("var r = { 'a' : 1, 'b' : 2 }; r")
 
             self.assertEqual(1, obj.a)
@@ -664,8 +664,8 @@ class TestWrapper(unittest.TestCase):
                                     'float': 1.234,
                                     'obj': {'name': 'john doe'}},
                               'd': True,
-                              'e': STPyV8.JSNull,
-                              'f': STPyV8.JSUndefined},
+                              'e': naga.JSNull,
+                              'f': naga.JSUndefined},
                              convert(ctxt.eval("""var x =
                              { a: 1,
                                b: [1, 2, 3],
@@ -677,7 +677,7 @@ class TestWrapper(unittest.TestCase):
                                f: undefined}; x""")))
 
     def testDate(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             now1 = ctxt.eval("new Date();")
 
             self.assertTrue(now1)
@@ -702,7 +702,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(now3, ctxt.locals.identity(now3))
 
     def testUnicode(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             self.assertEqual(u"人", ctxt.eval(u"\"人\""))
             self.assertEqual(u"é", ctxt.eval(u"\"é\""))
 
@@ -721,20 +721,20 @@ class TestWrapper(unittest.TestCase):
             def fs(self):
                 return FileSystemWrapper()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             self.assertEqual(os.getcwd(), ctxt.eval("fs.cwd"))
 
     def testRefCount(self):
         o = object()
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             po = o
 
         g = Global()
         g_refs = sys.getrefcount(g)
 
         count = sys.getrefcount(o)
-        with STPyV8.JSContext(g) as ctxt:
+        with naga.JSContext(g) as ctxt:
             ctxt.eval("""
                 var hold = po;
             """)
@@ -749,11 +749,11 @@ class TestWrapper(unittest.TestCase):
 
             del ctxt
 
-        STPyV8.aux.v8_request_gc_for_testing()
+        naga.aux.v8_request_gc_for_testing()
         self.assertEqual(g_refs, sys.getrefcount(g))
 
     def testProperty(self):
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self, name):
                 self._name = name
 
@@ -770,7 +770,7 @@ class TestWrapper(unittest.TestCase):
 
         g = Global('world')
 
-        with STPyV8.JSContext(g) as ctxt:
+        with naga.JSContext(g) as ctxt:
             self.assertEqual('world', ctxt.eval("name"))
             self.assertEqual('foobar', ctxt.eval("this.name = 'foobar';"))
             self.assertEqual('foobar', ctxt.eval("name"))
@@ -783,11 +783,11 @@ class TestWrapper(unittest.TestCase):
             # self.assertEqual('fixed', ctxt.eval("name"))
 
     def testGetterAndSetter(self):
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self, testval):
                 self.testval = testval
 
-        with STPyV8.JSContext(Global("Test Value A")) as ctxt:
+        with naga.JSContext(Global("Test Value A")) as ctxt:
             self.assertEqual("Test Value A", ctxt.locals.testval)
             ctxt.eval("""
                this.__defineGetter__("test", function() {
@@ -812,7 +812,7 @@ class TestWrapper(unittest.TestCase):
             #     owner.deleted = True
 
         def test():
-            with STPyV8.JSContext() as ctxt:
+            with naga.JSContext() as ctxt:
                 fn = ctxt.eval("(function (obj) { obj.say(); })")
 
                 obj = Hello()
@@ -828,24 +828,24 @@ class TestWrapper(unittest.TestCase):
         test()
 
     def testNullInString(self):
-        with STPyV8.JSContext() as ctxt:
+        with naga.JSContext() as ctxt:
             fn = ctxt.eval("(function (s) { return s; })")
 
             self.assertEqual("hello \0 world", fn("hello \0 world"))
 
     def testLivingObjectCache(self):
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             i = 1
             b = True
             o = object()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             self.assertTrue(ctxt.eval("i == i"))
             self.assertTrue(ctxt.eval("b == b"))
             self.assertTrue(ctxt.eval("o == o"))
 
     def testNamedSetter(self):
-        class Obj(STPyV8.JSClass):
+        class Obj(naga.JSClass):
             def __init__(self):
                 self._p = None
 
@@ -857,13 +857,13 @@ class TestWrapper(unittest.TestCase):
             def p(self, value):
                 self._p = value
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self):
                 self.obj = Obj()
                 self.d = {}
                 self.p = None
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             ctxt.eval("""
             x = obj;
             x.y = 10;
@@ -875,15 +875,15 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(10, ctxt.locals.d['y'])
 
     def testWatch(self):
-        class Obj(STPyV8.JSClass):
+        class Obj(naga.JSClass):
             def __init__(self):
                 self.p = 1
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self):
                 self.o = Obj()
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             ctxt.eval("""
             o.watch("p", function (id, oldval, newval) {
                 return oldval + newval;
@@ -898,7 +898,7 @@ class TestWrapper(unittest.TestCase):
 
             ctxt.eval("delete o.p;")
 
-            self.assertEqual(STPyV8.JSUndefined, ctxt.eval("o.p"))
+            self.assertEqual(naga.JSUndefined, ctxt.eval("o.p"))
 
             ctxt.eval("o.p = 2;")
 
@@ -911,11 +911,11 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(1, ctxt.eval("o.p"))
 
     def testReferenceError(self):
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self):
                 self.s = self
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             self.assertRaises(ReferenceError, ctxt.eval, 'x')
 
             self.assertTrue(ctxt.eval("typeof(x) === 'undefined'"))
@@ -927,46 +927,46 @@ class TestWrapper(unittest.TestCase):
             self.assertTrue(ctxt.eval("typeof(s.z) === 'undefined'"))
 
     def testRaiseExceptionInGetter(self):
-        class Document(STPyV8.JSClass):
+        class Document(naga.JSClass):
             def __getattr__(self, name):
                 if name == 'y':
                     raise TypeError()
 
-                return STPyV8.JSClass.__getattr__(self, name)
+                return naga.JSClass.__getattr__(self, name)
 
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def __init__(self):
                 self.document = Document()
 
-        with STPyV8.JSContext(Global()) as ctxt:
-            self.assertEqual(STPyV8.JSUndefined, ctxt.eval('document.x'))
+        with naga.JSContext(Global()) as ctxt:
+            self.assertEqual(naga.JSUndefined, ctxt.eval('document.x'))
             self.assertRaises(TypeError, ctxt.eval, 'document.y')
 
     def testNullAndUndefined(self):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(STPyV8.JSClass):
+        class Global(naga.JSClass):
             def returnUndefined(self):
-                return STPyV8.JSUndefined
+                return naga.JSUndefined
 
             def returnNull(self):
-                return STPyV8.JSNull
+                return naga.JSNull
 
             def returnNone(self):
                 return None
 
-        with STPyV8.JSContext(Global()) as ctxt:
+        with naga.JSContext(Global()) as ctxt:
             # JSNull maps to None
             # JSUndefined maps to Py_JSUndefined (None-like)
-            self.assertEqual(STPyV8.JSNull, None)
+            self.assertEqual(naga.JSNull, None)
 
-            self.assertEqual(STPyV8.JSNull, ctxt.eval("null"))
-            self.assertEqual(STPyV8.JSUndefined, ctxt.eval("undefined"))
+            self.assertEqual(naga.JSNull, ctxt.eval("null"))
+            self.assertEqual(naga.JSUndefined, ctxt.eval("undefined"))
 
-            self.assertFalse(bool(STPyV8.JSUndefined))
-            self.assertFalse(bool(STPyV8.JSNull))
+            self.assertFalse(bool(naga.JSUndefined))
+            self.assertFalse(bool(naga.JSNull))
 
-            self.assertEqual("JSUndefined", str(STPyV8.JSUndefined))
-            self.assertEqual("None", str(STPyV8.JSNull))
+            self.assertEqual("JSUndefined", str(naga.JSUndefined))
+            self.assertEqual("None", str(naga.JSNull))
 
             self.assertTrue(ctxt.eval('undefined == returnUndefined()'))
             self.assertTrue(ctxt.eval('null == returnNone()'))

@@ -3,7 +3,7 @@ is_component_build = false
 use_custom_libcxx = false
 
 v8_monolithic = true
-v8_embedder_string = "-stpyv8"
+v8_embedder_string = "-naga"
 v8_enable_disassembler = false
 v8_enable_i18n_support = true
 v8_use_external_startup_data = false

@@ -11,11 +11,11 @@ try:
 except ImportError:
     from distutils.core import setup, Extension
 
-STPYV8_V8_GIT_TAG = os.environ.get('STPYV8_V8_GIT_TAG')
-if STPYV8_V8_GIT_TAG is None:
-    raise Exception("STPYV8_V8_GIT_TAG is not defined in your environment")
+NAGA_V8_GIT_TAG = os.environ.get('NAGA_V8_GIT_TAG')
+if NAGA_V8_GIT_TAG is None:
+    raise Exception("NAGA_V8_GIT_TAG is not defined in your environment")
 
-STPYV8_VERSION = STPYV8_V8_GIT_TAG
+NAGA_VERSION = NAGA_V8_GIT_TAG
 
 
 # here we override standard Extension build,
@@ -24,7 +24,7 @@ class BuildExtCmd(build_ext):
 
     def get_input_path(self):
         build_config = "debug" if self.debug else "release"
-        return os.path.join("..", "gn", "_out", STPYV8_VERSION, build_config, "libstpyv8.so")
+        return os.path.join("..", "gn", "_out", NAGA_VERSION, build_config, "libstpyv8.so")
 
     def get_output_path(self):
         name = self.extensions[0].name
@@ -63,17 +63,17 @@ class InstallCmd(install):
         install.run(self)
 
 
-stpyv8_ext = Extension(name="_STPyV8", sources=[])
+naga_ext = Extension(name="naga_native", sources=[])
 
-setup(name="stpyv8",
-      version=STPYV8_VERSION,
+setup(name="naga",
+      version=NAGA_VERSION,
       description="Python Wrapper for Google V8 Engine",
       platforms="x86",
-      author="Philip Syme, Angelo Dell'Aera",
-      url="https://github.com/area1/stpyv8",
+      author="Philip Syme, Angelo Dell'Aera, Antonin Hildebrand",
+      url="https://github.com/darwin/naga",
       license="Apache License 2.0",
-      py_modules=["STPyV8"],
-      ext_modules=[stpyv8_ext],
+      py_modules=["naga"],
+      ext_modules=[naga_ext],
       classifiers=[
           "Development Status :: 4 - Beta",
           "Environment :: Plugins",

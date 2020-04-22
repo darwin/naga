@@ -12,7 +12,7 @@ while [[ $# -gt 0 ]]; do
 
   case $key in
   -v | --verbose)
-    STPYV8_VERBOSE=1
+    NAGA_VERBOSE=1
     shift
     ;;
   *) # unknown option
@@ -23,13 +23,13 @@ while [[ $# -gt 0 ]]; do
 done
 set -- "${POSITIONAL_OPTS[@]}" # restore positional parameters
 
-STPYV8_GN_ARGS=()
-if [[ -n "$STPYV8_VERBOSE" ]]; then
-  STPYV8_GN_ARGS+=("stpyv8_verbose_build=true")
+NAGA_GN_ARGS=()
+if [[ -n "$NAGA_VERBOSE" ]]; then
+  NAGA_GN_ARGS+=("stpyv8_verbose_build=true")
 fi
 
-if [[ -n "$STPYV8_ACTIVE_LOG_LEVEL" ]]; then
-  STPYV8_GN_ARGS+=("stpyv8_active_log_level=\"$STPYV8_ACTIVE_LOG_LEVEL\"")
+if [[ -n "$NAGA_ACTIVE_LOG_LEVEL" ]]; then
+  NAGA_GN_ARGS+=("stpyv8_active_log_level=\"$NAGA_ACTIVE_LOG_LEVEL\"")
 fi
 
 cd "$GN_DIR"
@@ -39,7 +39,7 @@ cd "$GN_DIR"
 
 # see configs/args/* for possible names
 BUILD_CONFIG_NAME=${1:-release}
-BUILD_DIR=${2:-"_out/$STPYV8_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
+BUILD_DIR=${2:-"_out/$NAGA_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
 
 # activate Python3, we should capture build settings from Python3.7
 # shellcheck disable=SC1090
@@ -47,7 +47,7 @@ source "$VENV_DIR/bin/activate"
 detect_python_build_settings
 
 # export variables with our prefix
-for name in "${!STPYV8_@}"; do
+for name in "${!NAGA_@}"; do
   export "${name?}"
 done
 
@@ -56,10 +56,10 @@ done
 export PATH=$DEPOT_HOME:$VENV2_DIR/bin:/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
 echo_cmd gn gen --verbose "$BUILD_DIR" \
-  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $STPYV8_GN_EXTRA_ARGS ${STPYV8_GN_ARGS[*]}" \
-  $STPYV8_GN_GEN_EXTRA_ARGS
+  --args="import(\"//args/${BUILD_CONFIG_NAME}.gn\") $NAGA_GN_EXTRA_ARGS ${NAGA_GN_ARGS[*]}" \
+  $NAGA_GN_GEN_EXTRA_ARGS
 
-if [[ -z "$STPYV8_GN_GEN_EXTRA_ARGS" ]]; then
+if [[ -z "$NAGA_GN_GEN_EXTRA_ARGS" ]]; then
   echo_info "in depot shell, you may now use following commands:"
   echo_info "> ninja -C $BUILD_DIR stpyv8"
 fi

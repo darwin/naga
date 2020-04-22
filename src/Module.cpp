@@ -1,7 +1,7 @@
 #include "Module.h"
 #include "PythonExpose.h"
 
-PYBIND11_MODULE(_STPyV8, py_module) {
+PYBIND11_MODULE("naga_native", py_module) {
   useLogging();
 
   SPDLOG_INFO("=====================================================================================================");

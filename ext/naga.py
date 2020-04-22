@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This is a pure Python wrapper of the naga_native module implemented in C++ code present in src
+# This module is presents public API for naga library users
+
 import os
 import re
 
@@ -8,7 +11,7 @@ if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
     input("Waiting for debugger, please hit ENTER when ready...")
 
 # noinspection PyUnresolvedReferences
-import _STPyV8
+import naga_native
 
 __version__ = '0.1'
 
@@ -106,20 +109,20 @@ class JSError(Exception):
 
 # C++ code relies on this class, it uses it as final wrapper of JSException object
 # this gives us flexibility to implement some JSException functionality in pure Python
-_STPyV8.JSError = JSError
+naga_native.JSError = JSError
 
-JSObject = _STPyV8.JSObject
-JSArray = _STPyV8.JSObject  # for backward compatibility
-JSFunction = _STPyV8.JSObject  # for backward compatibility
-JSPlatform = _STPyV8.JSPlatform
-JSUndefined = _STPyV8.JSUndefined
-JSNull = _STPyV8.JSNull
+JSObject = naga_native.JSObject
+JSArray = naga_native.JSObject  # for backward compatibility
+JSFunction = naga_native.JSObject  # for backward compatibility
+JSPlatform = naga_native.JSPlatform
+JSUndefined = naga_native.JSUndefined
+JSNull = naga_native.JSNull
 
-toolkit = _STPyV8.toolkit
-aux = _STPyV8.aux
+toolkit = naga_native.toolkit
+aux = naga_native.aux
 
 
-class JSLocker(_STPyV8.JSLocker):
+class JSLocker(naga_native.JSLocker):
     def __enter__(self):
         self.enter()
 
@@ -140,7 +143,7 @@ class JSLocker(_STPyV8.JSLocker):
         return self.entered()
 
 
-class JSUnlocker(_STPyV8.JSUnlocker):
+class JSUnlocker(naga_native.JSUnlocker):
     def __enter__(self):
         self.enter()
         return self
@@ -254,9 +257,9 @@ class JSClassPrototype(JSClass):
         return self.cls.__name__
 
 
-class JSEngine(_STPyV8.JSEngine):
+class JSEngine(naga_native.JSEngine):
     def __init__(self):
-        _STPyV8.JSEngine.__init__(self)
+        naga_native.JSEngine.__init__(self)
 
     def __enter__(self):
         return self
@@ -265,15 +268,15 @@ class JSEngine(_STPyV8.JSEngine):
         del self
 
 
-JSScript = _STPyV8.JSScript
-JSStackTrace = _STPyV8.JSStackTrace
-JSStackTrace.Options = _STPyV8.JSStackTraceOptions
+JSScript = naga_native.JSScript
+JSStackTrace = naga_native.JSStackTrace
+JSStackTrace.Options = naga_native.JSStackTraceOptions
 JSStackTrace.GetCurrentStackTrace = staticmethod(
-    lambda frame_limit, options: _STPyV8.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
-JSStackFrame = _STPyV8.JSStackFrame
+    lambda frame_limit, options: naga_native.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
+JSStackFrame = naga_native.JSStackFrame
 
 
-class JSIsolate(_STPyV8.JSIsolate):
+class JSIsolate(naga_native.JSIsolate):
     def __enter__(self):
         self.enter()
         return self
@@ -283,16 +286,16 @@ class JSIsolate(_STPyV8.JSIsolate):
         del self
 
 
-class JSContext(_STPyV8.JSContext):
+class JSContext(naga_native.JSContext):
     def __init__(self, obj=None, ctxt=None):
         if JSLocker.active:
             self.lock = JSLocker()
             self.lock.enter()
 
         if ctxt:
-            _STPyV8.JSContext.__init__(self, ctxt)
+            naga_native.JSContext.__init__(self, ctxt)
         else:
-            _STPyV8.JSContext.__init__(self, obj)
+            naga_native.JSContext.__init__(self, obj)
 
     def __enter__(self):
         self.enter()

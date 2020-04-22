@@ -2,17 +2,17 @@ import sys
 import unittest
 import logging
 
-import STPyV8
+import naga
 
 
 class TestIsolate(unittest.TestCase):
     def testBase(self):
-        with STPyV8.JSIsolate() as isolate:
+        with naga.JSIsolate() as isolate:
             self.assertIsNotNone(isolate.current)
             self.assertFalse(isolate.locked)
 
     def testEnterLeave(self):
-        with STPyV8.JSIsolate() as isolate:
+        with naga.JSIsolate() as isolate:
             self.assertIsNotNone(isolate.current)
 
 

@@ -48,12 +48,12 @@ Our general strategy is:
 
 The repo has submodules under [/vendor](../vendor). Initially you should have cloned the repo with `--recursive`:
 ```bash
-git clone --recursive https://github.com/darwin/stpyv8.git
+git clone --recursive https://github.com/darwin/naga.git
 ```
 
 Or alternatively:
 ```bash
-git clone https://github.com/darwin/stpyv8.git
+git clone https://github.com/darwin/naga.git
 git submodule init
 ```
 
@@ -84,25 +84,25 @@ After entering the shell you should review the printed settings:
 
 ```
 > ./scripts/enter_depot_shell.sh
-STPYV8_BASH_COLORS=yes
-STPYV8_BOOST_INCLUDES=-I/usr/local/include
-STPYV8_BOOST_LDFLAGS=-L/usr/local/lib -lboost_system -lboost_python37
-STPYV8_BUILDTOOLS_PATH=/Users/darwin/lab/v8_ws/v8/buildtools
-STPYV8_DEPOT_GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
-STPYV8_GIT_CACHE_PATH=/Users/darwin/lab/stpyv8/.git_cache
-STPYV8_GN_EXTRA_ARGS=
-STPYV8_PYTHON_CFLAGS=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers
-STPYV8_PYTHON_INCLUDES=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m
-STPYV8_PYTHON_LDFLAGS=-L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib/python3.7/config-3.7m-darwin -lpython3.7m -ldl -framework CoreFoundation
-STPYV8_PYTHON_LIBS=-lpython3.7m -ldl -framework CoreFoundation
-STPYV8_V8_GIT_TAG=8.3.104
-STPYV8_V8_GIT_URL=https://chromium.googlesource.com/v8/v8.git
+NAGA_BASH_COLORS=yes
+NAGA_BOOST_INCLUDES=-I/usr/local/include
+NAGA_BOOST_LDFLAGS=-L/usr/local/lib -lboost_system -lboost_python37
+NAGA_BUILDTOOLS_PATH=/Users/darwin/lab/v8_ws/v8/buildtools
+NAGA_DEPOT_GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
+NAGA_GIT_CACHE_PATH=/Users/darwin/lab/naga/.git_cache
+NAGA_GN_EXTRA_ARGS=
+NAGA_PYTHON_CFLAGS=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers
+NAGA_PYTHON_INCLUDES=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m
+NAGA_PYTHON_LDFLAGS=-L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib/python3.7/config-3.7m-darwin -lpython3.7m -ldl -framework CoreFoundation
+NAGA_PYTHON_LIBS=-lpython3.7m -ldl -framework CoreFoundation
+NAGA_V8_GIT_TAG=8.3.104
+NAGA_V8_GIT_URL=https://chromium.googlesource.com/v8/v8.git
 gn:
 ```
 
 Compile generated build files from previous step: 
 ```bash
-ninja -C _out/8.3.104/release stpyv8
+ninja -C _out/8.3.104/release naga
 ```
 
 When you are done, exit the sub-shell.
@@ -145,7 +145,7 @@ python setup.py install --prefix ../.venv
  
 ### How do I change V8 revision?
 
-> `export STPYV8_V8_GIT_TAG=${revision}`
+> `export NAGA_V8_GIT_TAG=${revision}`
 >
 > Then do `./scripts/checkout-v8.sh` which will pull and checkout specified revision. 
 >

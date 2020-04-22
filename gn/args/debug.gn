@@ -3,7 +3,7 @@ import("base.gn")
 is_debug = true
 
 # see Logging.h
-stpyv8_active_log_level = "TRACE"
+naga_active_log_level = "TRACE"
 
 dcheck_always_on = true
 symbol_level = 2

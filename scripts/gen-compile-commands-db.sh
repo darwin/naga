@@ -8,11 +8,11 @@ cd "$ROOT_DIR"
 
 TARGETS=${1:-stpyv8_src}
 
-STPYV8_GN_GEN_EXTRA_ARGS=--export-compile-commands="$TARGETS"
-export STPYV8_GN_GEN_EXTRA_ARGS
+NAGA_GN_GEN_EXTRA_ARGS=--export-compile-commands="$TARGETS"
+export NAGA_GN_GEN_EXTRA_ARGS
 
-STPYV8_GN_EXTRA_ARGS="$STPYV8_GN_EXTRA_ARGS stpyv8_gen_compile_commands=true"
-export STPYV8_GN_EXTRA_ARGS
+NAGA_GN_EXTRA_ARGS="$NAGA_GN_EXTRA_ARGS stpyv8_gen_compile_commands=true"
+export NAGA_GN_EXTRA_ARGS
 
 echo_cmd ./scripts/gen-build.sh debug _out/ccdb
 

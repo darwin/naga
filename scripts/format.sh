@@ -6,7 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
-COMMAND="$STPYV8_CLANG_FORMAT_PATH"
+COMMAND="$NAGA_CLANG_FORMAT_PATH"
 DETECTED_CF_VERSION=$("$COMMAND" --version | cut -d " " -f 3)
 if [[ $(ver "$DETECTED_CF_VERSION") < $(ver "9.0.0") ]]; then
   echo_err "clang-format v9.0.0 and later is required"

@@ -5,41 +5,41 @@ import logging
 import sys
 import unittest
 
-import STPyV8
+import naga
 
 
 class TestMultithread(unittest.TestCase):
     def testLocker(self):
-        with STPyV8.JSIsolate():
-            self.assertFalse(STPyV8.JSLocker.active)
-            self.assertFalse(STPyV8.JSLocker.locked)
+        with naga.JSIsolate():
+            self.assertFalse(naga.JSLocker.active)
+            self.assertFalse(naga.JSLocker.locked)
 
-            with STPyV8.JSLocker() as outer_locker:
-                self.assertTrue(STPyV8.JSLocker.active)
-                self.assertTrue(STPyV8.JSLocker.locked)
+            with naga.JSLocker() as outer_locker:
+                self.assertTrue(naga.JSLocker.active)
+                self.assertTrue(naga.JSLocker.locked)
 
                 self.assertTrue(outer_locker)
 
-                with STPyV8.JSLocker() as inner_locker:
-                    self.assertTrue(STPyV8.JSLocker.locked)
+                with naga.JSLocker() as inner_locker:
+                    self.assertTrue(naga.JSLocker.locked)
 
                     self.assertTrue(outer_locker)
                     self.assertTrue(inner_locker)
 
-                    with STPyV8.JSUnlocker():
-                        self.assertFalse(STPyV8.JSLocker.locked)
+                    with naga.JSUnlocker():
+                        self.assertFalse(naga.JSLocker.locked)
 
                         self.assertTrue(outer_locker)
                         self.assertTrue(inner_locker)
 
-                    self.assertTrue(STPyV8.JSLocker.locked)
+                    self.assertTrue(naga.JSLocker.locked)
 
-            self.assertTrue(STPyV8.JSLocker.active)
-            self.assertFalse(STPyV8.JSLocker.locked)
+            self.assertTrue(naga.JSLocker.active)
+            self.assertFalse(naga.JSLocker.locked)
 
-            locker = STPyV8.JSLocker()
+            locker = naga.JSLocker()
 
-        with STPyV8.JSContext():
+        with naga.JSContext():
             self.assertRaises(RuntimeError, locker.__enter__)
             self.assertRaises(RuntimeError, locker.__exit__, None, None, None)
 
@@ -62,8 +62,8 @@ class TestMultithread(unittest.TestCase):
         g = Global()
 
         def run():
-            with STPyV8.JSIsolate():
-                with STPyV8.JSContext(g) as ctxt:
+            with naga.JSIsolate():
+                with naga.JSContext(g) as ctxt:
                     ctxt.eval("""
                         started.wait();
 
@@ -96,7 +96,7 @@ class TestMultithread(unittest.TestCase):
             result = []
 
             def add(self, value):
-                with STPyV8.JSUnlocker():
+                with naga.JSUnlocker():
                     time.sleep(0.1)
 
                     self.result.append(value)
@@ -104,7 +104,7 @@ class TestMultithread(unittest.TestCase):
         g = Global()
 
         def run():
-            with STPyV8.JSContext(g) as ctxt:
+            with naga.JSContext(g) as ctxt:
                 ctxt.eval("""
                     for (i=0; i<10; i++)
                         add(i);
@@ -112,7 +112,7 @@ class TestMultithread(unittest.TestCase):
 
         threads = [threading.Thread(target=run), threading.Thread(target=run)]
 
-        with STPyV8.JSLocker():
+        with naga.JSLocker():
             for t in threads:
                 t.start()
 
