@@ -196,7 +196,7 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
 
   // this will resurrect the V8 object and keep it alive until we kill it
   tracer_lookup->second.m_v8_wrapper.ClearWeak();
-  tracer_lookup->second.m_v8_wrapper.AnnotateStrongRetainer("STPyV8.Tracer");
+  tracer_lookup->second.m_v8_wrapper.AnnotateStrongRetainer("naga.Tracer");
 
   // ask for a weakref to the Python object
   // TODO: investigate - creating python callables dynamically might be expensive

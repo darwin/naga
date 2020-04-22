@@ -44,7 +44,7 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
 
     // we rely on the fact that dest is created fresh for each new log message
     // that means that current size is what was already printed as prefix
-    // something like "22:15:18.521 T stpyv8_pyo | "
+    // something like "22:15:18.521 T naga_pyo | "
     // we are going to indent each line but first
     auto indent_size = dest.size();
     assert(indent_size >= 2);
@@ -101,33 +101,33 @@ static void initLoggers() {
   using sink_type = spdlog::sinks::rotating_file_sink_mt;
   auto max_size = std::numeric_limits<std::size_t>::max();
   // we want to rotate the log file on each run
-  auto logger_file_sink = std::make_shared<sink_type>("logs/stpyv8.txt", max_size, 10, true);
-  auto logger_file_sink_more = std::make_shared<sink_type>("logs/stpyv8_more.txt", max_size, 10, true);
+  auto logger_file_sink = std::make_shared<sink_type>("logs/naga.txt", max_size, 10, true);
+  auto logger_file_sink_more = std::make_shared<sink_type>("logs/naga_more.txt", max_size, 10, true);
 
-  g_loggers[kMoreLogger] = std::make_shared<spdlog::logger>("stpyv8_more", logger_file_sink_more);
+  g_loggers[kMoreLogger] = std::make_shared<spdlog::logger>("naga_mor", logger_file_sink_more);
 
   // keep all logger names same length to have logger names aligned
-  g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("stpyv8_rot", logger_file_sink);
-  g_loggers[kPythonObjectLogger] = std::make_shared<spdlog::logger>("stpyv8_pyo", logger_file_sink);
-  g_loggers[kContextLogger] = std::make_shared<spdlog::logger>("stpyv8_ctx", logger_file_sink);
-  g_loggers[kEngineLogger] = std::make_shared<spdlog::logger>("stpyv8_eng", logger_file_sink);
-  g_loggers[kIsolateLogger] = std::make_shared<spdlog::logger>("stpyv8_iso", logger_file_sink);
-  g_loggers[kPlatformLogger] = std::make_shared<spdlog::logger>("stpyv8_plt", logger_file_sink);
-  g_loggers[kScriptLogger] = std::make_shared<spdlog::logger>("stpyv8_scr", logger_file_sink);
-  g_loggers[kLockingLogger] = std::make_shared<spdlog::logger>("stpyv8_lck", logger_file_sink);
-  g_loggers[kJSExceptionLogger] = std::make_shared<spdlog::logger>("stpyv8_jse", logger_file_sink);
-  g_loggers[kJSStackFrameLogger] = std::make_shared<spdlog::logger>("stpyv8_jsf", logger_file_sink);
-  g_loggers[kJSStackTraceLogger] = std::make_shared<spdlog::logger>("stpyv8_jst", logger_file_sink);
-  g_loggers[kJSObjectLogger] = std::make_shared<spdlog::logger>("stpyv8_jso", logger_file_sink);
-  g_loggers[kV8TracingLogger] = std::make_shared<spdlog::logger>("stpyv8_v8t", logger_file_sink);
-  g_loggers[kAuxLogger] = std::make_shared<spdlog::logger>("stpyv8_aux", logger_file_sink);
-  g_loggers[kExposeLogger] = std::make_shared<spdlog::logger>("stpyv8_exp", logger_file_sink);
-  g_loggers[kHospitalLogger] = std::make_shared<spdlog::logger>("stpyv8_hsp", logger_file_sink);
-  g_loggers[kEternalsLogger] = std::make_shared<spdlog::logger>("stpyv8_etl", logger_file_sink);
-  g_loggers[kJSObjectFunctionImplLogger] = std::make_shared<spdlog::logger>("stpyv8_ofi", logger_file_sink);
-  g_loggers[kJSObjectArrayImplLogger] = std::make_shared<spdlog::logger>("stpyv8_oai", logger_file_sink);
-  g_loggers[kJSObjectCLJSImplLogger] = std::make_shared<spdlog::logger>("stpyv8_oci", logger_file_sink);
-  g_loggers[kJSObjectGenericImplLogger] = std::make_shared<spdlog::logger>("stpyv8_ogi", logger_file_sink);
+  g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("naga_rot", logger_file_sink);
+  g_loggers[kPythonObjectLogger] = std::make_shared<spdlog::logger>("naga_pyo", logger_file_sink);
+  g_loggers[kContextLogger] = std::make_shared<spdlog::logger>("naga_ctx", logger_file_sink);
+  g_loggers[kEngineLogger] = std::make_shared<spdlog::logger>("naga_eng", logger_file_sink);
+  g_loggers[kIsolateLogger] = std::make_shared<spdlog::logger>("naga_iso", logger_file_sink);
+  g_loggers[kPlatformLogger] = std::make_shared<spdlog::logger>("naga_plt", logger_file_sink);
+  g_loggers[kScriptLogger] = std::make_shared<spdlog::logger>("naga_scr", logger_file_sink);
+  g_loggers[kLockingLogger] = std::make_shared<spdlog::logger>("naga_lck", logger_file_sink);
+  g_loggers[kJSExceptionLogger] = std::make_shared<spdlog::logger>("naga_jse", logger_file_sink);
+  g_loggers[kJSStackFrameLogger] = std::make_shared<spdlog::logger>("naga_jsf", logger_file_sink);
+  g_loggers[kJSStackTraceLogger] = std::make_shared<spdlog::logger>("naga_jst", logger_file_sink);
+  g_loggers[kJSObjectLogger] = std::make_shared<spdlog::logger>("naga_jso", logger_file_sink);
+  g_loggers[kV8TracingLogger] = std::make_shared<spdlog::logger>("naga_v8t", logger_file_sink);
+  g_loggers[kAuxLogger] = std::make_shared<spdlog::logger>("naga_aux", logger_file_sink);
+  g_loggers[kExposeLogger] = std::make_shared<spdlog::logger>("naga_exp", logger_file_sink);
+  g_loggers[kHospitalLogger] = std::make_shared<spdlog::logger>("naga_hsp", logger_file_sink);
+  g_loggers[kEternalsLogger] = std::make_shared<spdlog::logger>("naga_etl", logger_file_sink);
+  g_loggers[kJSObjectFunctionImplLogger] = std::make_shared<spdlog::logger>("naga_ofi", logger_file_sink);
+  g_loggers[kJSObjectArrayImplLogger] = std::make_shared<spdlog::logger>("naga_oai", logger_file_sink);
+  g_loggers[kJSObjectCLJSImplLogger] = std::make_shared<spdlog::logger>("naga_oci", logger_file_sink);
+  g_loggers[kJSObjectGenericImplLogger] = std::make_shared<spdlog::logger>("naga_ogi", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

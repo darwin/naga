@@ -3,7 +3,7 @@
 # this script builds debug build of Python and installs it into .venv
 # https://pythonextensionpatterns.readthedocs.io/en/latest/debugging/debug_python.html
 
-# when running with this version of python, you must build stpyv8 extension with Py_DEBUG
+# when running with this version of python, you must build naga extension with Py_DEBUG
 # https://github.com/pybind/pybind11/pull/1438
 
 set -e -o pipefail

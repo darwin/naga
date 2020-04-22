@@ -44,7 +44,7 @@ CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
   if (v8_obj->IsArray()) {
     m_roles |= Roles::Array;
   }
-#ifdef STPYV8_FEATURE_CLJS
+#ifdef NAGA_FEATURE_CLJS
   if (isCLJSType(v8_obj)) {
     m_roles |= Roles::CLJS;
   }

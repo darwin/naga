@@ -5,7 +5,7 @@
   SPDLOG_LOGGER_TRACE(getLogger(kAuxLogger), __VA_ARGS__)
 
 // this is useful when one wants to place a breakpoint to all changes to refcount of specified object
-// in python test: print(STPyV8.refcount_addr(o)) and observe printed address
+// in python test: print(naga.aux.refcount_addr(o)) and observe printed address
 // e.g. in LLDB console, you can set a watchpoint via `w s e -- 0x123456`
 py::str refCountAddr(py::object py_obj) {
   PyObject* raw_obj = py_obj.ptr();

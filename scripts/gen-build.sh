@@ -25,11 +25,11 @@ set -- "${POSITIONAL_OPTS[@]}" # restore positional parameters
 
 NAGA_GN_ARGS=()
 if [[ -n "$NAGA_VERBOSE" ]]; then
-  NAGA_GN_ARGS+=("stpyv8_verbose_build=true")
+  NAGA_GN_ARGS+=("naga_verbose_build=true")
 fi
 
 if [[ -n "$NAGA_ACTIVE_LOG_LEVEL" ]]; then
-  NAGA_GN_ARGS+=("stpyv8_active_log_level=\"$NAGA_ACTIVE_LOG_LEVEL\"")
+  NAGA_GN_ARGS+=("naga_active_log_level=\"$NAGA_ACTIVE_LOG_LEVEL\"")
 fi
 
 cd "$GN_DIR"
@@ -61,5 +61,5 @@ echo_cmd gn gen --verbose "$BUILD_DIR" \
 
 if [[ -z "$NAGA_GN_GEN_EXTRA_ARGS" ]]; then
   echo_info "in depot shell, you may now use following commands:"
-  echo_info "> ninja -C $BUILD_DIR stpyv8"
+  echo_info "> ninja -C $BUILD_DIR naga"
 fi

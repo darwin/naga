@@ -24,7 +24,7 @@ class BuildExtCmd(build_ext):
 
     def get_input_path(self):
         build_config = "debug" if self.debug else "release"
-        return os.path.join("..", "gn", "_out", NAGA_VERSION, build_config, "libstpyv8.so")
+        return os.path.join("..", "gn", "_out", NAGA_VERSION, build_config, "libnaga.so")
 
     def get_output_path(self):
         name = self.extensions[0].name
@@ -69,7 +69,7 @@ setup(name="naga",
       version=NAGA_VERSION,
       description="Python Wrapper for Google V8 Engine",
       platforms="x86",
-      author="Philip Syme, Angelo Dell'Aera, Antonin Hildebrand",
+      author="Flier Lu, Philip Syme, Angelo Dell'Aera, Antonin Hildebrand",
       url="https://github.com/darwin/naga",
       license="Apache License 2.0",
       py_modules=["naga"],

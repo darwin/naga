@@ -67,6 +67,7 @@ git submodule update
 ```bash
 ./scripts/install-deps.sh
 ./scripts/checkout-v8.sh
+./scripts/prepare-gn.sh
 ```
 
 ##### Generate the build project

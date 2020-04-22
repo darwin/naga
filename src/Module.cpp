@@ -1,11 +1,11 @@
 #include "Module.h"
 #include "PythonExpose.h"
 
-PYBIND11_MODULE("naga_native", py_module) {
+PYBIND11_MODULE(naga_native, py_module) {
   useLogging();
 
   SPDLOG_INFO("=====================================================================================================");
-  SPDLOG_INFO("Initializing _STPyV8 module...");
+  SPDLOG_INFO("Initializing naga_native module...");
 
   exposeAux(py_module);
   exposeJSNull(py_module);

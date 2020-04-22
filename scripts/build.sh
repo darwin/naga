@@ -54,7 +54,7 @@ cd "$ROOT_DIR"
 
 echo_cmd ./scripts/gen-build.sh "${EXTRA_GEN_BUILD_ARGS[@]}" "$BUILD_CONFIG"
 
-echo_cmd ./scripts/enter_depot_shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_DIR" stpyv8
+echo_cmd ./scripts/enter_depot_shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_DIR" naga
 
 echo_cmd cd "$EXT_DIR"
 

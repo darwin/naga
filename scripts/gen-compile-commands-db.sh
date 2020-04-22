@@ -6,12 +6,12 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
-TARGETS=${1:-stpyv8_src}
+TARGETS=${1:-naga_src}
 
 NAGA_GN_GEN_EXTRA_ARGS=--export-compile-commands="$TARGETS"
 export NAGA_GN_GEN_EXTRA_ARGS
 
-NAGA_GN_EXTRA_ARGS="$NAGA_GN_EXTRA_ARGS stpyv8_gen_compile_commands=true"
+NAGA_GN_EXTRA_ARGS="$NAGA_GN_EXTRA_ARGS naga_gen_compile_commands=true"
 export NAGA_GN_EXTRA_ARGS
 
 echo_cmd ./scripts/gen-build.sh debug _out/ccdb

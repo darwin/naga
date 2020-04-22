@@ -81,8 +81,8 @@ static void translateJavascriptException(const CJSException& e) {
     // Ideally we would like to inherit JSException from JSError and set JSException as the final error.
     // Our approach here is to instead wrap JSException in JSError (we pass it as argument when
     // creating JSError instance). JSError then forwards some functionality to the wrapped class.
-    // See STPyV8.py.
-    auto m = py::module::import("_STPyV8");
+    // See naga.py.
+    auto m = py::module::import("naga_native");
     auto py_error_class = m.attr("JSError");
     auto py_error_instance = py_error_class(e);
     //
