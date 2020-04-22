@@ -11,26 +11,26 @@
 
 const int kSelfEmbedderDataIndex = 0;
 
-CContextPtr CContext::FromV8(v8::Local<v8::Context> v8_context) {
+CContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
   assert(v8_context->GetNumberOfEmbedderDataFields() > kSelfEmbedderDataIndex);
   auto v8_data = v8_context->GetEmbedderData(kSelfEmbedderDataIndex);
   assert(v8_data->IsExternal());
   auto v8_external = v8_data.As<v8::External>();
-  auto context_ptr = static_cast<CContext*>(v8_external->Value());
+  auto context_ptr = static_cast<CJSContext*>(v8_external->Value());
   assert(context_ptr);
   TRACE("CContext::FromV8 v8_context={} => {}", v8_context, (void*)context_ptr);
   return context_ptr->shared_from_this();
 }
 
-v8::Local<v8::Context> CContext::ToV8() const {
+v8::Local<v8::Context> CJSContext::ToV8() const {
   auto v8_isolate = m_isolate->ToV8();
   auto v8_result = v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
   TRACE("CContext::ToV8 {} => {}", THIS, v8_result);
   return v8_result;
 }
 
-CContext::CContext(const py::object& py_global) {
+CJSContext::CJSContext(const py::object& py_global) {
   TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
   m_isolate = CJSIsolate::FromV8(v8_isolate);
@@ -49,12 +49,12 @@ CContext::CContext(const py::object& py_global) {
   }
 }
 
-CContext::~CContext() {
+CJSContext::~CJSContext() {
   TRACE("CContext::~CContext {}", THIS);
   m_v8_context.Reset();
 }
 
-py::object CContext::GetGlobal() const {
+py::object CJSContext::GetGlobal() const {
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto py_result = CJSObject::Wrap(v8_isolate, ToV8()->Global());
@@ -62,7 +62,7 @@ py::object CContext::GetGlobal() const {
   return py_result;
 }
 
-py::str CContext::GetSecurityToken() {
+py::str CJSContext::GetSecurityToken() {
   TRACE("CContext::GetSecurityToken {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -79,7 +79,7 @@ py::str CContext::GetSecurityToken() {
   return py_result;
 }
 
-void CContext::SetSecurityToken(const py::str& py_token) const {
+void CJSContext::SetSecurityToken(const py::str& py_token) const {
   TRACE("CContext::SetSecurityToken {} py_token={}", THIS, py_token);
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -93,7 +93,7 @@ void CContext::SetSecurityToken(const py::str& py_token) const {
   }
 }
 
-py::object CContext::GetEntered() {
+py::object CJSContext::GetEntered() {
   TRACE("CContext::GetEntered");
   auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
@@ -110,7 +110,7 @@ py::object CContext::GetEntered() {
   return py_result;
 }
 
-py::object CContext::GetCurrent() {
+py::object CJSContext::GetCurrent() {
   TRACE("CContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -124,7 +124,7 @@ py::object CContext::GetCurrent() {
   return py_result;
 }
 
-py::object CContext::GetCalling() {
+py::object CJSContext::GetCalling() {
   TRACE("CContext::GetCalling");
   auto v8_isolate = v8u::getCurrentIsolate();
   if (!v8_isolate->InContext()) {
@@ -142,7 +142,7 @@ py::object CContext::GetCalling() {
   return py_result;
 }
 
-py::object CContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
+py::object CJSContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
   TRACE("CContext::Evaluate name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_isolate = v8u::getCurrentIsolate();
   CJSEngine engine(v8_isolate);
@@ -152,7 +152,7 @@ py::object CContext::Evaluate(const std::string& src, const std::string& name, i
   return py_result;
 }
 
-py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
+py::object CJSContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
   TRACE("CContext::EvaluateW name={} line={} col={} src={}", P$(name), line, col, traceText(P$(src)));
   auto v8_isolate = v8u::getCurrentIsolate();
   CJSEngine engine(v8_isolate);
@@ -160,31 +160,31 @@ py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name
   return script->Run();
 }
 
-void CContext::Enter() const {
+void CJSContext::Enter() const {
   TRACE("CContext::Enter {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Enter();
 }
 
-void CContext::Leave() const {
+void CJSContext::Leave() const {
   TRACE("CContext::Leave {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Exit();
 }
 
-bool CContext::InContext() {
+bool CJSContext::InContext() {
   TRACE("CContext::InContext");
   auto v8_isolate = v8u::getCurrentIsolate();
   return v8_isolate->InContext();
 }
 
-void CContext::Dump(std::ostream& os) const {
+void CJSContext::Dump(std::ostream& os) const {
   fmt::print(os, "CContext {} m_v8_context={}", THIS, ToV8());
 }
 
-bool CContext::IsEntered() {
+bool CJSContext::IsEntered() {
   // TODO: this is wrong!
   auto result = !m_v8_context.IsEmpty();
   TRACE("CContext::IsEntered {} => {}", THIS, result);

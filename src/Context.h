@@ -2,7 +2,7 @@
 
 #include "Base.h"
 
-class CContext : public std::enable_shared_from_this<CContext> {
+class CJSContext : public std::enable_shared_from_this<CJSContext> {
   v8::Global<v8::Context> m_v8_context;
   // this smart pointer is important to ensure that associated isolate outlives our context
   // it should always be equal to m_v8_context->GetIsolate()
@@ -12,8 +12,8 @@ class CContext : public std::enable_shared_from_this<CContext> {
   static CContextPtr FromV8(v8::Local<v8::Context> v8_context);
   [[nodiscard]] v8::Local<v8::Context> ToV8() const;
 
-  explicit CContext(const py::object& py_global);
-  ~CContext();
+  explicit CJSContext(const py::object& py_global);
+  ~CJSContext();
 
   void Dump(std::ostream& os) const;
 

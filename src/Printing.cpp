@@ -40,7 +40,7 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CContext& v) {
+std::ostream& operator<<(std::ostream& os, const CJSContext& v) {
   v.Dump(os);
   return os;
 }

@@ -372,44 +372,44 @@ void exposeJSUnlocker(py::module py_module) {
 void exposeJSContext(py::module py_module) {
   TRACE("exposeJSContext py_module={}", py_module);
   // clang-format off
-  py::class_<CContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
+  py::class_<CJSContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(py::init<py::object>())
 
-      .def_property("securityToken", &CContext::GetSecurityToken, &CContext::SetSecurityToken)
+      .def_property("securityToken", &CJSContext::GetSecurityToken, &CJSContext::SetSecurityToken)
 
-      .def_property_readonly("locals", &CContext::GetGlobal,
+      .def_property_readonly("locals", &CJSContext::GetGlobal,
                              "Local variables within context")
 
-      .def_property_readonly_static("entered", [](const py::object &) { return CContext::GetEntered(); },
+      .def_property_readonly_static("entered", [](const py::object &) { return CJSContext::GetEntered(); },
                                     "The last entered context.")
-      .def_property_readonly_static("current", [](const py::object &) { return CContext::GetCurrent(); },
+      .def_property_readonly_static("current", [](const py::object &) { return CJSContext::GetCurrent(); },
                                     "The context that is on the top of the stack.")
-      .def_property_readonly_static("calling", [](const py::object &) { return CContext::GetCalling(); },
+      .def_property_readonly_static("calling", [](const py::object &) { return CJSContext::GetCalling(); },
                                     "The context of the calling JavaScript code.")
-      .def_property_readonly_static("inContext", [](const py::object &) { return CContext::InContext(); },
+      .def_property_readonly_static("inContext", [](const py::object &) { return CJSContext::InContext(); },
                                     "Returns true if V8 has a current context.")
 
-      .def_static("eval", &CContext::Evaluate,
+      .def_static("eval", &CJSContext::Evaluate,
                   py::arg("source"),
                   py::arg("name") = std::string(),
                   py::arg("line") = -1,
                   py::arg("col") = -1)
-      .def_static("eval", &CContext::EvaluateW,
+      .def_static("eval", &CJSContext::EvaluateW,
                   py::arg("source"),
                   py::arg("name") = std::wstring(),
                   py::arg("line") = -1,
                   py::arg("col") = -1)
 
-      .def("enter", &CContext::Enter,
+      .def("enter", &CJSContext::Enter,
            "Enter this context. "
            "After entering a context, all code compiled and "
            "run is compiled and run in this context.")
-      .def("leave", &CContext::Leave,
+      .def("leave", &CJSContext::Leave,
            "Exit this context. "
            "Exiting the current context restores the context "
            "that was in place when entering the current context.")
 
-      .def("__bool__", &CContext::IsEntered,
+      .def("__bool__", &CJSContext::IsEntered,
            "the context has been entered.");
   // clang-format on
 }
