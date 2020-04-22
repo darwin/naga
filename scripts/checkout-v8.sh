@@ -9,10 +9,15 @@ cd "$ROOT_DIR"
 # see https://v8.dev/docs/source-code
 
 if [[ ! -d "$V8_HOME" ]]; then
-  echo_cmd mkdir -p "$V8_HOME"
-  cd "$V8_HOME"
-  cd ..
-  echo_cmd fetch v8
+  V8_HOME_PARENT="$V8_HOME/.."
+  if [[ ! -d "$V8_HOME_PARENT" ]]; then
+    echo_cmd mkdir -p "$V8_HOME_PARENT"
+  fi
+  cd "$V8_HOME_PARENT"
+  # we have to force fetch to prevent error:
+  # "Your current directory appears to already contain, or be part of a checkout."
+  # it complains because we are doing a checkout under our git repo (in vendor/v8)
+  echo_cmd fetch --force v8
 fi
 
 echo_cmd cd "$V8_HOME"
