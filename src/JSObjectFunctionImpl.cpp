@@ -5,7 +5,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectFunctionImplLogger), __VA_ARGS__)
 
 py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
                                        const py::dict& py_kwargs,

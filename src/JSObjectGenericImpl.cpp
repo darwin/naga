@@ -4,7 +4,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectGenericImplLogger), __VA_ARGS__)
 
 void CJSObjectGenericImpl::CheckAttr(v8::Local<v8::String> v8_name) const {
   TRACE("CJSObjectGenericImpl::CheckAttr {} v8_name={}", THIS, v8_name);

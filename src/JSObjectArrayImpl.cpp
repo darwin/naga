@@ -4,7 +4,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
 size_t CJSObjectArrayImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();

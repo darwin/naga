@@ -117,6 +117,10 @@ static void initLoggers() {
   g_loggers[kExposeLogger] = std::make_shared<spdlog::logger>("stpyv8_exp", logger_file_sink);
   g_loggers[kHospitalLogger] = std::make_shared<spdlog::logger>("stpyv8_hsp", logger_file_sink);
   g_loggers[kEternalsLogger] = std::make_shared<spdlog::logger>("stpyv8_etl", logger_file_sink);
+  g_loggers[kJSObjectFunctionImplLogger] = std::make_shared<spdlog::logger>("stpyv8_ofi", logger_file_sink);
+  g_loggers[kJSObjectArrayImplLogger] = std::make_shared<spdlog::logger>("stpyv8_oai", logger_file_sink);
+  g_loggers[kJSObjectCLJSImplLogger] = std::make_shared<spdlog::logger>("stpyv8_oci", logger_file_sink);
+  g_loggers[kJSObjectGenericImplLogger] = std::make_shared<spdlog::logger>("stpyv8_ogi", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

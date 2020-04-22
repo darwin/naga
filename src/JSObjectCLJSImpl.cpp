@@ -4,7 +4,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSObjectCLJSImplLogger), __VA_ARGS__)
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"

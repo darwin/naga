@@ -47,6 +47,10 @@ enum Loggers {
   kExposeLogger,
   kHospitalLogger,
   kEternalsLogger,
+  kJSObjectFunctionImplLogger,
+  kJSObjectArrayImplLogger,
+  kJSObjectCLJSImplLogger,
+  kJSObjectGenericImplLogger,
   kNumLoggers
 };
 
