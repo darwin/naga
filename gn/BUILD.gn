@@ -70,7 +70,7 @@ naga_source_files = [
   "PythonObjectCaller.cpp",
   "PythonObjectIndexed.cpp",
   "PythonObjectNamed.cpp",
-  "PyUtils.cpp",
+  "PythonUtils.cpp",
   "RawUtils.cpp",
   "Tracer.cpp",
   "Utils.cpp",
