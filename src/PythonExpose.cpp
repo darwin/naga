@@ -18,26 +18,31 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kExposeLogger), __VA_ARGS__)
 
-// ForwardToThis is a helper class which redirects function calls to instance calls (expects first arg to be the
-// instance)
+// ForwardTo is a helper class which redirects function calls to instance calls
+// The convention is that it expects first function parameter to be the instance pointer.
+// The template machinery bellow then perfectly forwards the call to instance.
 //
-// in python: toolkit.something(instance, arg1, arg2, ...)
+// in Python: toolkit.something(instance, arg1, arg2, ...)
 // calls (via pybind) our wrapper's operator(), and we in turn call
 // instance->Something(arg1, arg2, ...)
 // credit: https://stackoverflow.com/a/46533854/84283
-template <auto CJSObjectAPI::*F>
-struct ForwardToThis {};
+template <auto F>
+struct ForwardTo {};
 
-// this is a specialization for const member functions
-template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...) const->RET>
-struct ForwardToThis<F> {
-  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
+template <typename T, typename... Args, auto (T::*F)(Args...)>
+struct ForwardTo<F> {
+  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
+    return std::invoke(F, *obj, std::forward<Args>(args)...);
+  }
 };
 
-// this is a specialization for non-const member functions
-template <class RET, class... ARGS, auto (CJSObjectAPI::*F)(ARGS...)->RET>
-struct ForwardToThis<F> {
-  auto operator()(const CJSObjectPtr& obj, ARGS&&... args) const { return ((*obj).*F)(std::forward<ARGS>(args)...); }
+// this variant differs only that it deals with const member functions
+// I don't know how to share the code with a single template
+template <typename T, typename... Args, auto (T::*F)(Args...) const>
+struct ForwardTo<F> {
+  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
+    return std::invoke(F, *obj, std::forward<Args>(args)...);
+  }
 };
 
 void exposeJSToolkit(py::module py_module) {
@@ -45,42 +50,42 @@ void exposeJSToolkit(py::module py_module) {
   py::module m = py_module.def_submodule("toolkit", "Javascript Toolkit");
 
   // clang-format off
-  m.def("linenum", ForwardToThis<&CJSObjectAPI::LineNumber>{},
+  m.def("linenum", ForwardTo<&CJSObjectAPI::LineNumber>{},
         py::arg("this"),
         "The line number of function in the script");
-  m.def("colnum", ForwardToThis<&CJSObjectAPI::ColumnNumber>{},
+  m.def("colnum", ForwardTo<&CJSObjectAPI::ColumnNumber>{},
         py::arg("this"),
         "The column number of function in the script");
-  m.def("resname", ForwardToThis<&CJSObjectAPI::ResourceName>{},
+  m.def("resname", ForwardTo<&CJSObjectAPI::ResourceName>{},
         py::arg("this"),
         "The resource name of script");
-  m.def("inferredname", ForwardToThis<&CJSObjectAPI::InferredName>{},
+  m.def("inferredname", ForwardTo<&CJSObjectAPI::InferredName>{},
         py::arg("this"),
         "Name inferred from variable or property assignment of this function");
-  m.def("lineoff", ForwardToThis<&CJSObjectAPI::LineOffset>{},
+  m.def("lineoff", ForwardTo<&CJSObjectAPI::LineOffset>{},
         py::arg("this"),
         "The line offset of function in the script");
-  m.def("coloff", ForwardToThis<&CJSObjectAPI::ColumnOffset>{},
+  m.def("coloff", ForwardTo<&CJSObjectAPI::ColumnOffset>{},
         py::arg("this"),
         "The column offset of function in the script");
-  m.def("set_name", ForwardToThis<&CJSObjectAPI::SetName>{},
+  m.def("set_name", ForwardTo<&CJSObjectAPI::SetName>{},
         py::arg("this"),
         py::arg("name"));
-  m.def("get_name", ForwardToThis<&CJSObjectAPI::GetName>{},
+  m.def("get_name", ForwardTo<&CJSObjectAPI::GetName>{},
         py::arg("this"));
 
-  m.def("apply", ForwardToThis<&CJSObjectAPI::Apply>{},
+  m.def("apply", ForwardTo<&CJSObjectAPI::Apply>{},
         py::arg("this"),
         py::arg("self"),
         py::arg("args") = py::list(),
         py::arg("kwds") = py::dict(),
         "Performs a function call using the parameters.");
-  m.def("invoke", ForwardToThis<&CJSObjectAPI::Invoke>{},
+  m.def("invoke", ForwardTo<&CJSObjectAPI::Invoke>{},
         py::arg("this"),
         py::arg("args") = py::list(),
         py::arg("kwds") = py::dict(),
         "Performs a binding method call using the parameters.");
-  m.def("clone", ForwardToThis<&CJSObjectAPI::Clone>{},
+  m.def("clone", ForwardTo<&CJSObjectAPI::Clone>{},
         py::arg("this"),
         "Clone the object.");
 
