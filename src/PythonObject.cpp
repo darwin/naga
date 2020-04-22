@@ -5,7 +5,7 @@
 #include "JSException.h"
 #include "PythonDateTime.h"
 #include "Tracer.h"
-#include "Hospital.h"
+#include "JSHospital.h"
 #include "JSEternals.h"
 
 #define TRACE(...) \

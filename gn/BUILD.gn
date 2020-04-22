@@ -40,11 +40,11 @@ if (naga_verbose_build) {
 
 naga_source_files = [
   "Aux.cpp",
-  "Hospital.cpp",
   "JSContext.cpp",
   "JSEngine.cpp",
   "JSEternals.cpp",
   "JSException.cpp",
+  "JSHospital.cpp",
   "JSIsolate.cpp",
   "JSLocker.cpp",
   "JSNull.cpp",

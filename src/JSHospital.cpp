@@ -1,4 +1,4 @@
-#include "Hospital.h"
+#include "JSHospital.h"
 #include "JSIsolate.h"
 
 #define TRACE(...) \
