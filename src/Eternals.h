@@ -15,8 +15,9 @@ class CEternals {
 
  private:
   v8::IsolateRef m_v8_isolate;
-  // Eternal is templated so we keep static array of std:any slots for them
-  // initial creation might involve dynamic allocation, but lookups should be cheap
+  // v8::Eternal is templated so we keep static array of std:any slots for them.
+  // Initial creation might involve dynamic allocation, but lookups should be cheap.
+  // We might consider implementing it as a simple array of pointers in release mode.
   std::array<std::any, kNumEternals> m_cache;
 
  public:
