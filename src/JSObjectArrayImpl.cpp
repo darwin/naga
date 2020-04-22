@@ -38,7 +38,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
         auto v8_value = m_base.Object()->Get(v8_context, idx).ToLocalChecked();
 
         if (v8_value.IsEmpty()) {
-          CJSException::ThrowIf(v8_isolate, v8_try_catch);
+          CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
         }
 
         slice.append(CJSObject::Wrap(v8_isolate, v8_value, m_base.Object()));
@@ -60,7 +60,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     auto v8_value = m_base.Object()->Get(v8_context, idx).ToLocalChecked();
 
     if (v8_value.IsEmpty()) {
-      CJSException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
 
     return CJSObject::Wrap(v8_isolate, v8_value, m_base.Object());
@@ -150,7 +150,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
     if (!m_base.Object()
              ->Set(v8_context, v8::Integer::New(v8_isolate, idx), CPythonObject::Wrap(py_value))
              .ToChecked()) {
-      CJSException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
   }
 
@@ -191,7 +191,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
     }
 
     if (!m_base.Object()->Delete(v8_context, idx).ToChecked()) {
-      CJSException::ThrowIf(v8_isolate, v8_try_catch);
+      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
 
     if (py_result) {
@@ -218,7 +218,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
       auto v8_val = m_base.Object()->Get(v8_context, v8_i).ToLocalChecked();
 
       if (v8_try_catch.HasCaught()) {
-        CJSException::ThrowIf(v8_isolate, v8_try_catch);
+        CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
       }
 
       // TODO: could this be optimized without wrapping?
@@ -229,7 +229,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   }
 
   if (v8_try_catch.HasCaught()) {
-    CJSException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
   return false;

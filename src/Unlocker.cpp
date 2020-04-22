@@ -1,5 +1,5 @@
 #include "Unlocker.h"
-#include "PythonAllowThreadsGuard.h"
+#include "PythonThreads.h"
 #include "Isolate.h"
 
 #define TRACE(...) \

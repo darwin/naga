@@ -15,8 +15,8 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-void CPythonObject::ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
-  TRACE("CPythonObject::ThrowIf");
+void CPythonObject::ThrowJSException(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex) {
+  TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
 
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -244,7 +244,7 @@ v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
   }
 
   if (v8_result.IsEmpty()) {
-    CJSException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
   return v8_scope.Escape(v8_result);

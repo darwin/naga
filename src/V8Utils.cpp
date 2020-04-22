@@ -61,7 +61,6 @@ v8::Local<v8::String> toString(const std::string& str) {
   return toString(v8_isolate, str);
 }
 
-
 v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i) {
   if (i >= 0) {
     return v8::Integer::New(v8_isolate, i);

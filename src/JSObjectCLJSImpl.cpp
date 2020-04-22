@@ -82,7 +82,7 @@ static v8::Local<v8::Value> callBridge(v8::IsolateRef v8_isolate,
 
   auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
   if (v8_result.IsEmpty()) {
-    CJSException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
   return v8_result.ToLocalChecked();
@@ -203,7 +203,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   Py_ssize_t step;
 
   if (PySlice_Unpack(py_slice.ptr(), &start, &stop, &step) < 0) {
-    CPythonObject::ThrowIf(v8_isolate);
+    CPythonObject::ThrowJSException(v8_isolate);
   }
   PySlice_AdjustIndices(length, &start, &stop, step);
 

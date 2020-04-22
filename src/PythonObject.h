@@ -31,5 +31,6 @@ class CPythonObject {
 
   static v8::Local<v8::Value> Wrap(py::handle py_handle);
 
-  static void ThrowIf(const v8::IsolateRef& v8_isolate, const py::error_already_set& py_ex = py::error_already_set());
+  static void ThrowJSException(const v8::IsolateRef& v8_isolate,
+                               const py::error_already_set& py_ex = py::error_already_set());
 };

@@ -36,7 +36,7 @@ static void translateJavascriptException(const CJSException& e) {
     //
     // 1. Python exception is thrown in pyfn2
     // 2. It will bubble up the stack and on boundary2 it must be wrapped into a JS error object and enter the JS land.
-    //    This wrapping is done in CPythonObject::ThrowIf.
+    //    This wrapping is done in CPythonObject::ThrowJSException.
     // 3. If JS code does not catch it or if it catches it and rethrows the wrapper...
     // 4. It will continue bubbling up the stack and on boundary1 it must be converted into Python error
     // 5. In this special case we don't want to do translation of JS Error object but rather we want to restore the
@@ -344,12 +344,19 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"SyntaxError", PyExc_SyntaxError},
                                               {"TypeError", PyExc_TypeError}};
 
-void CJSException::ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::ThrowIf v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
-  auto v8_scope = v8u::withScope(v8_isolate);
+void CJSException::HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
+  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
+  // TODO: revisit this CanContinue test, it is suspicious
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
   }
+  Throw(v8_isolate, v8_try_catch);
+}
+
+void CJSException::Throw(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
+  TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
+  auto v8_scope = v8u::withScope(v8_isolate);
+  assert(v8_try_catch.HasCaught() && v8_try_catch.CanContinue());
 
   PyObject* raw_type = nullptr;
   auto v8_ex = v8_try_catch.Exception();

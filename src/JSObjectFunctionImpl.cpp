@@ -1,7 +1,7 @@
 #include "JSObjectFunctionImpl.h"
 #include "PythonObject.h"
 #include "JSException.h"
-#include "PythonAllowThreadsGuard.h"
+#include "PythonThreads.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -52,7 +52,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   });
 
   if (v8_result.IsEmpty()) {
-    CJSException::ThrowIf(v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
   return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());

@@ -46,7 +46,8 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] py::object Str() const;
 
   void PrintCallStack(py::object py_file);
-  static void ThrowIf(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
+  static void HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
+  static void Throw(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

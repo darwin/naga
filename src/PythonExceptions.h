@@ -4,11 +4,11 @@
 #include "PythonObject.h"
 
 template <typename F>
-auto withPythonExceptionGuard(const v8::IsolateRef& v8_isolate, F&& fn) {
+auto withPythonErrorInterception(const v8::IsolateRef& v8_isolate, F&& fn) {
   try {
     return std::optional(fn());
   } catch (const py::error_already_set& e) {
-    CPythonObject::ThrowIf(v8_isolate, e);
+    CPythonObject::ThrowJSException(v8_isolate, e);
   } catch (const std::exception& e) {
     auto v8_msg = v8u::toString(v8_isolate, e.what());
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));

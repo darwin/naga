@@ -1,6 +1,6 @@
 #include "PythonObject.h"
 #include "JSObject.h"
-#include "PythonExceptionGuard.h"
+#include "PythonExceptions.h"
 #include "Tracer.h"
 
 #define TRACE(...) \
@@ -32,7 +32,7 @@ void CPythonObject::CallPythonCallable(py::object py_fn, const v8::FunctionCallb
     return;
   }
 
-  auto v8_result = withPythonExceptionGuard(v8_isolate, [&]() {
+  auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     py::object py_result;
 

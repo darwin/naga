@@ -1,6 +1,6 @@
 #include "Locker.h"
 #include "Isolate.h"
-#include "PythonAllowThreadsGuard.h"
+#include "PythonThreads.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

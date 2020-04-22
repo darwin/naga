@@ -2,7 +2,7 @@
 #include "Script.h"
 #include "JSException.h"
 #include "JSObject.h"
-#include "PythonAllowThreadsGuard.h"
+#include "PythonThreads.h"
 #include "JSNull.h"
 
 #define TRACE(...) \
@@ -79,7 +79,7 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
     if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
       throw py::error_already_set();
     }
-    CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
   }
   return py::js_null();
 }
@@ -110,7 +110,7 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   });
 
   if (v8_script.IsEmpty()) {
-    CJSException::ThrowIf(m_v8_isolate, v8_try_catch);
+    CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
   }
 
   return std::make_shared<CScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
