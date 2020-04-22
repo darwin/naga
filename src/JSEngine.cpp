@@ -1,5 +1,5 @@
-#include "Engine.h"
-#include "Script.h"
+#include "JSEngine.h"
+#include "JSScript.h"
 #include "JSException.h"
 #include "JSObject.h"
 #include "PythonThreads.h"

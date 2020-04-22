@@ -1,5 +1,5 @@
-#include "Locker.h"
-#include "Isolate.h"
+#include "JSLocker.h"
+#include "JSIsolate.h"
 #include "PythonThreads.h"
 
 #define TRACE(...) \

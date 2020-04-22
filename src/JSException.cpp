@@ -1,5 +1,5 @@
 #include "JSException.h"
-#include "Eternals.h"
+#include "JSEternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

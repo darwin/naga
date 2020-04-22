@@ -1,5 +1,5 @@
-#include "Eternals.h"
-#include "Isolate.h"
+#include "JSEternals.h"
+#include "JSIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

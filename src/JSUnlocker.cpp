@@ -1,6 +1,6 @@
-#include "Unlocker.h"
+#include "JSUnlocker.h"
 #include "PythonThreads.h"
-#include "Isolate.h"
+#include "JSIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

@@ -1,9 +1,9 @@
-#include "Context.h"
-#include "Engine.h"
+#include "JSContext.h"
+#include "JSEngine.h"
 #include "JSObject.h"
 #include "PythonObject.h"
-#include "Script.h"
-#include "Isolate.h"
+#include "JSScript.h"
+#include "JSIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

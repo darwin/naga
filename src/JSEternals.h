@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base.h"
-#include "Isolate.h"
+#include "JSIsolate.h"
 
 // We maintain a table of eternal objects for fast access
 // We keep one table per isolate and destroy the table before isolate goes away

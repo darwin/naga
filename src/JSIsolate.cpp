@@ -1,7 +1,7 @@
-#include "Isolate.h"
+#include "JSIsolate.h"
 #include "Tracer.h"
 #include "Hospital.h"
-#include "Eternals.h"
+#include "JSEternals.h"
 #include "JSStackTrace.h"
 
 #define TRACE(...) \
