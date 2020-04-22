@@ -20,13 +20,30 @@ std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v);
 std::ostream& operator<<(std::ostream& os, const CJSException& v);
 std::ostream& operator<<(std::ostream& os, const CJSObject& v);
 std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& v);
-std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& v);
 std::ostream& operator<<(std::ostream& os, const CContext& v);
 std::ostream& operator<<(std::ostream& os, const CEngine& v);
 std::ostream& operator<<(std::ostream& os, const CScript& v);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
 std::ostream& operator<<(std::ostream& os, const CJSObject::Roles& v);
 std::ostream& operator<<(std::ostream& os, const PyObject* v);
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& v) {
+  if (!v) {
+    return os << "std::shared_ptr<{EMPTY}>";
+  } else {
+    return os << "std::shared_ptr " << fmt::format("{} <", reinterpret_cast<const void*>(v.get())) << *v << ">";
+  }
+}
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& v) {
+  if (!v) {
+    return os << "std::unique_ptr<{EMPTY}>";
+  } else {
+    return os << "std::unique_ptr " << fmt::format("{} <", reinterpret_cast<const void*>(v.get())) << *v << ">";
+  }
+}
 
 // https://fmt.dev/latest/api.html#formatting-user-defined-types
 // warning! operator<< is tricky with namespaces, it must be implemented inside, not in global scope

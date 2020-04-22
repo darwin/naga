@@ -40,15 +40,6 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& v) {
-  if (!v) {
-    os << "[N/A]";
-  } else {
-    os << *v;
-  }
-  return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const CContext& v) {
   v.Dump(os);
   return os;
