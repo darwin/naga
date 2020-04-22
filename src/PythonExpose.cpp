@@ -45,8 +45,22 @@ struct ForwardTo<F> {
   }
 };
 
-void exposeJSToolkit(py::module py_module) {
-  TRACE("exposeJSToolkit py_module={}", py_module);
+void exposeAux(py::module py_module) {
+  TRACE("exposeAux py_module={}", py_module);
+  py::module m = py_module.def_submodule("aux", "Aux tools");
+
+  m.def("refcount_addr", &refCountAddr);
+  m.def("trigger1", &trigger1);
+  m.def("trigger2", &trigger2);
+  m.def("trigger3", &trigger3);
+  m.def("trigger4", &trigger4);
+  m.def("trigger5", &trigger5);
+  m.def("trace", &trace);
+  m.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
+}
+
+void exposeToolkit(py::module py_module) {
+  TRACE("exposeToolkit py_module={}", py_module);
   py::module m = py_module.def_submodule("toolkit", "Javascript Toolkit");
 
   // clang-format off
@@ -99,20 +113,6 @@ void exposeJSToolkit(py::module py_module) {
   m.def("has_role_function", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::Function); });
   m.def("has_role_cljs", [](const CJSObjectPtr &obj) { return obj->HasRole(CJSObjectBase::Roles::CLJS); });
   // clang-format on
-}
-
-void exposeAux(py::module py_module) {
-  TRACE("exposeAux py_module={}", py_module);
-  py::module m = py_module.def_submodule("aux", "Aux tools");
-
-  m.def("refcount_addr", &refCountAddr);
-  m.def("trigger1", &trigger1);
-  m.def("trigger2", &trigger2);
-  m.def("trigger3", &trigger3);
-  m.def("trigger4", &trigger4);
-  m.def("trigger5", &trigger5);
-  m.def("trace", &trace);
-  m.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
 }
 
 void exposeJSNull(py::module py_module) {

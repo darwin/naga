@@ -8,10 +8,11 @@ PYBIND11_MODULE(naga_native, py_module) {
   SPDLOG_INFO("Initializing naga_native module...");
 
   exposeAux(py_module);
+  exposeToolkit(py_module);
+
   exposeJSNull(py_module);
   exposeJSUndefined(py_module);
   exposeJSObject(py_module);
-  exposeJSToolkit(py_module);
   exposeJSPlatform(py_module);
   exposeJSIsolate(py_module);
   exposeJSStackFrame(py_module);
