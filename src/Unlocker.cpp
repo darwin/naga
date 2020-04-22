@@ -6,13 +6,13 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kLockingLogger), __VA_ARGS__)
 
-bool CUnlocker::IsEntered() {
+bool CJSUnlocker::IsEntered() {
   auto result = static_cast<bool>(m_v8_unlocker.get());
   TRACE("CUnlocker::IsEntered {} => {}", THIS, result);
   return result;
 }
 
-void CUnlocker::Enter() {
+void CJSUnlocker::Enter() {
   TRACE("CUnlocker::Enter {}", THIS);
   withAllowedPythonThreads([&]() {
     auto v8_isolate = v8u::getCurrentIsolate();
@@ -21,7 +21,7 @@ void CUnlocker::Enter() {
   });
 }
 
-void CUnlocker::Leave() {
+void CJSUnlocker::Leave() {
   TRACE("CUnlocker::Leave {}", THIS);
   withAllowedPythonThreads([&]() {
     m_v8_unlocker.reset();

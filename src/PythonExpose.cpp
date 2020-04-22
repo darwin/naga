@@ -361,11 +361,11 @@ void exposeJSLocker(py::module py_module) {
 void exposeJSUnlocker(py::module py_module) {
   TRACE("exposeJSUnlocker py_module={}", py_module);
   // clang-format off
-  py::class_<CUnlocker>(py_module, "JSUnlocker")
+  py::class_<CJSUnlocker>(py_module, "JSUnlocker")
       .def(py::init<>())
-      .def("entered", &CUnlocker::IsEntered)
-      .def("enter", &CUnlocker::Enter)
-      .def("leave", &CUnlocker::Leave);
+      .def("entered", &CJSUnlocker::IsEntered)
+      .def("enter", &CJSUnlocker::Enter)
+      .def("leave", &CJSUnlocker::Leave);
   // clang-format on
 }
 
