@@ -17,13 +17,10 @@ std::ostream& operator<<(std::ostream& os, const CJSStackFrame& obj);
 
 std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "google-readability-casting"
 template <typename T>
-void* voidThis(const T* v) {
-  return (void*)v;
+const void* voidThis(const T* v) {
+  return reinterpret_cast<const void*>(v);
 }
-#pragma clang diagnostic pop
 
 // https://fmt.dev/latest/api.html#formatting-user-defined-types
 // I wasn't able to get above operator<< functions to work with spdlog/fmt lib out-of-the box
