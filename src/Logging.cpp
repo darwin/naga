@@ -1,6 +1,7 @@
 #include "Logging.h"
 
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/cfg/env.h"
 
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
@@ -97,7 +98,13 @@ static void setupLogger(const std::shared_ptr<spdlog::logger>& logger) {
 }
 
 static void initLoggers() {
-  auto logger_file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/stpyv8.txt");
+  using sink_type = spdlog::sinks::rotating_file_sink_mt;
+  auto max_size = std::numeric_limits<std::size_t>::max();
+  // we want to rotate the log file on each run
+  auto logger_file_sink = std::make_shared<sink_type>("logs/stpyv8.txt", max_size, 10, true);
+  auto logger_file_sink_more = std::make_shared<sink_type>("logs/stpyv8_more.txt", max_size, 10, true);
+
+  g_loggers[kMoreLogger] = std::make_shared<spdlog::logger>("stpyv8_more", logger_file_sink_more);
 
   // keep all logger names same length to have logger names aligned
   g_loggers[kRootLogger] = std::make_shared<spdlog::logger>("stpyv8_rot", logger_file_sink);
@@ -135,6 +142,11 @@ static void initLoggers() {
   spdlog::set_formatter(std::move(custom_formatter));
   spdlog::set_error_handler(
       [](const std::string& msg) { throw std::runtime_error(fmt::format("LOGGING ERROR: {}", msg)); });
+
+  // more formatter should simply echo just the messages without any decoration
+  auto more_formatter = std::make_unique<spdlog::pattern_formatter>();
+  more_formatter->set_pattern("%v");
+  g_loggers[kMoreLogger]->set_formatter(std::move(more_formatter));
 }
 
 static bool initLogging() {
@@ -155,5 +167,10 @@ void useLogging() {
 
 LoggerRef getLogger(Loggers which) {
   auto logger = g_loggers[which];
-  return LoggerRef(logger.get());
+  return logger.get();
+}
+
+size_t giveNextMoreID() {
+  static size_t g_more_id = 0;
+  return ++g_more_id;
 }
