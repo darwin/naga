@@ -20,7 +20,7 @@ VENV2_DIR="$ROOT_DIR/.venv2"
 VENV_PACKAGES_DIR="$VENV_DIR/lib/python3.7/site-packages"
 
 # note: this must be kept in sync with setting.py
-V8_HOME=${V8_HOME:-"$ROOT_DIR/gn/v8"}
+V8_HOME=${V8_HOME:-"$ROOT_DIR/vendor/v8"}
 DEPOT_HOME=${DEPOT_HOME:-"$ROOT_DIR/depot_tools"}
 
 NAGA_V8_GIT_TAG=${NAGA_V8_GIT_TAG:-8.4.100}
