@@ -55,6 +55,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
 
 CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {
+  m_v8_stack_trace.AnnotateStrongRetainer("Naga CJSStackTrace");
   TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, P$(v8_isolate), v8_stack_trace);
 }
 
@@ -62,6 +63,7 @@ CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(st
   TRACE("CJSStackTrace::CJSStackTrace {} stack_trace={}", THIS, stack_trace);
   auto v8_scope = v8u::withScope(m_v8_isolate);
   m_v8_stack_trace.Reset(m_v8_isolate, stack_trace.Handle());
+  m_v8_stack_trace.AnnotateStrongRetainer("Naga CJSStackTrace");
 }
 
 v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {

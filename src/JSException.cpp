@@ -6,11 +6,11 @@
   SPDLOG_LOGGER_TRACE(getLogger(kJSExceptionLogger), __VA_ARGS__)
 
 v8::Eternal<v8::Private> privateAPIForType(v8::IsolateRef v8_isolate) {
-  return v8u::createEternalPrivateAPI(v8_isolate, "JSException##exc_type");
+  return v8u::createEternalPrivateAPI(v8_isolate, "Naga#JSException##exc_type");
 }
 
 v8::Eternal<v8::Private> privateAPIForValue(v8::IsolateRef v8_isolate) {
-  return v8u::createEternalPrivateAPI(v8_isolate, "JSException##exc_value");
+  return v8u::createEternalPrivateAPI(v8_isolate, "Naga#JSException##exc_value");
 }
 
 static void translateJavascriptException(const CJSException& e) {
@@ -118,13 +118,16 @@ CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
   auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
+  m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_exception");
 
   auto stack_trace = v8_try_catch.StackTrace(v8u::getCurrentIsolate()->GetCurrentContext());
   if (!stack_trace.IsEmpty()) {
     m_v8_stack.Reset(m_v8_isolate, stack_trace.ToLocalChecked());
+    m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_stack");
   }
 
   m_v8_message.Reset(m_v8_isolate, v8_try_catch.Message());
+  m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_message");
 }
 
 CJSException::CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type) noexcept

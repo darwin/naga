@@ -14,7 +14,6 @@ class CJSObjectBase {
 
  protected:
   Roles m_roles;
-  // we need to have CJSObject movable for pybind
   v8::Global<v8::Object> m_v8_obj;
 
  public:

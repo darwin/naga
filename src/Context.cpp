@@ -39,6 +39,7 @@ CContext::CContext(const py::object& py_global) {
   auto v8_this = v8::External::New(v8_isolate, this);
   v8_context->SetEmbedderData(kSelfEmbedderDataIndex, v8_this);
   m_v8_context.Reset(v8_isolate, v8_context);
+  m_v8_context.AnnotateStrongRetainer("Naga CContext");
 
   if (!py_global.is_none()) {
     auto v8_context_scope = v8u::withContext(v8_context);

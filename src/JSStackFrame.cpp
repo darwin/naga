@@ -4,6 +4,20 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
+CJSStackFrame::CJSStackFrame(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
+    : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {
+  m_v8_frame.AnnotateStrongRetainer("Naga CJSStackFrame");
+
+  TRACE("CJSStackFrame::CJSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, P$(m_v8_isolate), v8_stack_frame);
+}
+
+CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
+  TRACE("CJSStackFrame::CJSStackFrame {} stack_frame={}", THIS, stack_frame);
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  m_v8_frame.Reset(m_v8_isolate, stack_frame.Handle());
+  m_v8_frame.AnnotateStrongRetainer("Naga CJSStackFrame");
+}
+
 std::string CJSStackFrame::GetScriptName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetScriptName());
@@ -18,17 +32,6 @@ std::string CJSStackFrame::GetFunctionName() const {
   auto result = std::string(*v8_name, v8_name.length());
   TRACE("CJSStackFrame::GetFunctionName {} => {}", THIS, result);
   return result;
-}
-
-CJSStackFrame::CJSStackFrame(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
-    : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {
-  TRACE("CJSStackFrame::CJSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, P$(m_v8_isolate), v8_stack_frame);
-}
-
-CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
-  TRACE("CJSStackFrame::CJSStackFrame {} stack_frame={}", THIS, stack_frame);
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  m_v8_frame.Reset(m_v8_isolate, stack_frame.Handle());
 }
 
 v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {

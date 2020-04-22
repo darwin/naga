@@ -13,6 +13,9 @@ CScript::CScript(v8::IsolateRef v8_isolate,
       m_v8_isolate(std::move(v8_isolate)),
       m_v8_source(m_v8_isolate, v8_source),
       m_v8_script(m_v8_isolate, v8_script) {
+  m_v8_source.AnnotateStrongRetainer("Naga CScript.m_v8_source");
+  m_v8_script.AnnotateStrongRetainer("Naga CScript.m_v8_script");
+
   TRACE("CScript::CScript {} v8_isolate={} engine={} v8_source={} v8_script={}", THIS, P$(v8_isolate), engine,
         traceMore(v8_source), v8_script);
 }
