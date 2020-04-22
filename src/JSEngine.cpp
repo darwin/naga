@@ -4,6 +4,7 @@
 #include "JSObject.h"
 #include "PythonThreads.h"
 #include "JSNull.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -72,7 +73,7 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
 
   auto v8_result = withAllowedPythonThreads([&]() { return v8_script->Run(v8_context); });
   if (!v8_result.IsEmpty()) {
-    return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
+    return wrap(v8_isolate, v8_result.ToLocalChecked());
   }
 
   if (v8_try_catch.HasCaught()) {

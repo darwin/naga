@@ -3,6 +3,7 @@
 #include "JSException.h"
 #include "PythonExceptions.h"
 #include "Tracer.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -58,7 +59,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     auto v8_utf_name = v8u::toUTF(v8_isolate, v8_name.As<v8::String>());
 
     // TODO: use pybind
@@ -123,9 +124,9 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value v8_utf_name(v8_isolate, v8_name);
-    auto py_val = CJSObject::Wrap(v8_isolate, v8_value);
+    auto py_val = wrap(v8_isolate, v8_value);
     bool found = py::hasattr(py_obj, *v8_utf_name);
 
     // TODO: review this after learning about __watchpoints__
@@ -185,7 +186,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
 
     // TODO: rewrite using pybind
@@ -220,7 +221,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     v8::String::Utf8Value name(v8_isolate, v8_name);
 
     // TODO: rewrite using pybind
@@ -266,7 +267,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     py::list keys;
     bool filter_name = false;
 

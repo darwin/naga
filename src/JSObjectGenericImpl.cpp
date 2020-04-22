@@ -1,6 +1,7 @@
 #include "JSObjectGenericImpl.h"
 #include "JSException.h"
 #include "PythonObject.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -40,7 +41,7 @@ py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
     CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
-  auto py_result = CJSObject::Wrap(v8_isolate, v8_attr_value, m_base.Object());
+  auto py_result = wrap(v8_isolate, v8_attr_value, m_base.Object());
   TRACE("CJSObjectGenericImpl::ObjectGetAttr {} => {}", THIS, py_result);
   return py_result;
 }

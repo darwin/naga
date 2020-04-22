@@ -75,6 +75,7 @@ naga_source_files = [
   "Tracer.cpp",
   "Utils.cpp",
   "V8Utils.cpp",
+  "Wrapping.cpp",
 ]
 
 naga_source_file_paths = []

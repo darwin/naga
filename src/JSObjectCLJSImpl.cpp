@@ -1,6 +1,7 @@
 #include "JSObjectCLJSImpl.h"
 #include "PythonObject.h"
 #include "JSException.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -187,7 +188,7 @@ py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   if (isSentinel(v8_result)) {
     throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
   }
-  auto py_result = CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  auto py_result = wrap(v8_isolate, v8_result, m_base.Object());
   TRACE("CJSObjectCLJSImpl::GetItemIndex {} py_index={} => {}", THIS, py_index, py_result);
   return py_result;
 }
@@ -237,7 +238,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
 
-    auto py_item = CJSObject::Wrap(v8_isolate, v8_item, m_base.Object());
+    auto py_item = wrap(v8_isolate, v8_item, m_base.Object());
     py_result.append(py_item);
   }
 
@@ -262,7 +263,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
       auto msg = fmt::format("Unexpected: got empty result when accessing js property '{}'", *v8_utf);
       throw CJSException(msg, PyExc_UnboundLocalError);
     }
-    return CJSObject::Wrap(v8_isolate, v8_val, m_base.Object());
+    return wrap(v8_isolate, v8_val, m_base.Object());
   }
 
   // CLJS lookup
@@ -275,7 +276,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   if (isSentinel(v8_result)) {
     return py::none();
   }
-  auto py_result = CJSObject::Wrap(v8_isolate, v8_result, m_base.Object());
+  auto py_result = wrap(v8_isolate, v8_result, m_base.Object());
   TRACE("CJSObjectCLJSImpl::GetItemString {} py_str={} => {}", THIS, py_str, py_result);
   return py_result;
 }

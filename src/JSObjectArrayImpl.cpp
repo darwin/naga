@@ -1,6 +1,7 @@
 #include "JSObjectArrayImpl.h"
 #include "PythonObject.h"
 #include "JSException.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -41,7 +42,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
           CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
         }
 
-        slice.append(CJSObject::Wrap(v8_isolate, v8_value, m_base.Object()));
+        slice.append(wrap(v8_isolate, v8_value, m_base.Object()));
       }
 
       return std::move(slice);
@@ -63,7 +64,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
       CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
 
-    return CJSObject::Wrap(v8_isolate, v8_value, m_base.Object());
+    return wrap(v8_isolate, v8_value, m_base.Object());
   }
 
   throw CJSException("list indices must be integers", PyExc_TypeError);
@@ -187,7 +188,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
     if (m_base.Object()->Has(v8_context, idx).ToChecked()) {
       auto v8_idx = v8::Integer::New(v8_isolate, idx);
       auto v8_obj = m_base.Object()->Get(v8_context, v8_idx).ToLocalChecked();
-      py_result = CJSObject::Wrap(v8_isolate, v8_obj, m_base.Object());
+      py_result = wrap(v8_isolate, v8_obj, m_base.Object());
     }
 
     if (!m_base.Object()->Delete(v8_context, idx).ToChecked()) {
@@ -222,7 +223,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
       }
 
       // TODO: could this be optimized without wrapping?
-      if (py_key.is(CJSObject::Wrap(v8_isolate, v8_val, m_base.Object()))) {
+      if (py_key.is(wrap(v8_isolate, v8_val, m_base.Object()))) {
         return true;
       }
     }

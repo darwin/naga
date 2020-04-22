@@ -2,6 +2,7 @@
 #include "JSException.h"
 #include "PythonThreads.h"
 #include "PythonObject.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -58,7 +59,7 @@ py::list CJSObjectAPI::Dir() const {
   for (size_t i = 0; i < props->Length(); i++) {
     auto v8_i = v8::Integer::New(v8_isolate, i);
     auto v8_prop = props->Get(v8_context, v8_i).ToLocalChecked();
-    attrs.append(CJSObjectAPI::Wrap(v8_isolate, v8_prop));
+    attrs.append(wrap(v8_isolate, v8_prop));
   }
 
   if (v8_try_catch.HasCaught()) {
@@ -290,7 +291,7 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
     it++;
   }
 
-  return Wrap(v8_isolate, v8_result);
+  return wrap(v8_isolate, v8_result);
 }
 
 py::object CJSObjectAPI::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {

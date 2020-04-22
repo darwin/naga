@@ -25,11 +25,6 @@ class CJSObjectBase {
   [[nodiscard]] v8::Local<v8::Object> Object() const;
 
   void Dump(std::ostream& os) const;
-
-  static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this);
-  static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val);
-  static py::object Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj);
-  static py::object Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj);
 };
 
 #include "JSObjectBaseAux.h"

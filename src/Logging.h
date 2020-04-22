@@ -52,6 +52,7 @@ enum Loggers {
   kJSObjectArrayImplLogger,
   kJSObjectCLJSImplLogger,
   kJSObjectGenericImplLogger,
+  kPythonWrapLogger,
   kNumLoggers
 };
 

@@ -1,6 +1,7 @@
 #include "PythonObject.h"
 #include "JSObject.h"
 #include "PythonExceptions.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -18,7 +19,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
       return v8::Undefined(v8_isolate).As<v8::Value>();
@@ -71,10 +72,10 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr())) {
-      if (PySequence_SetItem(py_obj.ptr(), index, CJSObject::Wrap(v8_isolate, v8_value).ptr()) < 0) {
+      if (PySequence_SetItem(py_obj.ptr(), index, wrap(v8_isolate, v8_value).ptr()) < 0) {
         auto v8_msg = v8::String::NewFromUtf8(v8_isolate, "fail to set indexed value").ToLocalChecked();
         auto v8_ex = v8::Exception::Error(v8_msg);
         v8_isolate->ThrowException(v8_ex);
@@ -84,7 +85,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
       snprintf(buf, sizeof(buf), "%d", index);
 
-      if (PyMapping_SetItemString(py_obj.ptr(), buf, CJSObject::Wrap(v8_isolate, v8_value).ptr()) < 0) {
+      if (PyMapping_SetItemString(py_obj.ptr(), buf, wrap(v8_isolate, v8_value).ptr()) < 0) {
         auto v8_msg = v8::String::NewFromUtf8(v8_isolate, "fail to set named value").ToLocalChecked();
         auto v8_ex = v8::Exception::Error(v8_msg);
         v8_isolate->ThrowException(v8_ex);
@@ -110,7 +111,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
 
     if (PyGen_Check(py_obj.ptr())) {
       return v8::Integer::New(v8_isolate, v8::ReadOnly);
@@ -156,7 +157,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
 
     if (PySequence_Check(py_obj.ptr()) && static_cast<Py_ssize_t>(index) < PySequence_Size(py_obj.ptr())) {
       auto result = 0 <= PySequence_DelItem(py_obj.ptr(), index);
@@ -188,7 +189,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
-    auto py_obj = CJSObject::Wrap(v8_isolate, v8_info.Holder());
+    auto py_obj = wrap(v8_isolate, v8_info.Holder());
     auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
     auto v8_array = v8::Array::New(v8_isolate, len);
     auto v8_context = v8_isolate->GetCurrentContext();

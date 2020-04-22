@@ -128,6 +128,7 @@ static void initLoggers() {
   g_loggers[kJSObjectArrayImplLogger] = std::make_shared<spdlog::logger>("naga_oai", logger_file_sink);
   g_loggers[kJSObjectCLJSImplLogger] = std::make_shared<spdlog::logger>("naga_oci", logger_file_sink);
   g_loggers[kJSObjectGenericImplLogger] = std::make_shared<spdlog::logger>("naga_ogi", logger_file_sink);
+  g_loggers[kPythonWrapLogger] = std::make_shared<spdlog::logger>("naga_pwr", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

@@ -4,6 +4,7 @@
 #include "PythonObject.h"
 #include "JSScript.h"
 #include "JSIsolate.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -57,7 +58,7 @@ CJSContext::~CJSContext() {
 py::object CJSContext::GetGlobal() const {
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto py_result = CJSObject::Wrap(v8_isolate, ToV8()->Global());
+  auto py_result = wrap(v8_isolate, ToV8()->Global());
   TRACE("CContext::GetGlobal {} => {}", THIS, py_result);
   return py_result;
 }

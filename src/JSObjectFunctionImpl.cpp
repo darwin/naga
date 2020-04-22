@@ -2,6 +2,7 @@
 #include "PythonObject.h"
 #include "JSException.h"
 #include "PythonThreads.h"
+#include "Wrapping.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -55,7 +56,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
     CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   }
 
-  return CJSObject::Wrap(v8_isolate, v8_result.ToLocalChecked());
+  return wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
 py::object CJSObjectFunctionImpl::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
