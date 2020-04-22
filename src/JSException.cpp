@@ -396,7 +396,7 @@ py::object CJSException::Str() const {
   std::stringstream ss;
   ss << *this;
   auto result = py::cast(ss.str());
-  TRACE("CJSException::Str {} => {}", THIS, result);
+  TRACE("CJSException::Str {} => {}", THIS, traceText(result));
   return result;
 }
 
@@ -408,7 +408,7 @@ v8::Local<v8::Value> CJSException::Exception() const {
 
 v8::Local<v8::Value> CJSException::Stack() const {
   auto result = v8::Local<v8::Value>::New(m_v8_isolate, m_v8_stack);
-  TRACE("CJSException::Stack {} => {}", THIS, result);
+  TRACE("CJSException::Stack {} => {}", THIS, traceText(result));
   return result;
 }
 

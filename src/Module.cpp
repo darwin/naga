@@ -4,7 +4,6 @@
 PYBIND11_MODULE(_STPyV8, py_module) {
   useLogging();
 
-  SPDLOG_INFO("");
   SPDLOG_INFO("=====================================================================================================");
   SPDLOG_INFO("Initializing _STPyV8 module...");
 

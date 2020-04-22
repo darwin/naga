@@ -10,7 +10,7 @@ py::object CJSStackTrace::Str() const {
   std::stringstream ss;
   ss << *this;
   auto result = py::cast(ss.str());
-  TRACE("CJSStackTrace::Str {} => {}", THIS, result);
+  TRACE("CJSStackTrace::Str {} => {}", THIS, traceText(result));
   return result;
 }
 

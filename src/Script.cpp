@@ -14,7 +14,7 @@ CScript::CScript(v8::IsolateRef v8_isolate,
       m_v8_source(m_v8_isolate, v8_source),
       m_v8_script(m_v8_isolate, v8_script) {
   TRACE("CScript::CScript {} v8_isolate={} engine={} v8_source={} v8_script={}", THIS, isolateref_printer{v8_isolate},
-        engine, v8_source, v8_script);
+        engine, traceMore(v8_source), v8_script);
 }
 
 CScript::~CScript() {
@@ -25,7 +25,7 @@ CScript::~CScript() {
 
 v8::Local<v8::String> CScript::Source() const {
   auto result = v8::Local<v8::String>::New(m_v8_isolate, m_v8_source);
-  TRACE("CScript::Source {} => {}", THIS, result);
+  TRACE("CScript::Source {} => {}", THIS, traceText(result));
   return result;
 }
 
@@ -39,7 +39,7 @@ std::string CScript::GetSource() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   v8::String::Utf8Value source(m_v8_isolate, Source());
   auto result = std::string(*source, source.length());
-  TRACE("CScript::GetSource {} => {}", THIS, result);
+  TRACE("CScript::GetSource {} => {}", THIS, traceText(result));
   return result;
 }
 

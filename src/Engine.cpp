@@ -85,19 +85,20 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
 }
 
 CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
-  TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, src);
+  TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col, wstring_printer{src});
+  TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col,
+        traceMore(wstring_printer{src}));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
 CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
-  TRACE("CEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, v8_src);
+  TRACE("CEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
