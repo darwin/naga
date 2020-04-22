@@ -27,8 +27,8 @@ class CEternals {
   v8::Eternal<T> Get(EternalID id, EternalCreateFn<T>* create_fn = nullptr) {
     auto& lookup = m_cache[id];
     if (!lookup.has_value()) {
-      HTRACE(kEternalsLogger, "CEternals::Get {} m_v8_isolate={} id={} creating...", THIS,
-             isolateref_printer{m_v8_isolate}, magic_enum::enum_name(id));
+      HTRACE(kEternalsLogger, "CEternals::Get {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
+             magic_enum::enum_name(id));
       assert(create_fn);
       lookup = create_fn(m_v8_isolate);
     }
@@ -43,8 +43,7 @@ template <typename T>
 v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
                            CEternals::EternalID id,
                            CEternals::EternalCreateFn<T>* create_fn = nullptr) {
-  HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", isolateref_printer{v8_isolate},
-         magic_enum::enum_name(id));
+  HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto v8_eternal_val = isolate->Eternals()->Get(id, create_fn);
   return v8_eternal_val.Get(v8_isolate);

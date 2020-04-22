@@ -113,8 +113,8 @@ void translateException(std::exception_ptr p) {
 
 CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
-  TRACE("CJSException::CJSException {} v8_isolate={} v8_try_catch={} raw_type={}", THIS,
-        isolateref_printer{m_v8_isolate}, v8_try_catch, raw_object_printer{raw_type});
+  TRACE("CJSException::CJSException {} v8_isolate={} v8_try_catch={} raw_type={}", THIS, P$(m_v8_isolate), v8_try_catch,
+        raw_type);
   auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
@@ -129,13 +129,12 @@ CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
 
 CJSException::CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type) noexcept
     : std::runtime_error(msg), m_v8_isolate(std::move(v8_isolate)), m_raw_type(raw_type) {
-  TRACE("CJSException::CJSException {} v8_isolate={} msg='{}' raw_type={}", THIS, isolateref_printer{m_v8_isolate}, msg,
-        raw_object_printer{raw_type});
+  TRACE("CJSException::CJSException {} v8_isolate={} msg='{}' raw_type={}", THIS, P$(m_v8_isolate), msg, raw_type);
 }
 
 CJSException::CJSException(const std::string& msg, PyObject* raw_type) noexcept
     : std::runtime_error(msg), m_v8_isolate(v8u::getCurrentIsolate()), m_raw_type(raw_type) {
-  TRACE("CJSException::CJSException {} msg='{}' raw_type={}", THIS, msg, raw_object_printer{raw_type});
+  TRACE("CJSException::CJSException {} msg='{}' raw_type={}", THIS, msg, raw_type);
 }
 
 CJSException::CJSException(const CJSException& ex) noexcept
@@ -297,7 +296,7 @@ std::string CJSException::GetStackTrace() {
 }
 
 std::string CJSException::Extract(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::Extract v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
+  TRACE("CJSException::Extract v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   assert(v8_isolate->InContext());
 
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -345,7 +344,7 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"TypeError", PyExc_TypeError}};
 
 void CJSException::HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
+  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   // TODO: revisit this CanContinue test, it is suspicious
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
@@ -354,7 +353,7 @@ void CJSException::HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::Tr
 }
 
 void CJSException::Throw(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", isolateref_printer{v8_isolate}, v8_try_catch);
+  TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   auto v8_scope = v8u::withScope(v8_isolate);
   assert(v8_try_catch.HasCaught() && v8_try_catch.CanContinue());
 
@@ -419,6 +418,6 @@ v8::Local<v8::Message> CJSException::Message() const {
 }
 
 PyObject* CJSException::GetType() const {
-  TRACE("CJSException::GetType {} => {}", THIS, raw_object_printer{m_raw_type});
+  TRACE("CJSException::GetType {} => {}", THIS, m_raw_type);
   return m_raw_type;
 }

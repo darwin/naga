@@ -217,7 +217,7 @@ py::object CJSObjectAPI::Repr() const {
   if (HasRole(Roles::CLJS)) {
     py_result = m_cljs_impl.Repr();
   } else {
-    auto s = fmt::format("JSObject{}", roles_printer{m_roles});
+    auto s = fmt::format("JSObject[{}]", m_roles);
     py_result = py::cast(s);
   }
 

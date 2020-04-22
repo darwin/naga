@@ -22,7 +22,7 @@ void CPythonObject::CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Val
 }
 
 void CPythonObject::CallPythonCallable(py::object py_fn, const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
-  TRACE("CPythonObject::CallPythonCallable py_fn={} v8_info={}", raw_object_printer{py_fn.ptr()}, v8_info);
+  TRACE("CPythonObject::CallPythonCallable py_fn={} v8_info={}", py_fn.ptr(), v8_info);
   assert(PyCallable_Check(py_fn.ptr()));
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);

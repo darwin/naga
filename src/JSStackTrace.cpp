@@ -17,8 +17,8 @@ py::object CJSStackTrace::Str() const {
 CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
                                                      int frame_limit,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
-  TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}",
-        isolateref_printer{v8_isolate}, frame_limit, v8_options);
+  TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}", P$(v8_isolate),
+        frame_limit, v8_options);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
@@ -55,8 +55,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
 
 CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {
-  TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, isolateref_printer{v8_isolate},
-        v8_stack_trace);
+  TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, P$(v8_isolate), v8_stack_trace);
 }
 
 CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {

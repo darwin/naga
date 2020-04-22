@@ -16,14 +16,14 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
   auto v8_isolate = data.GetIsolate();
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto hospital_record = data.GetParameter();
-  TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", (void*)hospital_record, isolateref_printer{v8_isolate});
+  TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", (void*)hospital_record, P$(v8_isolate));
   isolate->Hospital()->PatientIsAboutToDie(v8_isolate, hospital_record);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
 CHospital::CHospital(v8::IsolateRef v8_isolate) : m_v8_isolate(v8_isolate) {
-  TRACE("CHospital::CHospital {} v8_isolate={}", THIS, isolateref_printer{v8_isolate});
+  TRACE("CHospital::CHospital {} v8_isolate={}", THIS, P$(v8_isolate));
 }
 
 CHospital::~CHospital() {

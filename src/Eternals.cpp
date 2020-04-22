@@ -6,7 +6,7 @@
   SPDLOG_LOGGER_TRACE(getLogger(kEternalsLogger), __VA_ARGS__)
 
 CEternals::CEternals(v8::IsolateRef v8_isolate) : m_v8_isolate(v8_isolate), m_cache{} {
-  TRACE("CEternalsCache::CEternalsCache {} v8_isolate={}", THIS, isolateref_printer{v8_isolate});
+  TRACE("CEternalsCache::CEternalsCache {} v8_isolate={}", THIS, P$(v8_isolate));
 }
 
 CEternals::~CEternals() {

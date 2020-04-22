@@ -14,7 +14,7 @@ CEngine::CEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
 }
 
 CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
-  TRACE("CEngine::CEngine v8_isolate={}", isolateref_printer{m_v8_isolate});
+  TRACE("CEngine::CEngine v8_isolate={}", P$(m_v8_isolate));
 }
 
 void CEngine::SetFlags(const std::string& flags) {
@@ -91,8 +91,7 @@ CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int
 }
 
 CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  TRACE("CEngine::CompileW name={} line={} col={} src={}", wstring_printer{name}, line, col,
-        traceMore(wstring_printer{src}));
+  TRACE("CEngine::CompileW name={} line={} col={} src={}", P$(name), line, col, traceMore(P$(src)));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }

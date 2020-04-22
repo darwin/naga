@@ -49,7 +49,7 @@ CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
     m_roles |= Roles::CLJS;
   }
 #endif
-  TRACE("CJSObjectBase::CJSObjectBase {} v8_obj={} roles={}", THIS, v8_obj, roles_printer{m_roles});
+  TRACE("CJSObjectBase::CJSObjectBase {} v8_obj={} roles={}", THIS, v8_obj, m_roles);
 }
 
 CJSObjectBase::~CJSObjectBase() {
@@ -70,7 +70,7 @@ v8::Local<v8::Object> CJSObjectBase::Object() const {
 }
 
 py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
-  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_val={} v8_this={}", isolateref_printer{v8_isolate}, v8_val, v8_this);
+  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_val={} v8_this={}", P$(v8_isolate), v8_val, v8_this);
 
   if (v8_val->IsFunction()) {
     // when v8_this is global, we can fall back to unbound function (later)
@@ -96,7 +96,7 @@ py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v
 }
 
 py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val) {
-  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_val={}", isolateref_printer{v8_isolate}, v8_val);
+  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_val={}", P$(v8_isolate), v8_val);
   assert(!v8_val.IsEmpty());
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -157,7 +157,7 @@ py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v
 }
 
 py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
-  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_obj={}", isolateref_printer{v8_isolate}, v8_obj);
+  TRACE("CJSObjectBase::Wrap v8_isolate={} v8_obj={}", P$(v8_isolate), v8_obj);
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
@@ -177,7 +177,7 @@ py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> 
 }
 
 py::object CJSObjectBase::Wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
-  TRACE("CJSObjectBase::Wrap v8_isolate={} obj={}", isolateref_printer{v8_isolate}, obj);
+  TRACE("CJSObjectBase::Wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();
 
   if (v8u::executionTerminating(v8_isolate)) {

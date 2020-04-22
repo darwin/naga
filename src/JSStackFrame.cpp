@@ -22,8 +22,7 @@ std::string CJSStackFrame::GetFunctionName() const {
 
 CJSStackFrame::CJSStackFrame(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
     : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {
-  TRACE("CJSStackFrame::CJSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, isolateref_printer{m_v8_isolate},
-        v8_stack_frame);
+  TRACE("CJSStackFrame::CJSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, P$(m_v8_isolate), v8_stack_frame);
 }
 
 CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {

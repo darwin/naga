@@ -153,8 +153,7 @@ py::object CContext::Evaluate(const std::string& src, const std::string& name, i
 }
 
 py::object CContext::EvaluateW(const std::wstring& src, const std::wstring& name, int line, int col) {
-  TRACE("CContext::EvaluateW name={} line={} col={} src={}", wstring_printer{name}, line, col,
-        traceText(wstring_printer{src}));
+  TRACE("CContext::EvaluateW name={} line={} col={} src={}", P$(name), line, col, traceText(P$(src)));
   auto v8_isolate = v8u::getCurrentIsolate();
   CEngine engine(v8_isolate);
   CScriptPtr script = engine.CompileW(src, name, line, col);

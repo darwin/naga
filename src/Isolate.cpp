@@ -15,7 +15,7 @@ CIsolatePtr CIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
   assert(v8_isolate->GetNumberOfDataSlots() > kSelfDataSlotIndex);
   auto isolate_ptr = static_cast<CIsolate*>(v8_isolate->GetData(kSelfDataSlotIndex));
   assert(isolate_ptr);
-  TRACE("CIsolate::FromV8 v8_isolate={} => {}", isolateref_printer{v8_isolate}, (void*)isolate_ptr);
+  TRACE("CIsolate::FromV8 v8_isolate={} => {}", P$(v8_isolate), (void*)isolate_ptr);
   return isolate_ptr->shared_from_this();
 }
 

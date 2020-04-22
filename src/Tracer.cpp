@@ -9,8 +9,7 @@
 
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
   auto v8_isolate = v8_wrapper->GetIsolate();
-  TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", isolateref_printer{v8_isolate},
-        py::handle(raw_object), v8_wrapper);
+  TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", P$(v8_isolate), py::handle(raw_object), v8_wrapper);
   auto isolate = CIsolate::FromV8(v8_isolate);
   isolate->Tracer()->TraceWrapper(raw_object, v8_wrapper);
 }
@@ -18,8 +17,7 @@ void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper)
 v8::Local<v8::Object> lookupTracedWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object) {
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto v8_result = isolate->Tracer()->LookupWrapper(v8_isolate, raw_object);
-  TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", isolateref_printer{v8_isolate}, py::handle(raw_object),
-        v8_result);
+  TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
   return v8_result;
 }
 
@@ -42,12 +40,12 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
   assert(v8_val->IsExternal());
   auto v8_payload = v8_val.As<v8::External>();
   auto raw_obj = static_cast<PyObject*>(v8_payload->Value());
-  TRACE("lookupTracedObject => {}", raw_object_printer{raw_obj});
+  TRACE("lookupTracedObject => {}", raw_obj);
   return raw_obj;
 }
 
 static void recordTracedWrapper(v8::Local<v8::Object> v8_wrapper, TracedRawObject* raw_object) {
-  TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object_printer{raw_object});
+  TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object);
   auto v8_isolate = v8_wrapper->GetIsolate();
   auto v8_context = v8_isolate->GetCurrentContext();
   // TODO: optimize
@@ -63,8 +61,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
   auto v8_isolate = data.GetIsolate();
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto raw_object = data.GetParameter();
-  TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", raw_object_printer{raw_object},
-        isolateref_printer{v8_isolate});
+  TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", raw_object, P$(v8_isolate));
   isolate->Tracer()->AssociatedWrapperObjectIsAboutToDie(raw_object);
 }
 
@@ -91,7 +88,7 @@ CTracer::~CTracer() {
 }
 
 void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
-  TRACE("CTracer::TraceWrapper {} raw_object={} v8_object={}", THIS, raw_object_printer{raw_object}, v8_wrapper);
+  TRACE("CTracer::TraceWrapper {} raw_object={} v8_object={}", THIS, raw_object, v8_wrapper);
 
   assert(raw_object);
 
@@ -112,7 +109,7 @@ void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8
 v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject* raw_object) {
   auto tracer_lookup = m_tracked_wrappers.find(raw_object);
   if (tracer_lookup == m_tracked_wrappers.end()) {
-    TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object_printer{raw_object});
+    TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object);
     return v8::Local<v8::Object>();
   }
 
@@ -129,7 +126,7 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject
 }
 
 void CTracer::DeleteRecord(PyObject* raw_object) {
-  TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, raw_object_printer{raw_object});
+  TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, raw_object);
 
   auto tracer_lookup = m_tracked_wrappers.find(raw_object);
   assert(tracer_lookup != m_tracked_wrappers.end());
@@ -169,7 +166,7 @@ void CTracer::SwitchToLiveMode(WrapperTrackingMap::iterator tracer_lookup, bool 
 }
 
 void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
-  TRACE("CTracer::SwitchToZombieModeOrDie {} raw_object={}", THIS, raw_object_printer{raw_object});
+  TRACE("CTracer::SwitchToZombieModeOrDie {} raw_object={}", THIS, raw_object);
 
   // there must be someone else holding this object as well
   assert(Py_REFCNT(raw_object) > 1);
@@ -205,7 +202,7 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
   // TODO: investigate - creating python callables dynamically might be expensive
   // note both captured tracer and raw_object (PyObject*) a guaranteed to outlive this callable object
   py::cpp_function py_weak_ref_callback([this, raw_object = raw_object](const py::handle& py_weak_ref) {
-    TRACE("CTracer::PythonWeakRefCallback py_weak_ref={} raw_object={}", py_weak_ref, raw_object_printer{raw_object});
+    TRACE("CTracer::PythonWeakRefCallback py_weak_ref={} raw_object={}", py_weak_ref, raw_object);
     DeleteRecord(raw_object);
   });
   auto raw_weak_ref = PyWeakref_NewRef(raw_object, py_weak_ref_callback.ptr());
@@ -221,7 +218,7 @@ void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
 }
 
 void CTracer::AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object) {
-  TRACE("CTracer::AssociatedWrapperObjectIsAboutToDie {} raw_object={}", THIS, raw_object_printer{raw_object});
+  TRACE("CTracer::AssociatedWrapperObjectIsAboutToDie {} raw_object={}", THIS, raw_object);
 
   if (Py_REFCNT(raw_object) == 1) {
     // this is a fast path
