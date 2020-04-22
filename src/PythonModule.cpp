@@ -1,4 +1,4 @@
-#include "Module.h"
+#include "PythonModule.h"
 #include "PythonExpose.h"
 
 PYBIND11_MODULE(naga_native, py_module) {
