@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& os, const CContext& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CEngine& v) {
+std::ostream& operator<<(std::ostream& os, const CJSEngine& v) {
   v.Dump(os);
   return os;
 }

@@ -282,21 +282,21 @@ void exposeJSStackTrace(py::module py_module) {
 void exposeJSEngine(py::module py_module) {
   TRACE("exposeJSEngine py_module={}", py_module);
   // clang-format off
-  py::class_<CEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
+  py::class_<CJSEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
       .def(py::init<>(),
            "Create a new script engine instance.")
       .def_property_readonly_static(
-          "version", [](const py::object &) { return CEngine::GetVersion(); },
+          "version", [](const py::object &) { return CJSEngine::GetVersion(); },
           "Get the V8 engine version.")
 
       .def_property_readonly_static(
-          "dead", [](const py::object &) { return CEngine::IsDead(); },
+          "dead", [](const py::object &) { return CJSEngine::IsDead(); },
           "Check if V8 is dead and therefore unusable.")
 
-      .def_static("setFlags", &CEngine::SetFlags,
+      .def_static("setFlags", &CJSEngine::SetFlags,
                   "Sets V8 flags from a string.")
 
-      .def_static("terminateAllThreads", &CEngine::TerminateAllThreads,
+      .def_static("terminateAllThreads", &CJSEngine::TerminateAllThreads,
                   "Forcefully terminate the current thread of JavaScript execution.")
 
       .def_static(
@@ -309,17 +309,17 @@ void exposeJSEngine(py::module py_module) {
           "lowMemory", []() { v8u::getCurrentIsolate()->LowMemoryNotification(); },
           "Optional notification that the system is running low on memory.")
 
-      .def_static("setStackLimit", &CEngine::SetStackLimit,
+      .def_static("setStackLimit", &CJSEngine::SetStackLimit,
                   py::arg("stack_limit_size") = 0,
                   "Uses the address of a local variable to determine the stack top now."
                   "Given a size, returns an address that is that far from the current top of stack.")
 
-      .def("compile", &CEngine::Compile,
+      .def("compile", &CJSEngine::Compile,
            py::arg("source"),
            py::arg("name") = std::string(),
            py::arg("line") = -1,
            py::arg("col") = -1)
-      .def("compile", &CEngine::CompileW,
+      .def("compile", &CJSEngine::CompileW,
            py::arg("source"),
            py::arg("name") = std::wstring(),
            py::arg("line") = -1,

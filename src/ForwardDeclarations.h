@@ -4,7 +4,7 @@
 
 class CPlatform;
 class CContext;
-class CEngine;
+class CJSEngine;
 class CJSIsolate;
 class CJSScript;
 class CJSStackTrace;

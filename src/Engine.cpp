@@ -9,20 +9,20 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kEngineLogger), __VA_ARGS__)
 
-CEngine::CEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
+CJSEngine::CJSEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
   TRACE("CEngine::CEngine");
 }
 
-CEngine::CEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
+CJSEngine::CJSEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
   TRACE("CEngine::CEngine v8_isolate={}", P$(m_v8_isolate));
 }
 
-void CEngine::SetFlags(const std::string& flags) {
+void CJSEngine::SetFlags(const std::string& flags) {
   TRACE("CEngine::SetFlags flags={}", flags);
   v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
 }
 
-void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
+void CJSEngine::SetStackLimit(uintptr_t stack_limit_size) {
   TRACE("CEngine::SetStackLimit stack_limit_size={}", stack_limit_size);
   // This function uses a local stack variable to determine the isolate's
   // stack limit
@@ -42,20 +42,20 @@ void CEngine::SetStackLimit(uintptr_t stack_limit_size) {
   v8_isolate->SetStackLimit(stack_limit);
 }
 
-const char* CEngine::GetVersion() {
+const char* CJSEngine::GetVersion() {
   TRACE("CEngine::GetVersion");
   auto result = v8::V8::GetVersion();
   TRACE("CEngine::GetVersion => {}", result);
   return result;
 }
 
-void CEngine::TerminateAllThreads() {
+void CJSEngine::TerminateAllThreads() {
   TRACE("CEngine::TerminateAllThreads");
   auto v8_isolate = v8u::getCurrentIsolate();
   v8_isolate->TerminateExecution();
 }
 
-bool CEngine::IsDead() {
+bool CJSEngine::IsDead() {
   TRACE("CEngine::IsDead");
   auto v8_isolate = v8u::getCurrentIsolate();
   auto result = v8_isolate->IsDead();
@@ -63,7 +63,7 @@ bool CEngine::IsDead() {
   return result;
 }
 
-py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
+py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   TRACE("CEngine::ExecuteScript v8_script={}", v8_script);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -84,19 +84,19 @@ py::object CEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   return py::js_null();
 }
 
-CScriptPtr CEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
+CScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) {
   TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
-CScriptPtr CEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
+CScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) {
   TRACE("CEngine::CompileW name={} line={} col={} src={}", P$(name), line, col, traceMore(P$(src)));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
-CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
+CScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) {
   TRACE("CEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -116,6 +116,6 @@ CScriptPtr CEngine::InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::
   return std::make_shared<CJSScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 
-void CEngine::Dump(std::ostream& os) const {
+void CJSEngine::Dump(std::ostream& os) const {
   fmt::print(os, "CEngine {}", THIS);
 }
