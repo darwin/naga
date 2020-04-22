@@ -3,6 +3,11 @@
 #include "Base.h"
 #include "JSObject.h"
 
+template <typename T>
+const void* voidThis(const T* v) {
+  return reinterpret_cast<const void*>(v);
+}
+
 #define THIS voidThis(this)
 
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& obj);
@@ -15,147 +20,48 @@ std::ostream& operator<<(std::ostream& os, const CEngine& obj);
 std::ostream& operator<<(std::ostream& os, const CScript& obj);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& obj);
 
-std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val);
+// https://fmt.dev/latest/api.html#formatting-user-defined-types
+// warning! operator<< is tricky with namespaces, it must be implemented inside, not in global scope
+// see https://github.com/fmtlib/fmt/issues/1542#issuecomment-581855567
+namespace v8 {
 
-template <typename T>
-const void* voidThis(const T* v) {
-  return reinterpret_cast<const void*>(v);
+std::ostream& operator<<(std::ostream& os, const TryCatch& v8_val);
+
+std::ostream& operator<<(std::ostream& os, const Local<Private>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<Context>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<Script>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<ObjectTemplate>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<Message>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<StackFrame>& v8_val);
+std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v8_val);
+
+std::ostream& printLocal(std::ostream& os, const Local<Value>& v8_val);
+
+template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<Value, T>>>
+std::ostream& operator<<(std::ostream& os, const Local<T>& v) {
+  os << "v8::Local<";
+  printLocal(os, v);
+  os << ">";
+  return os;
 }
 
-// https://fmt.dev/latest/api.html#formatting-user-defined-types
-// I wasn't able to get above operator<< functions to work with spdlog/fmt lib out-of-the box
-// maybe this was the issue? https://github.com/fmtlib/fmt/issues/1542#issuecomment-581855567
-// this is an alternative way when we defined custom formatter and delegate work to operator<< explicitly
-// I'm not sure about codegen complexity, but we use logging only during development so this is ok, I guess
 template <typename T>
-struct fmt::formatter<v8::Local<T>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<T>& val, FormatContext& ctx) {
-    std::ostringstream msg;
-    msg << val;
-    return format_to(ctx.out(), "{}", msg.str());
-  }
-};
+std::ostream& operator<<(std::ostream& os, const Eternal<T>& v) {
+  return os << "v8::Eternal<" << v.Get(v8u::getCurrentIsolate()) << ">";
+}
 
 template <typename T>
-struct fmt::formatter<v8::Eternal<T>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Eternal<T>& val, FormatContext& ctx) {
-    // TODO: we should probably pass isolate from outside
-    return format_to(ctx.out(), "[ETERNAL] {}", val.Get(v8u::getCurrentIsolate()));
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::Context>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::Context>& val, FormatContext& ctx) {
-    if (val.IsEmpty()) {
-      return format_to(ctx.out(), "v8::Context {} [EMPTY]", static_cast<void*>(*val));
-    } else {
-      return format_to(ctx.out(), "v8::Context {} global={}", static_cast<void*>(*val), val->Global());
-    }
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::Script>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::Script>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::Script {}", static_cast<void*>(*val));
-  }
-};
-
-template <>
-struct fmt::formatter<v8::TryCatch> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::TryCatch& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::TryCatch Message=[{}]", val.Message());
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::ObjectTemplate>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::ObjectTemplate>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::ObjectTemplate {}", static_cast<void*>(*val));
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::Private>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::Private>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::Private {}", static_cast<void*>(*val));
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::Message>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::Message>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::Message {} '{}'", static_cast<void*>(*val), val->Get());
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::StackFrame>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::StackFrame>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::StackFrame {} ScriptId={} Script={}", static_cast<void*>(*val), val->GetScriptId(),
-                     val->GetScriptNameOrSourceURL());
-  }
-};
-
-template <>
-struct fmt::formatter<v8::Local<v8::StackTrace>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::Local<v8::StackTrace>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8::StackTrace {} FrameCount={}", static_cast<void*>(*val), val->GetFrameCount());
-  }
-};
+std::ostream& operator<<(std::ostream& os, PropertyCallbackInfo<T> v) {
+  return os << fmt::format("v8:PCI[This={} Holder={} ReturnValue={}]", v.This(), v.Holder(), v.GetReturnValue().Get());
+}
 
 template <typename T>
-struct fmt::formatter<v8::PropertyCallbackInfo<T>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
+std::ostream& operator<<(std::ostream& os, FunctionCallbackInfo<T> v) {
+  return os << fmt::format("v8:FCI[Length={} This={} Holder={} ReturnValue={}]", v.Length(), v.This(), v.Holder(),
+                           v.GetReturnValue().Get());
+}
 
-  template <typename FormatContext>
-  auto format(const v8::PropertyCallbackInfo<T>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8:PCI[This={} Holder={} ReturnValue={}]", val.This(), val.Holder(),
-                     val.GetReturnValue().Get());
-  }
-};
-
-template <typename T>
-struct fmt::formatter<v8::FunctionCallbackInfo<T>> {
-  [[maybe_unused]] static constexpr auto parse(const format_parse_context& ctx) { return ctx.begin(); }
-
-  template <typename FormatContext>
-  auto format(const v8::FunctionCallbackInfo<T>& val, FormatContext& ctx) {
-    return format_to(ctx.out(), "v8:FCI[Length={} This={} Holder={} ReturnValue={}]", val.Length(), val.This(),
-                     val.Holder(), val.GetReturnValue().Get());
-  }
-};
+}  // namespace v8
 
 template <>
 struct fmt::formatter<py::error_already_set> {

@@ -36,25 +36,6 @@ std::ostream& operator<<(std::ostream& os, const CJSObjectPtr& obj) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, v8::Local<v8::Value> v8_val) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
-  if (v8_context.IsEmpty()) {
-    os << "[NO CONTEXT]";
-  } else if (v8_val.IsEmpty()) {
-    os << "[EMPTY VAL]";
-  } else {
-    auto v8_str = v8_val->ToDetailString(v8_context);
-    if (!v8_str.IsEmpty()) {
-      auto v8_utf = v8u::toUTF(v8_isolate, v8_str.ToLocalChecked());
-      os << *v8_utf;
-    } else {
-      os << "[N/A]";
-    }
-  }
-  return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const CContext& obj) {
   obj.Dump(os);
   return os;
@@ -74,3 +55,63 @@ std::ostream& operator<<(std::ostream& os, const CJSStackFrame& obj) {
   obj.Dump(os);
   return os;
 }
+
+namespace v8 {
+
+std::ostream& printLocal(std::ostream& os, const Local<Value>& v) {
+  if (v.IsEmpty()) {
+    return os << "{EMPTY}";
+  }
+
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
+  if (v8_context.IsEmpty()) {
+    return os << "{NO CONTEXT}";
+  }
+
+  auto v8_str = v->ToDetailString(v8_context);
+  if (v8_str.IsEmpty()) {
+    return os << "{N/A}";
+  } else {
+    return os << *v8u::toUTF(v8_isolate, v8_str.ToLocalChecked());
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, const TryCatch& v) {
+  return os << fmt::format("v8::TryCatch Message='{}'", v.Message());
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<Private>& v) {
+  return os << fmt::format("v8::Private {}", static_cast<void*>(*v));
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<Context>& v) {
+  if (v.IsEmpty()) {
+    return os << fmt::format("v8::Context {} [EMPTY]", static_cast<void*>(*v));
+  } else {
+    return os << fmt::format("v8::Context {} global={}", static_cast<void*>(*v), v->Global());
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<Script>& v) {
+  return os << fmt::format("v8::Script {}", static_cast<void*>(*v));
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<ObjectTemplate>& v) {
+  return os << fmt::format("v8::ObjectTemplate {}", static_cast<void*>(*v));
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<Message>& v) {
+  return os << fmt::format("v8::Message {} '{}'", static_cast<void*>(*v), v->Get());
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<StackFrame>& v) {
+  return os << fmt::format("v8::StackFrame {} ScriptId={} Script={}", static_cast<void*>(*v), v->GetScriptId(),
+                           v->GetScriptNameOrSourceURL());
+}
+
+std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v) {
+  return os << fmt::format("v8::StackTrace {} FrameCount={}", static_cast<void*>(*v), v->GetFrameCount());
+}
+
+}  // namespace v8
