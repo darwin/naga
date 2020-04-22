@@ -342,19 +342,19 @@ void exposeJSScript(py::module py_module) {
 void exposeJSLocker(py::module py_module) {
   TRACE("exposeJSLocker py_module={}", py_module);
   // clang-format off
-  py::class_<CLocker>(py_module, "JSLocker")
+  py::class_<CJSLocker>(py_module, "JSLocker")
       .def(py::init<>())
 
       .def_property_readonly_static(
-          "active", [](const py::object&) { return CLocker::IsActive(); },
+          "active", [](const py::object&) { return CJSLocker::IsActive(); },
           "whether Locker is being used by this V8 instance.")
       .def_property_readonly_static(
-          "locked", [](const py::object&) { return CLocker::IsLocked(); },
+          "locked", [](const py::object&) { return CJSLocker::IsLocked(); },
           "whether or not the locker is locked by the current thread.")
 
-      .def("entered", &CLocker::IsEntered)
-      .def("enter", &CLocker::Enter)
-      .def("leave", &CLocker::Leave);
+      .def("entered", &CJSLocker::IsEntered)
+      .def("enter", &CJSLocker::Enter)
+      .def("leave", &CJSLocker::Leave);
   // clang-format on
 }
 
