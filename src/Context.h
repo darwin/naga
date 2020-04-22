@@ -3,7 +3,6 @@
 #include "Base.h"
 
 class CContext : public std::enable_shared_from_this<CContext> {
-  py::object m_py_global;
   v8::Global<v8::Context> m_v8_context;
   // this smart pointer is important to ensure that associated isolate outlives our context
   // it should always be equal to m_v8_context->GetIsolate()

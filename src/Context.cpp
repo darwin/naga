@@ -41,7 +41,6 @@ CContext::CContext(const py::object& py_global) {
   m_v8_context.Reset(v8_isolate, v8_context);
 
   if (!py_global.is_none()) {
-    m_py_global = py::reinterpret_borrow<py::object>(py_global);
     auto v8_context_scope = v8u::withContext(v8_context);
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
     auto v8_global = CPythonObject::Wrap(py_global);
@@ -181,7 +180,7 @@ bool CContext::InContext() {
 }
 
 void CContext::Dump(std::ostream& os) const {
-  fmt::print(os, "CContext {} m_v8_context={} m_py_global={}", THIS, ToV8(), m_py_global);
+  fmt::print(os, "CContext {} m_v8_context={}", THIS, ToV8());
 }
 
 bool CContext::IsEntered() {
