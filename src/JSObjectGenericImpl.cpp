@@ -55,7 +55,7 @@ void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& p
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(py_key);
-  auto v8_attr_obj = CPythonObject::Wrap(std::move(py_obj));
+  auto v8_attr_obj = wrap(std::move(py_obj));
 
   if (!m_base.Object()->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
     CJSException::HandleTryCatch(v8_isolate, v8_try_catch);

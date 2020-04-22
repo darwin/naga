@@ -28,7 +28,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
     if (PySequence_Check(py_obj.ptr())) {
       if (static_cast<Py_ssize_t>(index) < PySequence_Size(py_obj.ptr())) {
         auto ret(py::reinterpret_steal<py::object>(PySequence_GetItem(py_obj.ptr(), index)));
-        return Wrap(ret);
+        return wrap(ret);
       } else {
         return v8::Undefined(v8_isolate).As<v8::Value>();
       }
@@ -45,7 +45,7 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
       }
 
       if (raw_value) {
-        return Wrap(py::reinterpret_steal<py::object>(raw_value));
+        return wrap(py::reinterpret_steal<py::object>(raw_value));
       } else {
         return v8::Undefined(v8_isolate).As<v8::Value>();
       }

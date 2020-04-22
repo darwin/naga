@@ -80,7 +80,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
         if (PyMapping_Check(py_obj.ptr()) && PyMapping_HasKeyString(py_obj.ptr(), *v8_utf_name)) {
           auto raw_item = PyMapping_GetItemString(py_obj.ptr(), *v8_utf_name);
           auto py_result(py::reinterpret_steal<py::object>(raw_item));
-          return Wrap(py_result);
+          return wrap(py_result);
         }
         return v8::Local<v8::Value>();
       } else {
@@ -98,7 +98,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
       py_val = getter();
     }
 
-    return Wrap(py_val);
+    return wrap(py_val);
   });
 
   auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Undefined(v8_isolate));
@@ -300,7 +300,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
         }
       }
 
-      auto py_item = Wrap(py::reinterpret_borrow<py::object>(raw_item));
+      auto py_item = wrap(py::reinterpret_borrow<py::object>(raw_item));
       auto v8_i = v8::Uint32::New(v8_isolate, i);
       auto res = v8_array->Set(v8u::getCurrentIsolate()->GetCurrentContext(), v8_i, py_item);
       res.Check();

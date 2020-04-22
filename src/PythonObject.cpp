@@ -1,10 +1,6 @@
 #include "PythonObject.h"
 #include "JSObject.h"
-#include "JSUndefined.h"
-#include "JSNull.h"
 #include "JSException.h"
-#include "PythonDateTime.h"
-#include "Tracer.h"
 #include "JSHospital.h"
 #include "JSEternals.h"
 
@@ -157,97 +153,3 @@ v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(con
       });
   return v8_scope.Escape(v8_object_template);
 }
-
-v8::Local<v8::Value> CPythonObject::Wrap(py::handle py_handle) {
-  TRACE("CPythonObject::Wrap py_handle={}", py_handle);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
-
-  auto v8_object = lookupTracedWrapper(v8_isolate, py_handle.ptr());
-  if (!v8_object.IsEmpty()) {
-    return v8_scope.Escape(v8_object);
-  }
-
-  auto v8_value = WrapInternal(py_handle);
-  return v8_scope.Escape(v8_value);
-}
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
-v8::Local<v8::Value> CPythonObject::WrapInternal(py::handle py_handle) {
-  TRACE("CPythonObject::WrapInternal py_handle={}", py_handle);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  assert(v8_isolate->InContext());
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto py_gil = pyu::withGIL();
-
-  if (v8u::executionTerminating(v8_isolate)) {
-    return v8::Undefined(v8_isolate);
-  }
-
-  if (py_handle.ptr() == Py_JSNull) {
-    return v8::Null(v8_isolate);
-  }
-  if (py_handle.ptr() == Py_JSUndefined) {
-    return v8::Undefined(v8_isolate);
-  }
-  if (py::isinstance<py::bool_>(py_handle)) {
-    auto py_bool = py::cast<py::bool_>(py_handle);
-    if (py_bool) {
-      return v8::True(v8_isolate);
-    } else {
-      return v8::False(v8_isolate);
-    }
-  }
-  if (py::isinstance<CJSObject>(py_handle)) {
-    auto object = py::cast<CJSObjectPtr>(py_handle);
-    assert(object.get());
-
-    if (object->Object().IsEmpty()) {
-      throw CJSException("Refer to a null object", PyExc_AttributeError);
-    }
-
-    return v8_scope.Escape(object->Object());
-  }
-
-  v8::Local<v8::Value> v8_result;
-
-  // TODO: replace this with pybind code
-  if (PyLong_CheckExact(py_handle.ptr())) {
-    v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_handle.ptr()));
-  } else if (PyBool_Check(py_handle.ptr())) {
-    v8_result = v8::Boolean::New(v8_isolate, py::cast<py::bool_>(py_handle));
-  } else if (PyBytes_CheckExact(py_handle.ptr()) || PyUnicode_CheckExact(py_handle.ptr())) {
-    v8_result = v8u::toString(py_handle);
-  } else if (PyFloat_CheckExact(py_handle.ptr())) {
-    v8_result = v8::Number::New(v8_isolate, py::cast<py::float_>(py_handle));
-  } else if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
-    tm ts = {0};
-    int ms = 0;
-    getPythonDateTime(py_handle, ts, ms);
-    v8_result = v8::Date::New(v8_isolate->GetCurrentContext(), (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000)
-                    .ToLocalChecked();
-  } else if (isExactTime(py_handle)) {
-    tm ts = {0};
-    int ms = 0;
-    getPythonTime(py_handle, ts, ms);
-    v8_result = v8::Date::New(v8_isolate->GetCurrentContext(), (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000)
-                    .ToLocalChecked();
-  } else {
-    auto v8_object_template = GetCachedObjectTemplateOrCreate(v8_isolate);
-    auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
-    assert(!v8_object_instance.IsEmpty());
-    traceWrapper(py_handle.ptr(), v8_object_instance);
-    v8_result = v8_object_instance;
-  }
-
-  if (v8_result.IsEmpty()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
-
-  return v8_scope.Escape(v8_result);
-}
-
-#pragma clang diagnostic pop

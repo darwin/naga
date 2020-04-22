@@ -269,7 +269,7 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
   std::vector<v8::Local<v8::Value>> v8_params(args_count);
 
   for (size_t i = 0; i < args_count; i++) {
-    v8_params[i] = CPythonObject::Wrap(py_args[i]);
+    v8_params[i] = wrap(py_args[i]);
   }
 
   v8::Local<v8::Object> v8_result;
@@ -286,7 +286,7 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
     auto py_key = it->first;
     auto py_val = it->second;
     auto v8_key = v8u::toString(py_key);
-    auto v8_val = CPythonObject::Wrap(py_val);
+    auto v8_val = wrap(py_val);
     v8_result->Set(v8_context, v8_key, v8_val).Check();
     it++;
   }

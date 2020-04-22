@@ -45,7 +45,7 @@ CJSContext::CJSContext(const py::object& py_global) {
   if (!py_global.is_none()) {
     auto v8_context_scope = v8u::withContext(v8_context);
     auto v8_proto_key = v8::String::NewFromUtf8(v8_isolate, "__proto__").ToLocalChecked();
-    auto v8_global = CPythonObject::Wrap(py_global);
+    auto v8_global = wrap(py_global);
     v8_context->Global()->Set(v8_context, v8_proto_key, v8_global).Check();
   }
 }

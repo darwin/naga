@@ -10,9 +10,9 @@ class CJSScript {
 
  public:
   CJSScript(v8::IsolateRef v8_isolate,
-          const CJSEngine& engine,
-          v8::Local<v8::String> v8_source,
-          v8::Local<v8::Script> v8_script);
+            const CJSEngine& engine,
+            v8::Local<v8::String> v8_source,
+            v8::Local<v8::Script> v8_script);
   ~CJSScript();
 
   [[nodiscard]] v8::Local<v8::String> Source() const;

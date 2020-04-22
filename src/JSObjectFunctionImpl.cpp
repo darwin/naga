@@ -26,13 +26,13 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
 
   size_t i;
   for (i = 0; i < args_count; i++) {
-    v8_params[i] = CPythonObject::Wrap(py_args[i]);
+    v8_params[i] = wrap(py_args[i]);
   }
 
   i = 0;
   auto it = py_kwargs.begin();
   while (it != py_kwargs.end()) {
-    v8_params[args_count + i] = CPythonObject::Wrap(it->second());
+    v8_params[args_count + i] = wrap(it->second());
     i++;
     it++;
   }
@@ -66,7 +66,7 @@ py::object CJSObjectFunctionImpl::Apply(const py::object& py_self, const py::lis
   v8u::checkContext(v8_isolate);
 
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_this = CPythonObject::Wrap(std::move(py_self))->ToObject(v8_context).ToLocalChecked();
+  auto v8_this = wrap(std::move(py_self))->ToObject(v8_context).ToLocalChecked();
   return Call(py_args, py_kwds, v8_this);
 }
 

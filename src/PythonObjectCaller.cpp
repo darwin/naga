@@ -136,7 +136,7 @@ void CPythonObject::CallPythonCallable(py::object py_fn, const v8::FunctionCallb
       }
     }
 
-    return Wrap(py_result);
+    return wrap(py_result);
   });
 
   auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Undefined(v8_isolate));

@@ -140,7 +140,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
 
         for (Py_ssize_t idx = 0; idx < itemSize; idx++) {
           auto py_item(py::reinterpret_borrow<py::object>(items[idx]));
-          auto item = CPythonObject::Wrap(py_item);
+          auto item = wrap(py_item);
           m_base.Object()->Set(v8_context, static_cast<uint32_t>(start + idx * step), item).Check();
         }
       }
@@ -148,9 +148,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
   } else if (PyLong_Check(py_key.ptr())) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (!m_base.Object()
-             ->Set(v8_context, v8::Integer::New(v8_isolate, idx), CPythonObject::Wrap(py_value))
-             .ToChecked()) {
+    if (!m_base.Object()->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).ToChecked()) {
       CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
   }

@@ -5,9 +5,9 @@
   SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
 
 // enforce singleton contract
-constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&          //
+constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&            //
                                       !std::is_assignable<CJSPlatform, CJSPlatform>::value &&  //
-                                      !std::is_swappable<CJSPlatform>::value;                //
+                                      !std::is_swappable<CJSPlatform>::value;                  //
 static_assert(singleton_invariants, "CPlatform should be a singleton.");
 
 CJSPlatform* CJSPlatform::Instance() {

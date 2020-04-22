@@ -27,10 +27,6 @@ class CPythonObject {
   static v8::Local<v8::ObjectTemplate> CreateObjectTemplate(const v8::IsolateRef& v8_isolate);
   static v8::Local<v8::ObjectTemplate> GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate);
 
-  static v8::Local<v8::Value> WrapInternal(py::handle py_handle);
-
-  static v8::Local<v8::Value> Wrap(py::handle py_handle);
-
   static void ThrowJSException(const v8::IsolateRef& v8_isolate,
                                const py::error_already_set& py_ex = py::error_already_set());
 };
