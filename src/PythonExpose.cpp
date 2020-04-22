@@ -1,5 +1,5 @@
 #include "PythonExpose.h"
-#include "Platform.h"
+#include "JSPlatform.h"
 #include "JSIsolate.h"
 #include "JSEngine.h"
 #include "JSScript.h"
