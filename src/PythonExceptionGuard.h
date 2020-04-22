@@ -10,10 +10,10 @@ auto withPythonExceptionGuard(const v8::IsolateRef& v8_isolate, F&& fn) {
   } catch (const py::error_already_set& e) {
     CPythonObject::ThrowIf(v8_isolate, e);
   } catch (const std::exception& e) {
-    auto v8_msg = v8::String::NewFromUtf8(v8_isolate, e.what()).ToLocalChecked();
+    auto v8_msg = v8u::toString(v8_isolate, e.what());
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   } catch (...) {
-    auto v8_msg = v8::String::NewFromUtf8(v8_isolate, "unknown exception").ToLocalChecked();
+    auto v8_msg = v8u::toString(v8_isolate, "unknown exception when crossing boundary into Python");
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   }
   // return empty value because of exception
