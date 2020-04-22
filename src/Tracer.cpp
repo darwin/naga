@@ -11,12 +11,12 @@ void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper)
   auto v8_isolate = v8_wrapper->GetIsolate();
   TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", P$(v8_isolate), py::handle(raw_object), v8_wrapper);
   auto isolate = CIsolate::FromV8(v8_isolate);
-  isolate->Tracer()->TraceWrapper(raw_object, v8_wrapper);
+  isolate->Tracer().TraceWrapper(raw_object, v8_wrapper);
 }
 
 v8::Local<v8::Object> lookupTracedWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object) {
   auto isolate = CIsolate::FromV8(v8_isolate);
-  auto v8_result = isolate->Tracer()->LookupWrapper(v8_isolate, raw_object);
+  auto v8_result = isolate->Tracer().LookupWrapper(v8_isolate, raw_object);
   TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
   return v8_result;
 }
@@ -62,7 +62,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto raw_object = data.GetParameter();
   TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", raw_object, P$(v8_isolate));
-  isolate->Tracer()->AssociatedWrapperObjectIsAboutToDie(raw_object);
+  isolate->Tracer().AssociatedWrapperObjectIsAboutToDie(raw_object);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

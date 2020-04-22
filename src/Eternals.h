@@ -45,6 +45,6 @@ v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
                            CEternals::EternalCreateFn<T>* create_fn = nullptr) {
   HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));
   auto isolate = CIsolate::FromV8(v8_isolate);
-  auto v8_eternal_val = isolate->Eternals()->Get(id, create_fn);
+  auto v8_eternal_val = isolate->Eternals().Get(id, create_fn);
   return v8_eternal_val.Get(v8_isolate);
 }

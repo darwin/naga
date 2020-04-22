@@ -9,7 +9,7 @@ void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* clean
   TRACE("hospitalizePatient v8_patient={} cleanup_fn={}", v8_patient, (void*)cleanup_fn);
   auto v8_isolate = v8_patient->GetIsolate();
   auto isolate = CIsolate::FromV8(v8_isolate);
-  isolate->Hospital()->AcceptPatient(v8_patient, cleanup_fn);
+  isolate->Hospital().AcceptPatient(v8_patient, cleanup_fn);
 }
 
 static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
@@ -17,7 +17,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
   auto isolate = CIsolate::FromV8(v8_isolate);
   auto hospital_record = data.GetParameter();
   TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", (void*)hospital_record, P$(v8_isolate));
-  isolate->Hospital()->PatientIsAboutToDie(v8_isolate, hospital_record);
+  isolate->Hospital().PatientIsAboutToDie(v8_isolate, hospital_record);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

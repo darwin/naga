@@ -90,17 +90,17 @@ void CIsolate::Dispose() {
   m_v8_isolate->Dispose();
 }
 
-CTracer* CIsolate::Tracer() {
+CTracer& CIsolate::Tracer() {
   TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
-  return m_tracer.get();
+  return *m_tracer.get();
 }
 
-CHospital* CIsolate::Hospital() {
+CHospital& CIsolate::Hospital() {
   TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
-  return m_hospital.get();
+  return *m_hospital.get();
 }
 
-CEternals* CIsolate::Eternals() {
+CEternals& CIsolate::Eternals() {
   TRACE("CIsolate::Eternals {} => {}", THIS, (void*)m_eternals.get());
-  return m_eternals.get();
+  return *m_eternals.get();
 }

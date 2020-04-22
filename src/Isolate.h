@@ -12,9 +12,9 @@ class CIsolate : public std::enable_shared_from_this<CIsolate> {
   CIsolate();
   ~CIsolate();
 
-  CTracer* Tracer();
-  CHospital* Hospital();
-  CEternals* Eternals();
+  CTracer& Tracer();
+  CHospital& Hospital();
+  CEternals& Eternals();
 
   static CIsolatePtr FromV8(const v8::IsolateRef& v8_isolate);
   [[nodiscard]] const v8::IsolateRef& ToV8() { return m_v8_isolate; }
