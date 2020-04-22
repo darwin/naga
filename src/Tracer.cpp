@@ -10,12 +10,12 @@
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
   auto v8_isolate = v8_wrapper->GetIsolate();
   TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", P$(v8_isolate), py::handle(raw_object), v8_wrapper);
-  auto isolate = CIsolate::FromV8(v8_isolate);
+  auto isolate = CJSIsolate::FromV8(v8_isolate);
   isolate->Tracer().TraceWrapper(raw_object, v8_wrapper);
 }
 
 v8::Local<v8::Object> lookupTracedWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object) {
-  auto isolate = CIsolate::FromV8(v8_isolate);
+  auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_result = isolate->Tracer().LookupWrapper(v8_isolate, raw_object);
   TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
   return v8_result;
@@ -59,7 +59,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
   // note that this call may come from anywhere, so we have to grab the GIL for potential Python API calls
   auto py_gil = pyu::withGIL();
   auto v8_isolate = data.GetIsolate();
-  auto isolate = CIsolate::FromV8(v8_isolate);
+  auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto raw_object = data.GetParameter();
   TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", raw_object, P$(v8_isolate));
   isolate->Tracer().AssociatedWrapperObjectIsAboutToDie(raw_object);

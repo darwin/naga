@@ -33,7 +33,7 @@ v8::Local<v8::Context> CContext::ToV8() const {
 CContext::CContext(const py::object& py_global) {
   TRACE("CContext::CContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
-  m_isolate = CIsolate::FromV8(v8_isolate);
+  m_isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8::Context::New(v8_isolate);
   auto v8_this = v8::External::New(v8_isolate, this);

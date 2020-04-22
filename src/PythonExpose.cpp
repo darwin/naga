@@ -186,23 +186,23 @@ void exposeJSPlatform(py::module py_module) {
 void exposeJSIsolate(py::module py_module) {
   TRACE("exposeJSIsolate py_module={}", py_module);
   // clang-format off
-  py::class_<CIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
+  py::class_<CJSIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
       .def(py::init<>())
 
       .def_property_readonly_static(
-          "current", [](const py::object&) { return CIsolate::GetCurrent(); },
+          "current", [](const py::object&) { return CJSIsolate::GetCurrent(); },
           "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")
 
-      .def_property_readonly("locked", &CIsolate::IsLocked)
+      .def_property_readonly("locked", &CJSIsolate::IsLocked)
 
-      .def("GetCurrentStackTrace", &CIsolate::GetCurrentStackTrace)
+      .def("GetCurrentStackTrace", &CJSIsolate::GetCurrentStackTrace)
 
-      .def("enter", &CIsolate::Enter,
+      .def("enter", &CJSIsolate::Enter,
            "Sets this isolate as the entered one for the current thread. "
            "Saves the previously entered one (if any), so that it can be "
            "restored when exiting.  Re-entering an isolate is allowed.")
 
-      .def("leave", &CIsolate::Leave,
+      .def("leave", &CJSIsolate::Leave,
            "Exits this isolate by restoring the previously entered one in the current thread. "
            "The isolate may still stay the same, if it was entered more than once.");
   // clang-format on

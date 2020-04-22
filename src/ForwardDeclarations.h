@@ -5,7 +5,7 @@
 class CPlatform;
 class CContext;
 class CEngine;
-class CIsolate;
+class CJSIsolate;
 class CJSScript;
 class CJSStackTrace;
 class CJSStackFrame;
@@ -22,7 +22,7 @@ class CJSObjectCLJSImpl;
 class CJSObjectAPI;
 
 typedef std::shared_ptr<CContext> CContextPtr;
-typedef std::shared_ptr<CIsolate> CIsolatePtr;
+typedef std::shared_ptr<CJSIsolate> CIsolatePtr;
 typedef std::shared_ptr<CJSScript> CScriptPtr;
 typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
 typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
