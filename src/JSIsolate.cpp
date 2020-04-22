@@ -23,7 +23,7 @@ CJSIsolate::CJSIsolate() : m_v8_isolate(v8u::createIsolate()) {
   TRACE("CIsolate::CIsolate {}", THIS);
   m_eternals = std::make_unique<CJSEternals>(m_v8_isolate);
   m_tracer = std::make_unique<CTracer>();
-  m_hospital = std::make_unique<CHospital>(m_v8_isolate);
+  m_hospital = std::make_unique<CJSHospital>(m_v8_isolate);
   m_v8_isolate->SetData(kSelfDataSlotIndex, this);
 }
 
@@ -95,7 +95,7 @@ CTracer& CJSIsolate::Tracer() {
   return *m_tracer.get();
 }
 
-CHospital& CJSIsolate::Hospital() {
+CJSHospital& CJSIsolate::Hospital() {
   TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
   return *m_hospital.get();
 }

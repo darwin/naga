@@ -5,7 +5,7 @@
 class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   v8::IsolateRef m_v8_isolate;
   std::unique_ptr<CTracer> m_tracer;
-  std::unique_ptr<CHospital> m_hospital;
+  std::unique_ptr<CJSHospital> m_hospital;
   std::unique_ptr<CJSEternals> m_eternals;
 
  public:
@@ -13,7 +13,7 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   ~CJSIsolate();
 
   CTracer& Tracer();
-  CHospital& Hospital();
+  CJSHospital& Hospital();
   CJSEternals& Eternals();
 
   static CIsolatePtr FromV8(const v8::IsolateRef& v8_isolate);

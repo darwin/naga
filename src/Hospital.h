@@ -28,13 +28,13 @@ typedef std::unordered_set<HospitalRecord*> HospitalRecords;
 
 void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
 
-class CHospital {
+class CJSHospital {
   v8::IsolateRef m_v8_isolate;
   HospitalRecords m_records;
 
  public:
-  explicit CHospital(v8::IsolateRef v8_isolate);
-  ~CHospital();
+  explicit CJSHospital(v8::IsolateRef v8_isolate);
+  ~CJSHospital();
 
   void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
   void PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord* record);

@@ -11,7 +11,7 @@ class CJSStackTrace;
 class CJSStackFrame;
 class CJSException;
 class CTracer;
-class CHospital;
+class CJSHospital;
 class CJSEternals;
 class CJSObject;
 class CJSObjectBase;
