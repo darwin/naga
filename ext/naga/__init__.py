@@ -108,10 +108,6 @@ class JSError(Exception):
         return self.parse_stack(self.stackTrace)
 
 
-# C++ code relies on this class, it uses it as final wrapper of JSException object
-# this gives us flexibility to implement some JSException functionality in pure Python
-naga_native.JSError = JSError
-
 JSObject = naga_native.JSObject
 JSArray = naga_native.JSObject  # for backward compatibility
 JSFunction = naga_native.JSObject  # for backward compatibility

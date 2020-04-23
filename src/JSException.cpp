@@ -82,8 +82,8 @@ static void translateJavascriptException(const CJSException& e) {
     // Our approach here is to instead wrap JSException in JSError (we pass it as argument when
     // creating JSError instance). JSError then forwards some functionality to the wrapped class.
     // See naga.py.
-    auto m = py::module::import("naga_native");
-    auto py_error_class = m.attr("JSError");
+    auto py_module = py::module::import("naga");
+    auto py_error_class = py_module.attr("JSError");
     auto py_error_instance = py_error_class(e);
     //
     // https://docs.python.org/3.7/extending/extending.html?highlight=extending#intermezzo-errors-and-exceptions
