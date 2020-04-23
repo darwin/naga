@@ -8,7 +8,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kEngineLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSEngineLogger), __VA_ARGS__)
 
 CJSEngine::CJSEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
   TRACE("CEngine::CEngine");
@@ -98,9 +98,9 @@ CJSScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& na
 }
 
 CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
-                                      v8::Local<v8::Value> v8_name,
-                                      int line,
-                                      int col) const {
+                                        v8::Local<v8::Value> v8_name,
+                                        int line,
+                                        int col) const {
   TRACE("CEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);

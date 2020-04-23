@@ -3,7 +3,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kScriptLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSScriptLogger), __VA_ARGS__)
 
 CJSScript::CJSScript(v8::IsolateRef v8_isolate,
                      const CJSEngine& engine,

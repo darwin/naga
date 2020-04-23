@@ -3,7 +3,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kHospitalLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSHospitalLogger), __VA_ARGS__)
 
 void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
   TRACE("hospitalizePatient v8_patient={} cleanup_fn={}", v8_patient, (void*)cleanup_fn);

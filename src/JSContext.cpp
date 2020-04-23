@@ -8,7 +8,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kContextLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSContextLogger), __VA_ARGS__)
 
 const int kSelfEmbedderDataIndex = 0;
 

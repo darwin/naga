@@ -16,7 +16,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kExposeLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kPythonExposeLogger), __VA_ARGS__)
 
 // ForwardTo is a helper class which redirects function calls to instance calls
 // The convention is that it expects first function parameter to be the instance pointer.

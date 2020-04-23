@@ -2,7 +2,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kPlatformLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSPlatformLogger), __VA_ARGS__)
 
 // enforce singleton contract
 constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&            //

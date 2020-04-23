@@ -20,13 +20,13 @@ class CJSEngine {
 
   [[nodiscard]] py::object ExecuteScript(v8::Local<v8::Script> v8_script) const;
   CJSScriptPtr Compile(const std::string& src,
-                     const std::string& name = std::string(),
-                     int line = -1,
-                     int col = -1) const;
+                       const std::string& name = std::string(),
+                       int line = -1,
+                       int col = -1) const;
   CJSScriptPtr CompileW(const std::wstring& src,
-                      const std::wstring& name = std::wstring(),
-                      int line = -1,
-                      int col = -1) const;
+                        const std::wstring& name = std::wstring(),
+                        int line = -1,
+                        int col = -1) const;
 
   void Dump(std::ostream& os) const;
 };

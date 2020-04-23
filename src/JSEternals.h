@@ -28,14 +28,14 @@ class CJSEternals {
   v8::Eternal<T> GetOrCreate(EternalID id, EternalCreateFn<T>* create_fn = nullptr) {
     auto& lookup = m_cache[id];
     if (!lookup.has_value()) {
-      HTRACE(kEternalsLogger, "CEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
+      HTRACE(kJSEternalsLogger, "CEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
              magic_enum::enum_name(id));
       assert(create_fn);
       lookup = create_fn(m_v8_isolate);
     }
     auto v8_result = std::any_cast<v8::Eternal<T>>(lookup);
     assert(!v8_result.IsEmpty());
-    HTRACE(kEternalsLogger, "CEternals::GetOrCreate {} id={} => {}", THIS, magic_enum::enum_name(id), v8_result);
+    HTRACE(kJSEternalsLogger, "CEternals::GetOrCreate {} id={} => {}", THIS, magic_enum::enum_name(id), v8_result);
     return v8_result;
   }
 };
@@ -44,7 +44,7 @@ template <typename T>
 v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
                            CJSEternals::EternalID id,
                            CJSEternals::EternalCreateFn<T>* create_fn = nullptr) {
-  HTRACE(kEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));
+  HTRACE(kJSEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));
   auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_eternal_val = isolate->Eternals().GetOrCreate(id, create_fn);
   return v8_eternal_val.Get(v8_isolate);

@@ -10,7 +10,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kJSIsolateLogger), __VA_ARGS__)
 
 CJSIsolatePtr CJSIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
   auto isolate = lookupRegisteredIsolate(v8_isolate);

@@ -3,7 +3,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kV8TracingLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kTracerLogger), __VA_ARGS__)
 
 #define PyType_SUPPORTS_WEAKREFS(t) ((t)->tp_weaklistoffset > 0)
 
