@@ -21,6 +21,7 @@ __all__ = ["ReadOnly",
            "Internal",
            "JSError",
            "JSObject",
+           "JSNull",
            "JSUndefined",
            "JSArray",
            "JSFunction",
@@ -119,7 +120,6 @@ JSUndefined = naga_native.JSUndefined
 JSNull = naga_native.JSNull
 
 toolkit = naga_native.toolkit
-aux = naga_native.aux
 
 
 class JSLocker(naga_native.JSLocker):

@@ -3,6 +3,7 @@
 import os
 import shutil
 
+# noinspection PyUnresolvedReferences
 from distutils.command.build_ext import build_ext
 from distutils.command.install import install
 
@@ -64,6 +65,7 @@ class InstallCmd(install):
 
 
 naga_ext = Extension(name="naga_native", sources=[])
+naga_packages = ["naga", "naga.aux", "naga.toolkit"]
 
 setup(name="naga",
       version=NAGA_VERSION,
@@ -72,7 +74,7 @@ setup(name="naga",
       author="Flier Lu, Philip Syme, Angelo Dell'Aera, Antonin Hildebrand",
       url="https://github.com/darwin/naga",
       license="Apache License 2.0",
-      py_modules=["naga"],
+      packages=naga_packages,
       ext_modules=[naga_ext],
       classifiers=[
           "Development Status :: 4 - Beta",
