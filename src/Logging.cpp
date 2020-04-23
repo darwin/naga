@@ -167,7 +167,7 @@ void useLogging() {
   [[maybe_unused]] static bool initialized = initLogging();
 }
 
-LoggerRef getLogger(Loggers which) {
+LoggerPtr getLogger(Loggers which) {
   auto logger = g_loggers[which];
   return logger.get();
 }

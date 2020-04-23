@@ -40,4 +40,4 @@ class logger;
 
 }
 
-typedef gsl::not_null<spdlog::logger*> LoggerRef;
+using LoggerPtr = spdlog::logger * __nonnull;

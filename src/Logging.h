@@ -35,7 +35,7 @@ enum Loggers {
 
 void useLogging();
 
-LoggerRef getLogger(Loggers which);
+LoggerPtr getLogger(Loggers which);
 size_t giveNextMoreID();
 
 class LoggerIndent {
