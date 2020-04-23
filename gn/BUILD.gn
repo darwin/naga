@@ -143,10 +143,6 @@ config("naga_spdlog_compiler_flags") {
   include_dirs = [ "../vendor/spdlog/include" ]
 }
 
-config("naga_gsl_lite_compiler_flags") {
-  include_dirs = [ "../vendor/gsl-lite/include" ]
-}
-
 config("naga_pybind11_compiler_flags") {
   include_dirs = [ "../vendor/pybind11/include" ]
 }
@@ -183,7 +179,6 @@ source_set("naga_src") {
     ":naga_python_compiler_flags",
     ":naga_compiler_flags",
     ":naga_spdlog_compiler_flags",
-    ":naga_gsl_lite_compiler_flags",
     ":naga_pybind11_compiler_flags",
     ":naga_magic_enum_compiler_flags",
     ":naga_features",
