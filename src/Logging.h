@@ -2,23 +2,27 @@
 
 #include "Base.h"
 
+#include "spdlog/spdlog.h"
+
+#undef SPDLOG_ACTIVE_LEVEL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
+#undef SPDLOG_FUNCTION
 #define SPDLOG_FUNCTION __PRETTY_FUNCTION__
 
-#if defined(NAGA_LOG_LEVEL)
-// change SPDLOG_ACTIVE_LEVEL based on NAGA_LOG_LEVEL passed from build system
+#if defined(NAGA_ACTIVE_LOG_LEVEL)
+// change SPDLOG_ACTIVE_LEVEL based on NAGA_ACTIVE_LOG_LEVEL passed from build system
 #undef SPDLOG_ACTIVE_LEVEL
-#if NAGA_LOG_LEVEL == TRACE
+#if NAGA_ACTIVE_LOG_LEVEL == TRACE
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-#elif NAGA_LOG_LEVEL == DEBUG
+#elif NAGA_ACTIVE_LOG_LEVEL == DEBUG
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-#elif NAGA_LOG_LEVEL == INFO
+#elif NAGA_ACTIVE_LOG_LEVEL == INFO
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_INFO
-#elif NAGA_LOG_LEVEL == WARN
+#elif NAGA_ACTIVE_LOG_LEVEL == WARN
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_WARN
-#elif NAGA_LOG_LEVEL == ERROR
+#elif NAGA_ACTIVE_LOG_LEVEL == ERROR
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_ERROR
-#elif NAGA_LOG_LEVEL == CRITICAL
+#elif NAGA_ACTIVE_LOG_LEVEL == CRITICAL
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_CRITICAL
 #else
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_OFF
@@ -26,7 +30,6 @@
 
 #endif
 
-#include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
 enum Loggers {
@@ -91,10 +94,8 @@ std::string traceMore(T&& content) {
 
 inline bool isShortString(const std::string& s, size_t max_len = 80) {
   auto pos = s.find_first_of('\n');
-  if (pos == std::string::npos) {
-    // not multi-line
-    if (s.size() < max_len) {
-      // not longer than max_len
+  if (pos == std::string::npos) {  // not multi-line
+    if (s.size() < max_len) {      // not longer than max_len
       return true;
     }
   }
