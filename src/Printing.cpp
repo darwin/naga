@@ -16,7 +16,7 @@ std::string printCoerced(const std::wstring& v) {
   }
 }
 
-std::string printCoerced(const v8::IsolateRef& v) {
+std::string printCoerced(const v8::IsolatePtr& v) {
   return fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 
@@ -137,7 +137,7 @@ std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v) {
   return os << fmt::format("v8::StackTrace {} FrameCount={}", static_cast<void*>(*v), v->GetFrameCount());
 }
 
-std::ostream& operator<<(std::ostream& os, const IsolateRef& v) {
+std::ostream& operator<<(std::ostream& os, const IsolatePtr& v) {
   return os << fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 

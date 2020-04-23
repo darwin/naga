@@ -52,11 +52,11 @@ v8::Local<v8::String> toString(const std::wstring& str) {
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const std::string& str) {
+v8::Local<v8::String> toString(const v8::IsolatePtr& v8_isolate, const std::string& str) {
   return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
 }
 
-v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const char* s) {
+v8::Local<v8::String> toString(const v8::IsolatePtr& v8_isolate, const char* s) {
   return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal).ToLocalChecked();
 }
 
@@ -65,7 +65,7 @@ v8::Local<v8::String> toString(const std::string& str) {
   return toString(v8_isolate, str);
 }
 
-v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i) {
+v8::Local<v8::Integer> toPositiveInteger(const v8::IsolatePtr& v8_isolate, int i) {
   if (i >= 0) {
     return v8::Integer::New(v8_isolate, i);
   } else {
@@ -73,36 +73,36 @@ v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i
   }
 }
 
-v8::String::Utf8Value toUTF(const v8::IsolateRef& v8_isolate, v8::Local<v8::String> v8_string) {
+v8::String::Utf8Value toUTF(const v8::IsolatePtr& v8_isolate, v8::Local<v8::String> v8_string) {
   return v8::String::Utf8Value(v8_isolate, v8_string);
 }
 
-void checkContext(const v8::IsolateRef& v8_isolate) {
+void checkContext(const v8::IsolatePtr& v8_isolate) {
   auto scope = withScope(v8_isolate);
   if (v8_isolate->GetCurrentContext().IsEmpty()) {
     throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }
 }
 
-v8::IsolateRef getCurrentIsolate() {
+v8::IsolatePtr getCurrentIsolate() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this would fail sooner
   return v8_isolate;
 }
 
-v8::HandleScope withScope(const v8::IsolateRef& v8_isolate) {
+v8::HandleScope withScope(const v8::IsolatePtr& v8_isolate) {
   return v8::HandleScope(v8_isolate);
 }
 
-v8::EscapableHandleScope withEscapableScope(const v8::IsolateRef& v8_isolate) {
+v8::EscapableHandleScope withEscapableScope(const v8::IsolatePtr& v8_isolate) {
   return v8::EscapableHandleScope(v8_isolate);
 }
 
-v8::TryCatch withTryCatch(const v8::IsolateRef& v8_isolate) {
+v8::TryCatch withTryCatch(const v8::IsolatePtr& v8_isolate) {
   return v8::TryCatch(v8_isolate);
 }
 
-v8::IsolateRef createIsolate() {
+v8::IsolatePtr createIsolate() {
   v8::Isolate::CreateParams v8_create_params;
   v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
   auto v8_isolate = v8::Isolate::New(v8_create_params);
@@ -120,7 +120,7 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
   return v8::ScriptOrigin(v8_name, v8_line, v8_col);
 }
 
-v8::Eternal<v8::Private> createEternalPrivateAPI(const v8::IsolateRef& v8_isolate, const char* name) {
+v8::Eternal<v8::Private> createEternalPrivateAPI(const v8::IsolatePtr& v8_isolate, const char* name) {
   auto v8_key = v8::String::NewFromUtf8(v8_isolate, name).ToLocalChecked();
   auto v8_private_api = v8::Private::ForApi(v8_isolate, v8_key);
   return v8::Eternal<v8::Private>(v8_isolate, v8_private_api);

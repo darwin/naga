@@ -14,7 +14,7 @@ const void* voidThis(const T* v) {
 // see https://github.com/fmtlib/fmt/issues/1621
 #define P$(...) printCoerced(__VA_ARGS__)
 std::string printCoerced(const std::wstring& v);
-std::string printCoerced(const v8::IsolateRef& v);
+std::string printCoerced(const v8::IsolatePtr& v);
 
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v);
 std::ostream& operator<<(std::ostream& os, const CJSException& v);

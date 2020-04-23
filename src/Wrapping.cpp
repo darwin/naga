@@ -10,7 +10,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kWrappingLogger), __VA_ARGS__)
 
-py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
+py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
   TRACE("wrap v8_isolate={} v8_val={} v8_this={}", P$(v8_isolate), v8_val, v8_this);
 
   if (v8_val->IsFunction()) {
@@ -36,7 +36,7 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Loca
   return wrap(v8_isolate, v8_val);
 }
 
-py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val) {
+py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
   TRACE("wrap v8_isolate={} v8_val={}", P$(v8_isolate), v8_val);
   assert(!v8_val.IsEmpty());
   assert(v8_isolate->InContext());
@@ -97,7 +97,7 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val) {
   return py_result;
 }
 
-py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
+py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Object> v8_obj) {
   TRACE("wrap v8_isolate={} v8_obj={}", P$(v8_isolate), v8_obj);
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -118,7 +118,7 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
   return py_result;
 }
 
-py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
+py::object wrap(v8::IsolatePtr v8_isolate, const CJSObjectPtr& obj) {
   TRACE("wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();
 
@@ -127,7 +127,7 @@ py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
   return py_result;
 }
 
-static v8::Local<v8::Value> wrapWithTracing(v8::IsolateRef v8_isolate, py::handle py_handle) {
+static v8::Local<v8::Value> wrapWithTracing(v8::IsolatePtr v8_isolate, py::handle py_handle) {
   TRACE("wrapWithTracing v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
 
   auto v8_wrapper = lookupTracedWrapper(v8_isolate, py_handle.ptr());
@@ -148,7 +148,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8::IsolateRef v8_isolate, py::handl
   }
 }
 
-static v8::Local<v8::Value> wrapInternal(v8::IsolateRef v8_isolate, py::handle py_handle) {
+static v8::Local<v8::Value> wrapInternal(v8::IsolatePtr v8_isolate, py::handle py_handle) {
   TRACE("wrapInternal v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
   if (py::isinstance<py::js_null>(py_handle)) {
     return v8::Null(v8_isolate);

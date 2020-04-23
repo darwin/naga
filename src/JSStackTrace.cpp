@@ -14,7 +14,7 @@ py::object CJSStackTrace::Str() const {
   return result;
 }
 
-CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolateRef v8_isolate,
+CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolatePtr v8_isolate,
                                                      int frame_limit,
                                                      v8::StackTrace::StackTraceOptions v8_options) {
   TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}", P$(v8_isolate),
@@ -53,7 +53,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
   return result;
 }
 
-CJSStackTrace::CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+CJSStackTrace::CJSStackTrace(const v8::IsolatePtr& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate), m_v8_stack_trace(v8_isolate, v8_stack_trace) {
   m_v8_stack_trace.AnnotateStrongRetainer("Naga JSStackTrace");
   TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, P$(v8_isolate), v8_stack_trace);

@@ -14,7 +14,7 @@ CJSEngine::CJSEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
   TRACE("CJSEngine::CJSEngine");
 }
 
-CJSEngine::CJSEngine(v8::IsolateRef v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
+CJSEngine::CJSEngine(v8::IsolatePtr v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
   TRACE("CJSEngine::CJSEngine v8_isolate={}", P$(m_v8_isolate));
 }
 

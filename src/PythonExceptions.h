@@ -4,7 +4,7 @@
 #include "PythonObject.h"
 
 template <typename F>
-auto withPythonErrorInterception(const v8::IsolateRef& v8_isolate, F&& fn) {
+auto withPythonErrorInterception(const v8::IsolatePtr& v8_isolate, F&& fn) {
   try {
     return std::optional(fn());
   } catch (const py::error_already_set& e) {

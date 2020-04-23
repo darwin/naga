@@ -3,11 +3,11 @@
 #include "Base.h"
 
 class CJSStackTrace {
-  v8::IsolateRef m_v8_isolate;
+  v8::IsolatePtr m_v8_isolate;
   v8::Global<v8::StackTrace> m_v8_stack_trace;
 
  public:
-  CJSStackTrace(const v8::IsolateRef& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
+  CJSStackTrace(const v8::IsolatePtr& v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
   CJSStackTrace(const CJSStackTrace& stack_trace);
 
   [[nodiscard]] v8::Local<v8::StackTrace> Handle() const;
@@ -15,7 +15,7 @@ class CJSStackTrace {
   [[nodiscard]] CJSStackFramePtr GetFrame(int idx) const;
 
   static CJSStackTracePtr GetCurrentStackTrace(
-      v8::IsolateRef v8_isolate,
+      v8::IsolatePtr v8_isolate,
       int frame_limit,
       v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview);
 

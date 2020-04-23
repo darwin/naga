@@ -72,7 +72,7 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
   return v8_fn_val.As<v8::Function>();
 }
 
-static v8::Local<v8::Value> callBridge(v8::IsolateRef v8_isolate,
+static v8::Local<v8::Value> callBridge(v8::IsolatePtr v8_isolate,
                                        const char* name,
                                        v8::Local<v8::Object> v8_self,
                                        std::vector<v8::Local<v8::Value>> v8_params) {

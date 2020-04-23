@@ -23,9 +23,9 @@ class CPythonObject {
   static void CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Value>& v8_info);
   static void CallPythonCallable(const py::object& py_fn, const v8::FunctionCallbackInfo<v8::Value>& v8_info);
 
-  static v8::Local<v8::ObjectTemplate> CreateJSWrapperTemplate(const v8::IsolateRef& v8_isolate);
-  static v8::Local<v8::ObjectTemplate> GetOrCreateCachedJSWrapperTemplate(const v8::IsolateRef& v8_isolate);
+  static v8::Local<v8::ObjectTemplate> CreateJSWrapperTemplate(const v8::IsolatePtr& v8_isolate);
+  static v8::Local<v8::ObjectTemplate> GetOrCreateCachedJSWrapperTemplate(const v8::IsolatePtr& v8_isolate);
 
-  static void ThrowJSException(const v8::IsolateRef& v8_isolate,
+  static void ThrowJSException(const v8::IsolatePtr& v8_isolate,
                                const py::error_already_set& py_ex = py::error_already_set());
 };

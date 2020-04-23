@@ -30,7 +30,7 @@ typedef std::shared_ptr<CJSObject> CJSObjectPtr;
 
 namespace v8 {
 
-using IsolateRef = v8::Isolate* __nonnull;
+using IsolatePtr = v8::Isolate* __nonnull;
 
 }
 

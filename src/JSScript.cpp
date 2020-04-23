@@ -5,7 +5,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSScriptLogger), __VA_ARGS__)
 
-CJSScript::CJSScript(v8::IsolateRef v8_isolate,
+CJSScript::CJSScript(v8::IsolatePtr v8_isolate,
                      const CJSEngine& engine,
                      v8::Local<v8::String> v8_source,
                      v8::Local<v8::Script> v8_script)

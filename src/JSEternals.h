@@ -11,17 +11,17 @@ class CJSEternals {
   enum EternalID { kJSWrapperTemplate = 0, kJSExceptionType, kJSExceptionValue, kNumEternals };
 
   template <typename T>
-  using EternalCreateFn = v8::Eternal<T>(v8::IsolateRef v8_isolate);
+  using EternalCreateFn = v8::Eternal<T>(v8::IsolatePtr v8_isolate);
 
  private:
-  v8::IsolateRef m_v8_isolate;
+  v8::IsolatePtr m_v8_isolate;
   // v8::Eternal is templated so we keep static array of std:any slots for them.
   // Initial creation might involve dynamic allocation, but lookups should be cheap.
   // We might consider implementing it as a simple array of pointers in release mode.
   std::array<std::any, kNumEternals> m_cache;
 
  public:
-  explicit CJSEternals(v8::IsolateRef v8_isolate);
+  explicit CJSEternals(v8::IsolatePtr v8_isolate);
   ~CJSEternals();
 
   template <typename T>
@@ -41,7 +41,7 @@ class CJSEternals {
 };
 
 template <typename T>
-v8::Local<T> lookupEternal(v8::IsolateRef v8_isolate,
+v8::Local<T> lookupEternal(v8::IsolatePtr v8_isolate,
                            CJSEternals::EternalID id,
                            CJSEternals::EternalCreateFn<T>* create_fn = nullptr) {
   HTRACE(kJSEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));

@@ -22,7 +22,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-CJSHospital::CJSHospital(v8::IsolateRef v8_isolate) : m_v8_isolate(v8_isolate) {
+CJSHospital::CJSHospital(v8::IsolatePtr v8_isolate) : m_v8_isolate(v8_isolate) {
   TRACE("CJSHospital::CJSHospital {} v8_isolate={}", THIS, P$(v8_isolate));
 }
 
@@ -44,7 +44,7 @@ void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupF
   record->m_v8_patient.SetWeak(record, &v8WeakCallback, v8::WeakCallbackType::kFinalizer);
 }
 
-void CJSHospital::PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord* record) {
+void CJSHospital::PatientIsAboutToDie(v8::IsolatePtr v8_isolate, HospitalRecord* record) {
   TRACE("CJSHospital::AcceptPatient {} record={} ", THIS, (void*)record);
 
   // just a sanity check that the weak callback is related to our isolate

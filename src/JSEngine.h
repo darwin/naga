@@ -3,13 +3,13 @@
 #include "Base.h"
 
 class CJSEngine {
-  v8::IsolateRef m_v8_isolate;
+  v8::IsolatePtr m_v8_isolate;
 
   CJSScriptPtr InternalCompile(v8::Local<v8::String> v8_src, v8::Local<v8::Value> v8_name, int line, int col) const;
 
  public:
   CJSEngine();
-  explicit CJSEngine(v8::IsolateRef v8_isolate);
+  explicit CJSEngine(v8::IsolatePtr v8_isolate);
 
   static void SetFlags(const std::string& flags);
   static void SetStackLimit(uintptr_t stack_limit_size);

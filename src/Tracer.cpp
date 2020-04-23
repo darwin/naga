@@ -14,7 +14,7 @@ void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper)
   isolate->Tracer().TraceWrapper(raw_object, v8_wrapper);
 }
 
-v8::Local<v8::Object> lookupTracedWrapper(v8::IsolateRef v8_isolate, TracedRawObject* raw_object) {
+v8::Local<v8::Object> lookupTracedWrapper(v8::IsolatePtr v8_isolate, TracedRawObject* raw_object) {
   auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_result = isolate->Tracer().LookupWrapper(v8_isolate, raw_object);
   TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
@@ -106,7 +106,7 @@ void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8
   SwitchToLiveMode(insert_point.first, false);
 }
 
-v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolateRef v8_isolate, PyObject* raw_object) {
+v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolatePtr v8_isolate, PyObject* raw_object) {
   auto tracer_lookup = m_tracked_wrappers.find(raw_object);
   if (tracer_lookup == m_tracked_wrappers.end()) {
     TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object);
