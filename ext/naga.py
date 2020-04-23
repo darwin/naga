@@ -7,7 +7,7 @@
 import os
 import re
 
-if os.environ.get('STPYV8_WAIT_FOR_DEBUGGER') is not None:
+if os.environ.get('NAGA_WAIT_FOR_DEBUGGER') is not None:
     input("Waiting for debugger, please hit ENTER when ready...")
 
 # noinspection PyUnresolvedReferences
