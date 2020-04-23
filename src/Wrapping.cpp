@@ -127,9 +127,6 @@ py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
   return py_result;
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
 static v8::Local<v8::Value> wrapWithTracing(v8::IsolateRef v8_isolate, py::handle py_handle) {
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_object_template = CPythonObject::GetCachedObjectTemplateOrCreate(v8_isolate);
@@ -204,8 +201,6 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
 
   return v8_scope.Escape(wrapWithTracing(v8_isolate, py_handle));
 }
-
-#pragma clang diagnostic pop
 
 v8::Local<v8::Value> wrap(const py::handle& py_handle) {
   TRACE("wrap py_handle={}", py_handle);
