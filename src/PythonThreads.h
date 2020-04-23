@@ -10,6 +10,6 @@ auto withAllowedPythonThreads(F&& fn) {
   //     ... Do some blocking I/O operation ...
   //   Py_END_ALLOW_THREADS
   auto raw_thread_state = PyEval_SaveThread();
-  [[maybe_unused]] auto _ = gsl::finally([&]() { PyEval_RestoreThread(raw_thread_state); });
+  [[maybe_unused]] auto&& _ = finally([&]() noexcept { PyEval_RestoreThread(raw_thread_state); });
   return fn();
 }
