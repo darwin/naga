@@ -122,34 +122,26 @@ void CPythonObject::ThrowJSException(const v8::IsolateRef& v8_isolate, const py:
 
 #pragma clang diagnostic pop
 
-void CPythonObject::SetupObjectTemplate(const v8::IsolateRef& v8_isolate,
-                                        v8::Local<v8::ObjectTemplate> v8_object_template) {
-  TRACE("CPythonObject::SetupObjectTemplate");
-  auto v8_scope = v8u::withScope(v8_isolate);
+v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(const v8::IsolateRef& v8_isolate) {
+  TRACE("CPythonObject::CreateJSWrapperTemplate");
+  auto v8_wrapper_template = v8::ObjectTemplate::New(v8_isolate);
   auto v8_handler_config =
       v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator);
 
-  v8_object_template->SetHandler(v8_handler_config);
-  v8_object_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter,
-                                                IndexedEnumerator);
-  v8_object_template->SetCallAsFunctionHandler(CallWrapperAsFunction);
+  v8_wrapper_template->SetHandler(v8_handler_config);
+  v8_wrapper_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter,
+                                                 IndexedEnumerator);
+  v8_wrapper_template->SetCallAsFunctionHandler(CallWrapperAsFunction);
+  return v8_wrapper_template;
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::CreateObjectTemplate(const v8::IsolateRef& v8_isolate) {
-  TRACE("CPythonObject::CreateObjectTemplate");
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto v8_class = v8::ObjectTemplate::New(v8_isolate);
-  SetupObjectTemplate(v8_isolate, v8_class);
-  return v8_scope.Escape(v8_class);
-}
-
-v8::Local<v8::ObjectTemplate> CPythonObject::GetCachedObjectTemplateOrCreate(const v8::IsolateRef& v8_isolate) {
-  TRACE("CPythonObject::GetCachedObjectTemplateOrCreate");
+v8::Local<v8::ObjectTemplate> CPythonObject::GetOrCreateCachedJSWrapperTemplate(const v8::IsolateRef& v8_isolate) {
+  TRACE("CPythonObject::GetOrCreateCachedJSWrapperTemplate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_object_template =
-      lookupEternal<v8::ObjectTemplate>(v8_isolate, CJSEternals::kJSObjectTemplate, [](v8::IsolateRef v8_isolate) {
-        auto v8_born_template = CreateObjectTemplate(v8_isolate);
-        return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_born_template);
+      lookupEternal<v8::ObjectTemplate>(v8_isolate, CJSEternals::kJSWrapperTemplate, [](v8::IsolateRef v8_isolate) {
+        auto v8_wrapper_template = CreateJSWrapperTemplate(v8_isolate);
+        return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_wrapper_template);
       });
   return v8_scope.Escape(v8_object_template);
 }

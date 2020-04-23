@@ -8,7 +8,7 @@
 
 class CJSEternals {
  public:
-  enum EternalID { kJSObjectTemplate = 0, kJSExceptionType, kJSExceptionValue, kNumEternals };
+  enum EternalID { kJSWrapperTemplate = 0, kJSExceptionType, kJSExceptionValue, kNumEternals };
 
   template <typename T>
   using EternalCreateFn = v8::Eternal<T>(v8::IsolateRef v8_isolate);

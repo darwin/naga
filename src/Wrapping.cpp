@@ -93,7 +93,7 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val) {
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
   auto py_result = wrap(v8_isolate, v8_obj);
-  TRACE("wrap => {}", py_result);
+  TRACE("=> {}", py_result);
   return py_result;
 }
 
@@ -114,7 +114,7 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
     py_result = wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
 
-  TRACE("wrap => {}", py_result);
+  TRACE("=> {}", py_result);
   return py_result;
 }
 
@@ -123,27 +123,33 @@ py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
   auto py_gil = pyu::withGIL();
 
   auto py_result = py::cast(obj);
-  TRACE("wrap => {}", py_result);
+  TRACE("=> {}", py_result);
   return py_result;
 }
 
 static v8::Local<v8::Value> wrapWithTracing(v8::IsolateRef v8_isolate, py::handle py_handle) {
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_object_template = CPythonObject::GetCachedObjectTemplateOrCreate(v8_isolate);
-  auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
-  assert(!v8_object_instance.IsEmpty());
-  traceWrapper(py_handle.ptr(), v8_object_instance);
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  return v8_object_instance;
+  TRACE("wrapWithTracing v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
+
+  auto v8_wrapper = lookupTracedWrapper(v8_isolate, py_handle.ptr());
+  if (!v8_wrapper.IsEmpty()) {
+    // this is fast path, we've already seen this python object before and we have cached wrapper for it
+    return v8_wrapper;
+  } else {
+    // this is first time we see this object, let's create a new wrapper for it
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_wrapper_template = CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8_isolate);
+    auto v8_new_wrapper = v8_wrapper_template->NewInstance(v8_context).ToLocalChecked();
+    assert(!v8_new_wrapper.IsEmpty());
+
+    // start tracing the wrapper for future lookups, see Tracer.h for explanation
+    traceWrapper(py_handle.ptr(), v8_new_wrapper);
+
+    return v8_new_wrapper;
+  }
 }
 
-static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
-  TRACE("wrapInternal py_handle={}", py_handle);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  assert(v8_isolate->InContext());
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto py_gil = pyu::withGIL();
-
+static v8::Local<v8::Value> wrapInternal(v8::IsolateRef v8_isolate, py::handle py_handle) {
+  TRACE("wrapInternal v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
   if (py::isinstance<py::js_null>(py_handle)) {
     return v8::Null(v8_isolate);
   }
@@ -160,50 +166,49 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
   }
   if (py::isinstance<py::exact_int>(py_handle)) {
     auto py_int = py::cast<py::exact_int>(py_handle);
-    return v8_scope.Escape(v8::Integer::New(v8_isolate, py_int));
+    return v8::Integer::New(v8_isolate, py_int);
   }
   if (py::isinstance<py::exact_float>(py_handle)) {
     auto py_float = py::cast<py::exact_float>(py_handle);
-    return v8_scope.Escape(v8::Number::New(v8_isolate, py_float));
+    return v8::Number::New(v8_isolate, py_float);
   }
   if (py::isinstance<py::exact_str>(py_handle)) {
-    return v8_scope.Escape(v8u::toString(py_handle));
+    return v8u::toString(py_handle);
   }
   if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
     tm ts = {0};
     int ms = 0;
     getPythonDateTime(py_handle, ts, ms);
     auto v8_context = v8_isolate->GetCurrentContext();
-    auto v8_result = v8::Date::New(v8_context, (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000).ToLocalChecked();
-    return v8_scope.Escape(v8_result);
+    auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
+    return v8::Date::New(v8_context, time).ToLocalChecked();
   }
   if (isExactTime(py_handle)) {
     tm ts = {0};
     int ms = 0;
     getPythonTime(py_handle, ts, ms);
     auto v8_context = v8_isolate->GetCurrentContext();
-    auto v8_result = v8::Date::New(v8_context, (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000).ToLocalChecked();
-    return v8_scope.Escape(v8_result);
+    auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
+    return v8::Date::New(v8_context, time).ToLocalChecked();
   }
   if (py::isinstance<CJSObject>(py_handle)) {
     auto object = py::cast<CJSObjectPtr>(py_handle);
     assert(object.get());
-    return v8_scope.Escape(object->Object());
+    return object->Object();
   }
 
-  return v8_scope.Escape(wrapWithTracing(v8_isolate, py_handle));
+  // fall back to synthesizing custom wrapper on the fly
+  return wrapWithTracing(v8_isolate, py_handle);
 }
 
 v8::Local<v8::Value> wrap(const py::handle& py_handle) {
   TRACE("wrap py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
+  assert(v8_isolate->InContext());
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
-
-  auto v8_object = lookupTracedWrapper(v8_isolate, py_handle.ptr());
-  if (!v8_object.IsEmpty()) {
-    return v8_scope.Escape(v8_object);
-  }
-
-  auto v8_value = wrapInternal(py_handle);
-  return v8_scope.Escape(v8_value);
+  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto py_gil = pyu::withGIL();
+  auto v8_result = wrapInternal(v8_isolate, py_handle);
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  return v8_scope.Escape(v8_result);
 }
