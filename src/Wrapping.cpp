@@ -8,7 +8,7 @@
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
-  SPDLOG_LOGGER_TRACE(getLogger(kPythonWrapLogger), __VA_ARGS__)
+  SPDLOG_LOGGER_TRACE(getLogger(kWrappingLogger), __VA_ARGS__)
 
 py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
   TRACE("wrap v8_isolate={} v8_val={} v8_this={}", P$(v8_isolate), v8_val, v8_this);

@@ -1,4 +1,5 @@
 #include "Aux.h"
+#include "JSIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -44,4 +45,9 @@ void v8RequestGarbageCollectionForTesting() {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8_isolate->RequestGarbageCollectionForTesting(v8::Isolate::kFullGarbageCollection);
   TRACE("v8Cleanup done");
+}
+
+CIsolatePtr testEncounteringForeignIsolate() {
+  auto foreign_v8_isolate = v8u::createIsolate();
+  return CJSIsolate::FromV8(foreign_v8_isolate);
 }

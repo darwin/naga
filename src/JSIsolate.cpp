@@ -5,20 +5,20 @@
 #include "JSStackTrace.h"
 #include "JSNull.h"
 #include "JSContext.h"
+#include "JSException.h"
+#include "JSIsolateRegistry.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
 
-const int kSelfDataSlotIndex = 0;
-
 CIsolatePtr CJSIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
-  // FromV8 may be called only on isolates created by our constructor
-  assert(v8_isolate->GetNumberOfDataSlots() > kSelfDataSlotIndex);
-  auto isolate_ptr = static_cast<CJSIsolate*>(v8_isolate->GetData(kSelfDataSlotIndex));
-  assert(isolate_ptr);
-  TRACE("CIsolate::FromV8 v8_isolate={} => {}", P$(v8_isolate), (void*)isolate_ptr);
-  return isolate_ptr->shared_from_this();
+  auto isolate = lookupRegisteredIsolate(v8_isolate);
+  if (!isolate) {
+    throw CJSException(v8_isolate, fmt::format("Cannot work with foreign isolate {}", P$(v8_isolate)));
+  }
+  TRACE("CIsolate::FromV8 v8_isolate={} => {}", P$(v8_isolate), (void*)isolate);
+  return isolate->shared_from_this();
 }
 
 CJSIsolate::CJSIsolate() : m_v8_isolate(v8u::createIsolate()) {
@@ -26,11 +26,13 @@ CJSIsolate::CJSIsolate() : m_v8_isolate(v8u::createIsolate()) {
   m_eternals = std::make_unique<CJSEternals>(m_v8_isolate);
   m_tracer = std::make_unique<CTracer>();
   m_hospital = std::make_unique<CJSHospital>(m_v8_isolate);
-  m_v8_isolate->SetData(kSelfDataSlotIndex, this);
+  registerIsolate(m_v8_isolate, this);
 }
 
 CJSIsolate::~CJSIsolate() {
   TRACE("CIsolate::~CIsolate {}", THIS);
+
+  unregisterIsolate(m_v8_isolate);
 
   // isolate could be entered, we cannot dispose unless we exit it completely
   int defensive_counter = 0;

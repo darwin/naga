@@ -46,6 +46,7 @@ naga_source_files = [
   "JSException.cpp",
   "JSHospital.cpp",
   "JSIsolate.cpp",
+  "JSIsolateRegistry.cpp",
   "JSLocker.cpp",
   "JSNull.cpp",
   "JSObject.cpp",
