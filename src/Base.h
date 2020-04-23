@@ -39,4 +39,5 @@ namespace py = pybind11;
 #include "V8Utils.h"
 #include "RawUtils.h"
 #include "PythonUtils.h"
+#include "PybindUtils.h"
 #include "Printing.h"
