@@ -8,12 +8,12 @@
 
 bool CJSUnlocker::IsEntered() const {
   auto result = static_cast<bool>(m_v8_unlocker.get());
-  TRACE("CUnlocker::IsEntered {} => {}", THIS, result);
+  TRACE("CJSUnlocker::IsEntered {} => {}", THIS, result);
   return result;
 }
 
 void CJSUnlocker::Enter() {
-  TRACE("CUnlocker::Enter {}", THIS);
+  TRACE("CJSUnlocker::Enter {}", THIS);
   withAllowedPythonThreads([&]() {
     auto v8_isolate = v8u::getCurrentIsolate();
     m_isolate = CJSIsolate::FromV8(v8_isolate);
@@ -22,7 +22,7 @@ void CJSUnlocker::Enter() {
 }
 
 void CJSUnlocker::Leave() {
-  TRACE("CUnlocker::Leave {}", THIS);
+  TRACE("CJSUnlocker::Leave {}", THIS);
   withAllowedPythonThreads([&]() {
     m_v8_unlocker.reset();
     m_isolate.reset();

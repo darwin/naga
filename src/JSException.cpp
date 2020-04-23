@@ -118,16 +118,16 @@ CJSException::CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch&
   auto v8_scope = v8u::withScope(m_v8_isolate);
 
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
-  m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_exception");
+  m_v8_exception.AnnotateStrongRetainer("Naga JSException.m_v8_exception");
 
   auto stack_trace = v8_try_catch.StackTrace(v8u::getCurrentIsolate()->GetCurrentContext());
   if (!stack_trace.IsEmpty()) {
     m_v8_stack.Reset(m_v8_isolate, stack_trace.ToLocalChecked());
-    m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_stack");
+    m_v8_exception.AnnotateStrongRetainer("Naga JSException.m_v8_stack");
   }
 
   m_v8_message.Reset(m_v8_isolate, v8_try_catch.Message());
-  m_v8_exception.AnnotateStrongRetainer("Naga CJSException.m_v8_message");
+  m_v8_exception.AnnotateStrongRetainer("Naga JSException.m_v8_message");
 }
 
 CJSException::CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type) noexcept

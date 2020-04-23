@@ -23,11 +23,11 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
 // --------------------------------------------------------------------------------------------------------------------
 
 CJSHospital::CJSHospital(v8::IsolateRef v8_isolate) : m_v8_isolate(v8_isolate) {
-  TRACE("CHospital::CHospital {} v8_isolate={}", THIS, P$(v8_isolate));
+  TRACE("CJSHospital::CJSHospital {} v8_isolate={}", THIS, P$(v8_isolate));
 }
 
 CJSHospital::~CJSHospital() {
-  TRACE("CHospital::~CHospital {}", THIS);
+  TRACE("CJSHospital::~CJSHospital {}", THIS);
   // let all patients die
   auto it = m_records.begin();
   while (it != m_records.end()) {
@@ -37,7 +37,7 @@ CJSHospital::~CJSHospital() {
 }
 
 void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
-  TRACE("CHospital::AcceptPatient {} v8_patient={} cleanup_fn={}", THIS, v8_patient, (void*)cleanup_fn);
+  TRACE("CJSHospital::AcceptPatient {} v8_patient={} cleanup_fn={}", THIS, v8_patient, (void*)cleanup_fn);
   auto record = new HospitalRecord(v8_patient, cleanup_fn);
   m_records.insert(record);
   assert(!record->m_v8_patient.IsWeak());
@@ -45,7 +45,7 @@ void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupF
 }
 
 void CJSHospital::PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord* record) {
-  TRACE("CHospital::AcceptPatient {} record={} ", THIS, (void*)record);
+  TRACE("CJSHospital::AcceptPatient {} record={} ", THIS, (void*)record);
 
   // just a sanity check that the weak callback is related to our isolate
   assert(v8_isolate == m_v8_isolate);
@@ -58,7 +58,7 @@ void CJSHospital::PatientIsAboutToDie(v8::IsolateRef v8_isolate, HospitalRecord*
 }
 
 void CJSHospital::UnplugPatient(HospitalRecord* record) {
-  TRACE("CHospital::UnplugPatient {} record={} ", THIS, (void*)record);
+  TRACE("CJSHospital::UnplugPatient {} record={} ", THIS, (void*)record);
 
   // call custom cleanup function
   record->m_cleanup_fn(record->m_v8_patient.Get(m_v8_isolate));

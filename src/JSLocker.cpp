@@ -8,12 +8,12 @@
 
 bool CJSLocker::IsEntered() const {
   auto result = static_cast<bool>(m_v8_locker.get());
-  TRACE("CLocker::IsEntered {} => {}", THIS, result);
+  TRACE("CJSLocker::IsEntered {} => {}", THIS, result);
   return result;
 }
 
 void CJSLocker::Enter() {
-  TRACE("CLocker::Enter {}", THIS);
+  TRACE("CJSLocker::Enter {}", THIS);
   withAllowedPythonThreads([&]() {
     auto v8_isolate = v8u::getCurrentIsolate();
     m_isolate = CJSIsolate::FromV8(v8_isolate);
@@ -22,7 +22,7 @@ void CJSLocker::Enter() {
 }
 
 void CJSLocker::Leave() {
-  TRACE("CLocker::Leave {}", THIS);
+  TRACE("CJSLocker::Leave {}", THIS);
   withAllowedPythonThreads([&]() {
     m_v8_locker.reset();
     m_isolate.reset();
@@ -31,12 +31,12 @@ void CJSLocker::Leave() {
 
 bool CJSLocker::IsLocked() {
   auto result = v8::Locker::IsLocked(v8u::getCurrentIsolate());
-  TRACE("CLocker::IsLocked => {}", result);
+  TRACE("CJSLocker::IsLocked => {}", result);
   return result;
 }
 
 bool CJSLocker::IsActive() {
   auto result = v8::Locker::IsActive();
-  TRACE("CLocker::IsActive => {}", result);
+  TRACE("CJSLocker::IsActive => {}", result);
   return result;
 }

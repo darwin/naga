@@ -28,14 +28,14 @@ class CJSEternals {
   v8::Eternal<T> GetOrCreate(EternalID id, EternalCreateFn<T>* create_fn = nullptr) {
     auto& lookup = m_cache[id];
     if (!lookup.has_value()) {
-      HTRACE(kJSEternalsLogger, "CEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
+      HTRACE(kJSEternalsLogger, "CJSEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
              magic_enum::enum_name(id));
       assert(create_fn);
       lookup = create_fn(m_v8_isolate);
     }
     auto v8_result = std::any_cast<v8::Eternal<T>>(lookup);
     assert(!v8_result.IsEmpty());
-    HTRACE(kJSEternalsLogger, "CEternals::GetOrCreate {} id={} => {}", THIS, magic_enum::enum_name(id), v8_result);
+    HTRACE(kJSEternalsLogger, "CJSEternals::GetOrCreate {} id={} => {}", THIS, magic_enum::enum_name(id), v8_result);
     return v8_result;
   }
 };

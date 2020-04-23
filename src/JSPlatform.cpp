@@ -8,18 +8,18 @@
 constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&            //
                                       !std::is_assignable<CJSPlatform, CJSPlatform>::value &&  //
                                       !std::is_swappable<CJSPlatform>::value;                  //
-static_assert(singleton_invariants, "CPlatform should be a singleton.");
+static_assert(singleton_invariants, "CJSPlatform should be a singleton.");
 
 CJSPlatform* CJSPlatform::Instance() {
   static CJSPlatform g_platform;
-  TRACE("CPlatform::Instance => {}", (void*)&g_platform);
+  TRACE("CJSPlatform::Instance => {}", (void*)&g_platform);
   return &g_platform;
 }
 
 bool CJSPlatform::Init(std::string argv) {
-  TRACE("CPlatform::Init {} argv='{}'", THIS, argv);
+  TRACE("CJSPlatform::Init {} argv='{}'", THIS, argv);
   if (m_initialized) {
-    TRACE("CPlatform::Init {} => [already initialized]", THIS);
+    TRACE("CJSPlatform::Init {} => [already initialized]", THIS);
     return false;
   }
 
