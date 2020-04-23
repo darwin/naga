@@ -6,6 +6,8 @@ import unittest
 import logging
 
 import naga
+# noinspection PyUnresolvedReferences
+from naga.aux import test_encountering_foreign_context
 
 
 class TestContext(unittest.TestCase):
@@ -95,6 +97,9 @@ class TestContext(unittest.TestCase):
             # Call cross_domain_call, it should throw an exception
             # with env2:
             #    self.assertRaises(naga.JSError, naga.toolkit.apply(spy2), env2.locals)
+
+    def testEncounteringForeignContext(self):
+        self.assertRaises(RuntimeError, test_encountering_foreign_context)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 #include "Aux.h"
 #include "JSIsolate.h"
+#include "JSContext.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -50,4 +51,11 @@ void v8RequestGarbageCollectionForTesting() {
 CJSIsolatePtr testEncounteringForeignIsolate() {
   auto foreign_v8_isolate = v8u::createIsolate();
   return CJSIsolate::FromV8(foreign_v8_isolate);
+}
+
+CJSContextPtr testEncounteringForeignContext() {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto foreign_v8_context = v8::Context::New(v8_isolate);
+  return CJSContext::FromV8(foreign_v8_context);
 }

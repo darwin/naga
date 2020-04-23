@@ -5,6 +5,7 @@
 #include "JSScript.h"
 #include "JSIsolate.h"
 #include "Wrapping.h"
+#include "JSException.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -14,7 +15,9 @@ const int kSelfEmbedderDataIndex = 0;
 
 CJSContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
-  assert(v8_context->GetNumberOfEmbedderDataFields() > kSelfEmbedderDataIndex);
+  if (v8_context->GetNumberOfEmbedderDataFields() <= kSelfEmbedderDataIndex) {
+    throw CJSException(v8_context->GetIsolate(), fmt::format("Cannot work with foreign context {}", v8_context));
+  }
   auto v8_data = v8_context->GetEmbedderData(kSelfEmbedderDataIndex);
   assert(v8_data->IsExternal());
   auto v8_external = v8_data.As<v8::External>();
