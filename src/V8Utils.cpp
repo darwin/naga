@@ -84,16 +84,6 @@ void checkContext(const v8::IsolateRef& v8_isolate) {
   }
 }
 
-bool executionTerminating(const v8::IsolateRef& v8_isolate) {
-  if (!v8_isolate->IsExecutionTerminating()) {
-    return false;
-  }
-
-  PyErr_Clear();
-  PyErr_SetString(PyExc_RuntimeError, "execution is terminating");
-  return true;
-}
-
 v8::IsolateRef getCurrentIsolate() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this would fail sooner

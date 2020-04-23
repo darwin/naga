@@ -47,10 +47,6 @@ py::list CJSObjectAPI::Dir() const {
 
   py::list attrs;
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    return attrs;
-  }
-
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 

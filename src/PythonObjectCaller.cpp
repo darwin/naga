@@ -29,11 +29,6 @@ void CPythonObject::CallPythonCallable(const py::object& py_fn, const v8::Functi
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
-    return;
-  }
-
   auto py_gil = pyu::withGIL();
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     return wrap(([&]() {

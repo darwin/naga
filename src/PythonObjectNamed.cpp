@@ -52,11 +52,6 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
   }
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
-    return;
-  }
-
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
@@ -117,11 +112,6 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
   }
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
-    return;
-  }
-
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
@@ -179,11 +169,6 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
   }
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
-    return;
-  }
-
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
@@ -213,11 +198,6 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
     return;
   }
   auto v8_scope = v8u::withScope(v8_isolate);
-
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
-    return;
-  }
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -259,11 +239,6 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
   TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8_info.GetIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-
-  if (v8u::executionTerminating(v8_isolate)) {
-    v8_info.GetReturnValue().Set(v8::Local<v8::Array>());
-    return;
-  }
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();

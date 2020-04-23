@@ -122,10 +122,6 @@ py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj) {
   TRACE("wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();
 
-  if (v8u::executionTerminating(v8_isolate)) {
-    return py::js_null();
-  }
-
   auto py_result = py::cast(obj);
   TRACE("wrap => {}", py_result);
   return py_result;
@@ -141,10 +137,6 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto py_gil = pyu::withGIL();
-
-  if (v8u::executionTerminating(v8_isolate)) {
-    return v8::Undefined(v8_isolate);
-  }
 
   if (py::isinstance<py::js_null>(py_handle)) {
     return v8::Null(v8_isolate);

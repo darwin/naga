@@ -15,7 +15,6 @@ v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i
 v8::String::Utf8Value toUTF(const v8::IsolateRef& v8_isolate, v8::Local<v8::String> v8_string);
 
 void checkContext(const v8::IsolateRef& v8_isolate);
-bool executionTerminating(const v8::IsolateRef& v8_isolate);
 
 v8::IsolateRef getCurrentIsolate();
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
