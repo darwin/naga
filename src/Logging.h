@@ -53,7 +53,7 @@ enum Loggers {
   kJSObjectCLJSImplLogger,
   kJSObjectGenericImplLogger,
   kWrappingLogger,
-  kJSIsolateRegistryLogger,
+  kJSRegistryLogger,
   kNumLoggers
 };
 
