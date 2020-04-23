@@ -29,4 +29,8 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   void Dispose() const;
 
   bool IsLocked() const;
+
+  py::object GetEnteredOrMicrotaskContext() const;
+  py::object GetCurrentContext() const;
+  py::bool_ InContext() const;
 };

@@ -26,7 +26,7 @@ CContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
 
 v8::Local<v8::Context> CJSContext::ToV8() const {
   auto v8_isolate = m_isolate->ToV8();
-  auto v8_result = v8::Local<v8::Context>::New(v8_isolate, m_v8_context);
+  auto v8_result = m_v8_context.Get(v8_isolate);
   TRACE("CContext::ToV8 {} => {}", THIS, v8_result);
   return v8_result;
 }

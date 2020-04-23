@@ -3,6 +3,8 @@
 #include "JSHospital.h"
 #include "JSEternals.h"
 #include "JSStackTrace.h"
+#include "JSNull.h"
+#include "JSContext.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -51,22 +53,39 @@ CJSIsolate::~CJSIsolate() {
   TRACE("CIsolate::~CIsolate {} [COMPLETED]", THIS);
 }
 
+CTracer& CJSIsolate::Tracer() const {
+  TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
+  return *m_tracer.get();
+}
+
+CJSHospital& CJSIsolate::Hospital() const {
+  TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
+  return *m_hospital.get();
+}
+
+CJSEternals& CJSIsolate::Eternals() const {
+  TRACE("CIsolate::Eternals {} => {}", THIS, (void*)m_eternals.get());
+  return *m_eternals.get();
+}
+
 CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) const {
   TRACE("CIsolate::GetCurrentStackTrace {} frame_limit={} v8_options={:#x}", THIS, frame_limit, v8_options);
   return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
 
 py::object CJSIsolate::GetCurrent() {
-  TRACE("CIsolate::GetCurrent");
   // here we don't want to call our v8u::getCurrentIsolate, which returns not_null<>)
   auto v8_nullable_isolate = v8::Isolate::GetCurrent();
-  if (!v8_nullable_isolate || !v8_nullable_isolate->IsInUse()) {
-    TRACE("CIsolate::GetCurrent => None");
-    return py::none();
-  }
-
-  v8::IsolateRef v8_isolate(v8_nullable_isolate);
-  return py::cast(FromV8(v8_isolate));
+  auto py_result = ([&] {
+    if (!v8_nullable_isolate || !v8_nullable_isolate->IsInUse()) {
+      return py::js_null().cast<py::object>();
+    } else {
+      v8::IsolateRef v8_isolate(v8_nullable_isolate);
+      return py::cast(FromV8(v8_isolate));
+    }
+  })();
+  TRACE("CIsolate::GetCurrent => {}", py_result);
+  return py_result;
 }
 
 bool CJSIsolate::IsLocked() const {
@@ -90,17 +109,37 @@ void CJSIsolate::Dispose() const {
   m_v8_isolate->Dispose();
 }
 
-CTracer& CJSIsolate::Tracer() const {
-  TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
-  return *m_tracer.get();
+py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  auto v8_context = m_v8_isolate->GetEnteredOrMicrotaskContext();
+  auto py_result = ([&] {
+    if (v8_context.IsEmpty()) {
+      return py::js_null().cast<py::object>();
+    } else {
+      return py::cast(CJSContext::FromV8(v8_context));
+    }
+  })();
+  TRACE("CJSIsolate::GetEnteredOrMicrotaskContext {} => {}", THIS, py_result);
+  return py_result;
 }
 
-CJSHospital& CJSIsolate::Hospital() const {
-  TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
-  return *m_hospital.get();
+py::object CJSIsolate::GetCurrentContext() const {
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto py_result = ([&] {
+    if (v8_context.IsEmpty()) {
+      return py::js_null().cast<py::object>();
+    } else {
+      return py::cast(CJSContext::FromV8(v8_context));
+    }
+  })();
+  TRACE("CJSIsolate::GetCurrentContext {} => {}", THIS, py_result);
+  return py_result;
 }
 
-CJSEternals& CJSIsolate::Eternals() const {
-  TRACE("CIsolate::Eternals {} => {}", THIS, (void*)m_eternals.get());
-  return *m_eternals.get();
+py::bool_ CJSIsolate::InContext() const {
+  auto v8_scope = v8u::withScope(m_v8_isolate);
+  auto py_result = py::bool_(m_v8_isolate->InContext());
+  TRACE("CJSIsolate::InContext {} => {}", THIS, py_result);
+  return py_result;
 }
