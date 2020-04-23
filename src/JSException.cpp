@@ -160,7 +160,7 @@ CJSException::~CJSException() noexcept {
   }
 }
 
-std::string CJSException::GetName() {
+std::string CJSException::GetName() const {
   TRACE("CJSException::GetName {}", THIS);
   if (m_v8_exception.IsEmpty()) {
     return std::string();
@@ -182,7 +182,7 @@ std::string CJSException::GetName() {
   return result;
 }
 
-std::string CJSException::GetMessage() {
+std::string CJSException::GetMessage() const {
   TRACE("CJSException::GetMessage {}", THIS);
   if (m_v8_exception.IsEmpty()) {
     return std::string();
@@ -206,7 +206,7 @@ std::string CJSException::GetMessage() {
   return result;
 }
 
-std::string CJSException::GetScriptName() {
+std::string CJSException::GetScriptName() const {
   TRACE("CJSException::GetScriptName {}", THIS);
   assert(m_v8_isolate->InContext());
 
@@ -224,7 +224,7 @@ std::string CJSException::GetScriptName() {
   return result;
 }
 
-int CJSException::GetLineNumber() {
+int CJSException::GetLineNumber() const {
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetLineNumber(m_v8_isolate->GetCurrentContext()).ToChecked();
@@ -232,7 +232,7 @@ int CJSException::GetLineNumber() {
   return result;
 }
 
-int CJSException::GetStartPosition() {
+int CJSException::GetStartPosition() const {
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetStartPosition();
@@ -240,7 +240,7 @@ int CJSException::GetStartPosition() {
   return result;
 }
 
-int CJSException::GetEndPosition() {
+int CJSException::GetEndPosition() const {
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetEndPosition();
@@ -248,7 +248,7 @@ int CJSException::GetEndPosition() {
   return result;
 }
 
-int CJSException::GetStartColumn() {
+int CJSException::GetStartColumn() const {
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetStartColumn();
@@ -256,7 +256,7 @@ int CJSException::GetStartColumn() {
   return result;
 }
 
-int CJSException::GetEndColumn() {
+int CJSException::GetEndColumn() const {
   TRACE("CJSException::GetEndColumn {}", THIS);
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
@@ -265,7 +265,7 @@ int CJSException::GetEndColumn() {
   return result;
 }
 
-std::string CJSException::GetSourceLine() {
+std::string CJSException::GetSourceLine() const {
   TRACE("CJSException::GetSourceLine {}", THIS);
   assert(m_v8_isolate->InContext());
 
@@ -282,7 +282,7 @@ std::string CJSException::GetSourceLine() {
   return result;
 }
 
-std::string CJSException::GetStackTrace() {
+std::string CJSException::GetStackTrace() const {
   TRACE("CJSException::GetStackTrace {}", THIS);
   assert(m_v8_isolate->InContext());
 
@@ -383,7 +383,7 @@ void CJSException::Throw(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v
   throw CJSException(v8_isolate, v8_try_catch, raw_type);
 }
 
-void CJSException::PrintCallStack(py::object py_file) {
+void CJSException::PrintCallStack(py::object py_file) const {
   TRACE("CJSException::PrintCallStack {} py_file={}", THIS, py_file);
   auto py_gil = pyu::withGIL();
 

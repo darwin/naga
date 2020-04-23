@@ -26,7 +26,6 @@ typedef std::shared_ptr<CJSIsolate> CIsolatePtr;
 typedef std::shared_ptr<CJSScript> CScriptPtr;
 typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
 typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
-typedef std::shared_ptr<CJSException> CJSExceptionPtr;
 typedef std::shared_ptr<CJSObject> CJSObjectPtr;
 
 namespace v8 {

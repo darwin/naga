@@ -210,7 +210,7 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
 
 #pragma clang diagnostic pop
 
-v8::Local<v8::Value> wrap(py::handle py_handle) {
+v8::Local<v8::Value> wrap(const py::handle& py_handle) {
   TRACE("wrap py_handle={}", py_handle);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withEscapableScope(v8_isolate);

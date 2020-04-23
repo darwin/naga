@@ -59,7 +59,9 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   return wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
-py::object CJSObjectFunctionImpl::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
+py::object CJSObjectFunctionImpl::Apply(const py::object& py_self,
+                                        const py::list& py_args,
+                                        const py::dict& py_kwds) const {
   TRACE("CJSObjectFunctionImpl::Apply {} py_self={} py_args={} py_kwds={}", THIS, py_self, py_args, py_kwds);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -83,7 +85,7 @@ std::string CJSObjectFunctionImpl::GetName() const {
   return std::string(*name, name.length());
 }
 
-void CJSObjectFunctionImpl::SetName(const std::string& name) {
+void CJSObjectFunctionImpl::SetName(const std::string& name) const {
   TRACE("CJSObjectFunctionImpl::SetName {} => {}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);

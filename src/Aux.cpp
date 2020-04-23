@@ -7,8 +7,8 @@
 // this is useful when one wants to place a breakpoint to all changes to refcount of specified object
 // in python test: print(naga.aux.refcount_addr(o)) and observe printed address
 // e.g. in LLDB console, you can set a watchpoint via `w s e -- 0x123456`
-py::str refCountAddr(py::object py_obj) {
-  PyObject* raw_obj = py_obj.ptr();
+py::str refCountAddr(const py::object& py_obj) {
+  auto raw_obj = py_obj.ptr();
   auto s = fmt::format("{}", static_cast<void*>(&raw_obj->ob_refcnt));
   TRACE("refCountAddr py_obj={} => {}", py_obj, s);
   return py::str(s);

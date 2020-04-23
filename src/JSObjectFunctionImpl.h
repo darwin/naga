@@ -9,10 +9,10 @@ class CJSObjectFunctionImpl {
   py::object Call(const py::list& py_args,
                   const py::dict& py_kwargs,
                   std::optional<v8::Local<v8::Object>> opt_v8_this = std::nullopt) const;
-  py::object Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds);
+  py::object Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) const;
 
   [[nodiscard]] std::string GetName() const;
-  void SetName(const std::string& name);
+  void SetName(const std::string& name) const;
 
   [[nodiscard]] int GetLineNumber() const;
   [[nodiscard]] int GetColumnNumber() const;

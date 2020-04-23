@@ -6,7 +6,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kLockingLogger), __VA_ARGS__)
 
-bool CJSUnlocker::IsEntered() {
+bool CJSUnlocker::IsEntered() const {
   auto result = static_cast<bool>(m_v8_unlocker.get());
   TRACE("CUnlocker::IsEntered {} => {}", THIS, result);
   return result;

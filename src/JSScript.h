@@ -19,7 +19,7 @@ class CJSScript {
   [[nodiscard]] v8::Local<v8::Script> Script() const;
 
   [[nodiscard]] std::string GetSource() const;
-  py::object Run();
+  py::object Run() const;
 
   void Dump(std::ostream& os) const;
 };

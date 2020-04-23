@@ -2,7 +2,7 @@
 
 #include "Base.h"
 
-py::str refCountAddr(py::object py_obj);
+py::str refCountAddr(const py::object& py_obj);
 void trigger1();
 void trigger2();
 void trigger3();

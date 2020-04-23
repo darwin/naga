@@ -46,7 +46,7 @@ std::string CJSScript::GetSource() const {
   return result;
 }
 
-py::object CJSScript::Run() {
+py::object CJSScript::Run() const {
   TRACE("CScript::Run {}", THIS);
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = m_engine.ExecuteScript(Script());

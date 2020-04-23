@@ -7,7 +7,7 @@ namespace v8u {
 v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const std::string& str);
 v8::Local<v8::String> toString(const std::string& str);
 v8::Local<v8::String> toString(const std::wstring& str);
-v8::Local<v8::String> toString(py::handle py_str);
+v8::Local<v8::String> toString(const py::handle& py_str);
 
 v8::Local<v8::Integer> toPositiveInteger(const v8::IsolateRef& v8_isolate, int i);
 

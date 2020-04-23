@@ -19,13 +19,14 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
 
   [[nodiscard]] py::object GetGlobal() const;
 
-  py::str GetSecurityToken();
+  py::str GetSecurityToken() const;
   void SetSecurityToken(const py::str& py_token) const;
 
-  bool IsEntered();
+  bool IsEntered() const;
   void Enter() const;
   void Leave() const;
 
+  // TODO: consider moving this out
   static bool InContext();
 
   static py::object GetEntered();

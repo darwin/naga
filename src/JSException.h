@@ -24,7 +24,7 @@ class CJSException : public std::runtime_error {
   CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type = nullptr) noexcept;
   explicit CJSException(const std::string& msg, PyObject* raw_type = nullptr) noexcept;
   CJSException(const CJSException& ex) noexcept;
-  ~CJSException() noexcept override;
+  ~CJSException() noexcept;
 
   [[nodiscard]] PyObject* GetType() const;
 
@@ -32,20 +32,20 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] v8::Local<v8::Value> Stack() const;
   [[nodiscard]] v8::Local<v8::Message> Message() const;
 
-  std::string GetName();
-  std::string GetMessage();
-  std::string GetScriptName();
-  int GetLineNumber();
-  int GetStartPosition();
-  int GetEndPosition();
-  int GetStartColumn();
-  int GetEndColumn();
-  std::string GetSourceLine();
-  std::string GetStackTrace();
+  std::string GetName() const;
+  std::string GetMessage() const;
+  std::string GetScriptName() const;
+  int GetLineNumber() const;
+  int GetStartPosition() const;
+  int GetEndPosition() const;
+  int GetStartColumn() const;
+  int GetEndColumn() const;
+  std::string GetSourceLine() const;
+  std::string GetStackTrace() const;
 
   [[nodiscard]] py::object Str() const;
 
-  void PrintCallStack(py::object py_file);
+  void PrintCallStack(py::object py_file) const;
   static void HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
   static void Throw(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch);
 };

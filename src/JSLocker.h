@@ -8,7 +8,7 @@ class CJSLocker {
   CIsolatePtr m_isolate;
 
  public:
-  bool IsEntered();
+  bool IsEntered() const;
   void Enter();
   void Leave();
   static bool IsLocked();

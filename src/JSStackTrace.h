@@ -22,11 +22,11 @@ class CJSStackTrace {
   void Dump(std::ostream& os) const;
 
   class FrameIterator {
-    CJSStackTrace* m_stack_trace_ptr;
+    const CJSStackTrace* m_stack_trace_ptr;
     size_t m_idx;
 
    public:
-    FrameIterator(CJSStackTrace* stack_trace_ptr, size_t idx) : m_stack_trace_ptr(stack_trace_ptr), m_idx(idx) {}
+    FrameIterator(const CJSStackTrace* stack_trace_ptr, size_t idx) : m_stack_trace_ptr(stack_trace_ptr), m_idx(idx) {}
 
     void increment() { m_idx++; }
     [[nodiscard]] bool equal(FrameIterator const& other) const {
@@ -35,8 +35,8 @@ class CJSStackTrace {
     [[nodiscard]] CJSStackFramePtr dereference() const { return m_stack_trace_ptr->GetFrame(m_idx); }
   };
 
-  FrameIterator begin() { return FrameIterator(this, 0); }
-  FrameIterator end() { return FrameIterator(this, GetFrameCount()); }
+  FrameIterator begin() const { return FrameIterator(this, 0); }
+  FrameIterator end() const { return FrameIterator(this, GetFrameCount()); }
 
   [[nodiscard]] py::object Str() const;
 };

@@ -63,7 +63,7 @@ py::object CJSContext::GetGlobal() const {
   return py_result;
 }
 
-py::str CJSContext::GetSecurityToken() {
+py::str CJSContext::GetSecurityToken() const {
   TRACE("CContext::GetSecurityToken {}", THIS);
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -185,7 +185,7 @@ void CJSContext::Dump(std::ostream& os) const {
   fmt::print(os, "CContext {} m_v8_context={}", THIS, ToV8());
 }
 
-bool CJSContext::IsEntered() {
+bool CJSContext::IsEntered() const {
   // TODO: this is wrong!
   auto result = !m_v8_context.IsEmpty();
   TRACE("CContext::IsEntered {} => {}", THIS, result);

@@ -51,7 +51,7 @@ CJSIsolate::~CJSIsolate() {
   TRACE("CIsolate::~CIsolate {} [COMPLETED]", THIS);
 }
 
-CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) {
+CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) const {
   TRACE("CIsolate::GetCurrentStackTrace {} frame_limit={} v8_options={:#x}", THIS, frame_limit, v8_options);
   return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
 }
@@ -69,38 +69,38 @@ py::object CJSIsolate::GetCurrent() {
   return py::cast(FromV8(v8_isolate));
 }
 
-bool CJSIsolate::IsLocked() {
+bool CJSIsolate::IsLocked() const {
   auto result = v8::Locker::IsLocked(m_v8_isolate);
   TRACE("CIsolate::IsLocked {} => {}", THIS, result);
   return result;
 }
 
-void CJSIsolate::Enter() {
+void CJSIsolate::Enter() const {
   TRACE("CIsolate::Enter {}", THIS);
   m_v8_isolate->Enter();
 }
 
-void CJSIsolate::Leave() {
+void CJSIsolate::Leave() const {
   TRACE("CIsolate::Leave {}", THIS);
   m_v8_isolate->Exit();
 }
 
-void CJSIsolate::Dispose() {
+void CJSIsolate::Dispose() const {
   TRACE("CIsolate::Dispose {}", THIS);
   m_v8_isolate->Dispose();
 }
 
-CTracer& CJSIsolate::Tracer() {
+CTracer& CJSIsolate::Tracer() const {
   TRACE("CIsolate::Tracer {} => {}", THIS, (void*)m_tracer.get());
   return *m_tracer.get();
 }
 
-CJSHospital& CJSIsolate::Hospital() {
+CJSHospital& CJSIsolate::Hospital() const {
   TRACE("CIsolate::Hospital {} => {}", THIS, (void*)m_hospital.get());
   return *m_hospital.get();
 }
 
-CJSEternals& CJSIsolate::Eternals() {
+CJSEternals& CJSIsolate::Eternals() const {
   TRACE("CIsolate::Eternals {} => {}", THIS, (void*)m_eternals.get());
   return *m_eternals.get();
 }

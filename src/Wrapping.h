@@ -9,4 +9,4 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj);
 py::object wrap(v8::IsolateRef v8_isolate, const CJSObjectPtr& obj);
 
 // Python -> JS
-v8::Local<v8::Value> wrap(py::handle py_handle);
+v8::Local<v8::Value> wrap(const py::handle& py_handle);

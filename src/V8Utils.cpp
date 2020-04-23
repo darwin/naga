@@ -21,7 +21,7 @@ std::optional<v8::Local<v8::String>> toStringDirectly(py::handle obj) {
   return std::nullopt;
 }
 
-v8::Local<v8::String> toString(py::handle py_str) {
+v8::Local<v8::String> toString(const py::handle& py_str) {
   // first try to convert python string object directly if possible
   auto v8_str = toStringDirectly(py_str);
   if (v8_str) {
