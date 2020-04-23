@@ -56,6 +56,10 @@ v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const std::stri
   return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
 }
 
+v8::Local<v8::String> toString(const v8::IsolateRef& v8_isolate, const char* s) {
+  return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal).ToLocalChecked();
+}
+
 v8::Local<v8::String> toString(const std::string& str) {
   auto v8_isolate = v8u::getCurrentIsolate();
   return toString(v8_isolate, str);
