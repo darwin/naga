@@ -347,11 +347,11 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"TypeError", PyExc_TypeError}};
 
 void CJSException::HandleTryCatch(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   // TODO: revisit this CanContinue test, it is suspicious
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
   }
+  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   Throw(v8_isolate, v8_try_catch);
 }
 

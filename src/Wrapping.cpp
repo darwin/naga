@@ -133,11 +133,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8::IsolateRef v8_isolate, py::handl
   auto v8_object_instance = v8_object_template->NewInstance(v8_isolate->GetCurrentContext()).ToLocalChecked();
   assert(!v8_object_instance.IsEmpty());
   traceWrapper(py_handle.ptr(), v8_object_instance);
-
-  if (v8_object_instance.IsEmpty()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
-
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   return v8_object_instance;
 }
 
