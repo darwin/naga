@@ -146,10 +146,10 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
     return v8::Undefined(v8_isolate);
   }
 
-  if (py_handle.ptr() == Py_JSNull) {
+  if (py::isinstance<py::js_null>(py_handle)) {
     return v8::Null(v8_isolate);
   }
-  if (py_handle.ptr() == Py_JSUndefined) {
+  if (py::isinstance<py::js_undefined>(py_handle)) {
     return v8::Undefined(v8_isolate);
   }
   if (py::isinstance<py::bool_>(py_handle)) {
