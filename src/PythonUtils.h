@@ -25,5 +25,14 @@ class exact_float : public float_ {
   PYBIND11_OBJECT_CVT(exact_float, float_, PyFloat_CheckExact, PyNumber_Float)
 };
 
+inline bool isExactString(PyObject* o) {
+  return PyUnicode_CheckExact(o) || PyBytes_CheckExact(o);
+}
+
+class exact_str : public str {
+ public:
+  PYBIND11_OBJECT_CVT(exact_str, str, isExactString, PyObject_Str)
+};
+
 }  // namespace pybind11
 #pragma clang diagnostic pop
