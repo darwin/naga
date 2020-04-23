@@ -3,6 +3,7 @@
 #include "PythonExceptions.h"
 #include "Tracer.h"
 #include "Wrapping.h"
+#include "JSUndefined.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -33,110 +34,84 @@ void CPythonObject::CallPythonCallable(const py::object& py_fn, const v8::Functi
     return;
   }
 
+  auto py_gil = pyu::withGIL();
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
-    auto py_gil = pyu::withGIL();
-    py::object py_result;
-
-    switch (v8_info.Length()) {
+    return wrap(([&]() {
       // clang-format off
-      case 0: {
-        py_result = py_fn();
-        break;
-      }
-      case 1: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]));
-        break;
-      }
-      case 2: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]));
-        break;
-      }
-      case 3: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]));
-        break;
-      }
-      case 4: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]));
-        break;
-      }
-      case 5: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]));
-        break;
-      }
-      case 6: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]),
-                          wrap(v8_isolate, v8_info[5]));
-        break;
-      }
-      case 7: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]),
-                          wrap(v8_isolate, v8_info[5]),
-                          wrap(v8_isolate, v8_info[6]));
-        break;
-      }
-      case 8: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]),
-                          wrap(v8_isolate, v8_info[5]),
-                          wrap(v8_isolate, v8_info[6]),
-                          wrap(v8_isolate, v8_info[7]));
-        break;
-      }
-      case 9: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]),
-                          wrap(v8_isolate, v8_info[5]),
-                          wrap(v8_isolate, v8_info[6]),
-                          wrap(v8_isolate, v8_info[7]),
-                          wrap(v8_isolate, v8_info[8]));
-        break;
-      }
-      case 10: {
-        py_result = py_fn(wrap(v8_isolate, v8_info[0]),
-                          wrap(v8_isolate, v8_info[1]),
-                          wrap(v8_isolate, v8_info[2]),
-                          wrap(v8_isolate, v8_info[3]),
-                          wrap(v8_isolate, v8_info[4]),
-                          wrap(v8_isolate, v8_info[5]),
-                          wrap(v8_isolate, v8_info[6]),
-                          wrap(v8_isolate, v8_info[7]),
-                          wrap(v8_isolate, v8_info[8]),
-                          wrap(v8_isolate, v8_info[9]));
-        break;
-      }
-        // clang-format on
-      default: {
-        auto v8_msg = v8::String::NewFromUtf8(v8_isolate, "too many arguments").ToLocalChecked();
-        v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
-        return v8::Undefined(v8_isolate).As<v8::Value>();
-      }
-    }
-
-    return wrap(py_result);
+      switch (v8_info.Length()) {
+          case 0:
+            return py_fn();
+          case 1:
+            return py_fn(wrap(v8_isolate, v8_info[0]));
+          case 2:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]));
+          case 3:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]));
+          case 4:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]));
+          case 5:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]));
+          case 6:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]),
+                         wrap(v8_isolate, v8_info[5]));
+          case 7:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]),
+                         wrap(v8_isolate, v8_info[5]),
+                         wrap(v8_isolate, v8_info[6]));
+          case 8:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]),
+                         wrap(v8_isolate, v8_info[5]),
+                         wrap(v8_isolate, v8_info[6]),
+                         wrap(v8_isolate, v8_info[7]));
+          case 9:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]),
+                         wrap(v8_isolate, v8_info[5]),
+                         wrap(v8_isolate, v8_info[6]),
+                         wrap(v8_isolate, v8_info[7]),
+                         wrap(v8_isolate, v8_info[8]));
+          case 10:
+            return py_fn(wrap(v8_isolate, v8_info[0]),
+                         wrap(v8_isolate, v8_info[1]),
+                         wrap(v8_isolate, v8_info[2]),
+                         wrap(v8_isolate, v8_info[3]),
+                         wrap(v8_isolate, v8_info[4]),
+                         wrap(v8_isolate, v8_info[5]),
+                         wrap(v8_isolate, v8_info[6]),
+                         wrap(v8_isolate, v8_info[7]),
+                         wrap(v8_isolate, v8_info[8]),
+                         wrap(v8_isolate, v8_info[9]));
+        }
+      // clang-format on
+      auto v8_msg = v8u::toString(v8_isolate, "too many arguments");
+      v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
+      return py::js_undefined().cast<py::object>();
+    })());
   });
 
   auto v8_final_result = VALUE_OR_LAZY(v8_result, v8::Undefined(v8_isolate));
