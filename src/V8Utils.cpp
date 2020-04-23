@@ -87,20 +87,19 @@ void checkContext(const v8::IsolateRef& v8_isolate) {
 v8::IsolateRef getCurrentIsolate() {
   auto v8_isolate = v8::Isolate::GetCurrent();
   // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this would fail sooner
-  assert(v8_isolate);
   return v8_isolate;
 }
 
 v8::HandleScope withScope(const v8::IsolateRef& v8_isolate) {
-  return v8::HandleScope(v8_isolate.get());
+  return v8::HandleScope(v8_isolate);
 }
 
 v8::EscapableHandleScope withEscapableScope(const v8::IsolateRef& v8_isolate) {
-  return v8::EscapableHandleScope(v8_isolate.get());
+  return v8::EscapableHandleScope(v8_isolate);
 }
 
 v8::TryCatch withTryCatch(const v8::IsolateRef& v8_isolate) {
-  return v8::TryCatch(v8_isolate.get());
+  return v8::TryCatch(v8_isolate);
 }
 
 v8::IsolateRef createIsolate() {

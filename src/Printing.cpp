@@ -17,7 +17,7 @@ std::string printCoerced(const std::wstring& v) {
 }
 
 std::string printCoerced(const v8::IsolateRef& v) {
-  return fmt::format("v8::IsolateRef {}", static_cast<void*>(v.get()));
+  return fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v) {
@@ -138,7 +138,7 @@ std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v) {
 }
 
 std::ostream& operator<<(std::ostream& os, const IsolateRef& v) {
-  return os << fmt::format("v8::IsolateRef {}", static_cast<void*>(v.get()));
+  return os << fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 
 }  // namespace v8
