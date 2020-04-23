@@ -21,8 +21,8 @@ class CJSException : public std::runtime_error {
   CJSException(const v8::IsolateRef& v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
  public:
-  CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type = nullptr) noexcept;
-  explicit CJSException(const std::string& msg, PyObject* raw_type = nullptr) noexcept;
+  CJSException(v8::IsolateRef v8_isolate, const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
+  explicit CJSException(const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
   CJSException(const CJSException& ex) noexcept;
   ~CJSException() noexcept;
 
