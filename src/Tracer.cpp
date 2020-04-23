@@ -142,7 +142,7 @@ void CTracer::DeleteRecord(PyObject* raw_object) {
   m_tracked_wrappers.erase(tracer_lookup);
 }
 
-void CTracer::SwitchToLiveMode(WrapperTrackingMap::iterator tracer_lookup, bool cleanup) {
+void CTracer::SwitchToLiveMode(TWrapperTrackingMap::iterator tracer_lookup, bool cleanup) {
   TRACE("CTracer::SwitchToLiveMode {}", THIS);
 
   auto raw_object = tracer_lookup->first;
@@ -189,7 +189,7 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
   SwitchToZombieMode(tracer_lookup);
 }
 
-void CTracer::SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup) {
+void CTracer::SwitchToZombieMode(TWrapperTrackingMap::iterator tracer_lookup) {
   TRACE("CTracer::SwitchToZombieMode {}", THIS);
 
   auto raw_object = tracer_lookup->first;

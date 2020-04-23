@@ -71,10 +71,10 @@ struct TracerRecord {
   WeakRefRawObject* m_weak_ref;  // this field is non-null when in zombie mode
 };
 
-typedef std::map<TracedRawObject*, TracerRecord> WrapperTrackingMap;
+typedef std::unordered_map<TracedRawObject*, TracerRecord> TWrapperTrackingMap;
 
 class CTracer {
-  WrapperTrackingMap m_tracked_wrappers;
+  TWrapperTrackingMap m_tracked_wrappers;
 
  public:
   CTracer();
@@ -86,7 +86,7 @@ class CTracer {
 
  protected:
   void DeleteRecord(TracedRawObject* raw_object);
-  void SwitchToLiveMode(WrapperTrackingMap::iterator tracer_lookup, bool cleanup = true);
-  void SwitchToZombieMode(WrapperTrackingMap::iterator tracer_lookup);
+  void SwitchToLiveMode(TWrapperTrackingMap::iterator tracer_lookup, bool cleanup = true);
+  void SwitchToZombieMode(TWrapperTrackingMap::iterator tracer_lookup);
   void SwitchToZombieModeOrDie(TracedRawObject* raw_object);
 };
