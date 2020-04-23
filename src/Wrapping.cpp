@@ -162,16 +162,20 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
 
     return v8_scope.Escape(object->Object());
   }
+  if (py::isinstance<py::exact_int>(py_handle)) {
+    auto py_int = py::cast<py::exact_int>(py_handle);
+    return v8_scope.Escape(v8::Integer::New(v8_isolate, py_int));
+  }
+  if (py::isinstance<py::exact_float>(py_handle)) {
+    auto py_float = py::cast<py::exact_float>(py_handle);
+    return v8_scope.Escape(v8::Number::New(v8_isolate, py_float));
+  }
 
   v8::Local<v8::Value> v8_result;
 
   // TODO: replace this with pybind code
-  if (PyLong_CheckExact(py_handle.ptr())) {
-    v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_handle.ptr()));
-  } else if (PyBytes_CheckExact(py_handle.ptr()) || PyUnicode_CheckExact(py_handle.ptr())) {
+ if (PyBytes_CheckExact(py_handle.ptr()) || PyUnicode_CheckExact(py_handle.ptr())) {
     v8_result = v8u::toString(py_handle);
-  } else if (PyFloat_CheckExact(py_handle.ptr())) {
-    v8_result = v8::Number::New(v8_isolate, py::cast<py::float_>(py_handle));
   } else if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
     tm ts = {0};
     int ms = 0;
