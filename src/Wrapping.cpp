@@ -176,8 +176,6 @@ static v8::Local<v8::Value> wrapInternal(py::handle py_handle) {
   // TODO: replace this with pybind code
   if (PyLong_CheckExact(py_handle.ptr())) {
     v8_result = v8::Integer::New(v8_isolate, PyLong_AsLong(py_handle.ptr()));
-  } else if (PyBool_Check(py_handle.ptr())) {
-    v8_result = v8::Boolean::New(v8_isolate, py::cast<py::bool_>(py_handle));
   } else if (PyBytes_CheckExact(py_handle.ptr()) || PyUnicode_CheckExact(py_handle.ptr())) {
     v8_result = v8u::toString(py_handle);
   } else if (PyFloat_CheckExact(py_handle.ptr())) {
