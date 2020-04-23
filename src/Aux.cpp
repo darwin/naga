@@ -47,7 +47,7 @@ void v8RequestGarbageCollectionForTesting() {
   TRACE("v8Cleanup done");
 }
 
-CIsolatePtr testEncounteringForeignIsolate() {
+CJSIsolatePtr testEncounteringForeignIsolate() {
   auto foreign_v8_isolate = v8u::createIsolate();
   return CJSIsolate::FromV8(foreign_v8_isolate);
 }

@@ -85,19 +85,19 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   return py::js_null();
 }
 
-CScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
+CJSScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
   TRACE("CEngine::Compile name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
-CScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) const {
+CJSScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) const {
   TRACE("CEngine::CompileW name={} line={} col={} src={}", P$(name), line, col, traceMore(P$(src)));
   auto v8_scope = v8u::withScope(m_v8_isolate);
   return InternalCompile(v8u::toString(src), v8u::toString(name), line, col);
 }
 
-CScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
+CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
                                       v8::Local<v8::Value> v8_name,
                                       int line,
                                       int col) const {

@@ -16,7 +16,7 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   CJSHospital& Hospital() const;
   CJSEternals& Eternals() const;
 
-  static CIsolatePtr FromV8(const v8::IsolateRef& v8_isolate);
+  static CJSIsolatePtr FromV8(const v8::IsolateRef& v8_isolate);
   [[nodiscard]] const v8::IsolateRef& ToV8() const { return m_v8_isolate; }
 
   CJSStackTracePtr GetCurrentStackTrace(int frame_limit,

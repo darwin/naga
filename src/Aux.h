@@ -10,4 +10,4 @@ void trigger4();
 void trigger5();
 void trace(const py::str& s);
 void v8RequestGarbageCollectionForTesting();
-CIsolatePtr testEncounteringForeignIsolate();
+CJSIsolatePtr testEncounteringForeignIsolate();

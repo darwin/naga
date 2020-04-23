@@ -12,7 +12,7 @@
 
 const int kSelfEmbedderDataIndex = 0;
 
-CContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
+CJSContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
   assert(v8_context->GetNumberOfEmbedderDataFields() > kSelfEmbedderDataIndex);
   auto v8_data = v8_context->GetEmbedderData(kSelfEmbedderDataIndex);
@@ -147,7 +147,7 @@ py::object CJSContext::Evaluate(const std::string& src, const std::string& name,
   TRACE("CContext::Evaluate name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_isolate = v8u::getCurrentIsolate();
   CJSEngine engine(v8_isolate);
-  CScriptPtr script = engine.Compile(src, name, line, col);
+  CJSScriptPtr script = engine.Compile(src, name, line, col);
   auto py_result = script->Run();
   TRACE("CContext::Evaluate => {}", py_result);
   return py_result;
@@ -157,7 +157,7 @@ py::object CJSContext::EvaluateW(const std::wstring& src, const std::wstring& na
   TRACE("CContext::EvaluateW name={} line={} col={} src={}", P$(name), line, col, traceText(P$(src)));
   auto v8_isolate = v8u::getCurrentIsolate();
   CJSEngine engine(v8_isolate);
-  CScriptPtr script = engine.CompileW(src, name, line, col);
+  CJSScriptPtr script = engine.CompileW(src, name, line, col);
   return script->Run();
 }
 

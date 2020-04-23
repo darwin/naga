@@ -192,7 +192,7 @@ void exposeJSPlatform(py::module py_module) {
 void exposeJSIsolate(py::module py_module) {
   TRACE("exposeJSIsolate py_module={}", py_module);
   // clang-format off
-  py::class_<CJSIsolate, CIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
+  py::class_<CJSIsolate, CJSIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
       .def(py::init<>())
 
       .def_property_readonly_static(
@@ -348,7 +348,7 @@ void exposeJSEngine(py::module py_module) {
 void exposeJSScript(py::module py_module) {
   TRACE("exposeJSScript py_module={}", py_module);
   // clang-format off
-  py::class_<CJSScript, CScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
+  py::class_<CJSScript, CJSScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
       .def_property_readonly("source", &CJSScript::GetSource,
                              "the source code")
 
@@ -390,7 +390,7 @@ void exposeJSUnlocker(py::module py_module) {
 void exposeJSContext(py::module py_module) {
   TRACE("exposeJSContext py_module={}", py_module);
   // clang-format off
-  py::class_<CJSContext, CContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
+  py::class_<CJSContext, CJSContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(py::init<py::object>())
 
       .def_property("securityToken", &CJSContext::GetSecurityToken, &CJSContext::SetSecurityToken)

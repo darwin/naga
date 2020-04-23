@@ -12,7 +12,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kIsolateLogger), __VA_ARGS__)
 
-CIsolatePtr CJSIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
+CJSIsolatePtr CJSIsolate::FromV8(const v8::IsolateRef& v8_isolate) {
   auto isolate = lookupRegisteredIsolate(v8_isolate);
   if (!isolate) {
     throw CJSException(v8_isolate, fmt::format("Cannot work with foreign isolate {}", P$(v8_isolate)));
