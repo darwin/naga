@@ -102,13 +102,14 @@ py::object wrap(v8::IsolateRef v8_isolate, v8::Local<v8::Object> v8_obj) {
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
 
+  if (v8_obj.IsEmpty()) {
+    throw CJSException(v8_isolate, "Unexpected empty V8 object handle.");
+  }
+
   py::object py_result;
   auto traced_raw_object = lookupTracedObject(v8_obj);
   if (traced_raw_object) {
     py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
-  } else if (v8_obj.IsEmpty()) {
-    // TODO: we should not treat empty values so softly, we should throw/crash
-    py_result = py::none();
   } else {
     py_result = wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
   }
