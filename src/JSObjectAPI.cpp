@@ -247,26 +247,28 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-
-  if (proto->ToV8(v8_isolate).IsEmpty()) {
+  auto v8_proto = proto->ToV8(v8_isolate);
+  if (v8_proto.IsEmpty()) {
     throw CJSException("Object prototype may only be an Object", PyExc_TypeError);
   }
 
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto fn = proto->ToV8(v8_isolate).As<v8::Function>();
+  if (!v8_proto->IsFunction()) {
+    throw CJSException("Object prototype expected to be a Function", PyExc_TypeError);
+  }
+  auto fn = v8_proto.As<v8::Function>();
   auto args_count = py_args.size();
-  std::vector<v8::Local<v8::Value>> v8_params(args_count);
+  std::vector<v8::Local<v8::Value>> v8_params;
+  v8_params.reserve(args_count);
 
   for (size_t i = 0; i < args_count; i++) {
-    v8_params[i] = wrap(py_args[i]);
+    v8_params.push_back(wrap(py_args[i]));
   }
 
-  v8::Local<v8::Object> v8_result;
-
-  withAllowedPythonThreads(
-      [&]() { v8_result = fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
+  auto v8_result = withAllowedPythonThreads(
+      [&]() { return fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
 
   CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
@@ -279,6 +281,8 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
     v8_result->Set(v8_context, v8_key, v8_val).Check();
     it++;
   }
+
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
   return wrap(v8_isolate, v8_result);
 }
