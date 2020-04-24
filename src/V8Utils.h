@@ -21,6 +21,7 @@ v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
 v8::HandleScope withScope(v8::IsolatePtr v8_isolate);
 v8::EscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate);
 v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate);
+void checkTryCatch(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch);
 v8::IsolatePtr createIsolate();
 v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
                                     v8::Local<v8::Integer> v8_line,

@@ -57,7 +57,7 @@ py::list CJSObjectAPI::Dir() const {
     attrs.append(wrap(v8_isolate, v8_prop));
   }
 
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
   TRACE("CJSObjectAPI::Dir {} => {}", THIS, attrs);
   return attrs;
 }
@@ -260,17 +260,17 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
   }
   auto fn = v8_proto.As<v8::Function>();
   auto args_count = py_args.size();
-  std::vector<v8::Local<v8::Value>> v8_params;
-  v8_params.reserve(args_count);
+  std::vector<v8::Local<v8::Value>> v8_args;
+  v8_args.reserve(args_count);
 
   for (size_t i = 0; i < args_count; i++) {
-    v8_params.push_back(wrap(py_args[i]));
+    v8_args.push_back(wrap(py_args[i]));
   }
 
   auto v8_result = withAllowedPythonThreads(
-      [&]() { return fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
+      [&] { return fn->NewInstance(v8_context, v8_args.size(), v8_args.data()).ToLocalChecked(); });
 
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   auto it = py_kwds.begin();
   while (it != py_kwds.end()) {
@@ -282,7 +282,7 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
     it++;
   }
 
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   return wrap(v8_isolate, v8_result);
 }

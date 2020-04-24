@@ -82,7 +82,7 @@ static v8::Local<v8::Value> callBridge(v8::IsolatePtr v8_isolate,
   auto v8_fn = lookupBridgeFn(name);
 
   auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
   return v8_result.ToLocalChecked();
 }
 

@@ -102,6 +102,10 @@ v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate) {
   return v8::TryCatch(v8_isolate);
 }
 
+void checkTryCatch(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+}
+
 v8::IsolatePtr createIsolate() {
   v8::Isolate::CreateParams v8_create_params;
   v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();

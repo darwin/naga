@@ -36,7 +36,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
         auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
-        CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+        v8u::checkTryCatch(v8_isolate, v8_try_catch);
         slice.append(wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate)));
       }
 
@@ -54,7 +54,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     }
 
     auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+    v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
     return wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate));
   }
@@ -143,7 +143,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
     if (!m_base.ToV8(v8_isolate)->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).ToChecked()) {
-      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+      v8u::checkTryCatch(v8_isolate, v8_try_catch);
     }
   }
 
@@ -184,7 +184,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
     }
 
     if (!m_base.ToV8(v8_isolate)->Delete(v8_context, idx).ToChecked()) {
-      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+      v8u::checkTryCatch(v8_isolate, v8_try_catch);
     }
 
     if (py_result) {
@@ -210,7 +210,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
       auto v8_i = v8::Integer::New(v8_isolate, i);
       auto v8_val = m_base.ToV8(v8_isolate)->Get(v8_context, v8_i).ToLocalChecked();
 
-      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+      v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
       // TODO: could this be optimized without wrapping?
       if (py_key.is(wrap(v8_isolate, v8_val, m_base.ToV8(v8_isolate)))) {
@@ -219,7 +219,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
     }
   }
 
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   return false;
 }

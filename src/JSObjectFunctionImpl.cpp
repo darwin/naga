@@ -51,7 +51,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
     }
   });
 
-  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   return wrap(v8_isolate, v8_result.ToLocalChecked());
 }
