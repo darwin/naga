@@ -39,6 +39,10 @@ bool CJSObjectBase::HasRole(Roles roles) const {
   return (m_roles & roles) == roles;
 }
 
+CJSObjectBase::Roles CJSObjectBase::GetRoles() const {
+  return m_roles;
+}
+
 void CJSObjectBase::Dump(std::ostream& os) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);

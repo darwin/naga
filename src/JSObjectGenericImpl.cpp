@@ -100,12 +100,26 @@ py::str CJSObjectGenericImpl::Str() const {
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_obj = m_base.ToV8(v8_isolate);
-  if (v8_obj.IsEmpty()) {
-    return "<EMPTY>";
-  } else {
-    auto v8_context = v8_isolate->GetCurrentContext();
-    auto v8_str = v8_obj->ToString(v8_context).ToLocalChecked();
-    auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
-    return *v8_utf;
-  }
+  auto py_result = [&] {
+    if (v8_obj.IsEmpty()) {
+      return py::str("<EMPTY>");
+    } else {
+      auto v8_context = v8_isolate->GetCurrentContext();
+      auto v8_str = v8_obj->ToString(v8_context).ToLocalChecked();
+      auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
+      return py::str(*v8_utf);
+    }
+  }();
+
+  TRACE("CJSObjectGenericImpl::Str {} => {}", THIS, py_result);
+  return py_result;
+}
+
+py::str CJSObjectGenericImpl::Repr() const {
+  std::stringstream ss;
+  m_base.Dump(ss);
+  auto s = fmt::format("JSObject[{}] {}", m_base.GetRoles(), ss.str());
+  py::str py_result(s);
+  TRACE("CJSObjectGenericImpl::Repr {} => {}", THIS, py_result);
+  return py_result;
 }

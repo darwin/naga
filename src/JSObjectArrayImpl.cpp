@@ -88,9 +88,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
        */
       if (start > arrayLen) {
         for (Py_ssize_t idx = arrayLen; idx < start; idx++) {
-          m_base.ToV8(v8_isolate)
-              ->Set(v8_context, static_cast<uint32_t>(arrayLen + idx), v8::Null(v8_isolate))
-              .Check();
+          m_base.ToV8(v8_isolate)->Set(v8_context, static_cast<uint32_t>(arrayLen + idx), v8::Null(v8_isolate)).Check();
         }
 
         arrayLen = v8::Local<v8::Array>::Cast(m_base.ToV8(v8_isolate))->Length();

@@ -5,6 +5,7 @@
 class CJSObjectBase {
  public:
   using RoleFlagsType = std::uint8_t;
+
   enum class Roles : RoleFlagsType {
     Generic = 0,  // always on
     Function = 1 << 0,
@@ -23,6 +24,7 @@ class CJSObjectBase {
   [[nodiscard]] v8::Local<v8::Object> ToV8(v8::IsolatePtr v8_isolate) const;
 
   bool HasRole(Roles roles) const;
+  Roles GetRoles() const;
 
   void Dump(std::ostream& os) const;
 };

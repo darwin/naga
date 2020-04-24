@@ -38,7 +38,7 @@ class CJSObjectAPI : public CJSObjectBase {
   [[nodiscard]] py::object Float() const;
   [[nodiscard]] py::object Bool() const;
   [[nodiscard]] py::str Str() const;
-  [[nodiscard]] py::object Repr() const;
+  [[nodiscard]] py::str Repr() const;
 
   [[nodiscard]] bool EQ(const CJSObjectPtr& other) const;
   [[nodiscard]] bool NE(const CJSObjectPtr& other) const;

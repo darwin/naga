@@ -139,13 +139,12 @@ py::str CJSObjectCLJSImpl::Str() const {
   }
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
-  auto raw_str = PyUnicode_FromString(*v8_utf);
-  auto py_result = py::cast<py::str>(raw_str);
+  py::str py_result(*v8_utf);
   TRACE("CJSObjectCLJSImpl::Str {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObjectCLJSImpl::Repr() const {
+py::str CJSObjectCLJSImpl::Repr() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -162,8 +161,7 @@ py::object CJSObjectCLJSImpl::Repr() const {
   }
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
-  auto raw_str = PyUnicode_FromString(*v8_utf);
-  auto py_result = py::cast<py::object>(raw_str);
+  py::str py_result(*v8_utf);
   TRACE("CJSObjectCLJSImpl::Repr {} => {}", THIS, py_result);
   return py_result;
 }
