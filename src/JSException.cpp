@@ -111,7 +111,7 @@ void translateException(std::exception_ptr p) {
 }
 #pragma clang diagnostic pop
 
-CJSException::CJSException(const v8::IsolatePtr& v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
+CJSException::CJSException(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
     : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
   TRACE("CJSException::CJSException {} v8_isolate={} v8_try_catch={} raw_type={}", THIS, P$(m_v8_isolate), v8_try_catch,
         raw_type);
@@ -298,7 +298,7 @@ std::string CJSException::GetStackTrace() const {
   return result;
 }
 
-std::string CJSException::Extract(const v8::IsolatePtr& v8_isolate, const v8::TryCatch& v8_try_catch) {
+std::string CJSException::Extract(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
   TRACE("CJSException::Extract v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   assert(v8_isolate->InContext());
 
@@ -346,7 +346,7 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"SyntaxError", PyExc_SyntaxError},
                                               {"TypeError", PyExc_TypeError}};
 
-void CJSException::HandleTryCatch(const v8::IsolatePtr& v8_isolate, const v8::TryCatch& v8_try_catch) {
+void CJSException::HandleTryCatch(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
   // TODO: revisit this CanContinue test, it is suspicious
   if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
     return;
@@ -355,7 +355,7 @@ void CJSException::HandleTryCatch(const v8::IsolatePtr& v8_isolate, const v8::Tr
   Throw(v8_isolate, v8_try_catch);
 }
 
-void CJSException::Throw(const v8::IsolatePtr& v8_isolate, const v8::TryCatch& v8_try_catch) {
+void CJSException::Throw(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
   TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   auto v8_scope = v8u::withScope(v8_isolate);
   assert(v8_try_catch.HasCaught() && v8_try_catch.CanContinue());

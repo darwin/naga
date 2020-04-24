@@ -40,4 +40,4 @@ class logger;
 
 }
 
-using LoggerPtr = spdlog::logger * __nonnull;
+using LoggerPtr = spdlog::logger* __nonnull;

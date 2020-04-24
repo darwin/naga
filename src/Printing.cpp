@@ -16,7 +16,7 @@ std::string printCoerced(const std::wstring& v) {
   }
 }
 
-std::string printCoerced(const v8::IsolatePtr& v) {
+std::string printCoerced(v8::IsolatePtr v) {
   return fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 

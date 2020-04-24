@@ -11,7 +11,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-void CPythonObject::ThrowJSException(const v8::IsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
+void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
 
@@ -122,7 +122,7 @@ void CPythonObject::ThrowJSException(const v8::IsolatePtr& v8_isolate, const py:
 
 #pragma clang diagnostic pop
 
-v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(const v8::IsolatePtr& v8_isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(v8::IsolatePtr v8_isolate) {
   TRACE("CPythonObject::CreateJSWrapperTemplate");
   auto v8_wrapper_template = v8::ObjectTemplate::New(v8_isolate);
   auto v8_handler_config =
@@ -135,7 +135,7 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(const v8::I
   return v8_wrapper_template;
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::GetOrCreateCachedJSWrapperTemplate(const v8::IsolatePtr& v8_isolate) {
+v8::Local<v8::ObjectTemplate> CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8::IsolatePtr v8_isolate) {
   TRACE("CPythonObject::GetOrCreateCachedJSWrapperTemplate");
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
   auto v8_object_template =

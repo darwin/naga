@@ -4,7 +4,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
-CJSStackFrame::CJSStackFrame(const v8::IsolatePtr& v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
+CJSStackFrame::CJSStackFrame(v8::IsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
     : m_v8_isolate(v8_isolate), m_v8_frame(v8_isolate, v8_stack_frame) {
   m_v8_frame.AnnotateStrongRetainer("Naga JSStackFrame");
 
