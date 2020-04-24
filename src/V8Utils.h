@@ -12,7 +12,8 @@ v8::Local<v8::String> toString(const py::handle& py_str);
 
 v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i);
 
-v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::String> v8_string);
+v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value);
+std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value);
 
 void checkContext(v8::IsolatePtr v8_isolate);
 

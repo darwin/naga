@@ -73,9 +73,15 @@ v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i) {
   }
 }
 
-v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::String> v8_string) {
-  return v8::String::Utf8Value(v8_isolate, v8_string);
+v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value) {
+  return v8::String::Utf8Value(v8_isolate, v8_value);
 }
+
+std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value) {
+  auto v8_utf = toUTF(v8_isolate, v8_value);
+  return std::string{*v8_utf, v8_utf.length()};
+}
+
 
 void checkContext(v8::IsolatePtr v8_isolate) {
   auto scope = withScope(v8_isolate);
