@@ -24,7 +24,7 @@ struct HospitalRecord {
   }
 };
 
-typedef std::unordered_set<HospitalRecord*> HospitalRecords;
+using HospitalRecords = std::unordered_set<HospitalRecord*>;
 
 void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
 

@@ -21,12 +21,12 @@ class CJSObjectArrayImpl;
 class CJSObjectCLJSImpl;
 class CJSObjectAPI;
 
-typedef std::shared_ptr<CJSContext> CJSContextPtr;
-typedef std::shared_ptr<CJSIsolate> CJSIsolatePtr;
-typedef std::shared_ptr<CJSScript> CJSScriptPtr;
-typedef std::shared_ptr<CJSStackTrace> CJSStackTracePtr;
-typedef std::shared_ptr<CJSStackFrame> CJSStackFramePtr;
-typedef std::shared_ptr<CJSObject> CJSObjectPtr;
+using CJSContextPtr = std::shared_ptr<CJSContext>;
+using CJSIsolatePtr = std::shared_ptr<CJSIsolate>;
+using CJSScriptPtr = std::shared_ptr<CJSScript>;
+using CJSStackTracePtr = std::shared_ptr<CJSStackTrace>;
+using CJSStackFramePtr = std::shared_ptr<CJSStackFrame>;
+using CJSObjectPtr = std::shared_ptr<CJSObject>;
 
 namespace v8 {
 

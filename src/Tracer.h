@@ -58,9 +58,9 @@
 // If the the JS object is a wrapper, we simply use this cache to get the original naked Python object.
 // We must avoid wrapping the wrapper!
 
-typedef v8::Global<v8::Object> V8Wrapper;
-typedef PyObject TracedRawObject;
-typedef PyObject WeakRefRawObject;
+using V8Wrapper = v8::Global<v8::Object>;
+using TracedRawObject = PyObject;
+using WeakRefRawObject = PyObject;
 
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
 v8::Local<v8::Object> lookupTracedWrapper(v8::IsolatePtr v8_isolate, TracedRawObject* raw_object);
@@ -71,10 +71,10 @@ struct TracerRecord {
   WeakRefRawObject* m_weak_ref;  // this field is non-null when in zombie mode
 };
 
-typedef std::unordered_map<TracedRawObject*, TracerRecord> TWrapperTrackingMap;
+using TrackedWrappers = std::unordered_map<TracedRawObject*, TracerRecord>;
 
 class CTracer {
-  TWrapperTrackingMap m_tracked_wrappers;
+  TrackedWrappers m_wrappers;
 
  public:
   CTracer();
@@ -86,7 +86,7 @@ class CTracer {
 
  protected:
   void DeleteRecord(TracedRawObject* raw_object);
-  void SwitchToLiveMode(TWrapperTrackingMap::iterator tracer_lookup, bool cleanup = true);
-  void SwitchToZombieMode(TWrapperTrackingMap::iterator tracer_lookup);
+  void SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cleanup = true);
+  void SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup);
   void SwitchToZombieModeOrDie(TracedRawObject* raw_object);
 };

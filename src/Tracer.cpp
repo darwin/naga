@@ -74,8 +74,8 @@ CTracer::CTracer() {
 CTracer::~CTracer() {
   TRACE("CTracer::~CTracer {}", THIS);
   // make sure we release all Python objects in live mode and drop all pending weakrefs
-  auto it = m_tracked_wrappers.begin();
-  while (it != m_tracked_wrappers.end()) {
+  auto it = m_wrappers.begin();
+  while (it != m_wrappers.end()) {
     if (!it->second.m_weak_ref) {
       // live mode
       Py_DECREF(it->first);
@@ -93,22 +93,22 @@ void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8
   assert(raw_object);
 
   // trace must be called only for not-yet tracked objects
-  assert(m_tracked_wrappers.find(raw_object) == m_tracked_wrappers.end());
+  assert(m_wrappers.find(raw_object) == m_wrappers.end());
 
   auto v8_isolate = v8_wrapper->GetIsolate();
 
   // add our record for lookups
   recordTracedWrapper(v8_wrapper, raw_object);
   auto insert_point =
-      m_tracked_wrappers.insert(std::make_pair(raw_object, TracerRecord{V8Wrapper(v8_isolate, v8_wrapper), nullptr}));
+      m_wrappers.insert(std::make_pair(raw_object, TracerRecord{V8Wrapper(v8_isolate, v8_wrapper), nullptr}));
 
   // start in live mode and we know we don't have to do any cleanup
   SwitchToLiveMode(insert_point.first, false);
 }
 
 v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolatePtr v8_isolate, PyObject* raw_object) {
-  auto tracer_lookup = m_tracked_wrappers.find(raw_object);
-  if (tracer_lookup == m_tracked_wrappers.end()) {
+  auto tracer_lookup = m_wrappers.find(raw_object);
+  if (tracer_lookup == m_wrappers.end()) {
     TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object);
     return v8::Local<v8::Object>();
   }
@@ -128,8 +128,8 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolatePtr v8_isolate, PyObject
 void CTracer::DeleteRecord(PyObject* raw_object) {
   TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, raw_object);
 
-  auto tracer_lookup = m_tracked_wrappers.find(raw_object);
-  assert(tracer_lookup != m_tracked_wrappers.end());
+  auto tracer_lookup = m_wrappers.find(raw_object);
+  assert(tracer_lookup != m_wrappers.end());
 
   auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;
   if (raw_weak_ref) {
@@ -139,10 +139,10 @@ void CTracer::DeleteRecord(PyObject* raw_object) {
 
   // remove our record
   // note that m_v8_wrapper.Reset() will be called in its destructor
-  m_tracked_wrappers.erase(tracer_lookup);
+  m_wrappers.erase(tracer_lookup);
 }
 
-void CTracer::SwitchToLiveMode(TWrapperTrackingMap::iterator tracer_lookup, bool cleanup) {
+void CTracer::SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cleanup) {
   TRACE("CTracer::SwitchToLiveMode {}", THIS);
 
   auto raw_object = tracer_lookup->first;
@@ -183,13 +183,13 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
     return;
   }
 
-  auto tracer_lookup = m_tracked_wrappers.find(raw_object);
-  assert(tracer_lookup != m_tracked_wrappers.end());
+  auto tracer_lookup = m_wrappers.find(raw_object);
+  assert(tracer_lookup != m_wrappers.end());
 
   SwitchToZombieMode(tracer_lookup);
 }
 
-void CTracer::SwitchToZombieMode(TWrapperTrackingMap::iterator tracer_lookup) {
+void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
   TRACE("CTracer::SwitchToZombieMode {}", THIS);
 
   auto raw_object = tracer_lookup->first;

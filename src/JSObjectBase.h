@@ -4,7 +4,7 @@
 
 class CJSObjectBase {
  public:
-  typedef std::uint8_t RoleFlagsType;
+  using RoleFlagsType = std::uint8_t;
   enum class Roles : RoleFlagsType {
     Generic = 0,  // always on
     Function = 1 << 0,
