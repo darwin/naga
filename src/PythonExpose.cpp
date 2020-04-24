@@ -105,7 +105,7 @@ void exposeToolkit(py::module py_module) {
         py::arg("this"),
         "Clone the object.");
 
-  m.def("create", &CJSObjectAPI::CreateWithArgs,
+  m.def("create", &CJSObjectAPI::Create,
         py::arg("constructor"),
         py::arg("arguments") = py::tuple(),
         py::arg("propertiesObject") = py::dict(),

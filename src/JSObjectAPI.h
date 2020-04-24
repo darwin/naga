@@ -18,7 +18,7 @@ class CJSObjectAPI : public CJSObjectBase {
  public:
   explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj) : CJSObjectBase(v8_obj) {}
 
-  static py::object CreateWithArgs(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
+  static py::object Create(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 
   py::object GetAttr(const py::object& py_key) const;
   void SetAttr(const py::object& py_key, const py::object& py_obj) const;
