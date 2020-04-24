@@ -22,7 +22,7 @@ class CJSObjectBase {
 
   bool HasRole(Roles roles) const;
 
-  [[nodiscard]] v8::Local<v8::Object> Object() const;
+  [[nodiscard]] v8::Local<v8::Object> Object(v8::IsolatePtr v8_isolate) const;
 
   void Dump(std::ostream& os) const;
 };

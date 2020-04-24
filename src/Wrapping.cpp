@@ -194,7 +194,7 @@ static v8::Local<v8::Value> wrapInternal(v8::IsolatePtr v8_isolate, py::handle p
   if (py::isinstance<CJSObject>(py_handle)) {
     auto object = py::cast<CJSObjectPtr>(py_handle);
     assert(object.get());
-    return object->Object();
+    return object->Object(v8_isolate);
   }
 
   // fall back to synthesizing custom wrapper on the fly
