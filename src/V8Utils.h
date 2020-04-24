@@ -28,4 +28,18 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
                                     v8::Local<v8::Integer> v8_col);
 v8::Eternal<v8::Private> createEternalPrivateAPI(v8::IsolatePtr v8_isolate, const char* name);
 
+// an alternative for withTryCatch, which does an automatic check for exceptions at the end of scope
+// one can still use manual checkTryCatch for ad-hoc checks sooner
+class AutoTryCatch : public v8::TryCatch {
+  v8::IsolatePtr m_v8_isolate;
+
+ public:
+  explicit AutoTryCatch(v8::IsolatePtr v8_isolate) : v8::TryCatch(v8_isolate), m_v8_isolate(v8_isolate) {}
+  ~AutoTryCatch() { checkTryCatch(m_v8_isolate, *this); }
+};
+
+inline AutoTryCatch withAutoTryCatch(v8::IsolatePtr v8_isolate) {
+  return AutoTryCatch{v8_isolate};
+}
+
 }  // namespace v8u
