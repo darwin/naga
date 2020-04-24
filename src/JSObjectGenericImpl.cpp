@@ -32,13 +32,11 @@ py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
-
   auto v8_attr_value = m_base.ToV8(v8_isolate)->Get(v8_context, v8_attr_name).ToLocalChecked();
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   auto py_result = wrap(v8_isolate, v8_attr_value, m_base.ToV8(v8_isolate));
   TRACE("CJSObjectGenericImpl::ObjectGetAttr {} => {}", THIS, py_result);
@@ -51,14 +49,12 @@ void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& p
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(py_key);
   auto v8_attr_obj = wrap(std::move(py_obj));
 
-  if (!m_base.ToV8(v8_isolate)->Set(v8_context, v8_attr_name, v8_attr_obj).FromMaybe(false)) {
-    v8u::checkTryCatch(v8_isolate, v8_try_catch);
-  }
+  m_base.ToV8(v8_isolate)->Set(v8_context, v8_attr_name, v8_attr_obj).Check();
 }
 
 void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
@@ -67,29 +63,22 @@ void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(py_key);
   CheckAttr(v8_attr_name);
 
-  if (!m_base.ToV8(v8_isolate)->Delete(v8_context, v8_attr_name).FromMaybe(false)) {
-    v8u::checkTryCatch(v8_isolate, v8_try_catch);
-  }
+  m_base.ToV8(v8_isolate)->Delete(v8_context, v8_attr_name).Check();
 }
 
 bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
-  v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
-
-  v8::TryCatch try_catch(v8_isolate);
-
-  bool result = m_base.ToV8(v8_isolate)->Has(context, v8u::toString(py_key)).ToChecked();
-
-  v8u::checkTryCatch(v8_isolate, try_catch);
-
+  bool result = m_base.ToV8(v8_isolate)->Has(v8_context, v8u::toString(py_key)).ToChecked();
   TRACE("CJSObjectGenericImpl::Contains {} py_key={} => {}", THIS, py_key, result);
   return result;
 }

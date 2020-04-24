@@ -15,7 +15,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto v8_fn = m_base.ToV8(v8_isolate).As<v8::Function>();
 
   auto args_count = py_args.size();
@@ -50,8 +50,6 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
       }
     }
   });
-
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   return wrap(v8_isolate, v8_result.ToLocalChecked());
 }

@@ -69,18 +69,14 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
-  auto v8_result = withAllowedPythonThreads([&]() { return v8_script->Run(v8_context); });
+  auto v8_result = withAllowedPythonThreads([&] { return v8_script->Run(v8_context); });
   if (!v8_result.IsEmpty()) {
     return wrap(v8_isolate, v8_result.ToLocalChecked());
   }
-
-  if (v8_try_catch.HasCaught()) {
-    if (PyErr_Occurred()) {
-      throw py::error_already_set();
-    }
-    v8u::checkTryCatch(m_v8_isolate, v8_try_catch);
+  if (PyErr_Occurred()) {
+    throw py::error_already_set();
   }
   return py::js_null();
 }
@@ -105,8 +101,8 @@ CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_script = withAllowedPythonThreads([&]() {
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_script = withAllowedPythonThreads([&] {
     auto v8_line = v8u::toPositiveInteger(v8_isolate, line);
     auto v8_col = v8u::toPositiveInteger(v8_isolate, col);
     auto v8_script_origin = v8u::createScriptOrigin(v8_name, v8_line, v8_col);

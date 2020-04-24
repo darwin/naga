@@ -5,6 +5,44 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSExceptionLogger), __VA_ARGS__)
 
+static std::string extractExceptionMessage(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
+  TRACE("extractExceptionMessage v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
+  assert(v8_isolate->InContext());
+
+  auto v8_scope = v8u::withScope(v8_isolate);
+
+  std::ostringstream oss;
+
+  v8::String::Utf8Value msg(v8_isolate, v8_try_catch.Exception());
+
+  if (*msg) {
+    oss << std::string(*msg, msg.length());
+  }
+
+  v8::Local<v8::Message> message = v8_try_catch.Message();
+
+  if (!message.IsEmpty()) {
+    oss << " ( ";
+
+    if (!message->GetScriptResourceName().IsEmpty() && !message->GetScriptResourceName()->IsUndefined()) {
+      v8::String::Utf8Value name(v8_isolate, message->GetScriptResourceName());
+
+      oss << std::string(*name, name.length());
+    }
+
+    oss << " @ " << message->GetLineNumber(v8_isolate->GetCurrentContext()).ToChecked() << " : "
+        << message->GetStartColumn() << " ) ";
+
+    if (!message->GetSourceLine(v8_isolate->GetCurrentContext()).IsEmpty()) {
+      v8::String::Utf8Value line(v8_isolate, message->GetSourceLine(v8_isolate->GetCurrentContext()).ToLocalChecked());
+
+      oss << " -> " << std::string(*line, line.length());
+    }
+  }
+
+  return oss.str();
+}
+
 v8::Eternal<v8::Private> privateAPIForType(v8::IsolatePtr v8_isolate) {
   return v8u::createEternalPrivateAPI(v8_isolate, "Naga#JSException##exc_type");
 }
@@ -112,7 +150,9 @@ void translateException(std::exception_ptr p) {
 #pragma clang diagnostic pop
 
 CJSException::CJSException(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type)
-    : std::runtime_error(Extract(v8_isolate, v8_try_catch)), m_v8_isolate(v8_isolate), m_raw_type(raw_type) {
+    : std::runtime_error(extractExceptionMessage(v8_isolate, v8_try_catch)),
+      m_v8_isolate(v8_isolate),
+      m_raw_type(raw_type) {
   TRACE("CJSException::CJSException {} v8_isolate={} v8_try_catch={} raw_type={}", THIS, P$(m_v8_isolate), v8_try_catch,
         raw_type);
   auto v8_scope = v8u::withScope(m_v8_isolate);
@@ -298,44 +338,6 @@ std::string CJSException::GetStackTrace() const {
   return result;
 }
 
-std::string CJSException::Extract(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::Extract v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
-  assert(v8_isolate->InContext());
-
-  auto v8_scope = v8u::withScope(v8_isolate);
-
-  std::ostringstream oss;
-
-  v8::String::Utf8Value msg(v8_isolate, v8_try_catch.Exception());
-
-  if (*msg) {
-    oss << std::string(*msg, msg.length());
-  }
-
-  v8::Local<v8::Message> message = v8_try_catch.Message();
-
-  if (!message.IsEmpty()) {
-    oss << " ( ";
-
-    if (!message->GetScriptResourceName().IsEmpty() && !message->GetScriptResourceName()->IsUndefined()) {
-      v8::String::Utf8Value name(v8_isolate, message->GetScriptResourceName());
-
-      oss << std::string(*name, name.length());
-    }
-
-    oss << " @ " << message->GetLineNumber(v8_isolate->GetCurrentContext()).ToChecked() << " : "
-        << message->GetStartColumn() << " ) ";
-
-    if (!message->GetSourceLine(v8_isolate->GetCurrentContext()).IsEmpty()) {
-      v8::String::Utf8Value line(v8_isolate, message->GetSourceLine(v8_isolate->GetCurrentContext()).ToLocalChecked());
-
-      oss << " -> " << std::string(*line, line.length());
-    }
-  }
-
-  return oss.str();
-}
-
 struct SupportedError {
   const char* m_name;
   PyObject* m_raw_type;
@@ -346,22 +348,22 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"SyntaxError", PyExc_SyntaxError},
                                               {"TypeError", PyExc_TypeError}};
 
-void CJSException::HandleTryCatch(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
+void CJSException::CheckTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch) {
   // TODO: revisit this CanContinue test, it is suspicious
-  if (!v8_try_catch.HasCaught() || !v8_try_catch.CanContinue()) {
+  TRACE("CheckTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), *v8_try_catch);
+  if (!v8_try_catch->HasCaught() || !v8_try_catch->CanContinue()) {
     return;
   }
-  TRACE("CJSException::HandleTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   Throw(v8_isolate, v8_try_catch);
 }
 
-void CJSException::Throw(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
-  TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
+void CJSException::Throw(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch) {
+  TRACE("CJSException::Throw v8_isolate={} v8_try_catch={}", P$(v8_isolate), *v8_try_catch);
   auto v8_scope = v8u::withScope(v8_isolate);
-  assert(v8_try_catch.HasCaught() && v8_try_catch.CanContinue());
+  assert(v8_try_catch->HasCaught() && v8_try_catch->CanContinue());
 
   PyObject* raw_type = nullptr;
-  auto v8_ex = v8_try_catch.Exception();
+  auto v8_ex = v8_try_catch->Exception();
 
   if (v8_ex->IsObject()) {
     auto v8_context = v8_isolate->GetCurrentContext();
@@ -380,7 +382,12 @@ void CJSException::Throw(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_c
     }
   }
 
-  throw CJSException(v8_isolate, v8_try_catch, raw_type);
+  auto ex = CJSException(v8_isolate, *v8_try_catch, raw_type);
+  // we have consumed passed v8_try_catch at this point
+  // it is good idea to reset the source so there is no chance that someone will rethrow the exception later
+  // e.g. someone could call v8u::checkTryCatch on the same v8_try_catch after this point
+  v8_try_catch->Reset();
+  throw ex;
 }
 
 void CJSException::PrintCallStack(py::object py_file) const {

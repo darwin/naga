@@ -1,6 +1,7 @@
 #include "JSObjectArrayImpl.h"
 #include "JSException.h"
 #include "Wrapping.h"
+#include "JSNull.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -21,7 +22,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
@@ -36,7 +37,6 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
         auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
-        v8u::checkTryCatch(v8_isolate, v8_try_catch);
         slice.append(wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate)));
       }
 
@@ -50,12 +50,10 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     }
 
     if (!m_base.ToV8(v8_isolate)->Has(v8_context, idx).ToChecked()) {
-      return py::none();
+      return py::js_null();
     }
 
     auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
-    v8u::checkTryCatch(v8_isolate, v8_try_catch);
-
     return wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate));
   }
 
@@ -68,7 +66,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     PyObject* values = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
@@ -142,9 +140,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
   } else if (PyLong_Check(py_key.ptr())) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (!m_base.ToV8(v8_isolate)->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).ToChecked()) {
-      v8u::checkTryCatch(v8_isolate, v8_try_catch);
-    }
+    m_base.ToV8(v8_isolate)->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).Check();
   }
 
   return py_value;
@@ -156,7 +152,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     Py_ssize_t arrayLen = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
@@ -175,7 +171,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   } else if (PyLong_Check(py_key.ptr())) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    py::object py_result;
+    py::object py_result;  // = py::none/py::js_null by default
 
     if (m_base.ToV8(v8_isolate)->Has(v8_context, idx).ToChecked()) {
       auto v8_idx = v8::Integer::New(v8_isolate, idx);
@@ -183,15 +179,8 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
       py_result = wrap(v8_isolate, v8_obj, m_base.ToV8(v8_isolate));
     }
 
-    if (!m_base.ToV8(v8_isolate)->Delete(v8_context, idx).ToChecked()) {
-      v8u::checkTryCatch(v8_isolate, v8_try_catch);
-    }
-
-    if (py_result) {
-      return py_result;
-    } else {
-      return py::none();
-    }
+    m_base.ToV8(v8_isolate)->Delete(v8_context, idx).Check();
+    return py_result;
   }
 
   throw CJSException("list indices must be integers", PyExc_TypeError);
@@ -203,14 +192,12 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {
     if (m_base.ToV8(v8_isolate)->Has(v8_context, i).ToChecked()) {
       auto v8_i = v8::Integer::New(v8_isolate, i);
       auto v8_val = m_base.ToV8(v8_isolate)->Get(v8_context, v8_i).ToLocalChecked();
-
-      v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
       // TODO: could this be optimized without wrapping?
       if (py_key.is(wrap(v8_isolate, v8_val, m_base.ToV8(v8_isolate)))) {
@@ -218,8 +205,6 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
       }
     }
   }
-
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
 
   return false;
 }

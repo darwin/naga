@@ -78,11 +78,9 @@ static v8::Local<v8::Value> callBridge(v8::IsolatePtr v8_isolate,
                                        std::vector<v8::Local<v8::Value>> v8_params) {
   TRACE("callBridge v8_isolate={} name={}", P$(v8_isolate), name);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto v8_fn = lookupBridgeFn(name);
-
   auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
   return v8_result.ToLocalChecked();
 }
 

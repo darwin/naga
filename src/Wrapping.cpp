@@ -206,9 +206,8 @@ v8::Local<v8::Value> wrap(const py::handle& py_handle) {
   auto v8_isolate = v8u::getCurrentIsolate();
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto py_gil = pyu::withGIL();
   auto v8_result = wrapInternal(v8_isolate, py_handle);
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
   return v8_scope.Escape(v8_result);
 }

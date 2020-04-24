@@ -20,10 +20,8 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolatePtr v8_isolate,
   TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}", P$(v8_isolate),
         frame_limit, v8_options);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
-
   return std::make_shared<CJSStackTrace>(v8_isolate, v8_stack_trace);
 }
 
@@ -37,12 +35,11 @@ int CJSStackTrace::GetFrameCount() const {
 CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
   TRACE("CJSStackTrace::GetFrame {} idx={}", THIS, idx);
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_try_catch = v8u::withTryCatch(m_v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(m_v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
     throw CJSException("index of of range", PyExc_IndexError);
   }
   auto v8_stack_frame = Handle()->GetFrame(m_v8_isolate, idx);
-  v8u::checkTryCatch(m_v8_isolate, v8_try_catch);
 
   auto result = std::make_shared<CJSStackFrame>(m_v8_isolate, v8_stack_frame);
   TRACE("CJSStackTrace::GetFrame {} => {}", THIS, result);

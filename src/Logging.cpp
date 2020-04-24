@@ -130,6 +130,7 @@ static void initLoggers() {
   g_loggers[kJSObjectGenericImplLogger] = std::make_shared<spdlog::logger>("naga_ogi", logger_file_sink);
   g_loggers[kWrappingLogger] = std::make_shared<spdlog::logger>("naga_pwr", logger_file_sink);
   g_loggers[kJSRegistryLogger] = std::make_shared<spdlog::logger>("naga_jsr", logger_file_sink);
+  g_loggers[kAutoTryCatchLogger] = std::make_shared<spdlog::logger>("naga_atc", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

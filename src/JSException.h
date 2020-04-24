@@ -15,8 +15,6 @@ class CJSException : public std::runtime_error {
   v8::Global<v8::Value> m_v8_stack;
   v8::Global<v8::Message> m_v8_message;
 
-  static std::string Extract(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch);
-
  protected:
   CJSException(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
@@ -46,8 +44,8 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] py::object Str() const;
 
   void PrintCallStack(py::object py_file) const;
-  static void HandleTryCatch(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch);
-  static void Throw(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch);
+  static void CheckTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
+  static void Throw(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

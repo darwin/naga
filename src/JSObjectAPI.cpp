@@ -41,23 +41,19 @@ py::list CJSObjectAPI::Dir() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
-
   auto py_gil = pyu::withGIL();
-
-  py::list attrs;
-
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto props = ToV8(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
 
+  py::list attrs;
   for (size_t i = 0; i < props->Length(); i++) {
     auto v8_i = v8::Integer::New(v8_isolate, i);
     auto v8_prop = props->Get(v8_context, v8_i).ToLocalChecked();
     attrs.append(wrap(v8_isolate, v8_prop));
   }
 
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
   TRACE("CJSObjectAPI::Dir {} => {}", THIS, attrs);
   return attrs;
 }
@@ -253,7 +249,7 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
   }
 
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_try_catch = v8u::withTryCatch(v8_isolate);
+  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (!v8_proto->IsFunction()) {
     throw CJSException("Object prototype expected to be a Function", PyExc_TypeError);
