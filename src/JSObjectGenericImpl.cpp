@@ -37,9 +37,7 @@ py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
   CheckAttr(v8_attr_name);
 
   auto v8_attr_value = m_base.Object()->Get(v8_context, v8_attr_name).ToLocalChecked();
-  if (v8_attr_value.IsEmpty()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
   auto py_result = wrap(v8_isolate, v8_attr_value, m_base.Object());
   TRACE("CJSObjectGenericImpl::ObjectGetAttr {} => {}", THIS, py_result);
@@ -89,9 +87,7 @@ bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
 
   bool result = m_base.Object()->Has(context, v8u::toString(py_key)).ToChecked();
 
-  if (try_catch.HasCaught()) {
-    CJSException::HandleTryCatch(v8_isolate, try_catch);
-  }
+  CJSException::HandleTryCatch(v8_isolate, try_catch);
 
   TRACE("CJSObjectGenericImpl::Contains {} py_key={} => {}", THIS, py_key, result);
   return result;

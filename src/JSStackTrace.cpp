@@ -22,9 +22,7 @@ CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8::IsolatePtr v8_isolate,
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
-  if (v8_stack_trace.IsEmpty()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
   return std::make_shared<CJSStackTrace>(v8_isolate, v8_stack_trace);
 }
@@ -44,9 +42,7 @@ CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
     throw CJSException("index of of range", PyExc_IndexError);
   }
   auto v8_stack_frame = Handle()->GetFrame(m_v8_isolate, idx);
-  if (v8_stack_frame.IsEmpty()) {
-    CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
-  }
+  CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
 
   auto result = std::make_shared<CJSStackFrame>(m_v8_isolate, v8_stack_frame);
   TRACE("CJSStackTrace::GetFrame {} => {}", THIS, result);

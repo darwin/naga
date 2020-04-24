@@ -77,7 +77,7 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   }
 
   if (v8_try_catch.HasCaught()) {
-    if (!v8_try_catch.CanContinue() && PyErr_Occurred()) {
+    if (PyErr_Occurred()) {
       throw py::error_already_set();
     }
     CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
@@ -113,10 +113,7 @@ CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
     return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
   });
 
-  if (v8_script.IsEmpty()) {
-    CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
-  }
-
+  CJSException::HandleTryCatch(m_v8_isolate, v8_try_catch);
   return std::make_shared<CJSScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 

@@ -58,10 +58,7 @@ py::list CJSObjectAPI::Dir() const {
     attrs.append(wrap(v8_isolate, v8_prop));
   }
 
-  if (v8_try_catch.HasCaught()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
-
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
   TRACE("CJSObjectAPI::Dir {} => {}", THIS, attrs);
   return attrs;
 }
@@ -273,9 +270,7 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
   withAllowedPythonThreads(
       [&]() { v8_result = fn->NewInstance(v8_context, v8_params.size(), v8_params.data()).ToLocalChecked(); });
 
-  if (v8_result.IsEmpty()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
   auto it = py_kwds.begin();
   while (it != py_kwds.end()) {

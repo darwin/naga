@@ -37,11 +37,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
         auto v8_value = m_base.Object()->Get(v8_context, idx).ToLocalChecked();
-
-        if (v8_value.IsEmpty()) {
-          CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-        }
-
+        CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
         slice.append(wrap(v8_isolate, v8_value, m_base.Object()));
       }
 
@@ -59,10 +55,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     }
 
     auto v8_value = m_base.Object()->Get(v8_context, idx).ToLocalChecked();
-
-    if (v8_value.IsEmpty()) {
-      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-    }
+    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
     return wrap(v8_isolate, v8_value, m_base.Object());
   }
@@ -216,9 +209,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
       auto v8_i = v8::Integer::New(v8_isolate, i);
       auto v8_val = m_base.Object()->Get(v8_context, v8_i).ToLocalChecked();
 
-      if (v8_try_catch.HasCaught()) {
-        CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-      }
+      CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
       // TODO: could this be optimized without wrapping?
       if (py_key.is(wrap(v8_isolate, v8_val, m_base.Object()))) {
@@ -227,9 +218,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
     }
   }
 
-  if (v8_try_catch.HasCaught()) {
-    CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-  }
+  CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
   return false;
 }
