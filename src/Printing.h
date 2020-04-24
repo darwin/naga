@@ -64,9 +64,8 @@ std::ostream& printLocalValue(std::ostream& os, const Local<Value>& v);
 
 template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<Value, T>>>
 std::ostream& operator<<(std::ostream& os, const Local<T>& v) {
-  os << "v8::Local<";
+  os << "v8::Local ";
   printLocalValue(os, v);
-  os << ">";
   return os;
 }
 

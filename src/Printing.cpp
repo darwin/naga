@@ -81,6 +81,27 @@ std::ostream& operator<<(std::ostream& os, const PyObject* v) {
 
 namespace v8 {
 
+template <typename T>
+static std::ostream& dumpLocalPrefix(std::ostream& os, const char* label, const Local<T>& v) {
+  return os << fmt::format("{} {}", label, static_cast<void*>(*v));
+}
+
+template <typename T, typename F>
+static std::ostream& printLocalChecked(std::ostream& os, const Local<T>& v, const char* label, F&& f) {
+  dumpLocalPrefix(os, label, v);
+  if (v.IsEmpty()) {
+    os << "{EMPTY}";
+  } else {
+    os << f();
+  }
+  return os;
+}
+
+template <typename T>
+static std::ostream& printLocalChecked(std::ostream& os, const Local<T>& v, const char* label) {
+  return printLocalChecked(os, v, label, [] { return ""; });
+}
+
 std::ostream& printLocalValue(std::ostream& os, const Local<Value>& v) {
   if (v.IsEmpty()) {
     return os << "{EMPTY}";
@@ -100,41 +121,38 @@ std::ostream& printLocalValue(std::ostream& os, const Local<Value>& v) {
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const TryCatch& v) {
-  return os << fmt::format("v8::TryCatch Message='{}'", v.Message());
-}
-
 std::ostream& operator<<(std::ostream& os, const Local<Private>& v) {
-  return os << fmt::format("v8::Private {}", static_cast<void*>(*v));
+  return printLocalChecked(os, v, "v8::Context");
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<Context>& v) {
-  if (v.IsEmpty()) {
-    return os << fmt::format("v8::Context {} [EMPTY]", static_cast<void*>(*v));
-  } else {
-    return os << fmt::format("v8::Context {} global={}", static_cast<void*>(*v), v->Global());
-  }
+  return printLocalChecked(os, v, "v8::Context", [&] { return fmt::format("global={}", v->Global()); });
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<Script>& v) {
-  return os << fmt::format("v8::Script {}", static_cast<void*>(*v));
+  return printLocalChecked(os, v, "v8::Script");
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<ObjectTemplate>& v) {
-  return os << fmt::format("v8::ObjectTemplate {}", static_cast<void*>(*v));
+  return printLocalChecked(os, v, "v8::ObjectTemplate");
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<Message>& v) {
-  return os << fmt::format("v8::Message {} '{}'", static_cast<void*>(*v), v->Get());
+  return printLocalChecked(os, v, "v8::Message", [&] { return fmt::format("'{}'", v->Get()); });
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<StackFrame>& v) {
-  return os << fmt::format("v8::StackFrame {} ScriptId={} Script={}", static_cast<void*>(*v), v->GetScriptId(),
-                           v->GetScriptNameOrSourceURL());
+  return printLocalChecked(os, v, "v8::StackFrame", [&] {
+    return fmt::format("ScriptId={} Script={}", v->GetScriptId(), v->GetScriptNameOrSourceURL());
+  });
 }
 
 std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v) {
-  return os << fmt::format("v8::StackTrace {} FrameCount={}", static_cast<void*>(*v), v->GetFrameCount());
+  return printLocalChecked(os, v, "v8::StackFrame", [&] { return fmt::format("FrameCount={}", v->GetFrameCount()); });
+}
+
+std::ostream& operator<<(std::ostream& os, const TryCatch& v) {
+  return os << fmt::format("v8::TryCatch Message='{}'", v.Message());
 }
 
 std::ostream& operator<<(std::ostream& os, const IsolatePtr& v) {
