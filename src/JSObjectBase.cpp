@@ -43,32 +43,19 @@ void CJSObjectBase::Dump(std::ostream& os) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
 
   auto v8_obj = ToV8(v8_isolate);
   if (v8_obj.IsEmpty()) {
-    os << "None";  // TODO: this should be something different than "None"
+    os << "<EMPTY>";
     return;
-  }
-
-  if (v8_obj->IsInt32()) {
-    os << v8_obj->Int32Value(v8_context).ToChecked();
-  } else if (v8_obj->IsNumber()) {
-    os << v8_obj->NumberValue(v8_context).ToChecked();
-  } else if (v8_obj->IsBoolean()) {
-    os << v8_obj->BooleanValue(v8_isolate);
-  } else if (v8_obj->IsNull()) {
-    os << "None";
-  } else if (v8_obj->IsUndefined()) {
-    os << "N/A";
-  } else if (v8_obj->IsString()) {
-    os << *v8::String::Utf8Value(v8_isolate, v8::Local<v8::String>::Cast(v8_obj));
   } else {
-    v8::MaybeLocal<v8::String> s = v8_obj->ToString(v8_context);
-    if (s.IsEmpty()) {
-      s = v8_obj->ObjectProtoToString(v8_context);
-    } else {
-      os << *v8::String::Utf8Value(v8_isolate, s.ToLocalChecked());
-    }
+    // generic "to string" conversion:
+    //   Provide a string representation of this value usable for debugging.
+    //   This operation has no observable side effects and will succeed
+    //   unless e.g. execution is being terminated.
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_str = v8_obj->ToDetailString(v8_context).ToLocalChecked();
+    auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
+    os << *v8_utf;
   }
 }

@@ -122,7 +122,7 @@ size_t CJSObjectCLJSImpl::Length() const {
   return result;
 }
 
-py::object CJSObjectCLJSImpl::Str() const {
+py::str CJSObjectCLJSImpl::Str() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
@@ -140,7 +140,7 @@ py::object CJSObjectCLJSImpl::Str() const {
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
   auto raw_str = PyUnicode_FromString(*v8_utf);
-  auto py_result = py::cast<py::object>(raw_str);
+  auto py_result = py::cast<py::str>(raw_str);
   TRACE("CJSObjectCLJSImpl::Str {} => {}", THIS, py_result);
   return py_result;
 }

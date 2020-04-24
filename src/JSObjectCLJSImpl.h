@@ -8,7 +8,7 @@ class CJSObjectCLJSImpl {
 
   size_t Length() const;
   py::object Repr() const;
-  py::object Str() const;
+  py::str Str() const;
   py::object GetItem(const py::object& py_key) const;
   py::object GetAttr(const py::object& py_key) const;
 

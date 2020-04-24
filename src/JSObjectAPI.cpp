@@ -191,15 +191,14 @@ py::object CJSObjectAPI::Bool() const {
   return py_result;
 }
 
-py::object CJSObjectAPI::Str() const {
-  py::object py_result;
-  if (HasRole(Roles::CLJS)) {
-    py_result = m_cljs_impl.Str();
-  } else {
-    std::stringstream ss;
-    ss << *this;
-    py_result = py::cast(ss.str());
-  }
+py::str CJSObjectAPI::Str() const {
+  py::str py_result = [&] {
+    if (HasRole(Roles::CLJS)) {
+      return m_cljs_impl.Str();
+    } else {
+      return m_generic_impl.Str();
+    }
+  }();
 
   TRACE("CJSObjectAPI::Str {} => {}", THIS, py_result);
   return py_result;

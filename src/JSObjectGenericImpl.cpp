@@ -93,3 +93,19 @@ bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
   TRACE("CJSObjectGenericImpl::Contains {} py_key={} => {}", THIS, py_key, result);
   return result;
 }
+
+py::str CJSObjectGenericImpl::Str() const {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  v8u::checkContext(v8_isolate);
+  auto v8_scope = v8u::withScope(v8_isolate);
+
+  auto v8_obj = m_base.ToV8(v8_isolate);
+  if (v8_obj.IsEmpty()) {
+    return "<EMPTY>";
+  } else {
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_str = v8_obj->ToString(v8_context).ToLocalChecked();
+    auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
+    return *v8_utf;
+  }
+}

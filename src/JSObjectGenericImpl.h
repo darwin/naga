@@ -6,6 +6,7 @@ class CJSObjectGenericImpl {
  public:
   CJSObjectBase& m_base;
 
+  py::str Str() const;
   [[nodiscard]] bool Contains(const py::object& py_key) const;
   py::object GetAttr(const py::object& py_key) const;
   void SetAttr(const py::object& py_key, const py::object& py_obj) const;
