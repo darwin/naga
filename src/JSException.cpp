@@ -8,39 +8,26 @@
 static std::string extractExceptionMessage(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch) {
   TRACE("extractExceptionMessage v8_isolate={} v8_try_catch={}", P$(v8_isolate), v8_try_catch);
   assert(v8_isolate->InContext());
-
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  std::ostringstream oss;
-
-  v8::String::Utf8Value msg(v8_isolate, v8_try_catch.Exception());
-
-  if (*msg) {
-    oss << std::string(*msg, msg.length());
+  std::string prefix = v8u::toStdString(v8_isolate, v8_try_catch.Exception());
+  auto v8_message = v8_try_catch.Message();
+  if (v8_message.IsEmpty()) {
+    return prefix;
   }
 
-  v8::Local<v8::Message> message = v8_try_catch.Message();
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto resource_name = v8u::toStdString(v8_isolate, v8_message->GetScriptResourceName());
+  auto line_num = v8_message->GetLineNumber(v8_context).ToChecked();
+  auto start_col = v8_message->GetStartColumn();
 
-  if (!message.IsEmpty()) {
-    oss << " ( ";
-
-    if (!message->GetScriptResourceName().IsEmpty() && !message->GetScriptResourceName()->IsUndefined()) {
-      v8::String::Utf8Value name(v8_isolate, message->GetScriptResourceName());
-
-      oss << std::string(*name, name.length());
-    }
-
-    oss << " @ " << message->GetLineNumber(v8_isolate->GetCurrentContext()).ToChecked() << " : "
-        << message->GetStartColumn() << " ) ";
-
-    if (!message->GetSourceLine(v8_isolate->GetCurrentContext()).IsEmpty()) {
-      v8::String::Utf8Value line(v8_isolate, message->GetSourceLine(v8_isolate->GetCurrentContext()).ToLocalChecked());
-
-      oss << " -> " << std::string(*line, line.length());
-    }
+  std::string suffix;
+  auto v8_source_line = v8_message->GetSourceLine(v8_context);
+  if (!v8_source_line.IsEmpty()) {
+    suffix = fmt::format(" -> {}", v8u::toStdString(v8_isolate, v8_source_line.ToLocalChecked()));
   }
 
-  return oss.str();
+  return fmt::format("{} ( {} @ {} : {} ) {}", prefix, resource_name, line_num, start_col, suffix);
 }
 
 v8::Eternal<v8::Private> privateAPIForType(v8::IsolatePtr v8_isolate) {
