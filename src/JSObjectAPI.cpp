@@ -49,7 +49,7 @@ py::list CJSObjectAPI::Dir() const {
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto props = Object(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
+  auto props = ToV8(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
 
   for (size_t i = 0; i < props->Length(); i++) {
     auto v8_i = v8::Integer::New(v8_isolate, i);
@@ -112,7 +112,7 @@ int CJSObjectAPI::Hash() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  auto result = Object(v8_isolate)->GetIdentityHash();
+  auto result = ToV8(v8_isolate)->GetIdentityHash();
   TRACE("CJSObjectAPI::Hash {} => {}", THIS, result);
   return result;
 }
@@ -122,7 +122,7 @@ CJSObjectPtr CJSObjectAPI::Clone() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  auto result = std::make_shared<CJSObject>(Object(v8_isolate)->Clone());
+  auto result = std::make_shared<CJSObject>(ToV8(v8_isolate)->Clone());
   TRACE("CJSObjectAPI::Clone {} => {}", THIS, result);
   return result;
 }
@@ -134,7 +134,7 @@ bool CJSObjectAPI::EQ(const CJSObjectPtr& other) const {
 
   v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
 
-  auto result = other.get() && Object(v8_isolate)->Equals(context, other->Object(v8_isolate)).ToChecked();
+  auto result = other.get() && ToV8(v8_isolate)->Equals(context, other->ToV8(v8_isolate)).ToChecked();
   TRACE("CJSObjectAPI::EQ {} other={} => {}", THIS, other, result);
   return result;
 }
@@ -154,7 +154,7 @@ py::object CJSObjectAPI::Int() const {
     throw CJSException("argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
   }
 
-  auto val = Object(v8_isolate)->Int32Value(v8_context).ToChecked();
+  auto val = ToV8(v8_isolate)->Int32Value(v8_context).ToChecked();
   auto py_result = py::cast(val);
   TRACE("CJSObjectAPI::Int {} => {}", THIS, py_result);
   return py_result;
@@ -170,7 +170,7 @@ py::object CJSObjectAPI::Float() const {
     throw CJSException("argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
   }
 
-  auto val = Object(v8_isolate)->NumberValue(v8_context).ToChecked();
+  auto val = ToV8(v8_isolate)->NumberValue(v8_context).ToChecked();
   auto py_result = py::cast(val);
   TRACE("CJSObjectAPI::Float {} => {}", THIS, py_result);
   return py_result;
@@ -183,7 +183,7 @@ py::object CJSObjectAPI::Bool() const {
 
   bool val = false;
   if (!m_v8_obj.IsEmpty()) {
-    val = Object(v8_isolate)->BooleanValue(v8_isolate);
+    val = ToV8(v8_isolate)->BooleanValue(v8_isolate);
   }
 
   auto py_result = py::cast(val);
@@ -249,14 +249,14 @@ py::object CJSObjectAPI::CreateWithArgs(const CJSObjectPtr& proto, const py::tup
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  if (proto->Object(v8_isolate).IsEmpty()) {
+  if (proto->ToV8(v8_isolate).IsEmpty()) {
     throw CJSException("Object prototype may only be an Object", PyExc_TypeError);
   }
 
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
-  auto fn = proto->Object(v8_isolate).As<v8::Function>();
+  auto fn = proto->ToV8(v8_isolate).As<v8::Function>();
   auto args_count = py_args.size();
   std::vector<v8::Local<v8::Value>> v8_params(args_count);
 

@@ -29,14 +29,14 @@ CJSObjectBase::~CJSObjectBase() {
   m_v8_obj.Reset();
 }
 
-bool CJSObjectBase::HasRole(Roles roles) const {
-  return (m_roles & roles) == roles;
+v8::Local<v8::Object> CJSObjectBase::ToV8(v8::IsolatePtr v8_isolate) const {
+  auto v8_result = m_v8_obj.Get(v8_isolate);
+  TRACE("CJSObjectBase::ToV8 {} => {}", THIS, v8_result);
+  return v8_result;
 }
 
-v8::Local<v8::Object> CJSObjectBase::Object(v8::IsolatePtr v8_isolate) const {
-  auto v8_result = m_v8_obj.Get(v8_isolate);
-  TRACE("CJSObjectBase::Object {} => {}", THIS, v8_result);
-  return v8_result;
+bool CJSObjectBase::HasRole(Roles roles) const {
+  return (m_roles & roles) == roles;
 }
 
 void CJSObjectBase::Dump(std::ostream& os) const {
@@ -45,7 +45,7 @@ void CJSObjectBase::Dump(std::ostream& os) const {
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
 
-  auto v8_obj = Object(v8_isolate);
+  auto v8_obj = ToV8(v8_isolate);
   if (v8_obj.IsEmpty()) {
     os << "None";  // TODO: this should be something different than "None"
     return;

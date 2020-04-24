@@ -10,7 +10,7 @@ size_t CJSObjectArrayImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto result = m_base.Object(v8_isolate).As<v8::Array>()->Length();
+  auto result = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
   TRACE("CJSObjectArrayImpl::Length {} => {}", THIS, result);
   return result;
 }
@@ -25,7 +25,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 
   // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
-    Py_ssize_t arrayLen = m_base.Object(v8_isolate).As<v8::Array>()->Length();
+    Py_ssize_t arrayLen = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
     Py_ssize_t start;
     Py_ssize_t stop;
     Py_ssize_t step;
@@ -35,9 +35,9 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
       py::list slice;
 
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
-        auto v8_value = m_base.Object(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
+        auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
         CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
-        slice.append(wrap(v8_isolate, v8_value, m_base.Object(v8_isolate)));
+        slice.append(wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate)));
       }
 
       return std::move(slice);
@@ -49,14 +49,14 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
       throw CJSException("index of of range", PyExc_IndexError);
     }
 
-    if (!m_base.Object(v8_isolate)->Has(v8_context, idx).ToChecked()) {
+    if (!m_base.ToV8(v8_isolate)->Has(v8_context, idx).ToChecked()) {
       return py::none();
     }
 
-    auto v8_value = m_base.Object(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
+    auto v8_value = m_base.ToV8(v8_isolate)->Get(v8_context, idx).ToLocalChecked();
     CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
-    return wrap(v8_isolate, v8_value, m_base.Object(v8_isolate));
+    return wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate));
   }
 
   throw CJSException("list indices must be integers", PyExc_TypeError);
@@ -77,7 +77,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
       Py_ssize_t itemSize = PySequence_Fast_GET_SIZE(py_value.ptr());
       PyObject** items = PySequence_Fast_ITEMS(py_value.ptr());
 
-      Py_ssize_t arrayLen = v8::Local<v8::Array>::Cast(m_base.Object(v8_isolate))->Length();
+      Py_ssize_t arrayLen = v8::Local<v8::Array>::Cast(m_base.ToV8(v8_isolate))->Length();
       Py_ssize_t start, stop, step, sliceLen;
 
       PySlice_Unpack(py_key.ptr(), &start, &stop, &step);
@@ -88,12 +88,12 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
        */
       if (start > arrayLen) {
         for (Py_ssize_t idx = arrayLen; idx < start; idx++) {
-          m_base.Object(v8_isolate)
+          m_base.ToV8(v8_isolate)
               ->Set(v8_context, static_cast<uint32_t>(arrayLen + idx), v8::Null(v8_isolate))
               .Check();
         }
 
-        arrayLen = v8::Local<v8::Array>::Cast(m_base.Object(v8_isolate))->Length();
+        arrayLen = v8::Local<v8::Array>::Cast(m_base.ToV8(v8_isolate))->Length();
       }
 
       /*
@@ -104,10 +104,10 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
        */
       if (stop > arrayLen) {
         for (Py_ssize_t idx = arrayLen; idx < stop; idx++) {
-          m_base.Object(v8_isolate)->Set(v8_context, static_cast<uint32_t>(idx), v8::Null(v8_isolate)).Check();
+          m_base.ToV8(v8_isolate)->Set(v8_context, static_cast<uint32_t>(idx), v8::Null(v8_isolate)).Check();
         }
 
-        arrayLen = v8::Local<v8::Array>::Cast(m_base.Object(v8_isolate))->Length();
+        arrayLen = v8::Local<v8::Array>::Cast(m_base.ToV8(v8_isolate))->Length();
       }
 
       if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
@@ -117,19 +117,19 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
 
             for (Py_ssize_t idx = start + itemSize; idx < arrayLen - diff; idx++) {
               auto js_obj =
-                  m_base.Object(v8_isolate)->Get(v8_context, static_cast<uint32_t>(idx + diff)).ToLocalChecked();
-              m_base.Object(v8_isolate)->Set(v8_context, idx, js_obj).Check();
+                  m_base.ToV8(v8_isolate)->Get(v8_context, static_cast<uint32_t>(idx + diff)).ToLocalChecked();
+              m_base.ToV8(v8_isolate)->Set(v8_context, idx, js_obj).Check();
             }
             for (Py_ssize_t idx = arrayLen - 1; idx > arrayLen - diff - 1; idx--) {
-              m_base.Object(v8_isolate)->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
+              m_base.ToV8(v8_isolate)->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
             }
           } else if (itemSize > sliceLen) {
             Py_ssize_t diff = itemSize - sliceLen;
 
             for (Py_ssize_t idx = arrayLen + diff - 1; idx > stop - 1; idx--) {
               auto js_obj =
-                  m_base.Object(v8_isolate)->Get(v8_context, static_cast<uint32_t>(idx - diff)).ToLocalChecked();
-              m_base.Object(v8_isolate)->Set(v8_context, idx, js_obj).Check();
+                  m_base.ToV8(v8_isolate)->Get(v8_context, static_cast<uint32_t>(idx - diff)).ToLocalChecked();
+              m_base.ToV8(v8_isolate)->Set(v8_context, idx, js_obj).Check();
             }
           }
         }
@@ -137,14 +137,14 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
         for (Py_ssize_t idx = 0; idx < itemSize; idx++) {
           auto py_item(py::reinterpret_borrow<py::object>(items[idx]));
           auto item = wrap(py_item);
-          m_base.Object(v8_isolate)->Set(v8_context, static_cast<uint32_t>(start + idx * step), item).Check();
+          m_base.ToV8(v8_isolate)->Set(v8_context, static_cast<uint32_t>(start + idx * step), item).Check();
         }
       }
     }
   } else if (PyLong_Check(py_key.ptr())) {
     uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (!m_base.Object(v8_isolate)->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).ToChecked()) {
+    if (!m_base.ToV8(v8_isolate)->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).ToChecked()) {
       CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
   }
@@ -161,7 +161,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
-    Py_ssize_t arrayLen = m_base.Object(v8_isolate).As<v8::Array>()->Length();
+    Py_ssize_t arrayLen = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
     Py_ssize_t start;
     Py_ssize_t stop;
     Py_ssize_t step;
@@ -169,7 +169,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
 
     if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
       for (Py_ssize_t idx = start; idx < stop; idx += step) {
-        m_base.Object(v8_isolate)->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
+        m_base.ToV8(v8_isolate)->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
       }
     }
 
@@ -179,13 +179,13 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
 
     py::object py_result;
 
-    if (m_base.Object(v8_isolate)->Has(v8_context, idx).ToChecked()) {
+    if (m_base.ToV8(v8_isolate)->Has(v8_context, idx).ToChecked()) {
       auto v8_idx = v8::Integer::New(v8_isolate, idx);
-      auto v8_obj = m_base.Object(v8_isolate)->Get(v8_context, v8_idx).ToLocalChecked();
-      py_result = wrap(v8_isolate, v8_obj, m_base.Object(v8_isolate));
+      auto v8_obj = m_base.ToV8(v8_isolate)->Get(v8_context, v8_idx).ToLocalChecked();
+      py_result = wrap(v8_isolate, v8_obj, m_base.ToV8(v8_isolate));
     }
 
-    if (!m_base.Object(v8_isolate)->Delete(v8_context, idx).ToChecked()) {
+    if (!m_base.ToV8(v8_isolate)->Delete(v8_context, idx).ToChecked()) {
       CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
     }
 
@@ -208,14 +208,14 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {
-    if (m_base.Object(v8_isolate)->Has(v8_context, i).ToChecked()) {
+    if (m_base.ToV8(v8_isolate)->Has(v8_context, i).ToChecked()) {
       auto v8_i = v8::Integer::New(v8_isolate, i);
-      auto v8_val = m_base.Object(v8_isolate)->Get(v8_context, v8_i).ToLocalChecked();
+      auto v8_val = m_base.ToV8(v8_isolate)->Get(v8_context, v8_i).ToLocalChecked();
 
       CJSException::HandleTryCatch(v8_isolate, v8_try_catch);
 
       // TODO: could this be optimized without wrapping?
-      if (py_key.is(wrap(v8_isolate, v8_val, m_base.Object(v8_isolate)))) {
+      if (py_key.is(wrap(v8_isolate, v8_val, m_base.ToV8(v8_isolate)))) {
         return true;
       }
     }

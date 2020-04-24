@@ -16,7 +16,7 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_try_catch = v8u::withTryCatch(v8_isolate);
-  auto v8_fn = m_base.Object(v8_isolate).As<v8::Function>();
+  auto v8_fn = m_base.ToV8(v8_isolate).As<v8::Function>();
 
   auto args_count = py_args.size();
   auto kwargs_count = py_kwargs.size();
@@ -75,7 +75,7 @@ std::string CJSObjectFunctionImpl::GetName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetName()));
 
@@ -88,7 +88,7 @@ void CJSObjectFunctionImpl::SetName(const std::string& name) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   func->SetName(
       v8::String::NewFromUtf8(v8_isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
@@ -99,7 +99,7 @@ int CJSObjectFunctionImpl::GetLineNumber() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   auto result = func->GetScriptLineNumber();
   TRACE("CJSObjectFunctionImpl::GetLineNumber {} => {}", THIS, result);
@@ -111,7 +111,7 @@ int CJSObjectFunctionImpl::GetColumnNumber() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   auto result = func->GetScriptColumnNumber();
   TRACE("CJSObjectFunctionImpl::GetColumnNumber {} => {}", THIS, result);
@@ -123,7 +123,7 @@ int CJSObjectFunctionImpl::GetLineOffset() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   auto result = func->GetScriptOrigin().ResourceLineOffset()->Value();
   TRACE("CJSObjectFunctionImpl::GetLineOffset {} => {}", THIS, result);
@@ -135,7 +135,7 @@ int CJSObjectFunctionImpl::GetColumnOffset() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   auto result = func->GetScriptOrigin().ResourceColumnOffset()->Value();
   TRACE("CJSObjectFunctionImpl::GetColumnOffset {} => {}", THIS, result);
@@ -147,7 +147,7 @@ std::string CJSObjectFunctionImpl::GetResourceName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
 
@@ -161,7 +161,7 @@ std::string CJSObjectFunctionImpl::GetInferredName() const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.Object(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
