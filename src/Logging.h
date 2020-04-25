@@ -31,6 +31,8 @@ enum Loggers {
   kWrappingLogger,
   kJSRegistryLogger,
   kAutoTryCatchLogger,
+  kJSLandLogger,
+  kPythonModuleLogger,
   kNumLoggers
 };
 
@@ -90,3 +92,17 @@ std::string traceText(T&& content) {
     return traceMore(content_str);
   }
 }
+
+class JSLandLogger {
+  const char* m_name;
+
+ public:
+  explicit JSLandLogger(const char* name) : m_name(name) {
+    HTRACE(kJSLandLogger, ">>> {}", m_name);
+    LOGGER_INDENT_INCREASE;
+  }
+  ~JSLandLogger() {
+    LOGGER_INDENT_DECREASE;
+    HTRACE(kJSLandLogger, "<<< {}", m_name);
+  }
+};

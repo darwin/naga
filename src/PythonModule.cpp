@@ -1,11 +1,15 @@
 #include "PythonModule.h"
 #include "PythonExpose.h"
 
+#define TRACE(...) \
+  LOGGER_INDENT;   \
+  SPDLOG_LOGGER_TRACE(getLogger(kPythonModuleLogger), __VA_ARGS__)
+
 PYBIND11_MODULE(naga_native, py_module) {
   useLogging();
 
-  SPDLOG_INFO("=====================================================================================================");
-  SPDLOG_INFO("Initializing naga_native module...");
+  TRACE("=====================================================================================================");
+  TRACE("Initializing naga_native module...");
 
   exposeAux(py_module);
   exposeToolkit(py_module);

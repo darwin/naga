@@ -13,41 +13,16 @@
 #include "JSStackFrame.h"
 #include "JSException.h"
 #include "Aux.h"
+#include "PybindNagaClass.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonExposeLogger), __VA_ARGS__)
 
-// ForwardTo is a helper class which redirects function calls to instance calls
-// The convention is that it expects first function parameter to be the instance pointer.
-// The template machinery bellow then perfectly forwards the call to instance.
-//
-// in Python: toolkit.something(instance, arg1, arg2, ...)
-// calls (via pybind) our wrapper's operator(), and we in turn call
-// instance->Something(arg1, arg2, ...)
-// credit: https://stackoverflow.com/a/46533854/84283
-template <auto F>
-struct ForwardTo {};
-
-template <typename T, typename... Args, auto (T::*F)(Args...)>
-struct ForwardTo<F> {
-  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
-    return std::invoke(F, *obj, std::forward<Args>(args)...);
-  }
-};
-
-// this variant differs only that it deals with const member functions
-// I don't know how to share the code with a single template
-template <typename T, typename... Args, auto (T::*F)(Args...) const>
-struct ForwardTo<F> {
-  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
-    return std::invoke(F, *obj, std::forward<Args>(args)...);
-  }
-};
-
 void exposeAux(py::module py_module) {
   TRACE("exposeAux py_module={}", py_module);
-  py::module m = py_module.def_submodule("aux", "Aux tools");
+  auto doc = "Aux tools";
+  py::module m = py_module.def_submodule("aux", doc);
 
   m.def("refcount_addr", &refCountAddr);
   m.def("trigger1", &trigger1);
@@ -63,7 +38,8 @@ void exposeAux(py::module py_module) {
 
 void exposeToolkit(py::module py_module) {
   TRACE("exposeToolkit py_module={}", py_module);
-  py::module m = py_module.def_submodule("toolkit", "Javascript Toolkit");
+  auto doc = "Javascript Toolkit";
+  py::module m = py_module.def_submodule("toolkit", doc);
 
   // clang-format off
   m.def("linenum", ForwardTo<&CJSObjectAPI::LineNumber>{},
@@ -132,7 +108,7 @@ void exposeJSUndefined(py::module py_module) {
 void exposeJSObject(py::module py_module) {
   TRACE("exposeJSObject py_module={}", py_module);
   // clang-format off
-  py::class_<CJSObject, CJSObjectPtr>(py_module, "JSObject")
+  py::naga_class<CJSObject, CJSObjectPtr>(py_module, "JSObject")
       // Please be aware that this wrapper object implements generic lookup of properties on
       // underlying JS objects, so binding new names here on wrapper instance increases risks
       // of clashing with some existing JS names.
@@ -178,8 +154,9 @@ void exposeJSObject(py::module py_module) {
 
 void exposeJSPlatform(py::module py_module) {
   TRACE("exposeJSPlatform py_module={}", py_module);
+  auto doc = "JSPlatform allows the V8 platform to be initialized";
   // clang-format off
-  py::class_<CJSPlatform>(py_module, "JSPlatform", "JSPlatform allows the V8 platform to be initialized")
+  py::naga_class<CJSPlatform>(py_module, "JSPlatform", doc)
       .def_property_readonly_static("instance", [](const py::object &) { return CJSPlatform::Instance(); },
                                     "Access to platform singleton instance")
       .def_property_readonly("initialized", &CJSPlatform::Initialized,
@@ -192,8 +169,9 @@ void exposeJSPlatform(py::module py_module) {
 
 void exposeJSIsolate(py::module py_module) {
   TRACE("exposeJSIsolate py_module={}", py_module);
+  auto doc = "JSIsolate is an isolated instance of the V8 engine.";
   // clang-format off
-  py::class_<CJSIsolate, CJSIsolatePtr>(py_module, "JSIsolate", "JSIsolate is an isolated instance of the V8 engine.")
+  py::naga_class<CJSIsolate, CJSIsolatePtr>(py_module, "JSIsolate", doc)
       .def(py::init<>())
 
       .def_property_readonly_static(
@@ -233,7 +211,7 @@ void exposeJSException(py::module py_module) {
   py::register_exception_translator(&translateException);
 
   // clang-format off
-  py::class_<CJSException>(py_module, "JSException")
+  py::naga_class<CJSException>(py_module, "JSException")
       .def("__str__", &CJSException::Str)
 
       .def_property_readonly("name", &CJSException::GetName,
@@ -264,7 +242,7 @@ void exposeJSException(py::module py_module) {
 void exposeJSStackFrame(py::module py_module) {
   TRACE("exposeJSStackFrame py_module={}", py_module);
   // clang-format off
-  py::class_<CJSStackFrame, CJSStackFramePtr>(py_module, "JSStackFrame")
+  py::naga_class<CJSStackFrame, CJSStackFramePtr>(py_module, "JSStackFrame")
       .def_property_readonly("lineNum", &CJSStackFrame::GetLineNumber)
       .def_property_readonly("column", &CJSStackFrame::GetColumn)
       .def_property_readonly("scriptName", &CJSStackFrame::GetScriptName)
@@ -277,7 +255,7 @@ void exposeJSStackFrame(py::module py_module) {
 void exposeJSStackTrace(py::module py_module) {
   TRACE("exposeJSStackTrace py_module={}", py_module);
   // clang-format off
-  py::class_<CJSStackTrace, CJSStackTracePtr>(py_module, "JSStackTrace")
+  py::naga_class<CJSStackTrace, CJSStackTracePtr>(py_module, "JSStackTrace")
       .def("__len__", &CJSStackTrace::GetFrameCount)
       .def("__getitem__", &CJSStackTrace::GetFrame)
 
@@ -301,7 +279,8 @@ void exposeJSStackTrace(py::module py_module) {
 void exposeJSEngine(py::module py_module) {
   TRACE("exposeJSEngine py_module={}", py_module);
   // clang-format off
-  py::class_<CJSEngine>(py_module, "JSEngine", "JSEngine is a backend Javascript engine.")
+  auto doc = "JSEngine is a backend Javascript engine.";
+  py::naga_class<CJSEngine>(py_module, "JSEngine", doc)
       .def(py::init<>(),
            "Create a new script engine instance.")
       .def_property_readonly_static(
@@ -348,8 +327,9 @@ void exposeJSEngine(py::module py_module) {
 
 void exposeJSScript(py::module py_module) {
   TRACE("exposeJSScript py_module={}", py_module);
+  auto doc = "JSScript is a compiled JavaScript script.";
   // clang-format off
-  py::class_<CJSScript, CJSScriptPtr>(py_module, "JSScript", "JSScript is a compiled JavaScript script.")
+  py::naga_class<CJSScript, CJSScriptPtr>(py_module, "JSScript", doc)
       .def_property_readonly("source", &CJSScript::GetSource,
                              "the source code")
 
@@ -361,7 +341,7 @@ void exposeJSScript(py::module py_module) {
 void exposeJSLocker(py::module py_module) {
   TRACE("exposeJSLocker py_module={}", py_module);
   // clang-format off
-  py::class_<CJSLocker>(py_module, "JSLocker")
+  py::naga_class<CJSLocker>(py_module, "JSLocker")
       .def(py::init<>())
 
       .def_property_readonly_static(
@@ -380,7 +360,7 @@ void exposeJSLocker(py::module py_module) {
 void exposeJSUnlocker(py::module py_module) {
   TRACE("exposeJSUnlocker py_module={}", py_module);
   // clang-format off
-  py::class_<CJSUnlocker>(py_module, "JSUnlocker")
+  py::naga_class<CJSUnlocker>(py_module, "JSUnlocker")
       .def(py::init<>())
       .def("entered", &CJSUnlocker::IsEntered)
       .def("enter", &CJSUnlocker::Enter)
@@ -391,7 +371,7 @@ void exposeJSUnlocker(py::module py_module) {
 void exposeJSContext(py::module py_module) {
   TRACE("exposeJSContext py_module={}", py_module);
   // clang-format off
-  py::class_<CJSContext, CJSContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
+  py::naga_class<CJSContext, CJSContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(py::init<py::object>())
 
       .def_property("securityToken", &CJSContext::GetSecurityToken, &CJSContext::SetSecurityToken)
