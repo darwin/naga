@@ -14,9 +14,9 @@ Wrapping a JavaScript function in a Python function:
 
 ```Python
 # simple.py
-import naga
+from naga import JSContext
 
-with naga.JSContext() as ctxt:
+with JSContext() as ctxt:
   upcase = ctxt.eval("""
     ( (lowerString) => {
         return lowerString.toUpperCase();
@@ -38,15 +38,15 @@ Exporting a Python class into V8 and using it from JavaScript:
 
 ```Python
 # meaning.py
-import naga
+from naga import JSClass, JSContext
 
-class MyClass(naga.JSClass):
+class MyClass(JSClass):
   def reallyComplexFunction(self, addme):
     return 10 * 3 + addme
 
 my_class = MyClass()
 
-with naga.JSContext(my_class) as ctxt:
+with JSContext(my_class) as ctxt:
   meaning = ctxt.eval("this.reallyComplexFunction(2) + 10;")
   print("The meaning of life: " + str(meaning))
 ```
@@ -64,9 +64,9 @@ Calling methods on a JavaScript class from Python code:
 
 ```Python
 # circle.py
-import naga
+from naga import JSContext
 
-with naga.JSContext() as ctxt:
+with JSContext() as ctxt:
   ctxt.eval("""
     class Circle {
       constructor(radius) {
