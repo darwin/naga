@@ -8,6 +8,9 @@ declare_args() {
 
   naga_active_log_level = "INFO"
 
+  naga_includes = string_split(getenv("NAGA_INCLUDES"), " ")
+  naga_ldflags = string_split(getenv("NAGA_LDFLAGS"), " ")
+
   python_includes = string_split(getenv("NAGA_PYTHON_INCLUDES"), " ")
   python_libs = string_split(getenv("NAGA_PYTHON_LIBS"), " ")
   python_ldflags = string_split(getenv("NAGA_PYTHON_LDFLAGS"), " ")
@@ -32,6 +35,8 @@ if (naga_verbose_build) {
   print("using active log level", naga_active_log_level)
   print("using precompiled headers", naga_enable_precompiled_headers)
   print("using disable cljs", naga_disable_feature_cljs)
+  print("using naga_includes", naga_includes)
+  print("using naga_ldflags", naga_ldflags)
   print("using python_includes", python_includes)
   print("using python_libs", python_libs)
   print("using python_ldflags", python_ldflags)
@@ -114,6 +119,7 @@ config("naga_precompiled_headers") {
 }
 
 config("naga_compiler_flags") {
+  cflags = naga_includes
   cflags_cc = [
     "-Wno-c++98-compat-extra-semi",
     "-Wno-error=unused-variable",
@@ -123,6 +129,10 @@ config("naga_compiler_flags") {
     "-Wno-unknown-pragmas",
     "-std=c++17",
   ]
+}
+
+config("naga_linker_flags") {
+  ldflags = naga_ldflags
 }
 
 config("naga_python_compiler_flags") {
@@ -217,7 +227,10 @@ shared_library("naga") {
   # output_dir = "../.venv/lib/python3.7/site-packages"
 
   # add some of our own settings...
-  configs += [ ":naga_python_linker_flags" ]
+  configs += [
+    ":naga_python_linker_flags",
+    ":naga_linker_flags",
+  ]
 
   deps = [
     ":naga_src",
