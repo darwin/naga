@@ -91,9 +91,8 @@ void checkContext(v8::IsolatePtr v8_isolate) {
 }
 
 v8::IsolatePtr getCurrentIsolate() {
-  auto v8_isolate = v8::Isolate::GetCurrent();
-  // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this would fail sooner
-  return v8_isolate;
+  // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this fails when there is no current isolate
+  return v8::Isolate::GetCurrent();
 }
 
 v8::HandleScope withScope(v8::IsolatePtr v8_isolate) {
