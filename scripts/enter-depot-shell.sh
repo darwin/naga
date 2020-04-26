@@ -6,15 +6,20 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
+if [[ ! -d "$NAGA_GN_WORK_DIR" ]]; then
+  echo_err "NAGA_GN_WORK_DIR does not exist, did you run ./scripts/gen-build.sh?"
+  echo_err "NAGA_GN_WORK_DIR='$NAGA_GN_WORK_DIR'"
+  exit 1
+fi
+
+cd "$NAGA_GN_WORK_DIR"
+
 # we should capture build settings from Python3.7
 activate_python3
 detect_python_build_settings
 
 # export env variables with NAGA_ prefix
 export_naga_env
-
-# this will inherit PATH to DEPOT_HOME
-cd "$GN_DIR"
 
 activate_python2
 

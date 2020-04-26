@@ -32,7 +32,9 @@ if [[ -n "$NAGA_ACTIVE_LOG_LEVEL" ]]; then
   NAGA_GN_ARGS+=("naga_active_log_level=\"$NAGA_ACTIVE_LOG_LEVEL\"")
 fi
 
-cd "$GN_DIR"
+./scripts/prepare-gn.sh
+
+cd "$NAGA_GN_WORK_DIR"
 
 # see https://v8.dev/docs/source-code
 #     https://v8.dev/docs/build
@@ -41,15 +43,12 @@ cd "$GN_DIR"
 BUILD_CONFIG_NAME=${1:-release}
 BUILD_DIR=${2:-"$NAGA_GN_OUT_DIR/$NAGA_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
 
-# activate Python3, we should capture build settings from Python3.7
-# shellcheck disable=SC1090
-source "$VENV_DIR/bin/activate"
+# we should capture build settings from Python3.7
+activate_python3
 detect_python_build_settings
 
 # export variables with our prefix
-for name in "${!NAGA_@}"; do
-  export "${name?}"
-done
+export_naga_env
 
 # force python2 when working with depot
 # some tools like gn.py try to undo virtualenv and get back to system paths

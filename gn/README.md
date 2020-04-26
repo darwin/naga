@@ -67,10 +67,9 @@ git submodule update
 ```bash
 ./scripts/prepare-deps.sh
 ./scripts/prepare-v8.sh
-./scripts/prepare-gn.sh
 ```
 
-##### Generate the build project
+##### Generate build scripts
 
 ```bash
 ./scripts/gen-build.sh

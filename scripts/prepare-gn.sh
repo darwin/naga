@@ -10,7 +10,13 @@ if [[ ! -d "$V8_HOME" ]]; then
   exit 1
 fi
 
-echo_cmd cd "$GN_DIR"
+if [[ -d "$NAGA_GN_WORK_DIR" ]]; then
+  rm -rf "$NAGA_GN_WORK_DIR"
+fi
+
+cp -a "$GN_DIR" "$NAGA_GN_WORK_DIR"
+
+echo_cmd cd "$NAGA_GN_WORK_DIR"
 
 symlink_v8_dir() {
   if [[ -L "$1" ]]; then

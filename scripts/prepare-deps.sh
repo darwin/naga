@@ -14,10 +14,8 @@ ENV_DEPS=(
 )
 
 echo_cmd ./scripts/prepare-venv.sh
-echo_cmd ./scripts/prepare-gn.sh
 
-# shellcheck disable=SC1090
-source "$VENV_DIR/bin/activate"
+activate_python3
 
 echo_cmd pip install -U pip
 echo_cmd pip install --upgrade "${ENV_DEPS[@]}"

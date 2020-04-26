@@ -9,6 +9,10 @@ source "./scripts/_lib.sh"
 NAGA_V8_GIT_TAG=${NAGA_V8_GIT_TAG:-8.4.100}
 
 ROOT_DIR=$(pwd -P)
+
+NAGA_ROOT_DIR="$ROOT_DIR"
+export NAGA_ROOT_DIR
+
 # shellcheck disable=SC2034
 GN_DIR="$ROOT_DIR/gn"
 # shellcheck disable=SC2034
@@ -20,6 +24,7 @@ NAGA_WORK_DIR=${NAGA_WORK_DIR:-"$ROOT_DIR/.work"}
 
 # shellcheck disable=SC2034
 NAGA_GN_OUT_DIR=${NAGA_GN_OUT_DIR:-"$NAGA_WORK_DIR/gn_out"}
+NAGA_GN_WORK_DIR=${NAGA_GN_WORK_DIR:-"$NAGA_WORK_DIR/gn"}
 
 VENV_DIR=${NAGA_VENV_DIR:-"$NAGA_WORK_DIR/venv_python3"}
 # shellcheck disable=SC2034
