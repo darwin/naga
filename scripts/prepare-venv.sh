@@ -11,8 +11,8 @@ if [[ ! -d "$VENV_DIR" ]]; then
   python3 -m venv "$VENV_DIR"
 
   activate_python3
-  pip install -U pip
-  pip install --upgrade virtualenv
+  pip3 install -U pip
+  pip3 install --upgrade virtualenv
 fi
 
 if [[ ! -d "$VENV2_DIR" ]]; then

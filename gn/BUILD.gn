@@ -214,7 +214,6 @@ source_set("naga_src") {
 group("naga_v8") {
   # here we gather our v8 dependencies
   deps = [
-    "//v8:v8_libplatform",
     "//v8:v8_monolith",
   ]
 }

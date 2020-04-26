@@ -11,11 +11,11 @@ echo_cmd ./scripts/install-depot.sh
 ENV_DEPS=(
   six
   setuptools
+  python-config
 )
 
 echo_cmd ./scripts/prepare-venv.sh
 
 activate_python3
 
-echo_cmd pip install -U pip
 echo_cmd pip install --upgrade "${ENV_DEPS[@]}"
