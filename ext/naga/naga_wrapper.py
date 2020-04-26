@@ -4,9 +4,10 @@
 
 import re
 
+import naga.config
+import naga.debug_support
 # noinspection PyUnresolvedReferences
 import naga_native
-import naga.config
 
 __all__ = ["JSClass",
            "JSContext",
