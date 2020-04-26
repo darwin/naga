@@ -1,4 +1,5 @@
-import os
+# noinspection PyUnresolvedReferences
+import naga.config
 
-if os.environ.get('NAGA_WAIT_FOR_DEBUGGER') is not None:
+if naga.config.naga_wait_for_debugger:
     input("Waiting for debugger, please hit ENTER when ready...")

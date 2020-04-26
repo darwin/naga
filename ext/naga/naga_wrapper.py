@@ -1,126 +1,31 @@
 # This module implements public API for naga library users
 # This is a pure Python wrapper of the naga_native module implemented in C++
-# It is imported in __init__ of `naga` package.
+# It is imported in __init__ of the `naga` package.
 
 import re
 
 # noinspection PyUnresolvedReferences
 import naga_native
+import naga.config
 
-__version__ = '0.1'
-
-__all__ = ["JSError",
-           "JSObject",
-           "JSNull",
-           "JSUndefined",
-           "JSArray",
-           "JSFunction",
-           "JSClass",
-           "JSEngine",
+__all__ = ["JSClass",
            "JSContext",
+           "JSEngine",
+           "JSError",
            "JSIsolate",
+           "JSLocker",
+           "JSNull",
+           "JSObject",
+           "JSPlatform",
+           "JSScript",
            "JSStackTrace",
            "JSStackFrame",
-           "JSScript",
-           "JSLocker",
-           "JSUnlocker",
-           "JSPlatform"]
+           "JSUndefined",
+           "JSUnlocker"]
 
-
-class JSError(Exception):
-    def __init__(self, js_exception):
-        Exception.__init__(self)
-        self._impl = js_exception
-
-    def __str__(self):
-        return str(self._impl)
-
-    def __getattribute__(self, attr):
-        impl = super(JSError, self).__getattribute__("_impl")
-
-        try:
-            return getattr(impl, attr)
-        except AttributeError:
-            return super(JSError, self).__getattribute__(attr)
-
-    RE_FRAME = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?\)")
-    RE_FUNC = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^)]+)\)")
-    RE_FILE = re.compile(r"\s+at\s(?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?")
-
-    @staticmethod
-    def parse_stack(value):
-        stack = []
-
-        def int_or_nul(v):
-            return int(v) if v else None
-
-        for line in value.split('\n')[1:]:
-            m = JSError.RE_FRAME.match(line)
-
-            if m:
-                stack.append((m.group('func'), m.group('file'), int_or_nul(m.group('row')), int_or_nul(m.group('col'))))
-                continue
-
-            m = JSError.RE_FUNC.match(line)
-
-            if m:
-                stack.append((m.group('func'), m.group('file'), None, None))
-                continue
-
-            m = JSError.RE_FILE.match(line)
-
-            if m:
-                stack.append((None, m.group('file'), int_or_nul(m.group('row')), int_or_nul(m.group('col'))))
-                continue
-
-            assert line
-
-        return stack
-
-    @property
-    def frames(self):
-        return self.parse_stack(self.stackTrace)
-
-
-JSObject = naga_native.JSObject
-JSArray = naga_native.JSObject  # for backward compatibility
-JSFunction = naga_native.JSObject  # for backward compatibility
-JSPlatform = naga_native.JSPlatform
-JSUndefined = naga_native.JSUndefined
-JSNull = naga_native.JSNull
-
-
-class JSLocker(naga_native.JSLocker):
-    def __enter__(self):
-        self.enter()
-
-        if JSContext.entered:
-            self.leave()
-            raise RuntimeError("Lock should be acquired before enter the context")
-
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        if JSContext.entered:
-            self.leave()
-            raise RuntimeError("Lock should be released after leave the context")
-
-        self.leave()
-
-    def __bool__(self):
-        return self.entered()
-
-
-class JSUnlocker(naga_native.JSUnlocker):
-    def __enter__(self):
-        self.enter()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.leave()
-
-    def __bool__(self):
-        return self.entered()
+if naga.config.naga_keep_backward_compatibility:
+    __all__ += ["JSArray",
+                "JSFunction"]
 
 
 # noinspection PyPep8Naming
@@ -225,6 +130,94 @@ class JSClassPrototype(JSClass):
         return self.cls.__name__
 
 
+class JSError(Exception):
+    def __init__(self, js_exception):
+        Exception.__init__(self)
+        self._impl = js_exception
+
+    def __str__(self):
+        return str(self._impl)
+
+    def __getattribute__(self, attr):
+        impl = super(JSError, self).__getattribute__("_impl")
+
+        try:
+            return getattr(impl, attr)
+        except AttributeError:
+            return super(JSError, self).__getattribute__(attr)
+
+    RE_FRAME = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?\)")
+    RE_FUNC = re.compile(r"\s+at\s(?:new\s)?(?P<func>.+)\s\((?P<file>[^)]+)\)")
+    RE_FILE = re.compile(r"\s+at\s(?P<file>[^:]+):?(?P<row>\d+)?:?(?P<col>\d+)?")
+
+    @staticmethod
+    def parse_stack(value):
+        stack = []
+
+        def int_or_nul(v):
+            return int(v) if v else None
+
+        for line in value.split('\n')[1:]:
+            m = JSError.RE_FRAME.match(line)
+
+            if m:
+                stack.append((m.group('func'), m.group('file'), int_or_nul(m.group('row')), int_or_nul(m.group('col'))))
+                continue
+
+            m = JSError.RE_FUNC.match(line)
+
+            if m:
+                stack.append((m.group('func'), m.group('file'), None, None))
+                continue
+
+            m = JSError.RE_FILE.match(line)
+
+            if m:
+                stack.append((None, m.group('file'), int_or_nul(m.group('row')), int_or_nul(m.group('col'))))
+                continue
+
+            assert line
+
+        return stack
+
+    @property
+    def frames(self):
+        return self.parse_stack(self.stackTrace)
+
+
+class JSLocker(naga_native.JSLocker):
+    def __enter__(self):
+        self.enter()
+
+        if JSContext.entered:
+            self.leave()
+            raise RuntimeError("Lock should be acquired before enter the context")
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if JSContext.entered:
+            self.leave()
+            raise RuntimeError("Lock should be released after leave the context")
+
+        self.leave()
+
+    def __bool__(self):
+        return self.entered()
+
+
+class JSUnlocker(naga_native.JSUnlocker):
+    def __enter__(self):
+        self.enter()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.leave()
+
+    def __bool__(self):
+        return self.entered()
+
+
 class JSEngine(naga_native.JSEngine):
     def __init__(self):
         naga_native.JSEngine.__init__(self)
@@ -234,14 +227,6 @@ class JSEngine(naga_native.JSEngine):
 
     def __exit__(self, exc_type, exc_value, traceback):
         del self
-
-
-JSScript = naga_native.JSScript
-JSStackTrace = naga_native.JSStackTrace
-JSStackTrace.Options = naga_native.JSStackTraceOptions
-JSStackTrace.GetCurrentStackTrace = staticmethod(
-    lambda frame_limit, options: naga_native.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
-JSStackFrame = naga_native.JSStackFrame
 
 
 class JSIsolate(naga_native.JSIsolate):
@@ -279,8 +264,46 @@ class JSContext(naga_native.JSContext):
         del self
 
 
-v8_default_platform = JSPlatform.instance
-v8_default_platform.init()
+# -- expose some native objects directly ------------------------------------------------------------------------------
 
-v8_default_isolate = JSIsolate()
-v8_default_isolate.enter()
+JSNull = naga_native.JSNull
+JSUndefined = naga_native.JSUndefined
+JSObject = naga_native.JSObject
+JSPlatform = naga_native.JSPlatform
+JSScript = naga_native.JSScript
+JSStackFrame = naga_native.JSStackFrame
+
+JSStackTrace = naga_native.JSStackTrace
+JSStackTrace.Options = naga_native.JSStackTraceOptions
+JSStackTrace.GetCurrentStackTrace = staticmethod(
+    lambda frame_limit, options: naga_native.JSIsolate.current.GetCurrentStackTrace(frame_limit, options))
+
+if naga.config.naga_keep_backward_compatibility:
+    JSArray = naga_native.JSObject
+    JSFunction = naga_native.JSObject
+
+# -- init code --------------------------------------------------------------------------------------------------------
+
+v8_default_platform = None
+v8_default_isolate = None
+
+
+def init_default_platform():
+    global v8_default_platform
+    v8_default_platform = JSPlatform.instance
+    v8_default_platform.init()
+
+
+def init_default_isolate():
+    global v8_default_isolate
+    v8_default_isolate = JSIsolate()
+    v8_default_isolate.enter()
+
+
+def init():
+    init_default_platform()
+    init_default_isolate()
+
+
+if naga.config.naga_auto_init:
+    init()
