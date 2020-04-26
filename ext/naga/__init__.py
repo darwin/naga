@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # This is a pure Python wrapper of the naga_native module implemented in C++ code present in src
 # This module is presents public API for naga library users
 
@@ -15,11 +12,7 @@ import naga_native
 
 __version__ = '0.1'
 
-__all__ = ["ReadOnly",
-           "DontEnum",
-           "DontDelete",
-           "Internal",
-           "JSError",
+__all__ = ["JSError",
            "JSObject",
            "JSNull",
            "JSUndefined",
@@ -35,22 +28,6 @@ __all__ = ["ReadOnly",
            "JSLocker",
            "JSUnlocker",
            "JSPlatform"]
-
-
-class JSAttribute(object):
-    def __init__(self, name):
-        self.name = name
-
-    def __call__(self, func):
-        setattr(func, "__%s__" % self.name, True)
-
-        return func
-
-
-ReadOnly = JSAttribute(name='readonly')
-DontEnum = JSAttribute(name='dontenum')
-DontDelete = JSAttribute(name='dontdel')
-Internal = JSAttribute(name='internal')
 
 
 class JSError(Exception):
