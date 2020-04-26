@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTFUNCTIONIMPL_H_
+#define NAGA_JSOBJECTFUNCTIONIMPL_H_
 
 #include "Base.h"
 
@@ -21,3 +22,5 @@ class CJSObjectFunctionImpl {
   [[nodiscard]] std::string GetResourceName() const;
   [[nodiscard]] std::string GetInferredName() const;
 };
+
+#endif

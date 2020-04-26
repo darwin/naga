@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_FORWARDDECLARATIONS_H_
+#define NAGA_FORWARDDECLARATIONS_H_
 
 #include "Base.h"
 
@@ -30,8 +31,8 @@ using CJSObjectPtr = std::shared_ptr<CJSObject>;
 
 namespace v8 {
 
-using IsolatePtr = v8::Isolate* __nonnull;
-using TryCatchPtr = v8::TryCatch* __nonnull;
+using IsolatePtr = v8::Isolate*; // __nonnull;
+using TryCatchPtr = v8::TryCatch*; // __nonnull;
 
 }  // namespace v8
 
@@ -41,4 +42,6 @@ class logger;
 
 }
 
-using LoggerPtr = spdlog::logger* __nonnull;
+using LoggerPtr = spdlog::logger*; // __nonnull;
+
+#endif

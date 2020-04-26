@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSEXCEPTION_H_
+#define NAGA_JSEXCEPTION_H_
 
 #include "Base.h"
 
@@ -50,3 +51,5 @@ class CJSException : public std::runtime_error {
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,
               "CJSException must be nothrow copy constructible");
+
+#endif

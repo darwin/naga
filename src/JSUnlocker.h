@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSUNLOCKER_H_
+#define NAGA_JSUNLOCKER_H_
 
 #include "Base.h"
 
@@ -12,3 +13,5 @@ class CJSUnlocker {
   void Enter();
   void Leave();
 };
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_META_H_
+#define NAGA_META_H_
 
 #include "Base.h"
 
@@ -88,3 +89,5 @@ template <typename Return, typename Class, typename... Args>
 auto to_functor(Return (Class::*f)(Args...) const) {
   return [f](const Class* c, Args... args) -> Return { return (c->*f)(args...); };
 }
+
+#endif

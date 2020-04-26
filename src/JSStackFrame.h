@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSSTACKFRAME_H_
+#define NAGA_JSSTACKFRAME_H_
 
 #include "Base.h"
 
@@ -21,3 +22,5 @@ class CJSStackFrame {
 
   void Dump(std::ostream& os) const;
 };
+
+#endif

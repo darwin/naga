@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_UTILS_H_
+#define NAGA_UTILS_H_
 
 #include "Base.h"
 
@@ -37,3 +38,5 @@ template <typename t>
 sentry<t> finally(t o) {
   return {std::move(o)};
 }
+
+#endif

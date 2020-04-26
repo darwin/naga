@@ -14,6 +14,7 @@
 #include "JSException.h"
 #include "Aux.h"
 #include "PybindNagaClass.h"
+#include "JSObject.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

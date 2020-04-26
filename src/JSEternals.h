@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSETERNALS_H_
+#define NAGA_JSETERNALS_H_
 
 #include "Base.h"
 #include "JSIsolate.h"
@@ -49,3 +50,5 @@ v8::Local<T> lookupEternal(v8::IsolatePtr v8_isolate,
   auto v8_eternal_val = isolate->Eternals().GetOrCreate(id, create_fn);
   return v8_eternal_val.Get(v8_isolate);
 }
+
+#endif

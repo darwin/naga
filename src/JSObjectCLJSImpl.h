@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTCLJSIMPL_H_
+#define NAGA_JSOBJECTCLJSIMPL_H_
 
 #include "Base.h"
 
@@ -17,3 +18,5 @@ class CJSObjectCLJSImpl {
   py::object GetItemIndex(const py::object& py_index) const;
   py::object GetItemString(const py::object& py_str) const;
 };
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSUNDEFINED_H_
+#define NAGA_JSUNDEFINED_H_
 
 #include "Base.h"
 
@@ -33,3 +34,5 @@ class js_undefined : public object {
 };
 
 }  // namespace pybind11
+
+#endif

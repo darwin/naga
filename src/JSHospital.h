@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSHOSPITAL_H_
+#define NAGA_JSHOSPITAL_H_
 
 #include "Base.h"
 
@@ -42,3 +43,5 @@ class CJSHospital {
  protected:
   void UnplugPatient(HospitalRecord* record);
 };
+
+#endif

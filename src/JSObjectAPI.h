@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTAPI_H_
+#define NAGA_JSOBJECTAPI_H_
 
 #include "Base.h"
 #include "JSObjectBase.h"
@@ -10,13 +11,14 @@
 // this class maintains CJSObject API exposed to Python
 class CJSObjectAPI : public CJSObjectBase {
  protected:
-  CJSObjectGenericImpl m_generic_impl{*this};
-  CJSObjectFunctionImpl m_function_impl{*this};
-  CJSObjectArrayImpl m_array_impl{*this};
-  CJSObjectCLJSImpl m_cljs_impl{*this};
+  CJSObjectGenericImpl m_generic_impl;
+  CJSObjectFunctionImpl m_function_impl;
+  CJSObjectArrayImpl m_array_impl;
+  CJSObjectCLJSImpl m_cljs_impl;
 
  public:
-  explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj) : CJSObjectBase(v8_obj) {}
+  explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj)
+      : CJSObjectBase(v8_obj), m_generic_impl{*this}, m_function_impl{*this}, m_array_impl{*this}, m_cljs_impl{*this} {}
 
   static py::object Create(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 
@@ -57,3 +59,5 @@ class CJSObjectAPI : public CJSObjectBase {
   [[nodiscard]] std::string ResourceName() const;
   [[nodiscard]] std::string InferredName() const;
 };
+
+#endif

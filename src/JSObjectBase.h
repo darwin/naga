@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTBASE_H_
+#define NAGA_JSOBJECTBASE_H_
 
 #include "Base.h"
 
@@ -29,4 +30,8 @@ class CJSObjectBase {
   void Dump(std::ostream& os) const;
 };
 
+std::ostream& operator<<(std::ostream& os, const CJSObjectBase::Roles& v);
+
 #include "JSObjectBaseAux.h"
+
+#endif

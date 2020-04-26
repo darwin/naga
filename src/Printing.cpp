@@ -60,18 +60,6 @@ std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const CJSObject::Roles& v) {
-  std::vector<const char*> flags;
-  flags.reserve(8);
-  if ((v & CJSObject::Roles::Function) == CJSObject::Roles::Function) {
-    flags.push_back("Function");
-  }
-  if ((v & CJSObject::Roles::Array) == CJSObject::Roles::Array) {
-    flags.push_back("Array");
-  }
-  return os << fmt::format("{}", fmt::join(flags, ","));
-}
-
 std::ostream& operator<<(std::ostream& os, const PyObject* v) {
   if (!v) {
     return os << "PyObject* 0x0";

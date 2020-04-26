@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_FEATURES_H_
+#define NAGA_FEATURES_H_
 
 #include "Base.h"
 
@@ -8,4 +9,6 @@
 // disable individual features via build system
 #if defined(NAGA_DISABLE_FEATURE_CLJS)
 #undef NAGA_FEATURE_CLJS
+#endif
+
 #endif

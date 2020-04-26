@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_LOGGING_H_
+#define NAGA_LOGGING_H_
 
 #include "Base.h"
 #include "LoggingLevel.h"
@@ -94,7 +95,7 @@ std::string traceText(T&& content) {
 }
 
 class JSLandLogger {
-  const char* m_name;
+  [[maybe_unused]] const char* m_name;
 
  public:
   explicit JSLandLogger(const char* name) : m_name(name) {
@@ -106,3 +107,5 @@ class JSLandLogger {
     HTRACE(kJSLandLogger, "<<< {}", m_name);
   }
 };
+
+#endif

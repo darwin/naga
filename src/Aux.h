@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_AUX_H_
+#define NAGA_AUX_H_
 
 #include "Base.h"
 
@@ -12,3 +13,5 @@ void trace(const py::str& s);
 void v8RequestGarbageCollectionForTesting();
 CJSIsolatePtr testEncounteringForeignIsolate();
 CJSContextPtr testEncounteringForeignContext();
+
+#endif

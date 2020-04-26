@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSPLATFORM_H_
+#define NAGA_JSPLATFORM_H_
 
 #include "Base.h"
 
@@ -22,3 +23,5 @@ class CJSPlatform {
   bool Initialized() const { return m_initialized; }
   bool Init(std::string argv);
 };
+
+#endif

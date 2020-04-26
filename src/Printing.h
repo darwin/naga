@@ -1,7 +1,7 @@
-#pragma once
+#ifndef NAGA_PRINTING_H_
+#define NAGA_PRINTING_H_
 
 #include "Base.h"
-#include "JSObject.h"
 
 template <typename T>
 const void* voidThis(const T* v) {
@@ -24,7 +24,6 @@ std::ostream& operator<<(std::ostream& os, const CJSContext& v);
 std::ostream& operator<<(std::ostream& os, const CJSEngine& v);
 std::ostream& operator<<(std::ostream& os, const CJSScript& v);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
-std::ostream& operator<<(std::ostream& os, const CJSObject::Roles& v);
 std::ostream& operator<<(std::ostream& os, const PyObject* v);
 
 template <typename T>
@@ -92,3 +91,5 @@ namespace pybind11 {
 std::ostream& operator<<(std::ostream& os, const error_already_set& v);
 
 }
+
+#endif

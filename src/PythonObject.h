@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYTHONOBJECT_H_
+#define NAGA_PYTHONOBJECT_H_
 
 #include "Base.h"
 
@@ -28,3 +29,5 @@ class CPythonObject {
 
   static void ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex = py::error_already_set());
 };
+
+#endif

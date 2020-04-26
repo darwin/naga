@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYTHONEXPOSE_H_
+#define NAGA_PYTHONEXPOSE_H_
 
 #include "Base.h"
 
@@ -18,3 +19,5 @@ void exposeJSScript(py::module py_module);
 void exposeJSLocker(py::module py_module);
 void exposeJSUnlocker(py::module py_module);
 void exposeJSContext(py::module py_module);
+
+#endif

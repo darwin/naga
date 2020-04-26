@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSSCRIPT_H_
+#define NAGA_JSSCRIPT_H_
 
 #include "Base.h"
 
@@ -23,3 +24,5 @@ class CJSScript {
 
   void Dump(std::ostream& os) const;
 };
+
+#endif

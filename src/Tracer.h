@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_TRACER_H_
+#define NAGA_TRACER_H_
 
 #include "Base.h"
 
@@ -90,3 +91,5 @@ class CTracer {
   void SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup);
   void SwitchToZombieModeOrDie(TracedRawObject* raw_object);
 };
+
+#endif

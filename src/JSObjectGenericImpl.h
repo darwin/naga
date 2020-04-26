@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTGENERICIMPL_H_
+#define NAGA_JSOBJECTGENERICIMPL_H_
 
 #include "Base.h"
 
@@ -17,3 +18,5 @@ class CJSObjectGenericImpl {
  private:
   void CheckAttr(v8::Local<v8::String> v8_name) const;
 };
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSISOLATE_H_
+#define NAGA_JSISOLATE_H_
 
 #include "Base.h"
 
@@ -34,3 +35,5 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   py::object GetCurrentContext() const;
   py::bool_ InContext() const;
 };
+
+#endif

@@ -2,6 +2,7 @@
 #include "JSException.h"
 #include "Wrapping.h"
 #include "JSNull.h"
+#include "JSObject.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYTHONEXCEPTIONS_H_
+#define NAGA_PYTHONEXCEPTIONS_H_
 
 #include "Base.h"
 #include "PythonObject.h"
@@ -21,3 +22,5 @@ auto withPythonErrorInterception(v8::IsolatePtr v8_isolate, F&& fn) {
   // we explicitly return std::optional<return type of F>()
   return decltype(std::optional(fn()))();
 }
+
+#endif

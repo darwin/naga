@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSCONTEXT_H_
+#define NAGA_JSCONTEXT_H_
 
 #include "Base.h"
 
@@ -42,3 +43,5 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
                               int line = -1,
                               int col = -1);
 };
+
+#endif

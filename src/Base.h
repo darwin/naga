@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_BASE_H_
+#define NAGA_BASE_H_
 
 // this header should be included on all header files
 // it is also going to be precompiled in _precompile.h
@@ -40,3 +41,5 @@ namespace py = pybind11;
 #include "PythonUtils.h"
 #include "PybindUtils.h"
 #include "Printing.h"
+
+#endif

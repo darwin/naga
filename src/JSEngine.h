@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSENGINE_H_
+#define NAGA_JSENGINE_H_
 
 #include "Base.h"
 
@@ -30,3 +31,5 @@ class CJSEngine {
 
   void Dump(std::ostream& os) const;
 };
+
+#endif

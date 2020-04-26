@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_V8UTILS_H_
+#define NAGA_V8UTILS_H_
 
 #include "Base.h"
 
@@ -67,3 +68,5 @@ inline AutoTryCatch withAutoTryCatch(v8::IsolatePtr v8_isolate) {
 }
 
 }  // namespace v8u
+
+#endif

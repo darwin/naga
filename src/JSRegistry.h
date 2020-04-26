@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSREGISTRY_H_
+#define NAGA_JSREGISTRY_H_
 
 #include "Base.h"
 
@@ -38,3 +39,5 @@ class CJSRegistry {
     return result;
   }
 };
+
+#endif

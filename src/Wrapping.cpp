@@ -5,6 +5,7 @@
 #include "PythonDateTime.h"
 #include "PythonObject.h"
 #include "JSException.h"
+#include "JSObject.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

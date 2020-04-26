@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_WRAPPING_H_
+#define NAGA_WRAPPING_H_
 
 #include "Base.h"
 
@@ -10,3 +11,5 @@ py::object wrap(v8::IsolatePtr v8_isolate, const CJSObjectPtr& obj);
 
 // Python -> JS
 v8::Local<v8::Value> wrap(const py::handle& py_handle);
+
+#endif

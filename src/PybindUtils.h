@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYBINDUTILS_H_
+#define NAGA_PYBINDUTILS_H_
 
 #include "Base.h"
 #include "pybind11/pytypes.h"
@@ -29,3 +30,5 @@ class exact_str : public str {
 
 }  // namespace pybind11
 #pragma clang diagnostic pop
+
+#endif

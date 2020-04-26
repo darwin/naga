@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECT_H_
+#define NAGA_JSOBJECT_H_
 
 #include "Base.h"
 #include "JSObjectAPI.h"
@@ -29,3 +30,5 @@ class CJSObject final : public CJSObjectAPI {
 };
 
 static_assert(!std::is_polymorphic<CJSObject>::value, "CJSObject should not be polymorphic.");
+
+#endif

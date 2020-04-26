@@ -63,3 +63,15 @@ void CJSObjectBase::Dump(std::ostream& os) const {
     os << *v8_utf;
   }
 }
+
+std::ostream& operator<<(std::ostream& os, const CJSObjectBase::Roles& v) {
+  std::vector<const char*> flags;
+  flags.reserve(8);
+  if ((v & CJSObjectBase::Roles::Function) == CJSObjectBase::Roles::Function) {
+    flags.push_back("Function");
+  }
+  if ((v & CJSObjectBase::Roles::Array) == CJSObjectBase::Roles::Array) {
+    flags.push_back("Array");
+  }
+  return os << fmt::format("{}", fmt::join(flags, ","));
+}

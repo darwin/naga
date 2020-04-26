@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTBASEAUX_H_
+#define NAGA_JSOBJECTBASEAUX_H_
 
 #include "Base.h"
 
@@ -18,3 +19,5 @@ inline CJSObjectBase::Roles& operator|=(CJSObjectBase::Roles& receiver, CJSObjec
   receiver = receiver | right;
   return receiver;
 }
+
+#endif

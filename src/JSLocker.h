@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSLOCKER_H_
+#define NAGA_JSLOCKER_H_
 
 #include "Base.h"
 
@@ -14,3 +15,5 @@ class CJSLocker {
   static bool IsLocked();
   static bool IsActive();
 };
+
+#endif

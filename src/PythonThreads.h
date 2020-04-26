@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYTHONTHREADS_H_
+#define NAGA_PYTHONTHREADS_H_
 
 #include "Base.h"
 
@@ -13,3 +14,5 @@ auto withAllowedPythonThreads(F&& fn) {
   [[maybe_unused]] auto&& _ = finally([&]() noexcept { PyEval_RestoreThread(raw_thread_state); });
   return fn();
 }
+
+#endif

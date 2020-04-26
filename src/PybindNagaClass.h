@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_PYBINDNAGACLASS_H_
+#define NAGA_PYBINDNAGACLASS_H_
 
 #include "Base.h"
 #include "Meta.h"
@@ -132,3 +133,5 @@ class naga_class : /* private */ class_<type_, options...> {
 };
 
 }  // namespace pybind11
+
+#endif

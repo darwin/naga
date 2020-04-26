@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSSTACKTRACE_H_
+#define NAGA_JSSTACKTRACE_H_
 
 #include "Base.h"
 
@@ -40,3 +41,5 @@ class CJSStackTrace {
 
   [[nodiscard]] py::object Str() const;
 };
+
+#endif

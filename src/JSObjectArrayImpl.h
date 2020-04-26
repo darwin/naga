@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSOBJECTARRAYIMPL_H_
+#define NAGA_JSOBJECTARRAYIMPL_H_
 
 #include "Base.h"
 
@@ -12,3 +13,5 @@ class CJSObjectArrayImpl {
   py::object DelItem(const py::object& py_key) const;
   bool Contains(const py::object& py_key) const;
 };
+
+#endif

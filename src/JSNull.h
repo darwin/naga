@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NAGA_JSNULL_H_
+#define NAGA_JSNULL_H_
 
 #include "Base.h"
 
@@ -26,3 +27,5 @@ class js_null : public object {
 };
 
 }  // namespace pybind11
+
+#endif
