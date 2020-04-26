@@ -14,10 +14,12 @@ export NAGA_GN_GEN_EXTRA_ARGS
 NAGA_GN_EXTRA_ARGS="$NAGA_GN_EXTRA_ARGS naga_gen_compile_commands=true"
 export NAGA_GN_EXTRA_ARGS
 
-echo_cmd ./scripts/gen-build.sh debug _out/ccdb
+CCDB_OUT_DIR="$NAGA_GN_OUT_DIR/ccdb"
 
-# the above command should produce "$GN_DIR/_out/ccdb/compile_commands.json"
-GEN_CC_JSON="$GN_DIR/_out/ccdb/compile_commands.json"
+echo_cmd ./scripts/gen-build.sh debug "$CCDB_OUT_DIR"
+
+# the above command should produce "$CCDB_OUT_DIR/compile_commands.json"
+GEN_CC_JSON="$CCDB_OUT_DIR/compile_commands.json"
 
 if [[ ! -f "$GEN_CC_JSON" ]]; then
   echo_err "expected file '$GEN_CC_JSON' not found"
