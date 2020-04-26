@@ -1,2 +1,2 @@
 # noinspection PyUnresolvedReferences
-from naga_native.aux import *
+from naga.aux.aux_wrapper import *
