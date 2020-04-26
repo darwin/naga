@@ -8,7 +8,8 @@ import logging
 import datetime
 
 import naga
-from naga.aux import *
+import naga.aux
+import naga.toolkit
 
 
 def convert(obj):
@@ -750,7 +751,7 @@ class TestWrapper(unittest.TestCase):
 
             del ctxt
 
-        v8_request_gc_for_testing()
+        naga.aux.v8_request_gc_for_testing()
         self.assertEqual(g_refs, sys.getrefcount(g))
 
     def testProperty(self):

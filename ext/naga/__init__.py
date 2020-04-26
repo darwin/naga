@@ -92,8 +92,6 @@ JSPlatform = naga_native.JSPlatform
 JSUndefined = naga_native.JSUndefined
 JSNull = naga_native.JSNull
 
-toolkit = naga_native.toolkit
-
 
 class JSLocker(naga_native.JSLocker):
     def __enter__(self):
