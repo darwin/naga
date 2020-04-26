@@ -32,6 +32,11 @@ if [[ -n "$NAGA_ACTIVE_LOG_LEVEL" ]]; then
   NAGA_GN_ARGS+=("naga_active_log_level=\"$NAGA_ACTIVE_LOG_LEVEL\"")
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # this is needed for std::any under macOS
+  NAGA_GN_ARGS+=("mac_deployment_target=\"10.14.0\"")
+fi
+
 ./scripts/prepare-gn.sh
 
 cd "$NAGA_GN_WORK_DIR"
