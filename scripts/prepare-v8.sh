@@ -8,7 +8,10 @@ cd "$ROOT_DIR"
 
 # see https://v8.dev/docs/source-code
 
-if [[ ! -d "$V8_HOME" ]]; then
+# we should fetch either when $V8_HOME does not exist or when it is empty
+# the ls is here to fix corner case when gclient creates the directory
+# but fails to fetch it and leaves it emtpy
+if [[ ! -d "$V8_HOME" || -z "$(ls -A "$V8_HOME")" ]]; then
   V8_HOME_PARENT="$V8_HOME/.."
   if [[ ! -d "$V8_HOME_PARENT" ]]; then
     echo_cmd mkdir -p "$V8_HOME_PARENT"
@@ -23,6 +26,9 @@ fi
 echo_cmd cd "$V8_HOME"
 echo_cmd git fetch --tags
 echo_cmd git checkout "$NAGA_V8_GIT_TAG"
+
+activate_python3
+silence_gclient_python3_warning
 echo_cmd gclient sync -D
 
 if [[ "$OSTYPE" == "linux"* ]]; then

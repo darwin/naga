@@ -6,7 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
-./scripts/create-venv.sh
+./scripts/prepare-venv.sh
 
 set -x
 cd tests

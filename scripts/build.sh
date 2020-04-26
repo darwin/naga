@@ -48,18 +48,13 @@ if [[ -n "$NAGA_VERBOSE" ]]; then
   EXTRA_INSTALL_ARGS+=("--verbose")
 fi
 
-OUT_DIR="_out/$NAGA_V8_GIT_TAG/$BUILD_CONFIG"
+OUT_DIR="$NAGA_GN_OUT_DIR/$NAGA_V8_GIT_TAG/$BUILD_CONFIG"
 
 cd "$ROOT_DIR"
 
 echo_cmd ./scripts/gen-build.sh "${EXTRA_GEN_BUILD_ARGS[@]}" "$BUILD_CONFIG"
-
-echo_cmd ./scripts/enter_depot_shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_DIR" naga
+echo_cmd ./scripts/enter-depot-shell.sh ninja "${EXTRA_NINJA_ARGS[@]}" -C "$OUT_DIR" naga
 
 echo_cmd cd "$EXT_DIR"
-
-export NAGA_V8_GIT_TAG
-
-echo_cmd python3 setup.py build "${EXTRA_BUILD_ARGS[@]}"
-
-echo_cmd python3 setup.py install "${EXTRA_INSTALL_ARGS[@]}" --prefix "$VENV_DIR"
+echo_cmd ./setup.sh build "${EXTRA_BUILD_ARGS[@]}"
+echo_cmd ./setup.sh install "${EXTRA_INSTALL_ARGS[@]}" --prefix "$VENV_DIR"

@@ -39,7 +39,7 @@ cd "$GN_DIR"
 
 # see configs/args/* for possible names
 BUILD_CONFIG_NAME=${1:-release}
-BUILD_DIR=${2:-"_out/$NAGA_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
+BUILD_DIR=${2:-"$NAGA_GN_OUT_DIR/$NAGA_V8_GIT_TAG/$BUILD_CONFIG_NAME"}
 
 # activate Python3, we should capture build settings from Python3.7
 # shellcheck disable=SC1090
@@ -60,6 +60,8 @@ echo_cmd gn gen --verbose "$BUILD_DIR" \
   $NAGA_GN_GEN_EXTRA_ARGS
 
 if [[ -z "$NAGA_GN_GEN_EXTRA_ARGS" ]]; then
-  echo_info "in depot shell, you may now use following commands:"
+  echo_info "to enter depot shell:"
+  echo_info "> ./scripts/enter-depot-shell.sh"
+  echo_info "in depot shell, you may use following commands:"
   echo_info "> ninja -C $BUILD_DIR naga"
 fi

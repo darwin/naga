@@ -10,8 +10,7 @@ if [[ ! -d "$VENV_DIR" ]]; then
   # create a new clean venv
   python -m venv "$VENV_DIR"
 
-  # shellcheck disable=SC1090
-  source "$VENV_DIR/bin/activate"
+  activate_python3
   pip install -U pip
   pip install --upgrade virtualenv
 fi
@@ -19,6 +18,6 @@ fi
 if [[ ! -d "$VENV2_DIR" ]]; then
   # create a new clean venv with python2
   # we need virtualenv which supports creating python2 envs
-  source "$VENV_DIR/bin/activate"
+  activate_python3
   virtualenv -p python2 "$VENV2_DIR"
 fi

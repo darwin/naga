@@ -1,20 +1,8 @@
-build
-.cache
-.cipd
-.gclient
-.gclient_entries
-.git_cache
-depot_tools
-v8
+.work
 *.pyc
 *.cmake
 
-env
-venv
-.venv*
 .idea
-cmake-build-debug
-*.egg-info
 
 compile_commands.json
 vendor/cpython

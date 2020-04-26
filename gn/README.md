@@ -65,8 +65,8 @@ git submodule update
 ##### Install dependencies
 
 ```bash
-./scripts/install-deps.sh
-./scripts/checkout-v8.sh
+./scripts/prepare-deps.sh
+./scripts/prepare-v8.sh
 ./scripts/prepare-gn.sh
 ```
 
@@ -79,31 +79,51 @@ git submodule update
 # ./scripts/gen-build.sh debug
 ```
 
+```bash
+> gn gen --verbose /Users/darwin/lab/naga/.work/gn_out/8.4.100/release --args=import("//args/release.gn") naga_disable_feature_cljs=false
+Done. Made 149 targets from 84 files in 1874ms
+to enter depot shell:
+> ./scripts/enter-depot-shell.sh
+in depot shell, you may use following commands:
+> ninja -C /Users/darwin/lab/naga/.work/gn_out/8.4.100/release naga
+```
+
 ##### Enter the build shell and build it
 
 After entering the shell you should review the printed settings:
 
 ```
-> ./scripts/enter_depot_shell.sh
+> ./scripts/enter-depot-shell.sh
+NAGA_ACTIVE_LOG_LEVEL=
 NAGA_BASH_COLORS=yes
-NAGA_BOOST_INCLUDES=-I/usr/local/include
-NAGA_BOOST_LDFLAGS=-L/usr/local/lib -lboost_system -lboost_python37
-NAGA_BUILDTOOLS_PATH=/Users/darwin/lab/v8_ws/v8/buildtools
+NAGA_BUILDTOOLS_PATH=/Users/darwin/lab/naga/.work/v8/buildtools
+NAGA_CLANG_FORMAT_PATH=/usr/local/bin/clang-format
+NAGA_CLANG_TIDY_EXTRA_ARGS=
+NAGA_CLANG_TIDY_PATH=clang-tidy
+NAGA_CPYTHON_REPO_DIR=/Users/darwin/lab/naga/.work/cpython
 NAGA_DEPOT_GIT_URL=https://chromium.googlesource.com/chromium/tools/depot_tools.git
-NAGA_GIT_CACHE_PATH=/Users/darwin/lab/naga/.git_cache
-NAGA_GN_EXTRA_ARGS=
-NAGA_PYTHON_CFLAGS=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -Wno-unused-result -Wsign-compare -Wunreachable-code -fno-common -dynamic -DNDEBUG -g -fwrapv -O3 -Wall -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/usr/include -I/Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers
-NAGA_PYTHON_INCLUDES=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7m
-NAGA_PYTHON_LDFLAGS=-L/usr/local/opt/python/Frameworks/Python.framework/Versions/3.7/lib/python3.7/config-3.7m-darwin -lpython3.7m -ldl -framework CoreFoundation
-NAGA_PYTHON_LIBS=-lpython3.7m -ldl -framework CoreFoundation
-NAGA_V8_GIT_TAG=8.3.104
+NAGA_EXT_BUILD_BASE=/Users/darwin/lab/naga/.work/ext_build
+NAGA_GIT_CACHE_PATH=/Users/darwin/lab/naga/.work/git_cache
+NAGA_GN_EXTRA_ARGS=naga_disable_feature_cljs=false
+NAGA_GN_GEN_EXTRA_ARGS=
+NAGA_GN_OUT_DIR=/Users/darwin/lab/naga/.work/gn_out
+NAGA_LDFLAGS=-L/usr/local/lib
+NAGA_PYTHON_ABIFLAGS=dm
+NAGA_PYTHON_CFLAGS=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7dm -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7dm -Wno-unused-result -Wsign-compare -fno-common -dynamic -g -O0 -Wall
+NAGA_PYTHON_INCLUDES=-I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7dm -I/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/include/python3.7dm
+NAGA_PYTHON_LDFLAGS=-L/usr/local/Cellar/python/3.7.7/Frameworks/Python.framework/Versions/3.7/lib/python3.7/config-3.7dm-darwin -lpython3.7dm -ldl -framework CoreFoundation
+NAGA_PYTHON_LIBS=-lpython3.7dm -ldl -framework CoreFoundation
+NAGA_V8_GIT_TAG=8.4.100
 NAGA_V8_GIT_URL=https://chromium.googlesource.com/v8/v8.git
+NAGA_WAIT_FOR_DEBUGGER=1
+NAGA_WORK_DIR=/Users/darwin/lab/naga/.work
+in '/Users/darwin/lab/naga/gn'
 gn:
 ```
 
 Compile generated build files from previous step: 
 ```bash
-ninja -C _out/8.3.104/release naga
+ninja -C /Users/darwin/lab/naga/.work/gn_out/8.4.100/release naga
 ```
 
 When you are done, exit the sub-shell.
@@ -115,10 +135,10 @@ exit
 
 ```bash
 cd ext
-python setup.py build
+./setup.sh build
 
 # or for debug build run:
-# python setup.py build --debug
+# ./setup.sh build --debug
 ```
 
 ##### Run install it into our venv
@@ -127,7 +147,7 @@ Install final package into our Python3 environment
 
 ```bash
 cd ext
-python setup.py install --prefix ../.venv
+./setup.sh install --prefix ../.venv
 ```
 
 ##### Run tests
@@ -138,17 +158,21 @@ python setup.py install --prefix ../.venv
 
 # FAQ
 
+### Where is compiled output?
+
+> By default all generated/downloaded/cached files go to `.work` directory. You can change it via NAGA_WORK_DIR.
+> Compilation output from `gn` is configured via `NAGA_GN_OUT_DIR` and defaults to `$NAGA_WORK_DIR/gn_out`. 
+
 ### Where should I put V8 repo?
 
-> V8 repo directory location is specified by `V8_HOME` env variable. By default it goes to `gn/v8`.
-> The build system expects it there, so if you specify some other location via explicit `V8_HOME` in your environment
+> V8 repo directory location can be specified by `V8_HOME` env variable. By default it goes to `$NAGA_WORK_DIR/v8`.
+> The build system expects it in `gn/v8`, so if don't specify explicit `V8_HOME` to point to `gn/v8`
 > the build script will create a symlink from `gn/v8` to your `V8_HOME`. 
+> Also note that the parent directory of `V8_HOME` is used for gclient config/state files. The directory should
+> be under your control and no other gclient checkout should reside there.
  
 ### How do I change V8 revision?
 
 > `export NAGA_V8_GIT_TAG=${revision}`
 >
-> Then do `./scripts/checkout-v8.sh` which will pull and checkout specified revision. 
->
-> Please make sure that this env variable is persistent in your env. I personally use [direnv](https://direnv.net) 
-> for this kind of setup.
+> Then do `./scripts/prepare-v8.sh` which will pull and checkout the specified revision.

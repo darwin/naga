@@ -4,6 +4,12 @@ set -e -o pipefail
 # shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
+if [[ ! -d "$V8_HOME" ]]; then
+  echo_err "V8_HOME directory does not exist, did you run ./scripts/prepare-v8.sh?"
+  echo_err "V8_HOME='$V8_HOME'."
+  exit 1
+fi
+
 echo_cmd cd "$GN_DIR"
 
 symlink_v8_dir() {

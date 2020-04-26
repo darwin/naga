@@ -40,7 +40,7 @@ echo_info() {
 }
 
 echo_err() {
-  >&2 echo_with_color "$COLOR_RED" "$*"
+  echo_with_color >&2 "$COLOR_RED" "$*"
 }
 
 detect_python_build_settings() {
@@ -52,10 +52,48 @@ detect_python_build_settings() {
 }
 
 # https://stackoverflow.com/a/53400482/84283
-function ver()
-# Description: use for comparisons of version strings.
-# $1  : a version string of form 1.2.3.4
-# use: (( $(ver 1.2.3.4) >= $(ver 1.2.3.3) )) && echo "yes" || echo "no"
-{
-    printf "%02d%02d%02d%02d" ${1//./ }
+ver() { # Description: use for comparisons of version strings.
+  # $1  : a version string of form 1.2.3.4
+  # use: (( $(ver 1.2.3.4) >= $(ver 1.2.3.3) )) && echo "yes" || echo "no"
+  printf "%02d%02d%02d%02d" ${1//./ }
 }
+
+export_naga_env() {
+  # export variables with our prefix
+  for name in "${!NAGA_@}"; do
+    export "${name?}"
+  done
+}
+
+unset_python_home() {
+  if [ -n "${PYTHONHOME:-}" ]; then
+    unset PYTHONHOME
+    export PYTHONHOME
+  fi
+}
+
+activate_python() {
+  unset_python_home
+
+  VIRTUAL_ENV="$1"
+  export VIRTUAL_ENV
+
+  PATH="$VIRTUAL_ENV/bin:$PATH"
+  export PATH
+
+  echo_info "Active Python virtualenv: $VIRTUAL_ENV"
+}
+
+activate_python3() {
+  activate_python "$VENV_DIR"
+}
+
+activate_python2() {
+  activate_python "$VENV2_DIR"
+}
+
+silence_gclient_python3_warning() {
+  GCLIENT_PY3=1
+  export GCLIENT_PY3
+}
+

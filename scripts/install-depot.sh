@@ -7,9 +7,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 cd "$ROOT_DIR"
 
 if [[ ! -d "$DEPOT_HOME" ]]; then
-  mkdir -p DEPOT_HOME
+  mkdir -p "$DEPOT_HOME"
   echo_cmd git clone "$NAGA_DEPOT_GIT_URL" "$DEPOT_HOME"
 fi
 
-cd "$DEPOT_HOME"
+echo_cmd cd "$DEPOT_HOME"
 echo_cmd ./gclient --version
