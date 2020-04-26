@@ -18,6 +18,10 @@ if NAGA_V8_GIT_TAG is None:
 
 NAGA_VERSION = NAGA_V8_GIT_TAG
 
+NAGA_GN_OUT_DIR = os.environ.get('NAGA_GN_OUT_DIR')
+if NAGA_GN_OUT_DIR is None:
+    raise Exception("NAGA_GN_OUT_DIR is not defined in your environment")
+
 
 # here we override standard Extension build,
 # to simply check for existence and copy existing pre-built binary
@@ -25,7 +29,7 @@ class BuildExtCmd(build_ext):
 
     def get_input_path(self):
         build_config = "debug" if self.debug else "release"
-        return os.path.join("..", "gn", "_out", NAGA_VERSION, build_config, "libnaga.so")
+        return os.path.join(NAGA_GN_OUT_DIR, NAGA_VERSION, build_config, "libnaga.so")
 
     def get_output_path(self):
         name = self.extensions[0].name
