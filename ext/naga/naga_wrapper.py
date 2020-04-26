@@ -265,6 +265,11 @@ class JSContext(naga_native.JSContext):
         del self
 
 
+# -- enhance naga_native module ---------------------------------------------------------------------------------------
+
+# some exception-handling C++ code expects existence of "JSError" in naga_native module
+naga_native.JSError = JSError
+
 # -- expose some native objects directly ------------------------------------------------------------------------------
 
 JSNull = naga_native.JSNull

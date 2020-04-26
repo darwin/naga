@@ -1,5 +1,6 @@
 #include "JSException.h"
 #include "JSEternals.h"
+#include "PythonModule.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -106,8 +107,9 @@ static void translateJavascriptException(const CJSException& e) {
     // Ideally we would like to inherit JSException from JSError and set JSException as the final error.
     // Our approach here is to instead wrap JSException in JSError (we pass it as argument when
     // creating JSError instance). JSError then forwards some functionality to the wrapped class.
-    // See naga.py.
-    auto py_module = py::module::import("naga");
+    // See naga_wrapper.py.
+    auto& py_module = getNagaNativeModule();
+    assert((bool)py_module);
     auto py_error_class = py_module.attr("JSError");
     auto py_error_instance = py_error_class(e);
     //
