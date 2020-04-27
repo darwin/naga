@@ -113,6 +113,18 @@ fi
 
 BUILDER_DIR="$(pwd)"
 
+DOCKER_RUN_OPTS=(
+  --name "naga-builder"
+  --env-file "$DOCKER_ENV_FILE"
+  -v "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME:/naga-work"
+  -v "$BUILDER_DIR/fs/naga:/naga"
+  --rm
+)
+
+if [[ -t 1 ]]; then
+  DOCKER_RUN_OPTS+=(-t -i)
+fi
+
 if [[ "$1" == "build" ]]; then
   shift
   echo_cmd docker build -t "$NAGA_DOCKER_BUILDER_IMAGE_NAME:latest" . "$@"
@@ -134,14 +146,7 @@ elif [[ "$1" == "enter" ]]; then
 elif [[ "$1" == "run" ]]; then
   shift
   create_cache_volume
-  echo_cmd docker run \
-    --name "naga-builder" \
-    --env-file "$DOCKER_ENV_FILE" \
-    -v "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME:/naga-work" \
-    -v "$BUILDER_DIR/fs/naga:/naga" \
-    --rm \
-    -it "$NAGA_DOCKER_BUILDER_IMAGE_NAME" \
-    "$@"
+  echo_cmd docker run "${DOCKER_RUN_OPTS[@]}" "$NAGA_DOCKER_BUILDER_IMAGE_NAME" "$@"
 else
   # else fallback to direct command execution
   set -- "${ORIGINAL_ARGS[@]}"
