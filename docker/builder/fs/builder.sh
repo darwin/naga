@@ -9,12 +9,14 @@ export NAGA_INCLUDES="-I/usr/include -I/usr/include/x86_64-linux-gnu"
 cd "/naga"
 
 if [[ "$1" == "build" ]]; then
+  shift
   set -x
   ./scripts/prepare-deps.sh
   ./scripts/prepare-v8.sh
-  ./scripts/build.sh
+  ./scripts/build.sh "$@"
 elif [[ "$1" == "test" ]]; then
-  ./scripts/test.sh
+  shift
+  ./scripts/test.sh "$@"
 elif [[ "$1" == "enter" ]]; then
   shift
   "$@"
