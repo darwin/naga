@@ -13,7 +13,7 @@ if [[ "$1" == "build" ]]; then
   ./scripts/prepare-deps.sh
   ./scripts/prepare-v8.sh
   ./scripts/build.sh
-  # TODO: remove this, just temporary
+elif [[ "$1" == "test" ]]; then
   ./scripts/test.sh
 elif [[ "$1" == "enter" ]]; then
   shift
