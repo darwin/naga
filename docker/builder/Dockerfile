@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY "fs/*.sh" "/"
 
-VOLUME ["/var/cache"]
 VOLUME ["/naga"]
 
 ENTRYPOINT ["/builder.sh"]
