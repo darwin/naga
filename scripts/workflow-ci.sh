@@ -58,16 +58,16 @@ set -x
 cd "$ROOT_DIR/docker/builder"
 
 # this caching is not that important, rebuilding the docker image is pretty fast
-load_docker_images
+#load_docker_images
 ./do.sh build
-save_docker_images
+#save_docker_images
 
 # our docker image uses a separate volume for its caches (NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME)
 # we try to persist that between github workflow runs by exporting and importing the content as suggested by
 # https://stackoverflow.com/a/53622621/84283
 # the NAGA_WORKFLOW_CACHE_DIR should be cached by github
-load_docker_volumes
+#load_docker_volumes
 ./do.sh run build
-save_docker_volumes
+#save_docker_volumes
 
 ./do.sh run test
