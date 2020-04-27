@@ -4,15 +4,12 @@ set -e -o pipefail
 # shellcheck source=_config.sh
 source "$(dirname "${BASH_SOURCE[0]}")/../../scripts/_config.sh"
 
-DOCKER_IMAGE_NAME=naga-builder-image
-DOCKER_CACHE_VOLUME_NAME="naga-builder-cache"
-
 create_cache_volume() {
-  docker volume create --name "$DOCKER_CACHE_VOLUME_NAME" >/dev/null
+  docker volume create --name "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME" >/dev/null
 }
 
 remove_cache_volume() {
-  docker volume rm "$DOCKER_CACHE_VOLUME_NAME"
+  docker volume rm "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME"
 }
 
 ORIGINAL_ARGS=("$@")
@@ -118,14 +115,14 @@ BUILDER_DIR="$(pwd)"
 
 if [[ "$1" == "build" ]]; then
   shift
-  echo_cmd docker build -t "$DOCKER_IMAGE_NAME:latest" . "$@"
+  echo_cmd docker build -t "$NAGA_DOCKER_BUILDER_IMAGE_NAME:latest" . "$@"
 elif [[ "$1" == "clear-caches" ]]; then
   shift
   remove_cache_volume
 elif [[ "$1" == "clear" ]]; then
   shift
   remove_cache_volume
-  docker rmi "$DOCKER_IMAGE_NAME"
+  docker rmi "$NAGA_DOCKER_BUILDER_IMAGE_NAME"
 elif [[ "$1" == "attach" ]]; then
   shift
   echo "TODO"
@@ -140,10 +137,10 @@ elif [[ "$1" == "run" ]]; then
   echo_cmd docker run \
     --name "naga-builder" \
     --env-file "$DOCKER_ENV_FILE" \
-    -v "$DOCKER_CACHE_VOLUME_NAME:/naga-work" \
+    -v "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME:/naga-work" \
     -v "$BUILDER_DIR/fs/naga:/naga" \
     --rm \
-    -it "$DOCKER_IMAGE_NAME" \
+    -it "$NAGA_DOCKER_BUILDER_IMAGE_NAME" \
     "$@"
 else
   # else fallback to direct command execution

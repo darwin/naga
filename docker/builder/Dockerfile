@@ -21,5 +21,5 @@ VOLUME ["/naga"]
 
 ENTRYPOINT ["/builder.sh"]
 
-# we should have both python -> 2.7.x and python3 -> 3.8.x installed
+# we should have both python -> 2.7.x and python3 -> 3.7.x installed
 RUN "/stats.sh"
