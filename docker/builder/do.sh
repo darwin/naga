@@ -48,7 +48,7 @@ elif [[ "$1" == "clear" ]]; then
   remove_cache_volume
   docker rmi "$DOCKER_IMAGE_NAME"
 elif [[ "$1" == "attach" ]]; then
-  echo "x"
+  echo "TODO"
 elif [[ "$1" == "enter" ]]; then
   create_cache_volume
   shift

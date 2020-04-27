@@ -3,8 +3,8 @@
 set -e -o pipefail
 
 export NAGA_WORK_DIR="/naga-work"
-export NAGA_LDFLAGS="-L/usr/lib/x86_64-linux-gnu"
-export NAGA_INCLUDES="-I/usr/include/x86_64-linux-gnu"
+export NAGA_LDFLAGS="-L/usr/lib -L/usr/lib/x86_64-linux-gnu"
+export NAGA_INCLUDES="-I/usr/include -I/usr/include/x86_64-linux-gnu"
 
 cd "/naga"
 
