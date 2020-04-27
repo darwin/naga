@@ -7,6 +7,7 @@
 #include "JSContext.h"
 #include "JSException.h"
 #include "JSIsolateRegistry.h"
+#include "Logging.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

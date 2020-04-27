@@ -1,10 +1,11 @@
 #include "JSEngine.h"
 #include "JSScript.h"
-#include "JSException.h"
-#include "JSObject.h"
 #include "PythonThreads.h"
 #include "JSNull.h"
 #include "Wrapping.h"
+#include "Logging.h"
+#include "V8Utils.h"
+#include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

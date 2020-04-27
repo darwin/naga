@@ -2,6 +2,7 @@
 #define NAGA_PYTHONTHREADS_H_
 
 #include "Base.h"
+#include "Utils.h"
 
 template <typename F>
 auto withAllowedPythonThreads(F&& fn) {

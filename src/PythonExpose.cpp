@@ -15,6 +15,8 @@
 #include "Aux.h"
 #include "PybindNagaClass.h"
 #include "JSObject.h"
+#include "Logging.h"
+#include "V8Utils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

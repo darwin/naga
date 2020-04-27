@@ -1,5 +1,7 @@
 #include "JSScript.h"
 #include "JSEngine.h"
+#include "Logging.h"
+#include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

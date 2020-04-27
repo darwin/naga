@@ -3,6 +3,9 @@
 #include "Wrapping.h"
 #include "JSNull.h"
 #include "JSObject.h"
+#include "Logging.h"
+#include "V8Utils.h"
+#include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

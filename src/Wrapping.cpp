@@ -6,6 +6,11 @@
 #include "PythonObject.h"
 #include "JSException.h"
 #include "JSObject.h"
+#include "Logging.h"
+#include "V8Utils.h"
+#include "Printing.h"
+#include "PythonUtils.h"
+#include "PybindUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

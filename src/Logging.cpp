@@ -1,4 +1,3 @@
-#include "Base.h"
 #include "Logging.h"
 
 #include "spdlog/sinks/basic_file_sink.h"

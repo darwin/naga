@@ -2,6 +2,9 @@
 #include "JSException.h"
 #include "PythonThreads.h"
 #include "Wrapping.h"
+#include "Logging.h"
+#include "Printing.h"
+#include "PythonUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

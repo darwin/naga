@@ -2,6 +2,7 @@
 #define NAGA_JSREGISTRY_H_
 
 #include "Base.h"
+#include "Printing.h"
 
 template <typename V8T, typename NT>
 class CJSRegistry {

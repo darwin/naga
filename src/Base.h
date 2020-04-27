@@ -32,14 +32,13 @@ namespace py = pybind11;
 
 #include <magic_enum.hpp>
 
-#include "ForwardDeclarations.h"
-#include "Logging.h"
-#include "Features.h"
-#include "Utils.h"
-#include "V8Utils.h"
-#include "RawUtils.h"
-#include "PythonUtils.h"
-#include "PybindUtils.h"
-#include "Printing.h"
+// our headers included here should not include Base.h back!
+// this might work for you but could cause issues when compiling on other systems
+// to distinguish them, we prefix them with underscore
+#include "_ForwardDeclarations.h"
+#include "_Features.h"
+#include "_LoggingLevel.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/ostr.h"
 
 #endif

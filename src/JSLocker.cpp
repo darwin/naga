@@ -1,6 +1,9 @@
 #include "JSLocker.h"
 #include "JSIsolate.h"
 #include "PythonThreads.h"
+#include "Logging.h"
+#include "Printing.h"
+#include "V8Utils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

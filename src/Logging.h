@@ -2,9 +2,6 @@
 #define NAGA_LOGGING_H_
 
 #include "Base.h"
-#include "LoggingLevel.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/fmt/ostr.h"
 
 enum Loggers {
   kRootLogger = 0,

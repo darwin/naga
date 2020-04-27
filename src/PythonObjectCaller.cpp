@@ -1,9 +1,12 @@
 #include "PythonObject.h"
-#include "JSObject.h"
 #include "PythonExceptions.h"
 #include "Tracer.h"
 #include "Wrapping.h"
 #include "JSUndefined.h"
+#include "Logging.h"
+#include "PythonUtils.h"
+#include "Utils.h"
+#include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

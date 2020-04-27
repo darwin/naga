@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "Meta.h"
+#include "Logging.h"
 
 namespace pybind11 {
 

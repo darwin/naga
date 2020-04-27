@@ -3,6 +3,8 @@
 
 #include "Base.h"
 #include "JSIsolate.h"
+#include "Printing.h"
+#include "Logging.h"
 
 // We maintain a table of eternal objects for fast access
 // We keep one table per isolate and destroy the table before isolate goes away

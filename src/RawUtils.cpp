@@ -1,4 +1,5 @@
 #include "RawUtils.h"
+#include "V8Utils.h"
 
 v8::Local<v8::String> pythonBytesObjectToString(PyObject* py_obj) {
   if (!py_obj) {

@@ -1,5 +1,8 @@
 #include "Tracer.h"
 #include "JSIsolate.h"
+#include "Logging.h"
+#include "Printing.h"
+#include "PythonUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

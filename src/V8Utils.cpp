@@ -1,4 +1,3 @@
-#include "Base.h"
 #include "V8Utils.h"
 #include "RawUtils.h"
 #include "JSException.h"
@@ -83,7 +82,6 @@ std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value
   return std::string{*v8_utf, v8_utf.length()};
 }
 
-
 void checkContext(v8::IsolatePtr v8_isolate) {
   auto scope = withScope(v8_isolate);
   if (v8_isolate->GetCurrentContext().IsEmpty()) {
@@ -92,7 +90,8 @@ void checkContext(v8::IsolatePtr v8_isolate) {
 }
 
 v8::IsolatePtr getCurrentIsolate() {
-  // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this fails when there is no current isolate
+  // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this fails when there is no current
+  // isolate
   return v8::Isolate::GetCurrent();
 }
 

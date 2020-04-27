@@ -2,6 +2,7 @@
 #define NAGA_V8UTILS_H_
 
 #include "Base.h"
+#include "Logging.h"
 
 namespace v8u {
 

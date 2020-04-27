@@ -1,5 +1,6 @@
 #include "PythonModule.h"
 #include "PythonExpose.h"
+#include "Logging.h"
 
 py::module g_naga_native_module;
 

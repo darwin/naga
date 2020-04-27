@@ -1,6 +1,9 @@
 #include "JSException.h"
 #include "JSEternals.h"
 #include "PythonModule.h"
+#include "Logging.h"
+#include "V8Utils.h"
+#include "PythonUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

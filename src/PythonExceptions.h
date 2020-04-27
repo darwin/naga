@@ -3,6 +3,7 @@
 
 #include "Base.h"
 #include "PythonObject.h"
+#include "V8Utils.h"
 
 template <typename F>
 auto withPythonErrorInterception(v8::IsolatePtr v8_isolate, F&& fn) {

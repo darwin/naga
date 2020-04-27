@@ -1,5 +1,6 @@
 #include "JSIsolateRegistry.h"
 #include "JSRegistry.h"
+#include "Logging.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

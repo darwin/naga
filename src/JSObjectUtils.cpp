@@ -1,4 +1,6 @@
 #include "JSObjectUtils.h"
+#include "Logging.h"
+#include "V8Utils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

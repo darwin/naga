@@ -1,6 +1,8 @@
 #include "Aux.h"
 #include "JSIsolate.h"
 #include "JSContext.h"
+#include "Logging.h"
+#include "V8Utils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

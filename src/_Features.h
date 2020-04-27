@@ -1,8 +1,6 @@
 #ifndef NAGA_FEATURES_H_
 #define NAGA_FEATURES_H_
 
-#include "Base.h"
-
 // enable all features by default, to work with full source set during development
 #define NAGA_FEATURE_CLJS 1
 

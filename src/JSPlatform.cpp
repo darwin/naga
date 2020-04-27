@@ -1,4 +1,6 @@
 #include "JSPlatform.h"
+#include "Logging.h"
+#include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

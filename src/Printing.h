@@ -2,6 +2,7 @@
 #define NAGA_PRINTING_H_
 
 #include "Base.h"
+#include "V8Utils.h"
 
 template <typename T>
 const void* voidThis(const T* v) {

@@ -5,6 +5,9 @@
 #include "JSIsolate.h"
 #include "JSException.h"
 #include "Wrapping.h"
+#include "Logging.h"
+#include "Printing.h"
+#include "V8Utils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
