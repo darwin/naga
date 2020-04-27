@@ -95,7 +95,15 @@ Find more in the [tests](tests) directory.
 
 Look into [gn/README.md](gn/README.md).
 
-## FAQ
+## Docker 
+
+It is possible to use our docker scripts to build/test the library inside a docker container (Ubuntu).
+
+Please refer to [readme in docker/builder](docker/builder).
+
+It can also act as an example how to build this library under Ubuntu.
+
+# FAQ
 
 ### How does this work?
 
