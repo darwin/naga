@@ -5,6 +5,7 @@
 py::module g_naga_native_module;
 
 py::module& getNagaNativeModule() {
+  assert((bool)g_naga_native_module);
   return g_naga_native_module;
 }
 
@@ -36,4 +37,11 @@ PYBIND11_MODULE(naga_native, py_module) {
   exposeJSUnlocker(py_module);
 
   g_naga_native_module = py_module;
+  // we have to make sure this global variable gets cleared before Python interpreter gets deinitialized
+  // https://pybind11.readthedocs.io/en/stable/advanced/misc.html?highlight=atexit#module-destructors
+  auto atexit = py::module::import("atexit");
+  atexit.attr("register")(py::cpp_function([] {
+    TRACE("Deinitializing naga_native module...");
+    g_naga_native_module = py::none();
+  }));
 }
