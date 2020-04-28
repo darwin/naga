@@ -2,13 +2,12 @@
 
 # simple.py - bind a javascript function to python function
 
-import STPyV8
+from naga import JSContext
 
-with STPyV8.JSContext() as ctxt:
-  upcase = ctxt.eval("""
+with JSContext() as ctxt:
+    upcase = ctxt.eval("""
     ( (lowerString) => {
         return lowerString.toUpperCase();
     })
-  """)
-  print(upcase("hello world!"))
-
+    """)
+    print(upcase("hello world!"))
