@@ -2,7 +2,6 @@
 #define NAGA_PYBINDUTILS_H_
 
 #include "Base.h"
-#include "pybind11/pytypes.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "google-explicit-constructor"
