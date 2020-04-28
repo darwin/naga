@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # install basic deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common wget curl git sudo fish tree gpg-agent
+    software-properties-common wget curl git sudo fish tree gpg-agent diffutils
 
 # installing Python is like opening a can of worms
 # https://stackoverflow.com/a/59596814/84283
