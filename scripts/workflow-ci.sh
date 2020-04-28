@@ -6,7 +6,7 @@ set -e -o pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 NAGA_WORKFLOW_CACHE_DIR=${NAGA_WORKFLOW_CACHE_DIR:-"$NAGA_WORK_DIR/workflow-cache"}
-NAGA_CACHE_BACKUP_FILE_PATH="$NAGA_WORKFLOW_CACHE_DIR/$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME-backup.tar"
+NAGA_CACHE_BACKUP_FILE_PATH="$NAGA_WORKFLOW_CACHE_DIR/$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME-backup.tar.bz2"
 NAGA_CACHE_BACKUP_FILE_DIR="$(dirname "$NAGA_CACHE_BACKUP_FILE_PATH")"
 
 NAGA_IMAGE_BACKUP_PATH="$NAGA_WORKFLOW_CACHE_DIR/$NAGA_DOCKER_BUILDER_IMAGE_NAME-backup.save"
@@ -19,7 +19,7 @@ load_docker_volumes() {
     docker volume create --name "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME" >/dev/null
     docker run --rm -i \
       -v "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME:/target" \
-      busybox tar -xC /target <"$NAGA_CACHE_BACKUP_FILE_PATH"
+      busybox tar -xjC /target <"$NAGA_CACHE_BACKUP_FILE_PATH"
   else
     echo "Skipping loading docker volume $NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME"
     echo "because '$NAGA_CACHE_BACKUP_FILE_PATH' does not exist"
@@ -31,9 +31,10 @@ save_docker_volumes() {
   if [[ ! -d "$NAGA_CACHE_BACKUP_FILE_DIR" ]]; then
     mkdir -p "$NAGA_CACHE_BACKUP_FILE_DIR"
   fi
+  docker system prune -f || :
   docker run --rm \
     -v "$NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME:/source:ro" \
-    busybox tar -cC /source . >"$NAGA_CACHE_BACKUP_FILE_PATH"
+    busybox tar -cjC /source . >"$NAGA_CACHE_BACKUP_FILE_PATH"
 }
 
 load_docker_images() {
@@ -58,16 +59,16 @@ set -x
 cd "$ROOT_DIR/docker/builder"
 
 # this caching is not that important, rebuilding the docker image is pretty fast
-#load_docker_images
+load_docker_images
 ./do.sh build
-#save_docker_images
+save_docker_images
 
 # our docker image uses a separate volume for its caches (NAGA_DOCKER_BUILDER_CACHE_VOLUME_NAME)
 # we try to persist that between github workflow runs by exporting and importing the content as suggested by
 # https://stackoverflow.com/a/53622621/84283
 # the NAGA_WORKFLOW_CACHE_DIR should be cached by github
-#load_docker_volumes
+load_docker_volumes
 ./do.sh run build
-#save_docker_volumes
+save_docker_volumes
 
 ./do.sh run test
