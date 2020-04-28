@@ -100,23 +100,23 @@ config("naga_precompiled_headers") {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.
-      precompiled_header = "$naga_root_dir/src/_precompile.h"
+      precompiled_header = "$naga_root_dir/src/__precompile.h"
 
       # This is a file that GN will compile with the above header. It will be
       # implicitly added to the sources (potentially multiple times, with one
       # variant for each language used in the target).
-      precompiled_source = "$naga_root_dir/src/_precompile.cpp"
+      precompiled_source = "$naga_root_dir/src/__precompile.cpp"
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
-      precompiled_source = "$naga_root_dir/src/_precompile.h"
+      precompiled_source = "$naga_root_dir/src/__precompile.h"
     }
   } else {
     # when we don't use precompiled headers we must ensure that
     # the include order is the same as with precompiled headers
     # -include option puts the include on the first line of each cpp file
-    cflags_cc = [ "-include$naga_root_dir/src/_precompile.h" ]
+    cflags_cc = [ "-include$naga_root_dir/src/__precompile.h" ]
   }
 }
 
