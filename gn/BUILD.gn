@@ -72,7 +72,7 @@ naga_source_files = [
   "JSUnlocker.cpp",
   "Logging.cpp",
   "Printing.cpp",
-  "PybindUtils.cpp",
+  "PybindExtensions.cpp",
   "PythonDateTime.cpp",
   "PythonExpose.cpp",
   "PythonModule.cpp",

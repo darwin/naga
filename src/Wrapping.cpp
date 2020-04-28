@@ -10,7 +10,7 @@
 #include "V8Utils.h"
 #include "Printing.h"
 #include "PythonUtils.h"
-#include "PybindUtils.h"
+#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
