@@ -1,0 +1,4 @@
+1.0
+Hello World
+[object Function]
+Popping up an alert with message Hello
