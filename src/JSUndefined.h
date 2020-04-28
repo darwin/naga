@@ -13,26 +13,4 @@ PyAPI_DATA(PyObject) _Py_JSUndefinedStruct; /* Don't use this directly */
 
 #define Py_RETURN_JSUndefined return Py_INCREF(Py_JSUndefined), Py_JSUndefined
 
-// -- pybind wrapper --------------------------------------------------------------------------------------------------
-
-// this is similar to py::none
-
-namespace pybind11 {
-
-namespace detail {
-
-inline bool PyJSUndefined_Check(PyObject* o) {
-  return o == Py_JSUndefined;
-}
-
-}  // namespace detail
-
-class js_undefined : public object {
- public:
-  PYBIND11_OBJECT(explicit js_undefined, object, detail::PyJSUndefined_Check)
-  js_undefined() : object(Py_JSUndefined, borrowed_t{}) {}
-};
-
-}  // namespace pybind11
-
 #endif

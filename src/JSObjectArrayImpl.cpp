@@ -1,11 +1,11 @@
 #include "JSObjectArrayImpl.h"
 #include "JSException.h"
 #include "Wrapping.h"
-#include "JSNull.h"
 #include "JSObject.h"
 #include "Logging.h"
 #include "V8Utils.h"
 #include "Printing.h"
+#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

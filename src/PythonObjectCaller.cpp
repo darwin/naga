@@ -7,6 +7,7 @@
 #include "PythonUtils.h"
 #include "Utils.h"
 #include "Printing.h"
+#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \

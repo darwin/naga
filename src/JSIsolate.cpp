@@ -3,11 +3,11 @@
 #include "JSHospital.h"
 #include "JSEternals.h"
 #include "JSStackTrace.h"
-#include "JSNull.h"
 #include "JSContext.h"
 #include "JSException.h"
 #include "JSIsolateRegistry.h"
 #include "Logging.h"
+#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
