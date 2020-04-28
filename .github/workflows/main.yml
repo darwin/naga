@@ -9,7 +9,7 @@ on:
     branches: [ master ]
 
 env:
-  NAGA_WORKFLOW_CACHE_DIR: ~/naga-cache
+  NAGA_WORKFLOW_CACHE_DIR: ~/docker
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,7 +28,10 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.NAGA_WORKFLOW_CACHE_DIR }}
-          key: naga-cache-2
+          # https://github.community/t5/GitHub-Actions/Always-cache-files-and-save-them/td-p/55479
+          key: naga-cache-${{ github.sha }}
+          restore-keys: |
+            naga-cache-
 
       - name: Run the CI workflow
         run: ./scripts/workflow-ci.sh
