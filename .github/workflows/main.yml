@@ -8,9 +8,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  NAGA_WORKFLOW_CACHE_DIR: ~/docker
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "test"
@@ -24,14 +21,5 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache docker files
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.NAGA_WORKFLOW_CACHE_DIR }}
-          # https://github.community/t5/GitHub-Actions/Always-cache-files-and-save-them/td-p/55479
-          key: naga-cache-${{ github.sha }}
-          restore-keys: |
-            naga-cache-
-
-      - name: Run the CI workflow
+      - name: run the workflow-ci script
         run: ./scripts/workflow-ci.sh
