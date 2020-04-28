@@ -11,3 +11,4 @@ cd "$ROOT_DIR/docker/builder"
 ./do.sh build
 ./do.sh run build
 ./do.sh run test
+./do.sh run test-examples
