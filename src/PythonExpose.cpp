@@ -14,6 +14,7 @@
 #include "JSException.h"
 #include "Aux.h"
 #include "PybindNagaClass.h"
+#include "PybindNagaModule.h"
 #include "JSObject.h"
 #include "Logging.h"
 #include "V8Utils.h"
@@ -25,7 +26,7 @@
 void exposeAux(py::module py_module) {
   TRACE("exposeAux py_module={}", py_module);
   auto doc = "Aux tools";
-  py::module m = py_module.def_submodule("aux", doc);
+  auto m = py::naga_module(py_module.def_submodule("aux", doc));
 
   m.def("refcount_addr", &refCountAddr);
   m.def("trigger1", &trigger1);
@@ -42,7 +43,7 @@ void exposeAux(py::module py_module) {
 void exposeToolkit(py::module py_module) {
   TRACE("exposeToolkit py_module={}", py_module);
   auto doc = "Javascript Toolkit";
-  py::module m = py_module.def_submodule("toolkit", doc);
+  auto m = py::naga_module(py_module.def_submodule("toolkit", doc));
 
   // clang-format off
   m.def("linenum", ForwardTo<&CJSObjectAPI::LineNumber>{},
