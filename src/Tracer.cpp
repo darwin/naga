@@ -10,6 +10,18 @@
 
 #define PyType_SUPPORTS_WEAKREFS(t) ((t)->tp_weaklistoffset > 0)
 
+static PyObject* tracerPythonWeakCallback(PyObject* raw_self, PyObject* raw_weak_ref) {
+  TRACE("tracerPythonWeakCallback raw_self={} raw_weak_ref={}", raw_self, raw_weak_ref);
+  auto py_self = py::cast<py::capsule>(raw_self);
+  CTracer* tracer = py_self;
+  assert(tracer);
+  tracer->WeakRefCallback(raw_weak_ref);
+  Py_RETURN_NONE;
+}
+
+static PyMethodDef g_callback_def = {"tracerPythonWeakCallback", static_cast<PyCFunction>(tracerPythonWeakCallback),
+                                     METH_O};
+
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
   auto v8_isolate = v8_wrapper->GetIsolate();
   TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", P$(v8_isolate), py::handle(raw_object), v8_wrapper);
@@ -70,8 +82,10 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-CTracer::CTracer() {
-  TRACE("CTracer::CTracer {}", THIS);
+CTracer::CTracer()
+    : m_self(this, "Naga.Tracer"),
+      m_callback(py::reinterpret_steal<py::object>(PyCFunction_NewEx(&g_callback_def, m_self.ptr(), nullptr))) {
+  TRACE("CTracer::CTracer {} m_self={} m_callback={}", THIS, m_self, m_callback);
 }
 
 CTracer::~CTracer() {
@@ -136,6 +150,8 @@ void CTracer::DeleteRecord(PyObject* raw_object) {
 
   auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;
   if (raw_weak_ref) {
+    assert(m_weak_refs.find(raw_weak_ref) != m_weak_refs.end());
+    m_weak_refs.erase(raw_weak_ref);
     Py_DECREF(raw_weak_ref);
     raw_weak_ref = nullptr;
   }
@@ -161,6 +177,8 @@ void CTracer::SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cle
   if (cleanup) {
     auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;
     assert(raw_weak_ref);
+    assert(m_weak_refs.find(raw_weak_ref) != m_weak_refs.end());
+    m_weak_refs.erase(raw_weak_ref);
     Py_DECREF(raw_weak_ref);
     raw_weak_ref = nullptr;
   } else {
@@ -192,6 +210,13 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
   SwitchToZombieMode(tracer_lookup);
 }
 
+void CTracer::WeakRefCallback(WeakRefRawObject* raw_weak_ref) {
+  TRACE("CTracer::WeakRefCallback {} raw_weak_ref={}", THIS, raw_weak_ref);
+  auto lookup = m_weak_refs.find(raw_weak_ref);
+  assert(lookup != m_weak_refs.end());
+  DeleteRecord(lookup->second);
+}
+
 void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
   TRACE("CTracer::SwitchToZombieMode {}", THIS);
 
@@ -202,14 +227,9 @@ void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
   tracer_lookup->second.m_v8_wrapper.AnnotateStrongRetainer("naga.Tracer");
 
   // ask for a weakref to the Python object
-  // TODO: investigate - creating python callables dynamically might be expensive
-  // note both captured tracer and raw_object (PyObject*) a guaranteed to outlive this callable object
-  py::cpp_function py_weak_ref_callback([this, raw_object = raw_object](const py::handle& py_weak_ref) {
-    TRACE("CTracer::PythonWeakRefCallback py_weak_ref={} raw_object={}", py_weak_ref, raw_object);
-    DeleteRecord(raw_object);
-  });
-  auto raw_weak_ref = PyWeakref_NewRef(raw_object, py_weak_ref_callback.ptr());
+  auto raw_weak_ref = PyWeakref_NewRef(raw_object, m_callback.ptr());
   assert(raw_weak_ref);
+  m_weak_refs.insert(std::make_pair(raw_weak_ref, raw_object));
 
   // update our records
   assert(!tracer_lookup->second.m_weak_ref);

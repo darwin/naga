@@ -31,14 +31,21 @@
 //    to a JS-land caller. Of course, if the caller drops it, we should get a v8WeakCallback at some later point
 //    (depends on V8 GC mood).
 //
-// Please note a few edge cases:
+// A few implementation notes:
 // b1) When we are about to switch to "zombie mode" we can test that we are the last person holding the Python object.
 //     In this case we can perform direct fast path and drop the pair immediately. No need to create Python weak ref.
 // b2) Not all Python objects can have weak refs for some reason (unfortunately!), we detect this situation and
 //     in this (hopefully) rare case we simply drop the pair from the cache. This is not optimal because next time
 //     the wrapper will have to be re-created but there is nothing much we can do without a weak reference support.
 //     Ideas?
-// b3) We rely on V8's callbacks which are not guaranteed. If V8 does not call us soon (or at all) it is not critical.
+// b3) The design of Python weak references is really unfortunate.
+//     They don't give us access to referenced object pointer[1] or let us pass some data into a weak ref callback.
+//     To identify which object is going away we have basically two options:
+//       1) for each new callback allocate a new closure and remember the info there
+//       2) use the same callback, but keep a parallel data structure which lets us lookup original
+//          object.
+//     I decided to go with #2 and maintain m_weak_refs with mapping back to original objects.
+// b4) We rely on V8's callbacks which are not guaranteed. If V8 does not call us soon (or at all) it is not critical.
 //     The result is that we keep the pairs in the cache longer than we would had otherwise.
 //     This is a little tricky for testing because these callbacks may be non-deterministic.
 //     If you need to force garbage collection for Python tests, use `v8_request_gc_for_testing`.
@@ -58,6 +65,8 @@
 // We want to detect cases when a JS wrapper is crossing the boundary back into Python land (lookupTracedObject).
 // If the the JS object is a wrapper, we simply use this cache to get the original naked Python object.
 // We must avoid wrapping the wrapper!
+//
+// [1] https://pypy-dev.python.narkive.com/yIfN4QLM/cpyext-how-to-make-use-of-the-weakref-callback
 
 using V8Wrapper = v8::Global<v8::Object>;
 using TracedRawObject = PyObject;
@@ -73,9 +82,13 @@ struct TracerRecord {
 };
 
 using TrackedWrappers = std::unordered_map<TracedRawObject*, TracerRecord>;
+using WeakRefs = std::unordered_map<WeakRefRawObject*, TracedRawObject*>;
 
 class CTracer {
   TrackedWrappers m_wrappers;
+  WeakRefs m_weak_refs;
+  py::capsule m_self;
+  py::object m_callback;
 
  public:
   CTracer();
@@ -84,6 +97,7 @@ class CTracer {
   void TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
   v8::Local<v8::Object> LookupWrapper(v8::IsolatePtr v8_isolate, TracedRawObject* raw_object);
   void AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object);
+  void WeakRefCallback(WeakRefRawObject* raw_weak_ref);
 
  protected:
   void DeleteRecord(TracedRawObject* raw_object);
