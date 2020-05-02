@@ -20,12 +20,15 @@ void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_
 
   py::object py_type(py_ex.type());
   py::object py_value(py_ex.value());
+  py::object py_trace(py_ex.trace());
+
+  // note that this call can create new Python objects into our py-wrappers
+  // but it will make sure our ownership expectations do not change
+  // (our wrappers still have to DECREF whatever is in them)
+  PyErr_NormalizeException(&py_type.ptr(), &py_value.ptr(), &py_trace.ptr());
 
   auto raw_type = py_type.ptr();
   auto raw_value = py_value.ptr();
-
-  //  TODO: investigate: shall we call normalize, pybind does not call it
-  //  PyErr_NormalizeException(&raw_exc, &raw_val, &raw_trb);
 
   std::string msg;
 
