@@ -63,19 +63,19 @@ void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_
     }
   }
 
-  v8::Local<v8::Value> v8_error;
-
-  if (PyErr_GivenExceptionMatches(raw_type, PyExc_IndexError)) {
-    v8_error = v8::Exception::RangeError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_AttributeError)) {
-    v8_error = v8::Exception::ReferenceError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_SyntaxError)) {
-    v8_error = v8::Exception::SyntaxError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_TypeError)) {
-    v8_error = v8::Exception::TypeError(v8u::toString(v8_isolate, msg));
-  } else {
-    v8_error = v8::Exception::Error(v8u::toString(v8_isolate, msg));
-  }
+  auto v8_error = [&] {
+    if (PyErr_GivenExceptionMatches(raw_type, PyExc_IndexError)) {
+      return v8::Exception::RangeError(v8u::toString(v8_isolate, msg));
+    } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_AttributeError)) {
+      return v8::Exception::ReferenceError(v8u::toString(v8_isolate, msg));
+    } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_SyntaxError)) {
+      return v8::Exception::SyntaxError(v8u::toString(v8_isolate, msg));
+    } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_TypeError)) {
+      return v8::Exception::TypeError(v8u::toString(v8_isolate, msg));
+    } else {
+      return v8::Exception::Error(v8u::toString(v8_isolate, msg));
+    }
+  }();
 
   if (v8_error->IsObject()) {
     // see general explanation in translateJavascriptException
