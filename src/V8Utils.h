@@ -8,6 +8,7 @@ namespace v8u {
 
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const char* s);
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string& str);
+v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string_view& sv);
 v8::Local<v8::String> toString(const std::string& str);
 v8::Local<v8::String> toString(const std::wstring& str);
 v8::Local<v8::String> toString(const py::handle& py_str);
