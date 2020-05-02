@@ -4,7 +4,6 @@
 #include "JSEternals.h"
 #include "Logging.h"
 #include "PythonUtils.h"
-#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -13,59 +12,84 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-static std::string extractExceptionMessage(py::handle py_value) {
-  std::string msg;
-
-  if (py::hasattr(py_value, "args")) {
-    auto py_args = py_value.attr("args");
-    if (py::isinstance<py::tuple>(py_args)) {
-      auto py_args_tuple = py::cast<py::tuple>(py_args);
-      auto it = py_args_tuple.begin();
-      while (it != py_args_tuple.end()) {
-        auto py_arg = *it;
-        if (py::isinstance<py::str>(py_arg)) {
-          msg += py::cast<py::str>(py_arg);
-        }
-        it++;
-      }
-    }
-  } else if (py::hasattr(py_value, "message")) {
-    auto py_msg = py_value.attr("message");
-    if (py::isinstance<py::str>(py_msg)) {
-      msg += py::cast<py::str>(py_msg);
-    }
-  } else if (py::isinstance<py::exact_bytes>(py_value)) {
-    auto py_bytes = py::cast<py::exact_bytes>(py_value);
-    msg += py_bytes;
-  } else if (py::isinstance<py::exact_tuple>(py_value)) {
-    auto py_tuple = py::cast<py::exact_tuple>(py_value);
-    auto it = py_tuple.begin();
-    while (it != py_tuple.end()) {
-      auto py_item = *it;
-      if (py::isinstance<py::exact_bytes>(py_item)) {
-        auto py_bytes = py::cast<py::exact_bytes>(py_item);
-        msg = py_bytes;
-        break;
-      }
-      it++;
-    }
-  }
-
-  return msg;
+static std::string_view getFirstLine(std::string_view sv) {
+  auto pos = sv.find_first_of('\n');
+  return sv.substr(0, pos);
 }
 
-static auto convertExceptionToV8Error(v8::IsolatePtr v8_isolate, py::handle py_type, const std::string& msg) {
-  auto raw_type = py_type.ptr();
-  if (PyErr_GivenExceptionMatches(raw_type, PyExc_IndexError)) {
-    return v8::Exception::RangeError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_AttributeError)) {
-    return v8::Exception::ReferenceError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_SyntaxError)) {
-    return v8::Exception::SyntaxError(v8u::toString(v8_isolate, msg));
-  } else if (PyErr_GivenExceptionMatches(raw_type, PyExc_TypeError)) {
-    return v8::Exception::TypeError(v8u::toString(v8_isolate, msg));
+static std::string_view stripTypeInfo(std::string_view sv) {
+  // we expect input like "IndexError: list index out of range"
+  // we strip the first part with colon and space
+  // => "list index out of range"
+  auto pos = sv.find_first_of(':');
+  if (pos != std::string::npos) {
+    if (pos + 1 < sv.size() && sv[pos + 1] == ' ') {
+      return sv.substr(pos + 2);
+    }
+  }
+  return sv;
+}
+
+static auto convertPythonExceptionToV8Error(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex) {
+  // It turns out it is not that easy to extract text error message from Python's "error value" object
+  // because in general it could be anything, see:
+  // https://stackoverflow.com/questions/1418015/how-to-get-python-exception-text
+  // https://stackoverflow.com/questions/33239308/how-to-get-exception-message-in-python-properly
+  //
+  // A historical note:
+  //   Original STPyV8 had some hairy heuristic code here and tried to be smart about extracting
+  //   text message under different circumstances (it looked for "args" and "message" attributes on the value object
+  //   or tried to extract first string value if it was a tuple).
+  //   There was no explanation, so I decided to delete that code.
+  //
+  // One can look at Python's traceback module implementation to see how complex the task is.
+  // Ideally we would like to have something like `traceback.format_exception_only` here.
+  // One solution could be to import traceback and let it do the job here (as suggested in[1]). But that feels
+  // like a really heavy-weight approach which could be fragile (what if it has unexpected side-effects?,
+  // what if user's python import environment is broken?, what if something else goes wrong?).
+  //
+  // Alternatively we could re-implement the main code path of format_exception_only, which boils down to this code:
+  //
+  //    def _format_final_exc_line(etype, value):
+  //        valuestr = _some_str(value)
+  //        if value is None or not valuestr:
+  //            line = "%s\n" % etype
+  //        else:
+  //            line = "%s: %s\n" % (etype, valuestr)
+  //        return line
+  //
+  //    def _some_str(value):
+  //        try:
+  //            return str(value)
+  //        except:
+  //            return '<unprintable %s object>' % type(value).__name__
+  //
+  //
+  // It turns out pybind implements something very similar to the code above. See their detail::error_string()
+  // implementation. This error message is available in error_already_set.what() so I decided to use it and rely
+  // on their hard work to keep this in sync with future Python.
+  //
+  // We just need to massage their error message:
+  // 1. we take only the first line of the message
+  // 2. we skip type info in the message, our translation provides V8-related types
+  //    so for example             "IndexError: list index out of range"
+  //    is stripped to                         "list index out of range"
+  //    which is later prefixed tp "RangeError: list index out of range"
+  //
+  // [1] https://stackoverflow.com/a/6576177/84283
+
+  auto msg = stripTypeInfo(getFirstLine(py_ex.what()));
+  auto v8_msg = v8u::toString(v8_isolate, msg);
+  if (py_ex.matches(PyExc_IndexError)) {
+    return v8::Exception::RangeError(v8_msg);
+  } else if (py_ex.matches(PyExc_AttributeError)) {
+    return v8::Exception::ReferenceError(v8_msg);
+  } else if (py_ex.matches(PyExc_SyntaxError)) {
+    return v8::Exception::SyntaxError(v8_msg);
+  } else if (py_ex.matches(PyExc_TypeError)) {
+    return v8::Exception::TypeError(v8_msg);
   } else {
-    return v8::Exception::Error(v8u::toString(v8_isolate, msg));
+    return v8::Exception::Error(v8_msg);
   }
 }
 
@@ -118,24 +142,17 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
 void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
-
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  py::object py_type(py_ex.type());
-  py::object py_value(py_ex.value());
-  py::object py_trace(py_ex.trace());
+  // note we don't need to call PyErr_NormalizeException
+  // py::error_already_set in its constructor called py::detail::error_string() which did the normalization
+  // py_ex.type(), py_ex.value() and py_ex.trace() are already normalized
 
-  // note that this call can create new Python objects into our py-wrappers
-  // but it will make sure our ownership expectations do not change
-  // (our wrappers still have to DECREF whatever is in them)
-  PyErr_NormalizeException(&py_type.ptr(), &py_value.ptr(), &py_trace.ptr());
-
-  auto msg = extractExceptionMessage(py_value);
-  auto v8_error = convertExceptionToV8Error(v8_isolate, py_type, msg);
+  auto v8_error = convertPythonExceptionToV8Error(v8_isolate, py_ex);
   if (v8_error->IsObject()) {
     auto v8_error_object = v8_error.As<v8::Object>();
     // see general explanation in translateJavascriptException
-    attachPythonInfoToV8Error(v8_isolate, v8_error_object, py_type, py_value);
+    attachPythonInfoToV8Error(v8_isolate, v8_error_object, py_ex.type(), py_ex.value());
   }
 
   v8_isolate->ThrowException(v8_error);

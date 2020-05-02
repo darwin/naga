@@ -402,7 +402,7 @@ class TestWrapper(unittest.TestCase):
 
             ctxt.eval("try { this.raiseSyntaxError(); } catch (e) { msg = e; }")
 
-            self.assertEqual("SyntaxError: invalid syntax", str(ctxt.locals.msg))
+            self.assertEqual("SyntaxError: ('invalid syntax', ('<string>', 1, 1, '???'))", str(ctxt.locals.msg))
 
             ctxt.eval("try { this.raiseTypeError(); } catch (e) { msg = e; }")
 
