@@ -67,6 +67,10 @@ std::ostream& operator<<(std::ostream& os, PyObject* v) {
   return os << fmt::format("PyObject {} [#{}] {}", static_cast<const void*>(v), Py_REFCNT(v), py::handle(v));
 }
 
+std::ostream& operator<<(std::ostream& os, PyTypeObject* v) {
+  return operator<<(os, reinterpret_cast<PyObject*>(v));
+}
+
 std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& wv) {
   auto& v = wv.m_v;
   if (!v) {

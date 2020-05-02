@@ -197,9 +197,7 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
   // in this case we cannot keep V8 wrapper alive
   // subsequent possible lookups for V8 wrapper will have to recreate the wrapper again
   if (!PyType_SUPPORTS_WEAKREFS(Py_TYPE(raw_object))) {
-    // TODO: support better printing for Python types
-    TRACE("CTracer::SwitchToZombieMode weak reference is not possible for {}",
-          py::handle((PyObject*)Py_TYPE(raw_object)));
+    TRACE("CTracer::SwitchToZombieMode weak reference is not possible for {}", Py_TYPE(raw_object));
     DeleteRecord(raw_object);
     Py_DECREF(raw_object);
     return;

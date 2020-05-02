@@ -37,6 +37,7 @@ std::ostream& operator<<(std::ostream& os, const CJSEngine& v);
 std::ostream& operator<<(std::ostream& os, const CJSScript& v);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
 std::ostream& operator<<(std::ostream& os, PyObject* v);
+std::ostream& operator<<(std::ostream& os, PyTypeObject* v);
 // use this when it is unsafe to ask the python object for its string representation
 std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& v);
 
