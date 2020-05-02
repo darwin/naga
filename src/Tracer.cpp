@@ -142,10 +142,11 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolatePtr v8_isolate, PyObject
   return v8_result;
 }
 
-void CTracer::DeleteRecord(PyObject* raw_object) {
-  TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, raw_object);
+void CTracer::DeleteRecord(PyObject* dead_raw_object) {
+  // WARNING! do not use dead_raw_object, even do not attempt to print it, it may be already gone
+  TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, static_cast<void*>(dead_raw_object));
 
-  auto tracer_lookup = m_wrappers.find(raw_object);
+  auto tracer_lookup = m_wrappers.find(dead_raw_object);
   assert(tracer_lookup != m_wrappers.end());
 
   auto& raw_weak_ref = tracer_lookup->second.m_weak_ref;

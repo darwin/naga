@@ -100,7 +100,7 @@ class CTracer {
   void WeakRefCallback(WeakRefRawObject* raw_weak_ref);
 
  protected:
-  void DeleteRecord(TracedRawObject* raw_object);
+  void DeleteRecord(TracedRawObject* dead_raw_object);
   void SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cleanup = true);
   void SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup);
   void SwitchToZombieModeOrDie(TracedRawObject* raw_object);
