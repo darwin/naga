@@ -83,7 +83,7 @@ inline bool isShortString(const std::string& s, size_t max_len = 80) {
 template <class T>
 std::string traceText(T&& content) {
   // trace long/multi-line content via traceMore
-  auto content_str = fmt::format("{}", content);
+  auto content_str = fmt::format("{}", std::forward<T>(content));
   if (isShortString(content_str)) {
     return content_str;
   } else {
