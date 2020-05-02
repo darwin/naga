@@ -29,6 +29,16 @@ class exact_str : public str {
   PYBIND11_OBJECT_CVT(exact_str, str, isExactString, PyObject_Str)
 };
 
+class exact_bytes : public bytes {
+ public:
+ PYBIND11_OBJECT(exact_bytes, bytes, PyBytes_CheckExact)
+};
+
+class exact_tuple : public tuple {
+ public:
+  PYBIND11_OBJECT_CVT(exact_tuple, tuple, PyTuple_CheckExact, PySequence_Tuple)
+};
+
 namespace detail {
 
 inline bool PyJSNull_Check(PyObject* o) {

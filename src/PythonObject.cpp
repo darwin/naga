@@ -4,6 +4,7 @@
 #include "JSEternals.h"
 #include "Logging.h"
 #include "PythonUtils.h"
+#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -50,19 +51,20 @@ void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_
     if (py::isinstance<py::str>(py_msg)) {
       msg += py::cast<py::str>(py_msg);
     }
-  } else if (raw_value) {
-    // TODO: use pybind
-    if (PyBytes_CheckExact(raw_value)) {
-      msg = PyBytes_AS_STRING(raw_value);
-    } else if (PyTuple_CheckExact(raw_value)) {
-      for (int i = 0; i < PyTuple_GET_SIZE(raw_value); i++) {
-        auto raw_item = PyTuple_GET_ITEM(raw_value, i);
-
-        if (raw_item && PyBytes_CheckExact(raw_item)) {
-          msg = PyBytes_AS_STRING(raw_item);
-          break;
-        }
+  } else if (py::isinstance<py::exact_bytes>(py_value)) {
+    auto py_bytes = py::cast<py::exact_bytes>(py_value);
+    msg += py_bytes;
+  } else if (py::isinstance<py::exact_tuple>(py_value)) {
+    auto py_tuple = py::cast<py::exact_tuple>(py_value);
+    auto it = py_tuple.begin();
+    while (it != py_tuple.end()) {
+      auto py_item = *it;
+      if (py::isinstance<py::exact_bytes>(py_item)) {
+        auto py_bytes = py::cast<py::exact_bytes>(py_item);
+        msg = py_bytes;
+        break;
       }
+      it++;
     }
   }
 
