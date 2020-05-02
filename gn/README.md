@@ -146,7 +146,7 @@ Install final package into our Python3 environment
 
 ```bash
 cd ext
-./setup.sh install --prefix ../.venv
+./setup.sh install --prefix ../.work/venv_python3
 ```
 
 ##### Run tests
