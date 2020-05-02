@@ -217,9 +217,8 @@ void CTracer::WeakRefCallback(WeakRefRawObject* raw_weak_ref) {
 }
 
 void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
-  TRACE("CTracer::SwitchToZombieMode {}", THIS);
-
   auto raw_object = tracer_lookup->first;
+  TRACE("CTracer::SwitchToZombieMode {} raw_object={}", THIS, raw_object);
 
   // this will resurrect the V8 object and keep it alive until we kill it
   tracer_lookup->second.m_v8_wrapper.ClearWeak();
