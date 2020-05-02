@@ -26,7 +26,7 @@ void toStringImpl(const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   auto v8_isolate = v8_info.GetIsolate();
   auto raw_wrapped_object = lookupTracedObject(v8_info.Holder());
   assert(raw_wrapped_object);
-  TRACE("toStringImpl v8_info={} raw_wrapped_object={}", v8_info, raw_wrapped_object);
+  TRACE("toStringImpl v8_info={} raw_wrapped_object={}", v8_info, S$(raw_wrapped_object));
 
   // note this call does not require GIL
   if (isPythonCallable(raw_wrapped_object)) {

@@ -43,7 +43,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
   assert(v8_val->IsExternal());
   auto v8_payload = v8_val.As<v8::External>();
   auto raw_obj = static_cast<PyObject*>(v8_payload->Value());
-  TRACE("lookupTracedObject => {}", raw_obj);
+  TRACE("lookupTracedObject => {}", S$(raw_obj));
   return raw_obj;
 }
 
