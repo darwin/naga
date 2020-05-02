@@ -60,11 +60,19 @@ std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const PyObject* v) {
+std::ostream& operator<<(std::ostream& os, PyObject* v) {
   if (!v) {
-    return os << "PyObject* 0x0";
+    return os << "PyObject 0x0";
   }
-  return os << fmt::format("PyObject* {} [#{}]", static_cast<const void*>(v), Py_REFCNT(v));
+  return os << fmt::format("PyObject {} [#{}] {}", static_cast<const void*>(v), Py_REFCNT(v), py::handle(v));
+}
+
+std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& wv) {
+  auto& v = wv.m_v;
+  if (!v) {
+    return os << "PyObject 0x0";
+  }
+  return os << fmt::format("PyObject {} [#{}]", static_cast<const void*>(v), Py_REFCNT(v));
 }
 
 namespace v8 {

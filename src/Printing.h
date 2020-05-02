@@ -17,6 +17,17 @@ const void* voidThis(const T* v) {
 std::string printCoerced(const std::wstring& v);
 std::string printCoerced(v8::IsolatePtr v);
 
+template <typename T>
+struct SafePrinter {
+  T m_v;
+};
+
+#define S$(...) printSafe(__VA_ARGS__)
+template <typename T>
+SafePrinter<T> printSafe(T v) {
+  return SafePrinter<T>{v};
+}
+
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v);
 std::ostream& operator<<(std::ostream& os, const CJSException& v);
 std::ostream& operator<<(std::ostream& os, const CJSObject& v);
@@ -25,7 +36,9 @@ std::ostream& operator<<(std::ostream& os, const CJSContext& v);
 std::ostream& operator<<(std::ostream& os, const CJSEngine& v);
 std::ostream& operator<<(std::ostream& os, const CJSScript& v);
 std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
-std::ostream& operator<<(std::ostream& os, const PyObject* v);
+std::ostream& operator<<(std::ostream& os, PyObject* v);
+// use this when it is unsafe to ask the python object for its string representation
+std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& v);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& v) {
