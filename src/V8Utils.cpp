@@ -6,9 +6,9 @@ namespace v8u {
 
 std::optional<v8::Local<v8::String>> toStringDirectly(py::handle obj) {
   if (PyUnicode_CheckExact(obj.ptr())) {
-    auto py_bytes = PyUnicode_AsUTF8String(obj.ptr());  // may be NULL
-    auto bytes_obj = py::reinterpret_steal<py::object>(py_bytes);
-    return pythonBytesObjectToString(bytes_obj.ptr());
+    auto raw_bytes = PyUnicode_AsUTF8String(obj.ptr());  // may be NULL
+    auto py_bytes_obj = py::reinterpret_steal<py::object>(raw_bytes);
+    return pythonBytesObjectToString(py_bytes_obj.ptr());
   }
 
   if (PyBytes_CheckExact(obj.ptr())) {
@@ -29,8 +29,8 @@ v8::Local<v8::String> toString(const py::handle& py_str) {
   }
 
   // alternatively convert it to string representation and try again
-  auto py_computed_str = PyObject_Str(py_str.ptr());  // may be NULL
-  auto py_computed_obj = py::reinterpret_steal<py::object>(py_computed_str);
+  auto raw_computed_str = PyObject_Str(py_str.ptr());  // may be NULL
+  auto py_computed_obj = py::reinterpret_steal<py::object>(raw_computed_str);
   v8_str = toStringDirectly(py_computed_obj);
   if (v8_str) {
     return *v8_str;
