@@ -3,6 +3,7 @@
 #include "Logging.h"
 #include "Printing.h"
 #include "PythonUtils.h"
+#include "JSEternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -36,6 +37,10 @@ v8::Local<v8::Object> lookupTracedWrapper(v8::IsolatePtr v8_isolate, TracedRawOb
   return v8_result;
 }
 
+v8::Eternal<v8::Private> privateAPIForTracerPayload(v8::IsolatePtr v8_isolate) {
+  return v8u::createEternalPrivateAPI(v8_isolate, "Naga#CTracer##payload");
+}
+
 TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
   TRACE("lookupTracedObject v8_wrapper={}", v8_wrapper);
 
@@ -43,10 +48,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
     return nullptr;
   }
   auto v8_isolate = v8_wrapper->GetIsolate();
-
-  // TODO: optimize
-  auto v8_payload_key = v8::String::NewFromUtf8(v8_isolate, "tracer_payload").ToLocalChecked();
-  auto v8_payload_api = v8::Private::ForApi(v8_isolate, v8_payload_key);
+  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   if (!v8_wrapper->HasPrivate(v8_isolate->GetCurrentContext(), v8_payload_api).ToChecked()) {
     return nullptr;
   }
@@ -63,9 +65,7 @@ static void recordTracedWrapper(v8::Local<v8::Object> v8_wrapper, TracedRawObjec
   TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object);
   auto v8_isolate = v8_wrapper->GetIsolate();
   auto v8_context = v8_isolate->GetCurrentContext();
-  // TODO: optimize
-  auto v8_payload_key = v8::String::NewFromUtf8(v8_isolate, "tracer_payload").ToLocalChecked();
-  auto v8_payload_api = v8::Private::ForApi(v8_isolate, v8_payload_key);
+  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   auto v8_payload = v8::External::New(v8_isolate, raw_object);
   v8_wrapper->SetPrivate(v8_context, v8_payload_api, v8_payload);
 }
