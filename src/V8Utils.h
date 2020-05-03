@@ -6,6 +6,40 @@
 
 namespace v8u {
 
+class ObservedHandleScope : public v8::HandleScope {
+  int m_start_num_handles;
+
+ public:
+  explicit ObservedHandleScope(v8::Isolate* isolate)
+      : v8::HandleScope(isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(isolate)) {
+    HTRACE(kHandleScopeLogger, "HandleScope {");
+    LOGGER_INDENT_INCREASE;
+  }
+  ~ObservedHandleScope() {
+    LOGGER_INDENT_DECREASE;
+    auto end_num_handles = v8::HandleScope::NumberOfHandles(this->GetIsolate());
+    auto num_handles = end_num_handles - m_start_num_handles;
+    HTRACE(kHandleScopeLogger, "}} ~HandleScope (releasing {} handles)", num_handles);
+  }
+};
+
+class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
+  int m_start_num_handles;
+
+ public:
+  explicit ObservedEscapableHandleScope(v8::Isolate* isolate)
+      : v8::EscapableHandleScope(isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(isolate)) {
+    HTRACE(kHandleScopeLogger, "EscapableHandleScope {");
+    LOGGER_INDENT_INCREASE;
+  }
+  ~ObservedEscapableHandleScope() {
+    LOGGER_INDENT_DECREASE;
+    auto end_num_handles = v8::HandleScope::NumberOfHandles(this->GetIsolate());
+    auto num_handles = end_num_handles - m_start_num_handles;
+    HTRACE(kHandleScopeLogger, "}} ~EscapableHandleScope (releasing {} handles)", num_handles);
+  }
+};
+
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const char* s);
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string& str);
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string_view& sv);
@@ -22,8 +56,8 @@ void checkContext(v8::IsolatePtr v8_isolate);
 
 v8::IsolatePtr getCurrentIsolate();
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
-v8::HandleScope withScope(v8::IsolatePtr v8_isolate);
-v8::EscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate);
+ObservedHandleScope withScope(v8::IsolatePtr v8_isolate);
+ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate);
 v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate);
 void checkTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
 #pragma clang diagnostic push

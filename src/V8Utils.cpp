@@ -99,12 +99,12 @@ v8::IsolatePtr getCurrentIsolate() {
   return v8::Isolate::GetCurrent();
 }
 
-v8::HandleScope withScope(v8::IsolatePtr v8_isolate) {
-  return v8::HandleScope(v8_isolate);
+ObservedHandleScope withScope(v8::IsolatePtr v8_isolate) {
+  return ObservedHandleScope(v8_isolate);
 }
 
-v8::EscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate) {
-  return v8::EscapableHandleScope(v8_isolate);
+ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate) {
+  return ObservedEscapableHandleScope(v8_isolate);
 }
 
 v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate) {

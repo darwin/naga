@@ -31,6 +31,7 @@ enum Loggers {
   kAutoTryCatchLogger,
   kJSLandLogger,
   kPythonModuleLogger,
+  kHandleScopeLogger,
   kNumLoggers
 };
 
