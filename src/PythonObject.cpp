@@ -119,7 +119,8 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
     // note we cannot capture anything in this lambda, this would not match hospitalizePatient signature
     TRACE("doing cleanup of v8_error {}", v8_patient);
     auto v8_isolate = v8_patient->GetIsolate();
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    // TODO: context here might be already dead, we have to rewrite this
+    auto v8_context = v8_isolate->GetCurrentContext();
 
     auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
     auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api).ToLocalChecked();

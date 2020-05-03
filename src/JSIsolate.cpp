@@ -115,27 +115,28 @@ void CJSIsolate::Dispose() const {
 py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto v8_context = m_v8_isolate->GetEnteredOrMicrotaskContext();
-  auto py_result = ([&] {
+  auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();
     } else {
       return py::cast(CJSContext::FromV8(v8_context));
     }
-  })();
+  }();
   TRACE("CJSIsolate::GetEnteredOrMicrotaskContext {} => {}", THIS, py_result);
   return py_result;
 }
 
 py::object CJSIsolate::GetCurrentContext() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_context = v8u::getCurrentContext(m_v8_isolate);
-  auto py_result = ([&] {
+  // note that we don't want to call v8u::getCurrentContext(m_v8_isolate) which is checked to be non-empty
+  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();
     } else {
       return py::cast(CJSContext::FromV8(v8_context));
     }
-  })();
+  }();
   TRACE("CJSIsolate::GetCurrentContext {} => {}", THIS, py_result);
   return py_result;
 }
