@@ -6,6 +6,38 @@
 
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 size_t LoggerIndent::m_indent = 0;
+InceptionLevel g_inceptionLevel = 0;
+
+void increaseCurrentInceptionLevel() {
+  g_inceptionLevel++;
+}
+
+void decreaseCurrentInceptionLevel() {
+  assert(g_inceptionLevel > 0);
+  --g_inceptionLevel;
+}
+
+InceptionLevel getCurrentInceptionLevel() {
+  return g_inceptionLevel;
+}
+
+class inception_formatter final : public spdlog::custom_flag_formatter {
+ public:
+  void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
+    auto inceptionLevel = getCurrentInceptionLevel();
+    auto str = fmt::format("{}", inceptionLevel);
+    // we want to print only the last digit of inceptionLevel
+    if (str.size() > 0) {
+      auto end = str.data() + str.size();
+      auto prev = end - 1;
+      dest.append(prev, end);
+    }
+  }
+
+  [[nodiscard]] std::unique_ptr<custom_flag_formatter> clone() const override {
+    return spdlog::details::make_unique<inception_formatter>();
+  }
+};
 
 // this is our attempt to replace fmt's v-flag with wide padding
 // for some reason they support only max 64 characters
@@ -143,7 +175,8 @@ static void initLoggers() {
 
   auto custom_formatter = std::make_unique<spdlog::pattern_formatter>();
   custom_formatter->add_flag<wide_v_formatter>('*');
-  custom_formatter->set_pattern("%H:%M:%S.%e %L %n | %-400*   |> %s:%#");
+  custom_formatter->add_flag<inception_formatter>('I');
+  custom_formatter->set_pattern("%H:%M:%S.%e %L %n %I | %-400*   |> %s:%#");
   spdlog::set_formatter(std::move(custom_formatter));
   spdlog::set_error_handler(
       [](const std::string& msg) { throw std::runtime_error(fmt::format("LOGGING ERROR: {}", msg)); });

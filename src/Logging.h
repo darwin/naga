@@ -39,6 +39,11 @@ void useLogging();
 LoggerPtr getLogger(Loggers which);
 size_t giveNextMoreID();
 
+using InceptionLevel = size_t;
+void increaseCurrentInceptionLevel();
+void decreaseCurrentInceptionLevel();
+InceptionLevel getCurrentInceptionLevel();
+
 class LoggerIndent {
  public:
   static size_t m_indent;
@@ -98,8 +103,10 @@ class JSLandLogger {
   explicit JSLandLogger(const char* name) : m_name(name) {
     HTRACE(kJSLandLogger, ">>> {}", m_name);
     LOGGER_INDENT_INCREASE;
+    increaseCurrentInceptionLevel();
   }
   ~JSLandLogger() {
+    decreaseCurrentInceptionLevel();
     LOGGER_INDENT_DECREASE;
     HTRACE(kJSLandLogger, "<<< {}", m_name);
   }
