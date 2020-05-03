@@ -131,9 +131,9 @@ bool CJSObjectAPI::EQ(const CJSObjectPtr& other) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  v8::Local<v8::Context> context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8_isolate->GetCurrentContext();
 
-  auto result = other.get() && ToV8(v8_isolate)->Equals(context, other->ToV8(v8_isolate)).ToChecked();
+  auto result = other.get() && ToV8(v8_isolate)->Equals(v8_context, other->ToV8(v8_isolate)).ToChecked();
   TRACE("CJSObjectAPI::EQ {} other={} => {}", THIS, other, result);
   return result;
 }

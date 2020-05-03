@@ -48,11 +48,12 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
     return nullptr;
   }
   auto v8_isolate = v8_wrapper->GetIsolate();
+  auto v8_context = v8_isolate->GetCurrentContext();
   auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
-  if (!v8_wrapper->HasPrivate(v8_isolate->GetCurrentContext(), v8_payload_api).ToChecked()) {
+  if (!v8_wrapper->HasPrivate(v8_context, v8_payload_api).ToChecked()) {
     return nullptr;
   }
-  auto v8_val = v8_wrapper->GetPrivate(v8_isolate->GetCurrentContext(), v8_payload_api).ToLocalChecked();
+  auto v8_val = v8_wrapper->GetPrivate(v8_context, v8_payload_api).ToLocalChecked();
   assert(!v8_val.IsEmpty());
   assert(v8_val->IsExternal());
   auto v8_payload = v8_val.As<v8::External>();

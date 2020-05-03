@@ -61,7 +61,8 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(false);
   }
   if (v8_val->IsInt32()) {
-    auto int32 = v8_val->Int32Value(v8_isolate->GetCurrentContext()).ToChecked();
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto int32 = v8_val->Int32Value(v8_context).ToChecked();
     return py::int_(int32);
   }
   if (v8_val->IsString()) {
@@ -81,15 +82,18 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(val);
   }
   if (v8_val->IsNumber()) {
-    auto val = v8_val->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto val = v8_val->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsNumberObject()) {
-    auto val = v8_val.As<v8::NumberObject>()->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto val = v8_val.As<v8::NumberObject>()->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsDate()) {
-    auto val = v8_val.As<v8::Date>()->NumberValue(v8_isolate->GetCurrentContext()).ToChecked();
+    auto v8_context = v8_isolate->GetCurrentContext();
+    auto val = v8_val.As<v8::Date>()->NumberValue(v8_context).ToChecked();
     auto ts = static_cast<time_t>(floor(val / 1000));
     auto t = localtime(&ts);
     auto u = (static_cast<int64_t>(floor(val))) % 1000 * 1000;

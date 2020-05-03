@@ -27,7 +27,7 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_global = v8_isolate->GetCurrentContext()->Global();
+  auto v8_global = v8_context->Global();
 
   auto v8_bcljs_key = v8::String::NewFromUtf8(v8_isolate, "bcljs").ToLocalChecked();
   auto v8_bcljs_val = v8_global->Get(v8_context, v8_bcljs_key).ToLocalChecked();

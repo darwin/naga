@@ -51,6 +51,7 @@ static void translateJavascriptException(const CJSException& e) {
   } else {
     auto v8_isolate = v8u::getCurrentIsolate();
     auto v8_scope = v8u::withScope(v8_isolate);
+    auto v8_context = v8_isolate->GetCurrentContext();
 
     // This code has something to do with propagating original Python errors through JS land.
     // Imagine a Python function, calling a JS function which calls a Python function which throws:
@@ -80,10 +81,10 @@ static void translateJavascriptException(const CJSException& e) {
       auto v8_ex = e.Exception().As<v8::Object>();
 
       auto v8_ex_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
-      auto v8_ex_type_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_type_api);
+      auto v8_ex_type_val = v8_ex->GetPrivate(v8_context, v8_ex_type_api);
 
       auto v8_ex_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
-      auto v8_ex_value_val = v8_ex->GetPrivate(v8_isolate->GetCurrentContext(), v8_ex_value_api);
+      auto v8_ex_value_val = v8_ex->GetPrivate(v8_context, v8_ex_value_api);
 
       if (!v8_ex_type_val.IsEmpty() && !v8_ex_value_val.IsEmpty()) {
         auto v8_ex_type = v8_ex_type_val.ToLocalChecked();
@@ -152,7 +153,8 @@ CJSException::CJSException(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try
   m_v8_exception.Reset(m_v8_isolate, v8_try_catch.Exception());
   m_v8_exception.AnnotateStrongRetainer("Naga JSException.m_v8_exception");
 
-  auto stack_trace = v8_try_catch.StackTrace(v8u::getCurrentIsolate()->GetCurrentContext());
+  auto v8_context = v8_isolate->GetCurrentContext();
+  auto stack_trace = v8_try_catch.StackTrace(v8_context);
   if (!stack_trace.IsEmpty()) {
     m_v8_stack.Reset(m_v8_isolate, stack_trace.ToLocalChecked());
     m_v8_exception.AnnotateStrongRetainer("Naga JSException.m_v8_stack");
@@ -201,15 +203,12 @@ std::string CJSException::GetName() const {
   assert(m_v8_isolate->InContext());
 
   auto v8_scope = v8u::withScope(m_v8_isolate);
-
-  v8::String::Utf8Value msg(m_v8_isolate, v8::Local<v8::String>::Cast(
-                                              Exception()
-                                                  ->ToObject(m_v8_isolate->GetCurrentContext())
-                                                  .ToLocalChecked()
-                                                  ->Get(m_v8_isolate->GetCurrentContext(),
-                                                        v8::String::NewFromUtf8(m_v8_isolate, "name").ToLocalChecked())
-                                                  .ToLocalChecked()));
-  auto result = std::string(*msg, msg.length());
+  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto v8_exception = Exception()->ToObject(v8_context).ToLocalChecked();
+  auto v8_name_key = v8u::toString(m_v8_isolate, "name");
+  auto v8_name_val = v8_exception->Get(v8_context, v8_name_key).ToLocalChecked();
+  auto v8_name_utf = v8u::toUTF(m_v8_isolate, v8_name_val.As<v8::String>());
+  auto result = std::string(*v8_name_utf, v8_name_utf.length());
   TRACE("CJSException::GetName {} => {}", THIS, result);
   return result;
 }
@@ -223,17 +222,12 @@ std::string CJSException::GetMessage() const {
   assert(m_v8_isolate->InContext());
 
   auto v8_scope = v8u::withScope(m_v8_isolate);
-
-  v8::String::Utf8Value msg(
-      m_v8_isolate,
-      v8::Local<v8::String>::Cast(Exception()
-                                      ->ToObject(m_v8_isolate->GetCurrentContext())
-                                      .ToLocalChecked()
-                                      ->Get(m_v8_isolate->GetCurrentContext(),
-                                            v8::String::NewFromUtf8(m_v8_isolate, "message").ToLocalChecked())
-                                      .ToLocalChecked()));
-
-  auto result = std::string(*msg, msg.length());
+  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto v8_exception = Exception()->ToObject(v8_context).ToLocalChecked();
+  auto v8_name_key = v8u::toString(m_v8_isolate, "message");
+  auto v8_name_val = v8_exception->Get(v8_context, v8_name_key).ToLocalChecked();
+  auto v8_name_utf = v8u::toUTF(m_v8_isolate, v8_name_val.As<v8::String>());
+  auto result = std::string(*v8_name_utf, v8_name_utf.length());
   TRACE("CJSException::GetMessage {} => {}", THIS, result);
   return result;
 }
@@ -259,7 +253,8 @@ std::string CJSException::GetScriptName() const {
 int CJSException::GetLineNumber() const {
   assert(m_v8_isolate->InContext());
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetLineNumber(m_v8_isolate->GetCurrentContext()).ToChecked();
+  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto result = m_v8_message.IsEmpty() ? 1 : Message()->GetLineNumber(v8_context).ToChecked();
   TRACE("CJSException::GetLineNumber {} => {}", THIS, result);
   return result;
 }
@@ -302,12 +297,13 @@ std::string CJSException::GetSourceLine() const {
   assert(m_v8_isolate->InContext());
 
   auto v8_scope = v8u::withScope(m_v8_isolate);
+  auto v8_context = m_v8_isolate->GetCurrentContext();
 
-  if (m_v8_message.IsEmpty() || Message()->GetSourceLine(m_v8_isolate->GetCurrentContext()).IsEmpty()) {
+  if (m_v8_message.IsEmpty() || Message()->GetSourceLine(v8_context).IsEmpty()) {
     return std::string();
   }
 
-  auto v8_line = Message()->GetSourceLine(m_v8_isolate->GetCurrentContext()).ToLocalChecked();
+  auto v8_line = Message()->GetSourceLine(v8_context).ToLocalChecked();
   v8::String::Utf8Value line(m_v8_isolate, v8_line);
   auto result = std::string(*line, line.length());
   TRACE("CJSException::GetSourceLine {} => {}", THIS, result);
@@ -363,7 +359,7 @@ void CJSException::Throw(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch
     auto v8_name = v8::String::NewFromUtf8(v8_isolate, "name").ToLocalChecked();
 
     if (v8_exc_obj->Has(v8_context, v8_name).ToChecked()) {
-      auto v8_name_val = v8_exc_obj->Get(v8_isolate->GetCurrentContext(), v8_name).ToLocalChecked();
+      auto v8_name_val = v8_exc_obj->Get(v8_context, v8_name).ToLocalChecked();
       auto v8_uft = v8u::toUTF(v8_isolate, v8_name_val.As<v8::String>());
 
       for (auto& error : g_supported_errors) {
