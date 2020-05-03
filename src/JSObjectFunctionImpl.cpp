@@ -15,7 +15,6 @@ py::object CJSObjectFunctionImpl::Call(const py::list& py_args,
                                        std::optional<v8::Local<v8::Object>> opt_v8_this) const {
   TRACE("CJSObjectFunctionImpl::Call {} py_args={} py_kwargs={}", THIS, py_args, py_kwargs);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -63,7 +62,6 @@ py::object CJSObjectFunctionImpl::Apply(const py::object& py_self,
   TRACE("CJSObjectFunctionImpl::Apply {} py_self={} py_args={} py_kwds={}", THIS, py_self, py_args, py_kwds);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  v8u::checkContext(v8_isolate);
 
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_this = wrap(std::move(py_self))->ToObject(v8_context).ToLocalChecked();
@@ -73,7 +71,6 @@ py::object CJSObjectFunctionImpl::Apply(const py::object& py_self,
 std::string CJSObjectFunctionImpl::GetName() const {
   TRACE("CJSObjectFunctionImpl::GetName {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -86,7 +83,6 @@ std::string CJSObjectFunctionImpl::GetName() const {
 void CJSObjectFunctionImpl::SetName(const std::string& name) const {
   TRACE("CJSObjectFunctionImpl::SetName {} => {}", THIS, name);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -97,7 +93,6 @@ void CJSObjectFunctionImpl::SetName(const std::string& name) const {
 
 int CJSObjectFunctionImpl::GetLineNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -109,7 +104,6 @@ int CJSObjectFunctionImpl::GetLineNumber() const {
 
 int CJSObjectFunctionImpl::GetColumnNumber() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -121,7 +115,6 @@ int CJSObjectFunctionImpl::GetColumnNumber() const {
 
 int CJSObjectFunctionImpl::GetLineOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -133,7 +126,6 @@ int CJSObjectFunctionImpl::GetLineOffset() const {
 
 int CJSObjectFunctionImpl::GetColumnOffset() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -145,7 +137,6 @@ int CJSObjectFunctionImpl::GetColumnOffset() const {
 
 std::string CJSObjectFunctionImpl::GetResourceName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
@@ -159,7 +150,6 @@ std::string CJSObjectFunctionImpl::GetResourceName() const {
 
 std::string CJSObjectFunctionImpl::GetInferredName() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));

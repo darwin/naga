@@ -13,7 +13,6 @@
 
 size_t CJSObjectArrayImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto result = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
   TRACE("CJSObjectArrayImpl::Length {} => {}", THIS, result);
@@ -23,7 +22,6 @@ size_t CJSObjectArrayImpl::Length() const {
 py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -67,7 +65,6 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
   TRACE("CJSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -153,7 +150,6 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
 py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -193,7 +189,6 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
 bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);

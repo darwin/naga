@@ -93,7 +93,6 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
   }
 
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_res_sym = v8::Local<v8::Symbol>::Cast(v8_val);
   auto v8_sentinel_name_key = v8::String::NewFromUtf8(v8_isolate, sentinel_name).ToLocalChecked();
@@ -103,7 +102,6 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
 
 size_t CJSObjectCLJSImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
 
@@ -125,7 +123,6 @@ size_t CJSObjectCLJSImpl::Length() const {
 
 py::str CJSObjectCLJSImpl::Str() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
@@ -147,7 +144,6 @@ py::str CJSObjectCLJSImpl::Str() const {
 
 py::str CJSObjectCLJSImpl::Repr() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
@@ -169,7 +165,6 @@ py::str CJSObjectCLJSImpl::Repr() const {
 
 py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto idx = PyLong_AsUnsignedLong(py_index.ptr());
@@ -191,7 +186,6 @@ py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
 
 py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   Py_ssize_t length = Length();
@@ -246,7 +240,6 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   assert(PyUnicode_Check(py_str.ptr()));
 
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_str = v8u::toString(v8_isolate, py_str);
@@ -279,8 +272,6 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
 
 py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
   TRACE("CJSObjectCLJSImpl::GetItem {} py_key={}", THIS, py_key);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
 
   if (PyLong_Check(py_key.ptr()) != 0) {
     return GetItemIndex(py_key);
@@ -295,8 +286,6 @@ py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
 
 py::object CJSObjectCLJSImpl::GetAttr(const py::object& py_key) const {
   TRACE("CJSObjectCLJSImpl::GetAttr {} py_key={}", THIS, py_key);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {
     return GetItemString(py_key);

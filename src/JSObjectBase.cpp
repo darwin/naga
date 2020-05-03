@@ -48,7 +48,6 @@ CJSObjectBase::Roles CJSObjectBase::GetRoles() const {
 
 void CJSObjectBase::Dump(std::ostream& os) const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_obj = ToV8(v8_isolate);

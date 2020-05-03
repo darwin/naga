@@ -43,7 +43,6 @@ py::list CJSObjectAPI::Dir() const {
   TRACE("CJSObjectAPI::Dir {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  v8u::checkContext(v8_isolate);
   auto py_gil = pyu::withGIL();
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -108,7 +107,6 @@ bool CJSObjectAPI::Contains(const py::object& py_key) const {
 
 int CJSObjectAPI::Hash() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = ToV8(v8_isolate)->GetIdentityHash();
@@ -118,7 +116,6 @@ int CJSObjectAPI::Hash() const {
 
 CJSObjectPtr CJSObjectAPI::Clone() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto result = std::make_shared<CJSObject>(ToV8(v8_isolate)->Clone());
@@ -128,7 +125,6 @@ CJSObjectPtr CJSObjectAPI::Clone() const {
 
 bool CJSObjectAPI::EQ(const CJSObjectPtr& other) const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   auto v8_context = v8u::getCurrentContext(v8_isolate);
@@ -145,7 +141,6 @@ bool CJSObjectAPI::NE(const CJSObjectPtr& other) const {
 py::object CJSObjectAPI::Int() const {
   TRACE("CJSObjectAPI::ToPythonInt {}", THIS);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
 
@@ -161,7 +156,6 @@ py::object CJSObjectAPI::Int() const {
 
 py::object CJSObjectAPI::Float() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
 
@@ -177,7 +171,6 @@ py::object CJSObjectAPI::Float() const {
 
 py::object CJSObjectAPI::Bool() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
   bool val = false;
@@ -244,7 +237,6 @@ py::object CJSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwar
 
 py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_proto = proto->ToV8(v8_isolate);
   if (v8_proto.IsEmpty()) {

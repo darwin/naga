@@ -30,8 +30,6 @@ static void ensureAttrExistsOrThrow(v8::IsolatePtr v8_isolate,
 py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
   TRACE("CJSObjectGenericImpl::GetAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -49,8 +47,6 @@ py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
 void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& py_obj) const {
   TRACE("CJSObjectGenericImpl::SetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -65,8 +61,6 @@ void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& p
 void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
   TRACE("CJSObjectGenericImpl::DelAttr {} name={}", THIS, py_key);
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -80,8 +74,6 @@ void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
 
 bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -94,8 +86,6 @@ bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
 
 py::str CJSObjectGenericImpl::Str() const {
   auto v8_isolate = v8u::getCurrentIsolate();
-  v8u::checkContext(v8_isolate);
-
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_this = m_base.ToV8(v8_isolate);
   auto py_result = [&] {

@@ -93,14 +93,6 @@ std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value
   return std::string{*v8_utf, v8_utf.length()};
 }
 
-void checkContext(v8::IsolatePtr v8_isolate) {
-  auto v8_scope = withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  if (v8_context.IsEmpty()) {
-    throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
-  }
-}
-
 v8::IsolatePtr getCurrentIsolate() {
   // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this fails when there is no current
   // isolate
@@ -108,6 +100,7 @@ v8::IsolatePtr getCurrentIsolate() {
 }
 
 v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate) {
+  assert(hasScope(v8_isolate));
   auto v8_context = v8_isolate->GetCurrentContext();
   if (v8_context.IsEmpty()) {
     throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);

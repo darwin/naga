@@ -21,8 +21,6 @@ v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i);
 v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value);
 std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value);
 
-void checkContext(v8::IsolatePtr v8_isolate);
-
 v8::IsolatePtr getCurrentIsolate();
 v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate);
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
