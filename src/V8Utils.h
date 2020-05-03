@@ -64,6 +64,7 @@ v8::IsolatePtr getCurrentIsolate();
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
 ObservedHandleScope withScope(v8::IsolatePtr v8_isolate);
 ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate);
+bool hasScope(v8::IsolatePtr v8_isolate);
 v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate);
 void checkTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
 #pragma clang diagnostic push

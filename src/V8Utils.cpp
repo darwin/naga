@@ -107,6 +107,10 @@ ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate) {
   return ObservedEscapableHandleScope(v8_isolate);
 }
 
+bool hasScope(v8::IsolatePtr v8_isolate) {
+  return getCurrentHandleScopeLevel(v8_isolate) > 0;
+}
+
 v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate) {
   return v8::TryCatch(v8_isolate);
 }
