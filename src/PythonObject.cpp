@@ -115,25 +115,8 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
   Py_INCREF(raw_type);
   Py_INCREF(raw_value);
 
-  hospitalizePatient(v8_error_object, [](v8::Local<v8::Object> v8_patient) {
-    // note we cannot capture anything in this lambda, this would not match hospitalizePatient signature
-    TRACE("doing cleanup of v8_error {}", v8_patient);
-    auto v8_isolate = v8_patient->GetIsolate();
-    // TODO: context here might be already dead, we have to rewrite this
-    auto v8_context = v8_isolate->GetCurrentContext();
-
-    auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
-    auto v8_type_val = v8_patient->GetPrivate(v8_context, v8_type_api).ToLocalChecked();
-    assert(v8_type_val->IsExternal());
-    auto raw_type = static_cast<PyObject*>(v8_type_val.As<v8::External>()->Value());
-    assert(raw_type);
-
-    auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
-    auto v8_value_val = v8_patient->GetPrivate(v8_context, v8_value_api).ToLocalChecked();
-    assert(v8_value_val->IsExternal());
-    auto raw_value = static_cast<PyObject*>(v8_value_val.As<v8::External>()->Value());
-    assert(raw_value);
-
+  hospitalizePatient(v8_error_object, [raw_type, raw_value](v8::Local<v8::Object> v8_patient) {
+    TRACE("doing cleanup of v8_error {} raw_type={} raw_value={}", v8_patient, raw_type, raw_value);
     // this must match Py_INCREFs above !!!
     Py_DECREF(raw_type);
     Py_DECREF(raw_value);
