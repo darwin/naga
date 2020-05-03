@@ -31,7 +31,7 @@ class exact_str : public str {
 
 class exact_bytes : public bytes {
  public:
- PYBIND11_OBJECT(exact_bytes, bytes, PyBytes_CheckExact)
+  PYBIND11_OBJECT(exact_bytes, bytes, PyBytes_CheckExact)
 };
 
 class exact_tuple : public tuple {

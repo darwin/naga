@@ -3,7 +3,7 @@
 
 #include "Base.h"
 #include "Meta.h"
-#include "RawUtils.h"
+#include "PythonUtils.h"
 
 namespace pybind11 {
 
@@ -50,7 +50,7 @@ auto wrapWithLogger(Func&& f, const char* name, const char* prefix = nullptr, co
 
 template <typename Func>
 auto wrapWithLogger(Func&& f, const char* name, PyTypeObject* raw_type, const char* postfix = "") {
-  auto prefix = pythonTypeName(raw_type);
+  auto prefix = pyu::pythonTypeName(raw_type);
   return wrapWithLogger(std::forward<Func>(f), name, prefix, postfix);
 }
 

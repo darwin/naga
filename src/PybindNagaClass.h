@@ -5,7 +5,6 @@
 #include "Meta.h"
 #include "Logging.h"
 #include "PybindLogging.h"
-#include "RawUtils.h"
 
 namespace pybind11 {
 
