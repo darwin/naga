@@ -14,20 +14,20 @@
 // described in more detail in Tracer.h.
 
 using V8Patient = v8::Global<v8::Object>;
-using PatientClenupFn = void(v8::Local<v8::Object>);
+using PatientClenupFn = std::function<void(v8::Local<v8::Object>)>; // we want to be able to accept any lambda
 
 struct HospitalRecord {
   V8Patient m_v8_patient;
-  PatientClenupFn* m_cleanup_fn;
+  PatientClenupFn m_cleanup_fn;
 
-  HospitalRecord(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) : m_cleanup_fn(cleanup_fn) {
+  HospitalRecord(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn) : m_cleanup_fn(cleanup_fn) {
     m_v8_patient.Reset(v8_patient->GetIsolate(), v8_patient);
   }
 };
 
 using HospitalRecords = std::unordered_set<HospitalRecord*>;
 
-void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
+void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);
 
 class CJSHospital {
   v8::IsolatePtr m_v8_isolate;
@@ -37,7 +37,7 @@ class CJSHospital {
   explicit CJSHospital(v8::IsolatePtr v8_isolate);
   ~CJSHospital();
 
-  void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn);
+  void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);
   void PatientIsAboutToDie(v8::IsolatePtr v8_isolate, HospitalRecord* record);
 
  protected:

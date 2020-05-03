@@ -7,8 +7,8 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSHospitalLogger), __VA_ARGS__)
 
-void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
-  TRACE("hospitalizePatient v8_patient={} cleanup_fn={}", v8_patient, (void*)cleanup_fn);
+void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn) {
+  TRACE("hospitalizePatient v8_patient={}", v8_patient);
   auto v8_isolate = v8_patient->GetIsolate();
   auto isolate = CJSIsolate::FromV8(v8_isolate);
   isolate->Hospital().AcceptPatient(v8_patient, cleanup_fn);
@@ -38,8 +38,8 @@ CJSHospital::~CJSHospital() {
   }
 }
 
-void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn* cleanup_fn) {
-  TRACE("CJSHospital::AcceptPatient {} v8_patient={} cleanup_fn={}", THIS, v8_patient, (void*)cleanup_fn);
+void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn) {
+  TRACE("CJSHospital::AcceptPatient {} v8_patient={}", THIS, v8_patient);
   auto record = new HospitalRecord(v8_patient, cleanup_fn);
   m_records.insert(record);
   assert(!record->m_v8_patient.IsWeak());
