@@ -26,7 +26,7 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
   // TODO: caching? review performance
 
   auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_global = v8_context->Global();
 
   auto v8_bcljs_key = v8::String::NewFromUtf8(v8_isolate, "bcljs").ToLocalChecked();
@@ -80,7 +80,7 @@ static v8::Local<v8::Value> callBridge(v8::IsolatePtr v8_isolate,
                                        v8::Local<v8::Object> v8_self,
                                        std::vector<v8::Local<v8::Value>> v8_params) {
   TRACE("callBridge v8_isolate={} name={}", P$(v8_isolate), name);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto v8_fn = lookupBridgeFn(name);
   auto v8_result = v8_fn->Call(v8_context, v8_self, v8_params.size(), v8_params.data());
@@ -105,7 +105,7 @@ size_t CJSObjectCLJSImpl::Length() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   auto v8_params = std::vector<v8::Local<v8::Value>>();
   auto fn_name = "len";
@@ -224,7 +224,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
 
   py::list py_result;
 
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   for (auto i = 0U; i < result_arr_len; i++) {
     auto v8_i = v8::Integer::New(v8_isolate, i);
     auto v8_item = v8_result_arr->Get(v8_context, v8_i).ToLocalChecked();
@@ -248,7 +248,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_str = v8u::toString(v8_isolate, py_str);
 
   // JS object lookup

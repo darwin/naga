@@ -120,7 +120,7 @@ py::object CJSContext::GetCurrent() {
   TRACE("CJSContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   if (v8_context.IsEmpty()) {
     return py::none();
@@ -137,7 +137,7 @@ py::object CJSContext::GetCalling() {
     return py::none();
   }
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   if (v8_context.IsEmpty()) {
     return py::none();

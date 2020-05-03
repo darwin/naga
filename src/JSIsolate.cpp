@@ -128,7 +128,7 @@ py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
 
 py::object CJSIsolate::GetCurrentContext() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(m_v8_isolate);
   auto py_result = ([&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();

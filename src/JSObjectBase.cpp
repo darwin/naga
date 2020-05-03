@@ -60,7 +60,7 @@ void CJSObjectBase::Dump(std::ostream& os) const {
     //   Provide a string representation of this value usable for debugging.
     //   This operation has no observable side effects and will succeed
     //   unless e.g. execution is being terminated.
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto v8_str = v8_obj->ToDetailString(v8_context).ToLocalChecked();
     auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
     os << *v8_utf;

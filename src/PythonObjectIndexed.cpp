@@ -170,7 +170,7 @@ void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>&
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
     auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
     auto v8_array = v8::Array::New(v8_isolate, len);
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
 
     for (Py_ssize_t i = 0; i < len; i++) {
       auto v8_i = v8::Integer::New(v8_isolate, i);

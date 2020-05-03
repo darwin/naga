@@ -21,7 +21,7 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val, v8::Loca
 
   if (v8_val->IsFunction()) {
     // when v8_this is global, we can fall back to unbound function (later)
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     if (!v8_this->StrictEquals(v8_context->Global())) {
       // TODO: optimize this
       auto v8_fn = v8_val.As<v8::Function>();
@@ -61,7 +61,7 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(false);
   }
   if (v8_val->IsInt32()) {
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto int32 = v8_val->Int32Value(v8_context).ToChecked();
     return py::int_(int32);
   }
@@ -82,17 +82,17 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(val);
   }
   if (v8_val->IsNumber()) {
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto val = v8_val->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsNumberObject()) {
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto val = v8_val.As<v8::NumberObject>()->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsDate()) {
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto val = v8_val.As<v8::Date>()->NumberValue(v8_context).ToChecked();
     auto ts = static_cast<time_t>(floor(val / 1000));
     auto t = localtime(&ts);
@@ -100,7 +100,7 @@ py::object wrap(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_val) {
     return pythonFromDateAndTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, u);
   }
 
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
   auto py_result = wrap(v8_isolate, v8_obj);
   TRACE("=> {}", py_result);
@@ -146,7 +146,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8::IsolatePtr v8_isolate, py::handl
     return v8_wrapper;
   } else {
     // this is first time we see this object, let's create a new wrapper for it
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto v8_wrapper_template = CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8_isolate);
     auto v8_new_wrapper = v8_wrapper_template->NewInstance(v8_context).ToLocalChecked();
     assert(!v8_new_wrapper.IsEmpty());
@@ -189,7 +189,7 @@ static v8::Local<v8::Value> wrapInternal(v8::IsolatePtr v8_isolate, py::handle p
     tm ts = {0};
     int ms = 0;
     getPythonDateTime(py_handle, ts, ms);
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
     return v8::Date::New(v8_context, time).ToLocalChecked();
   }
@@ -197,7 +197,7 @@ static v8::Local<v8::Value> wrapInternal(v8::IsolatePtr v8_isolate, py::handle p
     tm ts = {0};
     int ms = 0;
     getPythonTime(py_handle, ts, ms);
-    auto v8_context = v8_isolate->GetCurrentContext();
+    auto v8_context = v8u::getCurrentContext(v8_isolate);
     auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
     return v8::Date::New(v8_context, time).ToLocalChecked();
   }

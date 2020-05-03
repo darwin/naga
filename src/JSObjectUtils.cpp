@@ -13,7 +13,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
 
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   // TODO: optimize this
   auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();

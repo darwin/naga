@@ -95,7 +95,7 @@ std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value
 
 void checkContext(v8::IsolatePtr v8_isolate) {
   auto v8_scope = withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   if (v8_context.IsEmpty()) {
     throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }

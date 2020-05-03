@@ -45,7 +45,7 @@ py::list CJSObjectAPI::Dir() const {
   auto v8_scope = v8u::withScope(v8_isolate);
   v8u::checkContext(v8_isolate);
   auto py_gil = pyu::withGIL();
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto props = ToV8(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
@@ -131,7 +131,7 @@ bool CJSObjectAPI::EQ(const CJSObjectPtr& other) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   auto result = other.get() && ToV8(v8_isolate)->Equals(v8_context, other->ToV8(v8_isolate)).ToChecked();
   TRACE("CJSObjectAPI::EQ {} other={} => {}", THIS, other, result);
@@ -147,7 +147,7 @@ py::object CJSObjectAPI::Int() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   if (m_v8_obj.IsEmpty()) {
     throw CJSException("Argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
@@ -163,7 +163,7 @@ py::object CJSObjectAPI::Float() const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   if (m_v8_obj.IsEmpty()) {
     throw CJSException("Argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
@@ -251,7 +251,7 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
     throw CJSException("Object prototype may only be an Object", PyExc_TypeError);
   }
 
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (!v8_proto->IsFunction()) {

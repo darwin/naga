@@ -25,7 +25,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   // TODO: rewrite this using pybind
@@ -69,7 +69,7 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
@@ -155,7 +155,7 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
@@ -195,7 +195,7 @@ bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   auto v8_isolate = v8u::getCurrentIsolate();
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {

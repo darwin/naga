@@ -69,7 +69,7 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   TRACE("CJSEngine::ExecuteScript v8_script={}", v8_script);
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_result = withAllowedPythonThreads([&] { return v8_script->Run(v8_context); });
@@ -101,7 +101,7 @@ CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
   TRACE("CJSEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
   auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
   auto v8_script = withAllowedPythonThreads([&] {
     auto v8_line = v8u::toPositiveInteger(v8_isolate, line);

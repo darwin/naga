@@ -48,7 +48,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
     return nullptr;
   }
   auto v8_isolate = v8_wrapper->GetIsolate();
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   if (!v8_wrapper->HasPrivate(v8_context, v8_payload_api).ToChecked()) {
     return nullptr;
@@ -65,7 +65,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
 static void recordTracedWrapper(v8::Local<v8::Object> v8_wrapper, TracedRawObject* raw_object) {
   TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object);
   auto v8_isolate = v8_wrapper->GetIsolate();
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   auto v8_payload = v8::External::New(v8_isolate, raw_object);
   v8_wrapper->SetPrivate(v8_context, v8_payload_api, v8_payload);

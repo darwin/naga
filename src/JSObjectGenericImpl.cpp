@@ -15,7 +15,7 @@ static void ensureAttrExistsOrThrow(v8::IsolatePtr v8_isolate,
   TRACE("ensureAttrExistsOrThrow v8_name={} v8_this={}", v8_name, v8_this);
   assert(v8_isolate->InContext());
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
 
   auto hasName = v8_this->Has(v8_context, v8_name).FromMaybe(false);
   if (!hasName) {
@@ -33,7 +33,7 @@ py::object CJSObjectGenericImpl::GetAttr(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
 
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(v8_isolate, py_key);
@@ -52,7 +52,7 @@ void CJSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& p
   v8u::checkContext(v8_isolate);
 
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(v8_isolate, py_key);
@@ -68,7 +68,7 @@ void CJSObjectGenericImpl::DelAttr(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
 
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8u::toString(v8_isolate, py_key);
@@ -83,7 +83,7 @@ bool CJSObjectGenericImpl::Contains(const py::object& py_key) const {
   v8u::checkContext(v8_isolate);
 
   auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_this = m_base.ToV8(v8_isolate);
@@ -102,7 +102,7 @@ py::str CJSObjectGenericImpl::Str() const {
     if (v8_this.IsEmpty()) {
       return py::str("<EMPTY>");
     } else {
-      auto v8_context = v8_isolate->GetCurrentContext();
+      auto v8_context = v8u::getCurrentContext(v8_isolate);
       auto v8_str = v8_this->ToString(v8_context).ToLocalChecked();
       auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
       return py::str(*v8_utf);
