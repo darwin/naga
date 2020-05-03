@@ -3,48 +3,10 @@
 
 #include "Base.h"
 #include "Logging.h"
+#include "V8UtilsObservedHandleScope.h"
+#include "V8UtilsAutoTryCatch.h"
 
 namespace v8u {
-
-class ObservedHandleScope : public v8::HandleScope {
-  int m_start_num_handles;
-
- public:
-  explicit ObservedHandleScope(v8::IsolatePtr v8_isolate)
-      : v8::HandleScope(v8_isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
-    HTRACE(kHandleScopeLogger, "HandleScope {");
-    LOGGER_INDENT_INCREASE;
-    increaseCurrentHandleScopeLevel(v8_isolate);
-  }
-  ~ObservedHandleScope() {
-    auto v8_isolate = this->GetIsolate();
-    decreaseCurrentHandleScopeLevel(v8_isolate);
-    LOGGER_INDENT_DECREASE;
-    auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
-    auto num_handles = end_num_handles - m_start_num_handles;
-    HTRACE(kHandleScopeLogger, "}} ~HandleScope (releasing {} handles)", num_handles);
-  }
-};
-
-class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
-  int m_start_num_handles;
-
- public:
-  explicit ObservedEscapableHandleScope(v8::IsolatePtr v8_isolate)
-      : v8::EscapableHandleScope(v8_isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
-    HTRACE(kHandleScopeLogger, "EscapableHandleScope {");
-    LOGGER_INDENT_INCREASE;
-    increaseCurrentHandleScopeLevel(v8_isolate);
-  }
-  ~ObservedEscapableHandleScope() {
-    auto v8_isolate = this->GetIsolate();
-    decreaseCurrentHandleScopeLevel(v8_isolate);
-    LOGGER_INDENT_DECREASE;
-    auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
-    auto num_handles = end_num_handles - m_start_num_handles;
-    HTRACE(kHandleScopeLogger, "}} ~EscapableHandleScope (releasing {} handles)", num_handles);
-  }
-};
 
 v8::Local<v8::String> pythonBytesObjectToString(v8::IsolatePtr v8_isolate, PyObject* raw_bytes_obj);
 
@@ -79,37 +41,6 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
                                     v8::Local<v8::Integer> v8_line,
                                     v8::Local<v8::Integer> v8_col);
 v8::Eternal<v8::Private> createEternalPrivateAPI(v8::IsolatePtr v8_isolate, const char* name);
-
-// an alternative for withTryCatch, which does an automatic check for exceptions at the end of scope
-// one can still use manual checkTryCatch for ad-hoc checks sooner
-class AutoTryCatch : public v8::TryCatch {
-  v8::IsolatePtr m_v8_isolate;
-  decltype(std::uncaught_exceptions()) m_recorded_uncaught_exceptions;
-
- public:
-  explicit AutoTryCatch(v8::IsolatePtr v8_isolate)
-      : v8::TryCatch(v8_isolate), m_v8_isolate(v8_isolate), m_recorded_uncaught_exceptions(std::uncaught_exceptions()) {
-    HTRACE(kAutoTryCatchLogger, "AutoTryCatch {");
-    LOGGER_INDENT_INCREASE;
-  }
-  // throwing in a destructor is dangerous, please read this: https://stackoverflow.com/a/4098662/84283
-  // we have to explicitly add `noexcept(false)` otherwise bad bad things will happen:
-  // https://stackoverflow.com/a/41429901/84283
-  ~AutoTryCatch() noexcept(false) {
-    LOGGER_INDENT_DECREASE;
-    HTRACE(kAutoTryCatchLogger, "} ~AutoTryCatch");
-    bool non_exceptional_scope_unwinding = m_recorded_uncaught_exceptions == std::uncaught_exceptions();
-    // we have to be careful and don't cause a new exception if this destructor happens to be called
-    // during uncaught exception stack unwinding
-    if (non_exceptional_scope_unwinding) {
-      checkTryCatch(m_v8_isolate, this);
-    }
-  }
-};
-
-inline AutoTryCatch withAutoTryCatch(v8::IsolatePtr v8_isolate) {
-  return AutoTryCatch{v8_isolate};
-}
 
 }  // namespace v8u
 
