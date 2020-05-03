@@ -4,8 +4,11 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/cfg/env.h"
 
-static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 size_t LoggerIndent::m_indent = 0;
+
+constexpr size_t log_message_padding_width = 280;
+
+static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 static InceptionLevel g_inceptionLevel = 0;
 static HandleScopeLevel g_totalHandleScopeLevel = 0;
 static std::unordered_map<v8::Isolate*, HandleScopeLevel> g_isolateHandleScopeLevels;
@@ -84,8 +87,6 @@ class handle_scope_formatter final : public spdlog::custom_flag_formatter {
 // for some reason they support only max 64 characters
 // while we are at it we also handle multi-line case, which would not be covered by standard padding
 class wide_v_formatter final : public spdlog::custom_flag_formatter {
-  static const size_t m_log_message_padding_width = 300;
-
  public:
   void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
     auto text_size = msg.payload.size();
@@ -111,8 +112,8 @@ class wide_v_formatter final : public spdlog::custom_flag_formatter {
     assert(last_line_length >= 0);
     assert(lines_count > 0);
     auto padding_size = 0;
-    if (m_log_message_padding_width > last_line_length) {
-      padding_size = m_log_message_padding_width - last_line_length;
+    if (log_message_padding_width > last_line_length) {
+      padding_size = log_message_padding_width - last_line_length;
     }
 
     // we rely on the fact that dest is created fresh for each new log message
@@ -219,7 +220,7 @@ static void initLoggers() {
   custom_formatter->add_flag<wide_v_formatter>('*');
   custom_formatter->add_flag<inception_formatter>('I');
   custom_formatter->add_flag<handle_scope_formatter>('J');
-  custom_formatter->set_pattern("%H:%M:%S.%e %L %n %I %J | %-400*   |> %s:%#");
+  custom_formatter->set_pattern("%H:%M:%S.%e %L %n %I %J | %*   |> %s:%#");
   spdlog::set_formatter(std::move(custom_formatter));
   spdlog::set_error_handler(
       [](const std::string& msg) { throw std::runtime_error(fmt::format("LOGGING ERROR: {}", msg)); });
