@@ -46,9 +46,10 @@ void decreaseCurrentInceptionLevel();
 InceptionLevel getCurrentInceptionLevel();
 
 using HandleScopeLevel = size_t;
-void increaseCurrentHandleScopeLevel();
-void decreaseCurrentHandleScopeLevel();
-HandleScopeLevel getCurrentHandleScopeLevel();
+void increaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
+void decreaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
+HandleScopeLevel getCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
+HandleScopeLevel getTotalHandleScopeLevel();
 
 class LoggerIndent {
  public:

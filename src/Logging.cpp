@@ -6,8 +6,9 @@
 
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 size_t LoggerIndent::m_indent = 0;
-InceptionLevel g_inceptionLevel = 0;
-HandleScopeLevel g_handleScopeLevel = 0;
+static InceptionLevel g_inceptionLevel = 0;
+static HandleScopeLevel g_totalHandleScopeLevel = 0;
+static std::unordered_map<v8::Isolate*, HandleScopeLevel> g_isolateHandleScopeLevels;
 
 void increaseCurrentInceptionLevel() {
   g_inceptionLevel++;
@@ -40,24 +41,32 @@ class inception_formatter final : public spdlog::custom_flag_formatter {
   }
 };
 
-void increaseCurrentHandleScopeLevel() {
-  g_handleScopeLevel++;
+void increaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+  g_totalHandleScopeLevel++;
+  g_isolateHandleScopeLevels[v8_isolate]++;
 }
 
-void decreaseCurrentHandleScopeLevel() {
-  assert(g_handleScopeLevel > 0);
-  --g_handleScopeLevel;
+void decreaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+  assert(g_totalHandleScopeLevel > 0);
+  --g_totalHandleScopeLevel;
+  auto& level = g_isolateHandleScopeLevels[v8_isolate];
+  assert(level > 0);
+  level--;
 }
 
-HandleScopeLevel getCurrentHandleScopeLevel() {
-  return g_handleScopeLevel;
+HandleScopeLevel getCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+  return g_isolateHandleScopeLevels[v8_isolate];
+}
+
+HandleScopeLevel getTotalHandleScopeLevel() {
+  return g_totalHandleScopeLevel;
 }
 
 class handle_scope_formatter final : public spdlog::custom_flag_formatter {
  public:
   void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
-    auto handleScopeLevel = getCurrentHandleScopeLevel();
-    auto str = fmt::format("{}", handleScopeLevel);
+    auto totalHandleScopeLevel = getTotalHandleScopeLevel();
+    auto str = fmt::format("{}", totalHandleScopeLevel);
     // we want to print only the last digit of handleScopeLevel
     if (str.size() > 0) {
       auto end = str.data() + str.size();
