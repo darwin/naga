@@ -22,7 +22,9 @@ v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_v
 std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value);
 
 v8::IsolatePtr getCurrentIsolate();
+v8::Isolate* getCurrentIsolateUnchecked();
 v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate);
+v8::Local<v8::Context> getCurrentContextUnchecked(v8::IsolatePtr v8_isolate);
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context);
 ObservedHandleScope withScope(v8::IsolatePtr v8_isolate);
 ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate);

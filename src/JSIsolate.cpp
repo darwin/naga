@@ -77,16 +77,15 @@ CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrac
 }
 
 py::object CJSIsolate::GetCurrent() {
-  // here we don't want to call our v8u::getCurrentIsolate, which returns not_null<>)
-  auto v8_nullable_isolate = v8::Isolate::GetCurrent();
-  auto py_result = ([&] {
-    if (!v8_nullable_isolate || !v8_nullable_isolate->IsInUse()) {
+  auto v8_isolate_or_null = v8u::getCurrentIsolateUnchecked();
+  auto py_result = [&] {
+    if (!v8_isolate_or_null || !v8_isolate_or_null->IsInUse()) {
       return py::js_null().cast<py::object>();
     } else {
-      v8::IsolatePtr v8_isolate(v8_nullable_isolate);
+      v8::IsolatePtr v8_isolate(v8_isolate_or_null);
       return py::cast(FromV8(v8_isolate));
     }
-  })();
+  }();
   TRACE("CJSIsolate::GetCurrent => {}", py_result);
   return py_result;
 }
@@ -128,8 +127,7 @@ py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
 
 py::object CJSIsolate::GetCurrentContext() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  // note that we don't want to call v8u::getCurrentContext(m_v8_isolate) which is checked to be non-empty
-  auto v8_context = m_v8_isolate->GetCurrentContext();
+  auto v8_context = v8u::getCurrentContextUnchecked(m_v8_isolate);
   auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();

@@ -99,6 +99,10 @@ v8::IsolatePtr getCurrentIsolate() {
   return v8::Isolate::GetCurrent();
 }
 
+v8::Isolate* getCurrentIsolateUnchecked() {
+  return v8::Isolate::GetCurrent();
+}
+
 v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate) {
   assert(hasScope(v8_isolate));
   auto v8_context = v8_isolate->GetCurrentContext();
@@ -106,6 +110,11 @@ v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate) {
     throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }
   return v8_context;
+}
+
+v8::Local<v8::Context> getCurrentContextUnchecked(v8::IsolatePtr v8_isolate) {
+  assert(hasScope(v8_isolate));
+  return v8_isolate->GetCurrentContext();
 }
 
 ObservedHandleScope withScope(v8::IsolatePtr v8_isolate) {
