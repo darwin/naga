@@ -4,15 +4,28 @@
 
 namespace v8u {
 
-std::optional<v8::Local<v8::String>> toStringDirectly(py::handle obj) {
+v8::Local<v8::String> pythonBytesObjectToString(v8::IsolatePtr v8_isolate, PyObject* raw_bytes_obj) {
+  if (!raw_bytes_obj) {
+    return v8::Local<v8::String>();
+  }
+
+  assert(PyBytes_CheckExact(raw_bytes_obj));
+  auto s = PyBytes_AS_STRING(raw_bytes_obj);
+  assert(s);
+  auto sz = PyBytes_GET_SIZE(raw_bytes_obj);
+  assert(sz >= 0);
+  return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal, sz).ToLocalChecked();
+}
+
+std::optional<v8::Local<v8::String>> toStringDirectly(v8::IsolatePtr v8_isolate, py::handle obj) {
   if (PyUnicode_CheckExact(obj.ptr())) {
     auto raw_bytes = PyUnicode_AsUTF8String(obj.ptr());  // may be NULL
     auto py_bytes_obj = py::reinterpret_steal<py::object>(raw_bytes);
-    return pythonBytesObjectToString(py_bytes_obj.ptr());
+    return pythonBytesObjectToString(v8_isolate, py_bytes_obj.ptr());
   }
 
   if (PyBytes_CheckExact(obj.ptr())) {
-    return pythonBytesObjectToString(obj.ptr());
+    return pythonBytesObjectToString(v8_isolate, obj.ptr());
   }
 
   // please note that returning nullopt is different than
@@ -21,9 +34,9 @@ std::optional<v8::Local<v8::String>> toStringDirectly(py::handle obj) {
   return std::nullopt;
 }
 
-v8::Local<v8::String> toString(const py::handle& py_str) {
+v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const py::handle& py_str) {
   // first try to convert python string object directly if possible
-  auto v8_str = toStringDirectly(py_str);
+  auto v8_str = toStringDirectly(v8_isolate, py_str);
   if (v8_str) {
     return *v8_str;
   }
@@ -31,7 +44,7 @@ v8::Local<v8::String> toString(const py::handle& py_str) {
   // alternatively convert it to string representation and try again
   auto raw_computed_str = PyObject_Str(py_str.ptr());  // may be NULL
   auto py_computed_obj = py::reinterpret_steal<py::object>(raw_computed_str);
-  v8_str = toStringDirectly(py_computed_obj);
+  v8_str = toStringDirectly(v8_isolate, py_computed_obj);
   if (v8_str) {
     return *v8_str;
   }
@@ -40,10 +53,10 @@ v8::Local<v8::String> toString(const py::handle& py_str) {
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> toString(const std::wstring& str) {
+v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::wstring& str) {
   auto raw_unicode = PyUnicode_FromWideChar(str.c_str(), str.size());  // may be NULL
   auto py_obj = py::reinterpret_steal<py::object>(raw_unicode);
-  auto v8_str = toStringDirectly(py_obj);
+  auto v8_str = toStringDirectly(v8_isolate, py_obj);
   if (v8_str) {
     return *v8_str;
   }
@@ -62,11 +75,6 @@ v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const char* s) {
 
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string_view& sv) {
   return v8::String::NewFromUtf8(v8_isolate, sv.data(), v8::NewStringType::kNormal, sv.size()).ToLocalChecked();
-}
-
-v8::Local<v8::String> toString(const std::string& str) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return toString(v8_isolate, str);
 }
 
 v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i) {

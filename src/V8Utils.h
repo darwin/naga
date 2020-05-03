@@ -46,12 +46,13 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
   }
 };
 
+v8::Local<v8::String> pythonBytesObjectToString(v8::IsolatePtr v8_isolate, PyObject* raw_bytes_obj);
+
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const char* s);
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string& str);
 v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string_view& sv);
-v8::Local<v8::String> toString(const std::string& str);
-v8::Local<v8::String> toString(const std::wstring& str);
-v8::Local<v8::String> toString(const py::handle& py_str);
+v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::wstring& str);
+v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const py::handle& py_str);
 
 v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i);
 

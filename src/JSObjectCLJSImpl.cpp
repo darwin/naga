@@ -249,7 +249,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   v8u::checkContext(v8_isolate);
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetCurrentContext();
-  auto v8_str = v8u::toString(py_str);
+  auto v8_str = v8u::toString(v8_isolate, py_str);
 
   // JS object lookup
   if (m_base.ToV8(v8_isolate)->Has(v8_context, v8_str).FromMaybe(false)) {

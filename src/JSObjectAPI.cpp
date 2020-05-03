@@ -275,7 +275,7 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
   while (it != py_kwds.end()) {
     auto py_key = it->first;
     auto py_val = it->second;
-    auto v8_key = v8u::toString(py_key);
+    auto v8_key = v8u::toString(v8_isolate, py_key);
     auto v8_val = wrap(py_val);
     v8_result->Set(v8_context, v8_key, v8_val).Check();
     it++;

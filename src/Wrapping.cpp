@@ -179,7 +179,7 @@ static v8::Local<v8::Value> wrapInternal(v8::IsolatePtr v8_isolate, py::handle p
     return v8::Number::New(v8_isolate, py_float);
   }
   if (py::isinstance<py::exact_str>(py_handle)) {
-    return v8u::toString(py_handle);
+    return v8u::toString(v8_isolate, py_handle);
   }
   if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
     tm ts = {0};
