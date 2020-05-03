@@ -14,8 +14,10 @@ class ObservedHandleScope : public v8::HandleScope {
       : v8::HandleScope(isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(isolate)) {
     HTRACE(kHandleScopeLogger, "HandleScope {");
     LOGGER_INDENT_INCREASE;
+    increaseCurrentHandleScopeLevel();
   }
   ~ObservedHandleScope() {
+    decreaseCurrentHandleScopeLevel();
     LOGGER_INDENT_DECREASE;
     auto end_num_handles = v8::HandleScope::NumberOfHandles(this->GetIsolate());
     auto num_handles = end_num_handles - m_start_num_handles;

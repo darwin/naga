@@ -45,6 +45,11 @@ void increaseCurrentInceptionLevel();
 void decreaseCurrentInceptionLevel();
 InceptionLevel getCurrentInceptionLevel();
 
+using HandleScopeLevel = size_t;
+void increaseCurrentHandleScopeLevel();
+void decreaseCurrentHandleScopeLevel();
+HandleScopeLevel getCurrentHandleScopeLevel();
+
 class LoggerIndent {
  public:
   static size_t m_indent;

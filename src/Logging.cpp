@@ -7,6 +7,7 @@
 static std::shared_ptr<spdlog::logger> g_loggers[kNumLoggers];
 size_t LoggerIndent::m_indent = 0;
 InceptionLevel g_inceptionLevel = 0;
+HandleScopeLevel g_handleScopeLevel = 0;
 
 void increaseCurrentInceptionLevel() {
   g_inceptionLevel++;
@@ -36,6 +37,37 @@ class inception_formatter final : public spdlog::custom_flag_formatter {
 
   [[nodiscard]] std::unique_ptr<custom_flag_formatter> clone() const override {
     return spdlog::details::make_unique<inception_formatter>();
+  }
+};
+
+void increaseCurrentHandleScopeLevel() {
+  g_handleScopeLevel++;
+}
+
+void decreaseCurrentHandleScopeLevel() {
+  assert(g_handleScopeLevel > 0);
+  --g_handleScopeLevel;
+}
+
+HandleScopeLevel getCurrentHandleScopeLevel() {
+  return g_handleScopeLevel;
+}
+
+class handle_scope_formatter final : public spdlog::custom_flag_formatter {
+ public:
+  void format(const spdlog::details::log_msg& msg, const std::tm&, spdlog::memory_buf_t& dest) override {
+    auto handleScopeLevel = getCurrentHandleScopeLevel();
+    auto str = fmt::format("{}", handleScopeLevel);
+    // we want to print only the last digit of handleScopeLevel
+    if (str.size() > 0) {
+      auto end = str.data() + str.size();
+      auto prev = end - 1;
+      dest.append(prev, end);
+    }
+  }
+
+  [[nodiscard]] std::unique_ptr<custom_flag_formatter> clone() const override {
+    return spdlog::details::make_unique<handle_scope_formatter>();
   }
 };
 
@@ -177,7 +209,8 @@ static void initLoggers() {
   auto custom_formatter = std::make_unique<spdlog::pattern_formatter>();
   custom_formatter->add_flag<wide_v_formatter>('*');
   custom_formatter->add_flag<inception_formatter>('I');
-  custom_formatter->set_pattern("%H:%M:%S.%e %L %n %I | %-400*   |> %s:%#");
+  custom_formatter->add_flag<handle_scope_formatter>('J');
+  custom_formatter->set_pattern("%H:%M:%S.%e %L %n %I %J | %-400*   |> %s:%#");
   spdlog::set_formatter(std::move(custom_formatter));
   spdlog::set_error_handler(
       [](const std::string& msg) { throw std::runtime_error(fmt::format("LOGGING ERROR: {}", msg)); });
