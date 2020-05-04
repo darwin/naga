@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this script builds debug build of Python and installs it into .venv
+# this script builds debug build of Python and installs it into VENV_DIR
 # https://pythonextensionpatterns.readthedocs.io/en/latest/debugging/debug_python.html
 
 # when running with this version of python, you must build naga extension with Py_DEBUG
@@ -47,4 +47,4 @@ export CPPFLAGS="$CPPFLAGS -I/usr/local/opt/tcl-tk/include"
 
 echo_cmd ./configure "${CONFIGURE_FLAGS[@]}"
 echo_cmd make -j
-echo_cmd make install # will use the .venv prefix above
+echo_cmd make install # will use the VENV_DIR prefix above
