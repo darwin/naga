@@ -17,7 +17,7 @@ class TestContext(unittest.TestCase):
             self.assertEqual('Hello world', context.eval("'Hello ' + 'world'"))
 
     def testMultiNamespace(self):
-        self.assertTrue(not bool(naga.JSContext.inContext))
+        self.assertTrue(not bool(naga.JSContext.in_context))
         self.assertTrue(not bool(naga.JSContext.entered))
 
         class Global(object):
@@ -27,7 +27,7 @@ class TestContext(unittest.TestCase):
 
         with naga.JSContext(g) as ctxt:
             self.assertTrue(ctxt)
-            self.assertTrue(bool(naga.JSContext.inContext))
+            self.assertTrue(bool(naga.JSContext.in_context))
             self.assertEqual(g.name, str(naga.JSContext.entered.locals.name))
 
             class Local(object):
@@ -36,18 +36,18 @@ class TestContext(unittest.TestCase):
             local = Local()
 
             with naga.JSContext(local):
-                self.assertTrue(bool(naga.JSContext.inContext))
+                self.assertTrue(bool(naga.JSContext.in_context))
                 self.assertEqual(local.name, str(naga.JSContext.entered.locals.name))
 
-            self.assertTrue(bool(naga.JSContext.inContext))
+            self.assertTrue(bool(naga.JSContext.in_context))
             self.assertEqual(g.name, str(naga.JSContext.current.locals.name))
 
         self.assertTrue(not bool(naga.JSContext.entered))
-        self.assertTrue(not bool(naga.JSContext.inContext))
+        self.assertTrue(not bool(naga.JSContext.in_context))
 
     def testMultiContext(self):
         with naga.JSContext() as ctxt0:
-            ctxt0.securityToken = "password"
+            ctxt0.security_token = "password"
 
             global0 = ctxt0.locals
             global0.custom = 1234
@@ -55,7 +55,7 @@ class TestContext(unittest.TestCase):
             self.assertEqual(1234, int(global0.custom))
 
             with naga.JSContext() as ctxt1:
-                ctxt1.securityToken = ctxt0.securityToken
+                ctxt1.security_token = ctxt0.security_token
 
                 global1 = ctxt1.locals
                 global1.custom = 1234
@@ -67,7 +67,7 @@ class TestContext(unittest.TestCase):
 
     def testSecurityChecks(self):
         with naga.JSContext() as env1:
-            env1.securityToken = "foo"
+            env1.security_token = "foo"
 
             # Create a function in env1.
             env1.eval("spy = function(){return spy;}")
@@ -85,13 +85,13 @@ class TestContext(unittest.TestCase):
 
             # Switch to env2 in the same domain and invoke spy on env2.
             env2 = naga.JSContext()
-            env2.securityToken = "foo"
+            env2.security_token = "foo"
 
             with env2:
                 result = naga.toolkit.apply(spy, env2.locals)
                 self.assertTrue(isinstance(result, naga.JSFunction))
 
-            env2.securityToken = "bar"
+            env2.security_token = "bar"
 
             # FIXME
             # Call cross_domain_call, it should throw an exception

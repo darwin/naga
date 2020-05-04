@@ -14,7 +14,7 @@ class CJSStackFrame {
   [[nodiscard]] v8::Local<v8::StackFrame> Handle() const;
 
   [[nodiscard]] int GetLineNumber() const;
-  [[nodiscard]] int GetColumn() const;
+  [[nodiscard]] int GetColumnNumber() const;
   [[nodiscard]] std::string GetScriptName() const;
   [[nodiscard]] std::string GetFunctionName() const;
   [[nodiscard]] bool IsEval() const;

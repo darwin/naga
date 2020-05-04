@@ -182,11 +182,11 @@ class TestWrapper(unittest.TestCase):
             func = ctxt.eval("(function test() {})")
 
             self.assertEqual("test", naga.toolkit.get_name(func))
-            self.assertEqual("", naga.toolkit.resname(func))
-            self.assertEqual(0, naga.toolkit.linenum(func))
-            self.assertEqual(14, naga.toolkit.colnum(func))
-            self.assertEqual(0, naga.toolkit.lineoff(func))
-            self.assertEqual(0, naga.toolkit.coloff(func))
+            self.assertEqual("", naga.toolkit.resource_name(func))
+            self.assertEqual(0, naga.toolkit.line_number(func))
+            self.assertEqual(14, naga.toolkit.column_number(func))
+            self.assertEqual(0, naga.toolkit.line_offset(func))
+            self.assertEqual(0, naga.toolkit.column_offset(func))
 
             # FIXME
             # Why the setter doesn't work?
@@ -281,17 +281,17 @@ class TestWrapper(unittest.TestCase):
                     self.assertTrue("JSError: Error: hello world ( test @ 14 : 28 )  ->" in str(e))
                     self.assertEqual("Error", e.name)
                     self.assertEqual("hello world", e.message)
-                    self.assertEqual("test", e.scriptName)
-                    self.assertEqual(14, e.lineNum)
-                    self.assertEqual(96, e.startPos)
-                    self.assertEqual(97, e.endPos)
-                    self.assertEqual(28, e.startCol)
-                    self.assertEqual(29, e.endCol)
-                    self.assertEqual('throw Error("hello world");', e.sourceLine.strip())
+                    self.assertEqual("test", e.script_name)
+                    self.assertEqual(14, e.line_number)
+                    self.assertEqual(96, e.startpos)
+                    self.assertEqual(97, e.endpos)
+                    self.assertEqual(28, e.startcol)
+                    self.assertEqual(29, e.endcol)
+                    self.assertEqual('throw Error("hello world");', e.source_line.strip())
 
                     self.assertEqual('Error: hello world\n' +
                                      '    at hello (test:14:35)\n' +
-                                     '    at test:17:25', e.stackTrace)
+                                     '    at test:17:25', e.stack_trace)
 
     def testParseStack(self):
         self.assertEqual([
@@ -314,14 +314,14 @@ class TestWrapper(unittest.TestCase):
     def testStackTrace(self):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
         class Global(naga.JSClass):
-            def GetCurrentStackTrace(self, _limit):
-                return naga.JSStackTrace.GetCurrentStackTrace(4, naga.JSStackTrace.Options.Detailed)
+            def getCurrentStackTrace(self, _limit):
+                return naga.JSStackTrace.get_current_stack_trace(4, naga.JSStackTrace.Options.Detailed)
 
         with naga.JSContext(Global()) as ctxt:
             st = ctxt.eval("""
                 function a()
                 {
-                    return GetCurrentStackTrace(10);
+                    return getCurrentStackTrace(10);
                 }
                 function b()
                 {
@@ -338,9 +338,9 @@ class TestWrapper(unittest.TestCase):
                              str(st))
             self.assertEqual("test.a (4:28)\n.eval (1:1) eval\ntest.b (8:28) constructor\ntest.c (12:28)",
                              "\n".join(["%s.%s (%d:%d)%s%s" % (
-                                 f.scriptName, f.funcName, f.lineNum, f.column,
-                                 ' eval' if f.isEval else '',
-                                 ' constructor' if f.isConstructor else '') for f in st]))
+                                 f.script_name, f.function_name, f.line_number, f.column_number,
+                                 ' eval' if f.is_eval else '',
+                                 ' constructor' if f.is_constructor else '') for f in st]))
 
     def testPythonException(self):
         # noinspection PyPep8Naming

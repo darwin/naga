@@ -64,10 +64,10 @@ class TestEngine(unittest.TestCase):
                 self.assertTrue(isinstance(func, naga.JSFunction))
 
                 self.assertEqual(func_name, naga.toolkit.get_name(func))
-                self.assertEqual("", naga.toolkit.resname(func))
-                self.assertEqual(1, naga.toolkit.linenum(func))
-                self.assertEqual(0, naga.toolkit.lineoff(func))
-                self.assertEqual(0, naga.toolkit.coloff(func))
+                self.assertEqual("", naga.toolkit.resource_name(func))
+                self.assertEqual(1, naga.toolkit.line_number(func))
+                self.assertEqual(0, naga.toolkit.line_offset(func))
+                self.assertEqual(0, naga.toolkit.column_offset(func))
 
                 var_name = u'变量'
 
@@ -75,7 +75,7 @@ class TestEngine(unittest.TestCase):
 
                 self.assertEqual(6, func())
 
-                self.assertEqual("func", naga.toolkit.inferredname(ctxt.locals.func))
+                self.assertEqual("func", naga.toolkit.inferred_name(ctxt.locals.func))
 
     def testEval(self):
         with naga.JSContext() as ctxt:
@@ -179,20 +179,20 @@ class TestEngine(unittest.TestCase):
 
     def testStackLimit(self):
         with naga.JSIsolate():
-            naga.JSEngine.setStackLimit(256 * 1024)
+            naga.JSEngine.set_stack_limit(256 * 1024)
 
             with naga.JSContext() as ctxt:
                 old_stack_size = ctxt.eval(
                     "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
         with naga.JSIsolate():
-            naga.JSEngine.setStackLimit(512 * 1024)
+            naga.JSEngine.set_stack_limit(512 * 1024)
 
             with naga.JSContext() as ctxt:
-                newStackSize = ctxt.eval(
+                new_stack_size = ctxt.eval(
                     "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
-        self.assertTrue(newStackSize > old_stack_size * 2)
+        self.assertTrue(new_stack_size > old_stack_size * 2)
 
 
 if __name__ == '__main__':

@@ -46,22 +46,22 @@ void exposeToolkit(py::module py_module) {
   auto m = py::naga_module(py_module.def_submodule("toolkit", doc));
 
   // clang-format off
-  m.def("linenum", ForwardTo<&CJSObjectAPI::LineNumber>{},
+  m.def("line_number", ForwardTo<&CJSObjectAPI::LineNumber>{},
         py::arg("this"),
         "The line number of function in the script");
-  m.def("colnum", ForwardTo<&CJSObjectAPI::ColumnNumber>{},
+  m.def("column_number", ForwardTo<&CJSObjectAPI::ColumnNumber>{},
         py::arg("this"),
         "The column number of function in the script");
-  m.def("resname", ForwardTo<&CJSObjectAPI::ResourceName>{},
+  m.def("resource_name", ForwardTo<&CJSObjectAPI::ResourceName>{},
         py::arg("this"),
         "The resource name of script");
-  m.def("inferredname", ForwardTo<&CJSObjectAPI::InferredName>{},
+  m.def("inferred_name", ForwardTo<&CJSObjectAPI::InferredName>{},
         py::arg("this"),
         "Name inferred from variable or property assignment of this function");
-  m.def("lineoff", ForwardTo<&CJSObjectAPI::LineOffset>{},
+  m.def("line_offset", ForwardTo<&CJSObjectAPI::LineOffset>{},
         py::arg("this"),
         "The line offset of function in the script");
-  m.def("coloff", ForwardTo<&CJSObjectAPI::ColumnOffset>{},
+  m.def("column_offset", ForwardTo<&CJSObjectAPI::ColumnOffset>{},
         py::arg("this"),
         "The column offset of function in the script");
   m.def("set_name", ForwardTo<&CJSObjectAPI::SetName>{},
@@ -184,7 +184,7 @@ void exposeJSIsolate(py::module py_module) {
 
       .def_property_readonly("locked", &CJSIsolate::IsLocked)
 
-      .def("GetCurrentStackTrace", &CJSIsolate::GetCurrentStackTrace)
+      .def("get_current_stack_trace", &CJSIsolate::GetCurrentStackTrace)
 
       .def("enter", &CJSIsolate::Enter,
            "Sets this isolate as the entered one for the current thread. "
@@ -222,20 +222,20 @@ void exposeJSException(py::module py_module) {
                              "The exception name.")
       .def_property_readonly("message", &CJSException::GetMessage,
                              "The exception message.")
-      .def_property_readonly("scriptName", &CJSException::GetScriptName,
+      .def_property_readonly("script_name", &CJSException::GetScriptName,
                              "The script name which throw the exception.")
-      .def_property_readonly("lineNum", &CJSException::GetLineNumber, "The line number of error statement.")
-      .def_property_readonly("startPos", &CJSException::GetStartPosition,
+      .def_property_readonly("line_number", &CJSException::GetLineNumber, "The line number of error statement.")
+      .def_property_readonly("startpos", &CJSException::GetStartPosition,
                              "The start position of error statement in the script.")
-      .def_property_readonly("endPos", &CJSException::GetEndPosition,
+      .def_property_readonly("endpos", &CJSException::GetEndPosition,
                              "The end position of error statement in the script.")
-      .def_property_readonly("startCol", &CJSException::GetStartColumn,
+      .def_property_readonly("startcol", &CJSException::GetStartColumn,
                              "The start column of error statement in the script.")
-      .def_property_readonly("endCol", &CJSException::GetEndColumn,
+      .def_property_readonly("endcol", &CJSException::GetEndColumn,
                              "The end column of error statement in the script.")
-      .def_property_readonly("sourceLine", &CJSException::GetSourceLine,
+      .def_property_readonly("source_line", &CJSException::GetSourceLine,
                              "The source line of error statement.")
-      .def_property_readonly("stackTrace", &CJSException::GetStackTrace,
+      .def_property_readonly("stack_trace", &CJSException::GetStackTrace,
                              "The stack trace of error statement.")
       .def("print_tb", &CJSException::PrintCallStack,
            py::arg("file") = py::none(),
@@ -247,12 +247,12 @@ void exposeJSStackFrame(py::module py_module) {
   TRACE("exposeJSStackFrame py_module={}", py_module);
   // clang-format off
   py::naga_class<CJSStackFrame, CJSStackFramePtr>(py_module, "JSStackFrame")
-      .def_property_readonly("lineNum", &CJSStackFrame::GetLineNumber)
-      .def_property_readonly("column", &CJSStackFrame::GetColumn)
-      .def_property_readonly("scriptName", &CJSStackFrame::GetScriptName)
-      .def_property_readonly("funcName", &CJSStackFrame::GetFunctionName)
-      .def_property_readonly("isEval", &CJSStackFrame::IsEval)
-      .def_property_readonly("isConstructor", &CJSStackFrame::IsConstructor);
+      .def_property_readonly("line_number", &CJSStackFrame::GetLineNumber)
+      .def_property_readonly("column_number", &CJSStackFrame::GetColumnNumber)
+      .def_property_readonly("script_name", &CJSStackFrame::GetScriptName)
+      .def_property_readonly("function_name", &CJSStackFrame::GetFunctionName)
+      .def_property_readonly("is_eval", &CJSStackFrame::IsEval)
+      .def_property_readonly("is_constructor", &CJSStackFrame::IsConstructor);
   // clang-format on
 }
 
@@ -295,10 +295,10 @@ void exposeJSEngine(py::module py_module) {
           "dead", [](const py::object &) { return CJSEngine::IsDead(); },
           "Check if V8 is dead and therefore unusable.")
 
-      .def_static("setFlags", &CJSEngine::SetFlags,
+      .def_static("set_flags", &CJSEngine::SetFlags,
                   "Sets V8 flags from a string.")
 
-      .def_static("terminateAllThreads", &CJSEngine::TerminateAllThreads,
+      .def_static("terminate_all_threads", &CJSEngine::TerminateAllThreads,
                   "Forcefully terminate the current thread of JavaScript execution.")
 
       .def_static(
@@ -308,10 +308,10 @@ void exposeJSEngine(py::module py_module) {
           "it cannot be reinitialized.")
 
       .def_static(
-          "lowMemory", []() { v8u::getCurrentIsolate()->LowMemoryNotification(); },
+          "low_memory", []() { v8u::getCurrentIsolate()->LowMemoryNotification(); },
           "Optional notification that the system is running low on memory.")
 
-      .def_static("setStackLimit", &CJSEngine::SetStackLimit,
+      .def_static("set_stack_limit", &CJSEngine::SetStackLimit,
                   py::arg("stack_limit_size") = 0,
                   "Uses the address of a local variable to determine the stack top now."
                   "Given a size, returns an address that is that far from the current top of stack.")
@@ -378,7 +378,7 @@ void exposeJSContext(py::module py_module) {
   py::naga_class<CJSContext, CJSContextPtr>(py_module, "JSContext", "JSContext is an execution context.")
       .def(py::init<py::object>())
 
-      .def_property("securityToken", &CJSContext::GetSecurityToken, &CJSContext::SetSecurityToken)
+      .def_property("security_token", &CJSContext::GetSecurityToken, &CJSContext::SetSecurityToken)
 
       .def_property_readonly("locals", &CJSContext::GetGlobal,
                              "Local variables within context")
@@ -389,7 +389,7 @@ void exposeJSContext(py::module py_module) {
                                     "The context that is on the top of the stack.")
       .def_property_readonly_static("calling", [](const py::object &) { return CJSContext::GetCalling(); },
                                     "The context of the calling JavaScript code.")
-      .def_property_readonly_static("inContext", [](const py::object &) { return CJSContext::InContext(); },
+      .def_property_readonly_static("in_context", [](const py::object &) { return CJSContext::InContext(); },
                                     "Returns true if V8 has a current context.")
 
       .def_static("eval", &CJSContext::Evaluate,

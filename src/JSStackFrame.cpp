@@ -20,6 +20,12 @@ CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(st
   m_v8_frame.AnnotateStrongRetainer("Naga JSStackFrame");
 }
 
+v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
+  auto result = v8::Local<v8::StackFrame>::New(m_v8_isolate, m_v8_frame);
+  TRACE("CJSStackFrame::Handle {} => {}", THIS, result);
+  return result;
+}
+
 std::string CJSStackFrame::GetScriptName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetScriptName());
@@ -36,12 +42,6 @@ std::string CJSStackFrame::GetFunctionName() const {
   return result;
 }
 
-v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
-  auto result = v8::Local<v8::StackFrame>::New(m_v8_isolate, m_v8_frame);
-  TRACE("CJSStackFrame::Handle {} => {}", THIS, result);
-  return result;
-}
-
 int CJSStackFrame::GetLineNumber() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->GetLineNumber();
@@ -49,10 +49,10 @@ int CJSStackFrame::GetLineNumber() const {
   return result;
 }
 
-int CJSStackFrame::GetColumn() const {
+int CJSStackFrame::GetColumnNumber() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
   auto result = Handle()->GetColumn();
-  TRACE("CJSStackFrame::GetColumn {} => {}", THIS, result);
+  TRACE("CJSStackFrame::GetColumnNumber {} => {}", THIS, result);
   return result;
 }
 
