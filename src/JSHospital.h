@@ -5,16 +5,16 @@
 
 // Hospital is a place where we put V8 objects which have attached some external data which need some cleanup.
 
-// Our strategy is to hold JS object via v8::Global, but make it weak and when we receive a callback about an object
+// Our strategy is to hold JS object via v8::Global, but make it weak and when we receive a callback about the object
 // going away we do the requested cleanup work. To make this flexible we accept cleanup function as a parameter
 // when accepting patient into the hospital.
 //
-// Please note that we keep one hospital per isolate. So when an isolate is about to go away we make sure all patients
+// Please note that we keep one hospital per isolate. So when isolate is about to go away we make sure all patients
 // in the hospital get properly unplugged (we call their cleanup routines). The reasons why we have to do that are
 // described in more detail in Tracer.h.
 
 using V8Patient = v8::Global<v8::Object>;
-using PatientClenupFn = std::function<void(v8::Local<v8::Object>)>; // we want to be able to accept any lambda
+using PatientClenupFn = std::function<void(v8::Local<v8::Object>)>;  // to be able to accept lambdas with captures
 
 struct HospitalRecord {
   V8Patient m_v8_patient;

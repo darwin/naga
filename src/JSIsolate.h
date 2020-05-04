@@ -3,6 +3,23 @@
 
 #include "Base.h"
 
+// CJSIsolate is our wrapper of v8::Isolate which provides Python interface for exposed JSIsolate object.
+//
+// CJSIsolate instances are typically created from Python side by calling exposed JSIsolate().
+// Pybind machinery creates them as shared pointers and C++ should pass them around as shared pointers (CJSIsolatePtr).
+// If you happen to receive a naked v8::Isolate* you can obtain associated wrapper via CJSIsolate::FromV8().
+// Note that isolates not created by our wrapper are considered foreign isolates and FromV8 will throw.
+// If you have a CJSIsolate instance you can get to naked v8::Isolate* by calling CJSIsolate::ToV8().
+// Calls to FromV8/ToV8 should be cheap.
+//
+// CJSIsolate holds several helper data structures where we keep track of some C++/Python objects associated
+// with JS objects living in the isolate. It is important to properly dispose these resources before the isolate
+// goes away. See the destructor. Just to refresh: CJSIsolate is de-allocated when last smart pointer holder drops it.
+// Please note that both Python side and C++ side can hold it (smart pointers from live Python JSIsolate objects managed
+// by pybind and CJSIsolatePtr in our codebase in C++). So for V8 isolate to be let go all users have to drop
+// reference to its CJSIsolate wrapper which will call CJSIsolate destructor which will dispose all resources and
+// finally dispose the isolate in V8.
+
 class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   v8::IsolatePtr m_v8_isolate;
   std::unique_ptr<CTracer> m_tracer;
