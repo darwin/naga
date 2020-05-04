@@ -73,13 +73,10 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
 
   auto v8_result = withAllowedPythonThreads([&] { return v8_script->Run(v8_context); });
-  if (!v8_result.IsEmpty()) {
-    return wrap(v8_isolate, v8_result.ToLocalChecked());
+  if (v8_result.IsEmpty()) {
+    return py::js_null();
   }
-  if (PyErr_Occurred()) {
-    throw py::error_already_set();
-  }
-  return py::js_null();
+  return wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
 CJSScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
