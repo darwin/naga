@@ -9,9 +9,6 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "hicpp-signed-bitwise"
-
 static std::string_view getFirstLine(std::string_view sv) {
   auto pos = sv.find_first_of('\n');
   return sv.substr(0, pos);
@@ -101,14 +98,14 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
   auto raw_type = py_type.ptr();
   auto raw_value = py_value.ptr();
 
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-
   auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
-  auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
-  v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
-
   auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
+
+  auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
   auto v8_exc_value_external = v8::External::New(v8_isolate, raw_value);
+
+  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
   v8_error_object->SetPrivate(v8_context, v8_value_api, v8_exc_value_external);
 
   // this must match Py_DECREFs below !!!
@@ -130,7 +127,7 @@ void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_
 
   // note we don't need to call PyErr_NormalizeException
   // py::error_already_set in its constructor called py::detail::error_string() which did the normalization
-  // py_ex.type(), py_ex.value() and py_ex.trace() are already normalized
+  // in other words py_ex.type(), py_ex.value() and py_ex.trace() are already normalized
 
   auto v8_error = convertPythonExceptionToV8Error(v8_isolate, py_ex);
   if (v8_error->IsObject()) {
@@ -142,28 +139,25 @@ void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_
   v8_isolate->ThrowException(v8_error);
 }
 
-#pragma clang diagnostic pop
-
 v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(v8::IsolatePtr v8_isolate) {
   TRACE("CPythonObject::CreateJSWrapperTemplate");
-  auto v8_wrapper_template = v8::ObjectTemplate::New(v8_isolate);
+  auto v8_template = v8::ObjectTemplate::New(v8_isolate);
   auto v8_handler_config =
       v8::NamedPropertyHandlerConfiguration(NamedGetter, NamedSetter, NamedQuery, NamedDeleter, NamedEnumerator);
 
-  v8_wrapper_template->SetHandler(v8_handler_config);
-  v8_wrapper_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter,
-                                                 IndexedEnumerator);
-  v8_wrapper_template->SetCallAsFunctionHandler(CallWrapperAsFunction);
-  return v8_wrapper_template;
+  v8_template->SetHandler(v8_handler_config);
+  v8_template->SetIndexedPropertyHandler(IndexedGetter, IndexedSetter, IndexedQuery, IndexedDeleter, IndexedEnumerator);
+  v8_template->SetCallAsFunctionHandler(CallWrapperAsFunction);
+  return v8_template;
 }
 
 v8::Local<v8::ObjectTemplate> CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8::IsolatePtr v8_isolate) {
   TRACE("CPythonObject::GetOrCreateCachedJSWrapperTemplate");
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
+  assert(v8u::hasScope(v8_isolate));
   auto v8_object_template =
       lookupEternal<v8::ObjectTemplate>(v8_isolate, CJSEternals::kJSWrapperTemplate, [](v8::IsolatePtr v8_isolate) {
         auto v8_wrapper_template = CreateJSWrapperTemplate(v8_isolate);
         return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_wrapper_template);
       });
-  return v8_scope.Escape(v8_object_template);
+  return v8_object_template;
 }
