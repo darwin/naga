@@ -121,6 +121,7 @@ class JSClassPrototype(JSClass):
 
     def __init__(self, cls):
         self.cls = cls
+        super().__init__()
 
     @property
     def constructor(self):
@@ -133,8 +134,8 @@ class JSClassPrototype(JSClass):
 
 class JSError(Exception):
     def __init__(self, js_exception):
-        Exception.__init__(self)
         self._impl = js_exception
+        super().__init__()
 
     def __str__(self):
         return str(self._impl)
@@ -217,9 +218,6 @@ class JSUnlocker(naga_native.JSUnlocker):
 
 
 class JSEngine(naga_native.JSEngine):
-    def __init__(self):
-        naga_native.JSEngine.__init__(self)
-
     def __enter__(self):
         return self
 
@@ -244,7 +242,7 @@ class JSContext(naga_native.JSContext):
             self.lock = JSLocker()
             self.lock.enter()
 
-        naga_native.JSContext.__init__(self, global_scope)
+        super().__init__(global_scope)
 
     def __enter__(self):
         self.enter()
@@ -262,9 +260,6 @@ class JSContext(naga_native.JSContext):
 
 class JSStackTrace(naga_native.JSStackTrace):
     Options = naga_native.JSStackTraceOptions
-
-    def __init__(self):
-        naga_native.JSStackTrace.__init__(self)
 
 
 # -- enhance naga_native module ---------------------------------------------------------------------------------------
