@@ -51,7 +51,7 @@ class naga_class : /* private */ class_<type_, options...> {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "HidingNonVirtualFunction"
   template <typename... Args, typename... Extra>
-  naga_class& def(const detail::initimpl::constructor<Args...>& init, const Extra&... extra) {
+  naga_class& def_ctor(const detail::initimpl::constructor<Args...>& init, const Extra&... extra) {
     // will be traced indirectly by calling .def
     init.execute(*this, extra...);
     return *this;
@@ -61,13 +61,21 @@ class naga_class : /* private */ class_<type_, options...> {
   template <typename Func, typename... Args>
   naga_class& def(const char* name, Func&& f, Args&&... args) {
     auto raw_type = reinterpret_cast<PyTypeObject*>(this->ptr());
+    auto wf = wrapWithLogger(method_adaptor<type_>(std::forward<Func>(f)), name, raw_type, "(ctor)");
+    super::def(name, wf, std::forward<Args>(args)...);
+    return *this;
+  }
+
+  template <typename Func, typename... Args>
+  naga_class& def_method(const char* name, Func&& f, Args&&... args) {
+    auto raw_type = reinterpret_cast<PyTypeObject*>(this->ptr());
     auto wf = wrapWithLogger(method_adaptor<type_>(std::forward<Func>(f)), name, raw_type, "(method)");
     super::def(name, wf, std::forward<Args>(args)...);
     return *this;
   }
 
   template <typename Func, typename... Args>
-  naga_class& def_static(const char* name, Func&& f, Args&&... args) {
+  naga_class& def_method_s(const char* name, Func&& f, Args&&... args) {
     auto raw_type = reinterpret_cast<PyTypeObject*>(this->ptr());
     auto wf = wrapWithLogger(std::forward<Func>(f), name, raw_type, "(static method)");
     super::def_static(name, wf, std::forward<Args>(args)...);
@@ -84,7 +92,7 @@ class naga_class : /* private */ class_<type_, options...> {
   }
 
   template <typename Getter, typename... Extra>
-  naga_class& def_property_readonly(const char* name, Getter&& fget, Extra&&... extra) {
+  naga_class& def_property_r(const char* name, Getter&& fget, Extra&&... extra) {
     auto raw_type = reinterpret_cast<PyTypeObject*>(this->ptr());
     auto wfget =
         wrapWithLogger(method_adaptor<type_>(std::forward<Getter>(fget)), name, raw_type, "(readonly property getter)");
@@ -93,7 +101,7 @@ class naga_class : /* private */ class_<type_, options...> {
   }
 
   template <typename Getter, typename... Extra>
-  naga_class& def_property_readonly_static(const char* name, Getter&& fget, Extra&&... extra) {
+  naga_class& def_property_rs(const char* name, Getter&& fget, Extra&&... extra) {
     auto raw_type = reinterpret_cast<PyTypeObject*>(this->ptr());
     auto wfget = wrapWithLogger(method_adaptor<type_>(std::forward<Getter>(fget)), name, raw_type,
                                 "(static readonly property getter)");
