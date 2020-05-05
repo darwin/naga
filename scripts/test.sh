@@ -10,4 +10,4 @@ cd "$ROOT_DIR"
 
 cd tests
 activate_python3
-echo_cmd python3 -m unittest discover --failfast --locals "$@"
+echo_cmd python3 -m unittest discover --failfast --locals --verbose "$@"
