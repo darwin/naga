@@ -193,8 +193,8 @@ void exposeJSIsolate(py::module py_module) {
                   "Returns the context of the currently running JavaScript, "                                 //
                   "or the context on the top of the stack if no JavaScript is running.")                      //
                                                                                                               //
-      .def_method("in_context", &CJSIsolate::InContext,                                                       //
-                  "Returns true if this isolate has a current context.")                                      //
+      .def_property_r("in_context", &CJSIsolate::InContext,                                                   //
+                      "Returns true if this isolate has a current context.")                                  //
       ;
 }
 
