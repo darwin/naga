@@ -322,7 +322,7 @@ class TestWrapper(unittest.TestCase):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
         class Global(naga.JSClass):
             def getCurrentStackTrace(self, _limit):
-                return naga.JSStackTrace.get_current_stack_trace(4, naga.JSStackTrace.Options.Detailed)
+                return naga.JSIsolate.current.get_current_stack_trace(4, naga.JSStackTrace.Options.Detailed)
 
         with naga.JSContext(Global()) as ctxt:
             st = ctxt.eval("""

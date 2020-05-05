@@ -268,11 +268,6 @@ class JSStackTrace(naga_native.JSStackTrace):
     def __init__(self):
         naga_native.JSStackTrace.__init__(self)
 
-    @staticmethod
-    def get_current_stack_trace(frame_limit, options):
-        return naga_native.JSIsolate.current.get_current_stack_trace(frame_limit, options)
-
-
 # -- enhance naga_native module ---------------------------------------------------------------------------------------
 
 # some exception-handling C++ code expects existence of "JSError" in naga_native module
