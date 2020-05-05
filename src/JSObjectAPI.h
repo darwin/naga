@@ -18,7 +18,11 @@ class CJSObjectAPI : public CJSObjectBase {
 
  public:
   explicit CJSObjectAPI(v8::Local<v8::Object> v8_obj)
-      : CJSObjectBase(v8_obj), m_generic_impl{*this}, m_function_impl{*this}, m_array_impl{*this}, m_cljs_impl{*this} {}
+      : CJSObjectBase(v8_obj),
+        m_generic_impl{*this},
+        m_function_impl{*this},
+        m_array_impl{*this},
+        m_cljs_impl{*this} {}
 
   static py::object Create(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 

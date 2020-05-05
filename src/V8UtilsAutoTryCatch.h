@@ -16,7 +16,9 @@ class AutoTryCatch : public v8::TryCatch {
 
  public:
   explicit AutoTryCatch(v8::IsolatePtr v8_isolate)
-      : v8::TryCatch(v8_isolate), m_v8_isolate(v8_isolate), m_recorded_uncaught_exceptions(std::uncaught_exceptions()) {
+      : v8::TryCatch(v8_isolate),
+        m_v8_isolate(v8_isolate),
+        m_recorded_uncaught_exceptions(std::uncaught_exceptions()) {
     HTRACE(kAutoTryCatchLogger, "AutoTryCatch {");
     LOGGER_INDENT_INCREASE;
   }

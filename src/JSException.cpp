@@ -165,17 +165,23 @@ CJSException::CJSException(v8::IsolatePtr v8_isolate, const v8::TryCatch& v8_try
 }
 
 CJSException::CJSException(v8::IsolatePtr v8_isolate, const std::string& msg, PyObject* raw_type) noexcept
-    : std::runtime_error(msg), m_v8_isolate(std::move(v8_isolate)), m_raw_type(raw_type) {
+    : std::runtime_error(msg),
+      m_v8_isolate(std::move(v8_isolate)),
+      m_raw_type(raw_type) {
   TRACE("CJSException::CJSException {} v8_isolate={} msg='{}' raw_type={}", THIS, P$(m_v8_isolate), msg, raw_type);
 }
 
 CJSException::CJSException(const std::string& msg, PyObject* raw_type) noexcept
-    : std::runtime_error(msg), m_v8_isolate(v8u::getCurrentIsolate()), m_raw_type(raw_type) {
+    : std::runtime_error(msg),
+      m_v8_isolate(v8u::getCurrentIsolate()),
+      m_raw_type(raw_type) {
   TRACE("CJSException::CJSException {} msg='{}' raw_type={}", THIS, msg, raw_type);
 }
 
 CJSException::CJSException(const CJSException& ex) noexcept
-    : std::runtime_error(ex.what()), m_v8_isolate(ex.m_v8_isolate), m_raw_type(ex.m_raw_type) {
+    : std::runtime_error(ex.what()),
+      m_v8_isolate(ex.m_v8_isolate),
+      m_raw_type(ex.m_raw_type) {
   TRACE("CJSException::CJSException {} ex={}", THIS, ex);
   auto v8_scope = v8u::withScope(m_v8_isolate);
 

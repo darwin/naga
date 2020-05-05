@@ -9,7 +9,8 @@
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
 CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
-    : m_roles(Roles::Generic), m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
+    : m_roles(Roles::Generic),
+      m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
   m_v8_obj.AnnotateStrongRetainer("Naga JSObject");
 
   // detect supported object roles

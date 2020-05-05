@@ -11,7 +11,8 @@ class ObservedHandleScope : public v8::HandleScope {
 
  public:
   explicit ObservedHandleScope(v8::IsolatePtr v8_isolate)
-      : v8::HandleScope(v8_isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
+      : v8::HandleScope(v8_isolate),
+        m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "HandleScope {");
     LOGGER_INDENT_INCREASE;
     increaseCurrentHandleScopeLevel(v8_isolate);
@@ -31,7 +32,8 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
 
  public:
   explicit ObservedEscapableHandleScope(v8::IsolatePtr v8_isolate)
-      : v8::EscapableHandleScope(v8_isolate), m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
+      : v8::EscapableHandleScope(v8_isolate),
+        m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "EscapableHandleScope {");
     LOGGER_INDENT_INCREASE;
     increaseCurrentHandleScopeLevel(v8_isolate);
