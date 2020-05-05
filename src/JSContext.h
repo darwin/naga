@@ -23,7 +23,6 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   py::str GetSecurityToken() const;
   void SetSecurityToken(const py::str& py_token) const;
 
-  bool IsEntered() const;
   void Enter() const;
   void Leave() const;
 

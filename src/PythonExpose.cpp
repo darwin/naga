@@ -397,8 +397,5 @@ void exposeJSContext(py::module py_module) {
            "Exit this context. "                                                                           //
            "Exiting the current context restores the context "                                             //
            "that was in place when entering the current context.")                                         //
-                                                                                                           //
-      .def("__bool__", &CJSContext::IsEntered,                                                             //
-           "the context has been entered.")                                                                //
       ;
 }

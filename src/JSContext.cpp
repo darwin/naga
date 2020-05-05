@@ -189,10 +189,3 @@ bool CJSContext::InContext() {
 void CJSContext::Dump(std::ostream& os) const {
   fmt::print(os, "CContext {} m_v8_context={}", THIS, ToV8());
 }
-
-bool CJSContext::IsEntered() const {
-  // TODO: this is wrong!
-  auto result = !m_v8_context.IsEmpty();
-  TRACE("CJSContext::IsEntered {} => {}", THIS, result);
-  return result;
-}
