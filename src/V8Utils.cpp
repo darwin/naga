@@ -1,4 +1,5 @@
 #include "V8Utils.h"
+#include "Utils.h"
 #include "JSException.h"
 
 namespace v8u {
@@ -159,6 +160,27 @@ v8::Eternal<v8::Private> createEternalPrivateAPI(v8::IsolatePtr v8_isolate, cons
   auto v8_key = v8::String::NewFromUtf8(v8_isolate, name).ToLocalChecked();
   auto v8_private_api = v8::Private::ForApi(v8_isolate, v8_key);
   return v8::Eternal<v8::Private>(v8_isolate, v8_private_api);
+}
+
+std::string getCurrentStackTrace(v8::IsolatePtr v8_isolate) {
+  size_t len;
+  char* buf = nullptr;
+  [[maybe_unused]] auto _ = finally([&]() noexcept { free(buf); });
+
+  // this scope ensures proper call to fclose even in exceptional cases
+  {
+    std::unique_ptr<FILE, decltype(&fclose)> stream{open_memstream(&buf, &len), &fclose};
+    if (!stream) {
+      return "";
+    }
+    v8::Message::PrintCurrentStackTrace(v8_isolate, stream.get());
+  }
+  // fclose was already called at this point,
+  // we may use buf and freeing will be done automatically when leaving this scope via finally above^
+  if (!buf) {
+    return "";
+  }
+  return std::string(buf, len);
 }
 
 }  // namespace v8u

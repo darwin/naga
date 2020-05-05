@@ -13,5 +13,6 @@ void trace(const py::str& s);
 void v8RequestGarbageCollectionForTesting();
 CJSIsolatePtr testEncounteringForeignIsolate();
 CJSContextPtr testEncounteringForeignContext();
+py::str getCurrentStackTrace();
 
 #endif

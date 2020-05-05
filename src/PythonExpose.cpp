@@ -38,6 +38,7 @@ void exposeAux(py::module py_module) {
   m.def("v8_request_gc_for_testing", &v8RequestGarbageCollectionForTesting);
   m.def("test_encountering_foreign_isolate", &testEncounteringForeignIsolate);
   m.def("test_encountering_foreign_context", &testEncounteringForeignContext);
+  m.def("get_current_stack_trace", &getCurrentStackTrace);
 }
 
 void exposeToolkit(py::module py_module) {

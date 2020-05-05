@@ -61,3 +61,10 @@ CJSContextPtr testEncounteringForeignContext() {
   auto foreign_v8_context = v8::Context::New(v8_isolate);
   return CJSContext::FromV8(foreign_v8_context);
 }
+
+py::str getCurrentStackTrace() {
+  auto v8_isolate = v8u::getCurrentIsolate();
+  auto stackTraceText = v8u::getCurrentStackTrace(v8_isolate);
+  TRACE("getCurrentStackTrace => {}", traceText(stackTraceText));
+  return py::str(stackTraceText);
+}
