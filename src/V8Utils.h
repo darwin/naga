@@ -43,8 +43,6 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
                                     v8::Local<v8::Integer> v8_col);
 v8::Eternal<v8::Private> createEternalPrivateAPI(v8::IsolatePtr v8_isolate, const char* name);
 
-std::string getCurrentStackTrace(v8::IsolatePtr v8_isolate);
-
 }  // namespace v8u
 
 #endif
