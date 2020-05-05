@@ -184,14 +184,14 @@ void exposeJSIsolate(py::module py_module) {
                   "Exits this isolate by restoring the previously entered one in the current thread. "        //
                   "The isolate may still stay the same, if it was entered more than once.")                   //
                                                                                                               //
-      .def_method("get_entered_or_microtask_context", &CJSIsolate::GetEnteredOrMicrotaskContext,              //
-                  "Returns either the last context entered through V8's C++ API, "                            //
-                  "or the context of the currently running microtask while processing microtasks."            //
-                  "If a context is entered while executing a microtask, that context is returned.")           //
+      .def_property_r("entered_or_microtask_context", &CJSIsolate::GetEnteredOrMicrotaskContext,              //
+                      "Returns either the last context entered through V8's C++ API, "                        //
+                      "or the context of the currently running microtask while processing microtasks."        //
+                      "If a context is entered while executing a microtask, that context is returned.")       //
                                                                                                               //
-      .def_method("get_current_context", &CJSIsolate::GetCurrentContext,                                      //
-                  "Returns the context of the currently running JavaScript, "                                 //
-                  "or the context on the top of the stack if no JavaScript is running.")                      //
+      .def_property_r("current_context", &CJSIsolate::GetCurrentContext,                                      //
+                      "Returns the context of the currently running JavaScript, "                             //
+                      "or the context on the top of the stack if no JavaScript is running.")                  //
                                                                                                               //
       .def_property_r("in_context", &CJSIsolate::InContext,                                                   //
                       "Returns true if this isolate has a current context.")                                  //

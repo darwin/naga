@@ -22,7 +22,7 @@ class TestContext(unittest.TestCase):
     def testMultiNamespace(self):
         isolate = JSIsolate.current
         self.assertTrue(not isolate.in_context)
-        self.assertTrue(isolate.get_current_context() is None)
+        self.assertTrue(isolate.current_context is None)
 
         class Global(object):
             name = "global"
@@ -32,8 +32,8 @@ class TestContext(unittest.TestCase):
         with naga.JSContext(global_scope) as global_ctxt:
             self.assertTrue(global_ctxt)
             self.assertTrue(isolate.in_context)
-            self.assertTrue(isolate.get_current_context() is global_ctxt)
-            self.assertEqual(global_scope.name, isolate.get_current_context().locals.name)
+            self.assertTrue(isolate.current_context is global_ctxt)
+            self.assertEqual(global_scope.name, isolate.current_context.locals.name)
 
             class Local(object):
                 name = "local"
@@ -42,14 +42,14 @@ class TestContext(unittest.TestCase):
 
             with naga.JSContext(local_scope) as local_ctxt:
                 self.assertTrue(isolate.in_context)
-                self.assertTrue(isolate.get_current_context() is local_ctxt)
-                self.assertEqual(local_scope.name, isolate.get_current_context().locals.name)
+                self.assertTrue(isolate.current_context is local_ctxt)
+                self.assertEqual(local_scope.name, isolate.current_context.locals.name)
 
             self.assertTrue(isolate.in_context)
-            self.assertEqual(global_scope.name, isolate.get_current_context().locals.name)
+            self.assertEqual(global_scope.name, isolate.current_context.locals.name)
 
         self.assertTrue(not isolate.in_context)
-        self.assertTrue(isolate.get_current_context() is None)
+        self.assertTrue(isolate.current_context is None)
 
     def testMultiContext(self):
         with naga.JSContext() as ctxt0:

@@ -25,22 +25,22 @@ class TestIsolate(unittest.TestCase):
             self.assertFalse(isolate.in_context)
 
             with ctx1:
-                self.assertEqual(ctx1, isolate.get_entered_or_microtask_context())
-                self.assertEqual(ctx1, isolate.get_current_context())
+                self.assertEqual(ctx1, isolate.entered_or_microtask_context)
+                self.assertEqual(ctx1, isolate.current_context)
                 self.assertTrue(isolate.in_context)
 
                 with ctx2:
-                    self.assertEqual(ctx2, isolate.get_entered_or_microtask_context())
-                    self.assertEqual(ctx2, isolate.get_current_context())
+                    self.assertEqual(ctx2, isolate.entered_or_microtask_context)
+                    self.assertEqual(ctx2, isolate.current_context)
                     self.assertTrue(isolate.in_context)
 
-                self.assertEqual(ctx1, isolate.get_entered_or_microtask_context())
-                self.assertEqual(ctx1, isolate.get_current_context())
+                self.assertEqual(ctx1, isolate.entered_or_microtask_context)
+                self.assertEqual(ctx1, isolate.current_context)
                 self.assertTrue(isolate.in_context)
 
             self.assertFalse(isolate.in_context)
-            self.assertEqual(JSNull, isolate.get_entered_or_microtask_context())
-            self.assertEqual(JSNull, isolate.get_current_context())
+            self.assertEqual(JSNull, isolate.entered_or_microtask_context)
+            self.assertEqual(JSNull, isolate.current_context)
 
     def testEncounteringForeignIsolate(self):
         self.assertRaises(RuntimeError, test_encountering_foreign_isolate)
