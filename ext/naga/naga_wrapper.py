@@ -242,6 +242,7 @@ class JSIsolate(naga_native.JSIsolate):
 class JSContext(naga_native.JSContext):
     def __init__(self, global_scope=None):
         self.lock = None
+        # TODO: isolate locking should be done on C++ side
         if JSLocker.active:
             self.lock = JSLocker()
             self.lock.enter()
@@ -255,9 +256,10 @@ class JSContext(naga_native.JSContext):
     def __exit__(self, exc_type, exc_value, traceback):
         self.leave()
 
-        if self.lock:
-            self.lock.leave()
-            self.lock = None
+        # TODO: isolate locking should be done on C++ side
+        # if self.lock:
+        #     self.lock.leave()
+        #     self.lock = None
 
         del self
 
