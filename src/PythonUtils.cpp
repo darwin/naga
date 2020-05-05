@@ -14,4 +14,16 @@ const char* pythonTypeName(PyTypeObject* raw_type) {
   return raw_type->tp_name;
 }
 
+bool printToFileOrStdOut(const char* s, py::object py_file) {
+  auto py_gil = withGIL();
+  auto raw_file = py_file.is_none() ? PySys_GetObject("stdout") : py_file.ptr();
+  if (!raw_file) {
+    return false;
+  }
+  if (PyFile_WriteString(s, raw_file) == -1) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace pyu
