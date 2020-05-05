@@ -109,12 +109,6 @@ void CJSContext::SetSecurityToken(const py::str& py_token) const {
   }
 }
 
-bool CJSContext::InContext() {
-  TRACE("CJSContext::InContext");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8_isolate->InContext();
-}
-
 py::object CJSContext::GetCurrent() {
   TRACE("CJSContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
