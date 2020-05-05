@@ -78,9 +78,9 @@ py::str CJSContext::GetSecurityToken() const {
     return py::str();
   }
 
-  auto v8_token_string = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
-  auto v8_utf = v8u::toUTF(v8_isolate, v8_token_string);
-  auto py_result = py::str(*v8_utf, v8_utf.length());
+  auto v8_token_str = v8_token->ToString(m_v8_context.Get(v8_isolate)).ToLocalChecked();
+  auto v8_token_utf = v8u::toUTF(v8_isolate, v8_token_str);
+  auto py_result = py::str(*v8_token_utf, v8_token_utf.length());
   TRACE("CJSContext::GetSecurityToken {} => {}", THIS, py_result);
   return py_result;
 }
@@ -94,9 +94,15 @@ void CJSContext::SetSecurityToken(const py::str& py_token) const {
     ToV8()->UseDefaultSecurityToken();
   } else {
     std::string str = py::cast<py::str>(py_token);
-    auto v8_token_str = v8::String::NewFromUtf8(v8_isolate, str.c_str()).ToLocalChecked();
+    auto v8_token_str = v8u::toString(v8_isolate, str);
     ToV8()->SetSecurityToken(v8_token_str);
   }
+}
+
+bool CJSContext::InContext() {
+  TRACE("CJSContext::InContext");
+  auto v8_isolate = v8u::getCurrentIsolate();
+  return v8_isolate->InContext();
 }
 
 py::object CJSContext::GetEntered() {
@@ -178,12 +184,6 @@ void CJSContext::Leave() const {
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Exit();
-}
-
-bool CJSContext::InContext() {
-  TRACE("CJSContext::InContext");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  return v8_isolate->InContext();
 }
 
 void CJSContext::Dump(std::ostream& os) const {
