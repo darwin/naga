@@ -238,15 +238,12 @@ class JSIsolate(naga_native.JSIsolate):
 
 
 class JSContext(naga_native.JSContext):
-    def __init__(self, obj=None, ctxt=None):
+    def __init__(self, global_scope=None):
         if JSLocker.active:
             self.lock = JSLocker()
             self.lock.enter()
 
-        if ctxt:
-            naga_native.JSContext.__init__(self, ctxt)
-        else:
-            naga_native.JSContext.__init__(self, obj)
+        naga_native.JSContext.__init__(self, global_scope)
 
     def __enter__(self):
         self.enter()
@@ -267,6 +264,7 @@ class JSStackTrace(naga_native.JSStackTrace):
 
     def __init__(self):
         naga_native.JSStackTrace.__init__(self)
+
 
 # -- enhance naga_native module ---------------------------------------------------------------------------------------
 
