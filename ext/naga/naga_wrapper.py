@@ -239,6 +239,7 @@ class JSIsolate(naga_native.JSIsolate):
 
 class JSContext(naga_native.JSContext):
     def __init__(self, global_scope=None):
+        self.lock = None
         if JSLocker.active:
             self.lock = JSLocker()
             self.lock.enter()
@@ -252,7 +253,7 @@ class JSContext(naga_native.JSContext):
     def __exit__(self, exc_type, exc_value, traceback):
         self.leave()
 
-        if hasattr(JSLocker, 'lock'):
+        if self.lock:
             self.lock.leave()
             self.lock = None
 
