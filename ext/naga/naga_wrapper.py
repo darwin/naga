@@ -77,21 +77,22 @@ class JSClass(object):
         """Returns a Boolean value indicating whether an object exists in the prototype chain of another object."""
         return False
 
-    def __defineGetter__(self, name, getter):
-        """Binds an object's property to a function to be called when that property is looked up."""
-        self.__properties__[name] = (getter, self.__lookupSetter__(name))
-
-    def __lookupGetter__(self, name):
-        """Return the function bound as a getter to the specified property."""
-        return self.__properties__.get(name, (None, None))[0]
-
-    def __defineSetter__(self, name, setter):
-        """Binds an object's property to a function to be called when an attempt is made to set that property."""
-        self.__properties__[name] = (self.__lookupGetter__(name), setter)
-
-    def __lookupSetter__(self, name):
-        """Return the function bound as a setter to the specified property."""
-        return self.__properties__.get(name, (None, None))[1]
+    # TODO: implement this in a standards-compliant way
+    # def __defineGetter__(self, name, getter):
+    #     """Binds an object's property to a function to be called when that property is looked up."""
+    #     self.__properties__[name] = (getter, self.__lookupSetter__(name))
+    #
+    # def __lookupGetter__(self, name):
+    #     """Return the function bound as a getter to the specified property."""
+    #     return self.__properties__.get(name, (None, None))[0]
+    #
+    # def __defineSetter__(self, name, setter):
+    #     """Binds an object's property to a function to be called when an attempt is made to set that property."""
+    #     self.__properties__[name] = (self.__lookupGetter__(name), setter)
+    #
+    # def __lookupSetter__(self, name):
+    #     """Return the function bound as a setter to the specified property."""
+    #     return self.__properties__.get(name, (None, None))[1]
 
     def watch(self, prop, handler):
         """Watches for a property to be assigned a value and runs a function when that occurs."""
