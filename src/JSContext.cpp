@@ -15,6 +15,12 @@
 
 const int kSelfEmbedderDataIndex = 0;
 
+static bool areIsolatesConsistent(const v8::Global<v8::Context>& v8_context, const CJSIsolatePtr& isolate) {
+  auto v8_isolate = isolate->ToV8();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  return v8_context.Get(v8_isolate)->GetIsolate() == v8_isolate;
+}
+
 CJSContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
   if (v8_context->GetNumberOfEmbedderDataFields() <= kSelfEmbedderDataIndex) {
@@ -30,6 +36,7 @@ CJSContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
 }
 
 v8::Local<v8::Context> CJSContext::ToV8() const {
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_result = m_v8_context.Get(v8_isolate);
   TRACE("CJSContext::ToV8 {} => {}", THIS, v8_result);
@@ -61,6 +68,7 @@ CJSContext::~CJSContext() {
 }
 
 py::object CJSContext::GetGlobal() const {
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto py_result = wrap(v8_isolate, ToV8()->Global());
@@ -70,6 +78,7 @@ py::object CJSContext::GetGlobal() const {
 
 py::str CJSContext::GetSecurityToken() const {
   TRACE("CJSContext::GetSecurityToken {}", THIS);
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_token = ToV8()->GetSecurityToken();
@@ -87,6 +96,7 @@ py::str CJSContext::GetSecurityToken() const {
 
 void CJSContext::SetSecurityToken(const py::str& py_token) const {
   TRACE("CJSContext::SetSecurityToken {} py_token={}", THIS, py_token);
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
 
@@ -174,6 +184,7 @@ py::object CJSContext::EvaluateW(const std::wstring& src, const std::wstring& na
 
 void CJSContext::Enter() const {
   TRACE("CJSContext::Enter {}", THIS);
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Enter();
@@ -181,6 +192,7 @@ void CJSContext::Enter() const {
 
 void CJSContext::Leave() const {
   TRACE("CJSContext::Leave {}", THIS);
+  assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
   ToV8()->Exit();
