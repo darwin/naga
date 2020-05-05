@@ -123,24 +123,6 @@ py::object CJSContext::GetCurrent() {
   return py_result;
 }
 
-py::object CJSContext::GetCalling() {
-  TRACE("CJSContext::GetCalling");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  if (!v8_isolate->InContext()) {
-    return py::none();
-  }
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-
-  if (v8_context.IsEmpty()) {
-    return py::none();
-  }
-
-  auto py_result = py::cast(FromV8(v8_context));
-  TRACE("CJSContext::GetCalling => {}", py_result);
-  return py_result;
-}
-
 py::object CJSContext::Evaluate(const std::string& src, const std::string& name, int line, int col) {
   TRACE("CJSContext::Evaluate name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_isolate = v8u::getCurrentIsolate();

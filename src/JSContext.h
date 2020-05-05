@@ -27,7 +27,6 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   void Leave() const;
 
   static py::object GetCurrent();
-  static py::object GetCalling();
 
   static py::object Evaluate(const std::string& src,
                              const std::string& name = std::string(),

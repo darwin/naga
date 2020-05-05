@@ -368,9 +368,6 @@ void exposeJSContext(py::module py_module) {
       .def_property_readonly_static(                                                                       //
           "current", [](const py::object&) { return CJSContext::GetCurrent(); },                           //
           "The context that is on the top of the stack.")                                                  //
-      .def_property_readonly_static(                                                                       //
-          "calling", [](const py::object&) { return CJSContext::GetCalling(); },                           //
-          "The context of the calling JavaScript code.")                                                   //
                                                                                                            //
       .def_static("eval", &CJSContext::Evaluate,                                                           //
                   py::arg("source"),                                                                       //
