@@ -262,6 +262,17 @@ class JSContext(naga_native.JSContext):
         del self
 
 
+class JSStackTrace(naga_native.JSStackTrace):
+    Options = naga_native.JSStackTraceOptions
+
+    def __init__(self):
+        naga_native.JSStackTrace.__init__(self)
+
+    @staticmethod
+    def get_current_stack_trace(frame_limit, options):
+        return naga_native.JSIsolate.current.get_current_stack_trace(frame_limit, options)
+
+
 # -- enhance naga_native module ---------------------------------------------------------------------------------------
 
 # some exception-handling C++ code expects existence of "JSError" in naga_native module
@@ -275,11 +286,6 @@ JSObject = naga_native.JSObject
 JSPlatform = naga_native.JSPlatform
 JSScript = naga_native.JSScript
 JSStackFrame = naga_native.JSStackFrame
-
-JSStackTrace = naga_native.JSStackTrace
-JSStackTrace.Options = naga_native.JSStackTraceOptions
-JSStackTrace.get_current_stack_trace = staticmethod(
-    lambda frame_limit, options: naga_native.JSIsolate.current.get_current_stack_trace(frame_limit, options))
 
 if naga.config.naga_keep_backward_compatibility:
     JSArray = naga_native.JSObject
