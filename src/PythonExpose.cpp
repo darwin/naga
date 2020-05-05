@@ -151,7 +151,7 @@ void exposeJSPlatform(py::module py_module) {
   auto doc = "JSPlatform allows the V8 platform to be initialized";
   py::naga_class<CJSPlatform>(py_module, "JSPlatform", doc)                               //
       .def_property_readonly_static(                                                      //
-          "instance", [](const py::object&) { return CJSPlatform::Instance(); },          //
+          "instance", StaticCall<&CJSPlatform::Instance>{},                               //
           "Access to platform singleton instance")                                        //
       .def_property_readonly("initialized", &CJSPlatform::Initialized,                    //
                              "Returns true if the init was already called on platform.")  //
@@ -168,7 +168,7 @@ void exposeJSIsolate(py::module py_module) {
       .def(py::init<>())                                                                                      //
                                                                                                               //
       .def_property_readonly_static(                                                                          //
-          "current", [](const py::object&) { return CJSIsolate::GetCurrent(); },                              //
+          "current", StaticCall<&CJSIsolate::GetCurrent>{},                                                   //
           "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")  //
                                                                                                               //
       .def_property_readonly("locked", &CJSIsolate::IsLocked)                                                 //
@@ -274,11 +274,11 @@ void exposeJSEngine(py::module py_module) {
       .def(py::init<>(),                                                                               //
            "Create a new script engine instance.")                                                     //
       .def_property_readonly_static(                                                                   //
-          "version", [](const py::object&) { return CJSEngine::GetVersion(); },                        //
+          "version", StaticCall<&CJSEngine::GetVersion>{},                                             //
           "Get the V8 engine version.")                                                                //
                                                                                                        //
       .def_property_readonly_static(                                                                   //
-          "dead", [](const py::object&) { return CJSEngine::IsDead(); },                               //
+          "dead", StaticCall<&CJSEngine::IsDead>{},                                                    //
           "Check if V8 is dead and therefore unusable.")                                               //
                                                                                                        //
       .def_static("set_flags", &CJSEngine::SetFlags,                                                   //
@@ -288,7 +288,7 @@ void exposeJSEngine(py::module py_module) {
                   "Forcefully terminate the current thread of JavaScript execution.")                  //
                                                                                                        //
       .def_static(                                                                                     //
-          "dispose", []() { return v8::V8::Dispose(); },                                               //
+          "dispose", StaticCall<&v8::V8::Dispose>{},                                                   //
           "Releases any resources used by v8 and stops any utility threads "                           //
           "that may be running. Note that disposing v8 is permanent, "                                 //
           "it cannot be reinitialized.")                                                               //
@@ -329,19 +329,19 @@ void exposeJSScript(py::module py_module) {
 
 void exposeJSLocker(py::module py_module) {
   TRACE("exposeJSLocker py_module={}", py_module);
-  py::naga_class<CJSLocker>(py_module, "JSLocker")                            //
-      .def(py::init<>())                                                      //
-                                                                              //
-      .def_property_readonly_static(                                          //
-          "active", [](const py::object&) { return CJSLocker::IsActive(); },  //
-          "whether Locker is being used by this V8 instance.")                //
-      .def_property_readonly_static(                                          //
-          "locked", [](const py::object&) { return CJSLocker::IsLocked(); },  //
-          "whether or not the locker is locked by the current thread.")       //
-                                                                              //
-      .def("entered", &CJSLocker::IsEntered)                                  //
-      .def("enter", &CJSLocker::Enter)                                        //
-      .def("leave", &CJSLocker::Leave)                                        //
+  py::naga_class<CJSLocker>(py_module, "JSLocker")                       //
+      .def(py::init<>())                                                 //
+                                                                         //
+      .def_property_readonly_static(                                     //
+          "active", StaticCall<&CJSLocker::IsActive>{},                  //
+          "whether Locker is being used by this V8 instance.")           //
+      .def_property_readonly_static(                                     //
+          "locked", StaticCall<&CJSLocker::IsLocked>{},                  //
+          "whether or not the locker is locked by the current thread.")  //
+                                                                         //
+      .def("entered", &CJSLocker::IsEntered)                             //
+      .def("enter", &CJSLocker::Enter)                                   //
+      .def("leave", &CJSLocker::Leave)                                   //
       ;
 }
 
@@ -366,7 +366,7 @@ void exposeJSContext(py::module py_module) {
                              "Local variables within context")                                             //
                                                                                                            //
       .def_property_readonly_static(                                                                       //
-          "current", [](const py::object&) { return CJSContext::GetCurrent(); },                           //
+          "current", StaticCall<&CJSContext::GetCurrent>{},                                                //
           "The context that is on the top of the stack.")                                                  //
                                                                                                            //
       .def_static("eval", &CJSContext::Evaluate,                                                           //
