@@ -6,7 +6,7 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null
 
 source "./scripts/_lib.sh"
 
-NAGA_V8_GIT_TAG=${NAGA_V8_GIT_TAG:-8.4.100}
+NAGA_V8_GIT_TAG=${NAGA_V8_GIT_TAG:-8.4.300}
 
 ROOT_DIR=$(pwd -P)
 
