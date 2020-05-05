@@ -31,7 +31,6 @@ if naga.config.naga_keep_backward_compatibility:
 
 # noinspection PyPep8Naming,PyAttributeOutsideInit
 class JSClass(object):
-    __properties__ = {}
 
     def __getattr__(self, name):
         if name == 'constructor':
@@ -40,18 +39,18 @@ class JSClass(object):
         if name == 'prototype':
             return JSClassPrototype(self.__class__)
 
-        prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-
-        if prop and callable(prop[0]):
-            return prop[0]()
+        # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
+        #
+        # if prop and callable(prop[0]):
+        #     return prop[0]()
 
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
-        prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-
-        if prop and callable(prop[1]):
-            return prop[1](value)
+        # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
+        #
+        # if prop and callable(prop[1]):
+        #     return prop[1](value)
 
         return object.__setattr__(self, name, value)
 
@@ -125,8 +124,8 @@ class JSClassConstructor(JSClass):
 class JSClassPrototype(JSClass):
 
     def __init__(self, cls):
-        self.cls = cls
         super().__init__()
+        self.cls = cls
 
     @property
     def constructor(self):
@@ -139,8 +138,8 @@ class JSClassPrototype(JSClass):
 
 class JSError(Exception):
     def __init__(self, js_exception):
-        self._impl = js_exception
         super().__init__()
+        self._impl = js_exception
 
     def __str__(self):
         return str(self._impl)
