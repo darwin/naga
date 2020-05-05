@@ -23,6 +23,18 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonExposeLogger), __VA_ARGS__)
 
+void exposeJSNull(py::module py_module) {
+  TRACE("exposeJSNull py_module={}", py_module);
+  // Javascript's null maps to Python's None
+  py_module.add_object("JSNull", Py_JSNull);
+}
+
+void exposeJSUndefined(py::module py_module) {
+  TRACE("exposeJSUndefined py_module={}", py_module);
+  // Javascript's undefined maps to our JSUndefined
+  py_module.add_object("JSUndefined", Py_JSUndefined);
+}
+
 void exposeAux(py::module py_module) {
   TRACE("exposeAux py_module={}", py_module);
   auto doc = "Aux tools";
@@ -43,66 +55,53 @@ void exposeAux(py::module py_module) {
 void exposeToolkit(py::module py_module) {
   TRACE("exposeToolkit py_module={}", py_module);
   auto doc = "Javascript Toolkit";
-  py::naga_module(py_module.def_submodule("toolkit", doc))                                                       //
-      .def("line_number", ForwardTo<&CJSObjectAPI::LineNumber>{},                                                //
-           py::arg("this"),                                                                                      //
-           "The line number of function in the script")                                                          //
-      .def("column_number", ForwardTo<&CJSObjectAPI::ColumnNumber>{},                                            //
-           py::arg("this"),                                                                                      //
-           "The column number of function in the script")                                                        //
-      .def("resource_name", ForwardTo<&CJSObjectAPI::ResourceName>{},                                            //
-           py::arg("this"),                                                                                      //
-           "The resource name of script")                                                                        //
-      .def("inferred_name", ForwardTo<&CJSObjectAPI::InferredName>{},                                            //
-           py::arg("this"),                                                                                      //
-           "Name inferred from variable or property assignment of this function")                                //
-      .def("line_offset", ForwardTo<&CJSObjectAPI::LineOffset>{},                                                //
-           py::arg("this"),                                                                                      //
-           "The line offset of function in the script")                                                          //
-      .def("column_offset", ForwardTo<&CJSObjectAPI::ColumnOffset>{},                                            //
-           py::arg("this"),                                                                                      //
-           "The column offset of function in the script")                                                        //
-      .def("set_name", ForwardTo<&CJSObjectAPI::SetName>{},                                                      //
-           py::arg("this"),                                                                                      //
-           py::arg("name"))                                                                                      //
-      .def("get_name", ForwardTo<&CJSObjectAPI::GetName>{},                                                      //
-           py::arg("this"))                                                                                      //
-      .def("apply", ForwardTo<&CJSObjectAPI::Apply>{},                                                           //
-           py::arg("this"),                                                                                      //
-           py::arg("self"),                                                                                      //
-           py::arg("args") = py::list(),                                                                         //
-           py::arg("kwds") = py::dict(),                                                                         //
-           "Performs a function call using the parameters.")                                                     //
-      .def("invoke", ForwardTo<&CJSObjectAPI::Invoke>{},                                                         //
-           py::arg("this"),                                                                                      //
-           py::arg("args") = py::list(),                                                                         //
-           py::arg("kwds") = py::dict(),                                                                         //
-           "Performs a binding method call using the parameters.")                                               //
-      .def("clone", ForwardTo<&CJSObjectAPI::Clone>{},                                                           //
-           py::arg("this"),                                                                                      //
-           "Clone the object.")                                                                                  //
-      .def("create", &CJSObjectAPI::Create,                                                                      //
-           py::arg("constructor"),                                                                               //
-           py::arg("arguments") = py::tuple(),                                                                   //
-           py::arg("propertiesObject") = py::dict(),                                                             //
-           "Creates a new object with the specified prototype object and properties.")                           //
-      .def("has_role_array", [](const CJSObjectPtr& obj) { return obj->HasRole(CJSObjectBase::Roles::Array); })  //
-      .def("has_role_function",                                                                                  //
-           [](const CJSObjectPtr& obj) { return obj->HasRole(CJSObjectBase::Roles::Function); })                 //
-      .def("has_role_cljs", [](const CJSObjectPtr& obj) { return obj->HasRole(CJSObjectBase::Roles::CLJS); })    //
+  py::naga_module(py_module.def_submodule("toolkit", doc))                              //
+      .def("line_number", ForwardTo<&CJSObjectAPI::LineNumber>{},                       //
+           py::arg("this"),                                                             //
+           "The line number of function in the script")                                 //
+      .def("column_number", ForwardTo<&CJSObjectAPI::ColumnNumber>{},                   //
+           py::arg("this"),                                                             //
+           "The column number of function in the script")                               //
+      .def("resource_name", ForwardTo<&CJSObjectAPI::ResourceName>{},                   //
+           py::arg("this"),                                                             //
+           "The resource name of script")                                               //
+      .def("inferred_name", ForwardTo<&CJSObjectAPI::InferredName>{},                   //
+           py::arg("this"),                                                             //
+           "Name inferred from variable or property assignment of this function")       //
+      .def("line_offset", ForwardTo<&CJSObjectAPI::LineOffset>{},                       //
+           py::arg("this"),                                                             //
+           "The line offset of function in the script")                                 //
+      .def("column_offset", ForwardTo<&CJSObjectAPI::ColumnOffset>{},                   //
+           py::arg("this"),                                                             //
+           "The column offset of function in the script")                               //
+      .def("set_name", ForwardTo<&CJSObjectAPI::SetName>{},                             //
+           py::arg("this"),                                                             //
+           py::arg("name"))                                                             //
+      .def("get_name", ForwardTo<&CJSObjectAPI::GetName>{},                             //
+           py::arg("this"))                                                             //
+      .def("apply", ForwardTo<&CJSObjectAPI::Apply>{},                                  //
+           py::arg("this"),                                                             //
+           py::arg("self"),                                                             //
+           py::arg("args") = py::list(),                                                //
+           py::arg("kwds") = py::dict(),                                                //
+           "Performs a function call using the parameters.")                            //
+      .def("invoke", ForwardTo<&CJSObjectAPI::Invoke>{},                                //
+           py::arg("this"),                                                             //
+           py::arg("args") = py::list(),                                                //
+           py::arg("kwds") = py::dict(),                                                //
+           "Performs a binding method call using the parameters.")                      //
+      .def("clone", ForwardTo<&CJSObjectAPI::Clone>{},                                  //
+           py::arg("this"),                                                             //
+           "Clone the object.")                                                         //
+      .def("create", &CJSObjectAPI::Create,                                             //
+           py::arg("constructor"),                                                      //
+           py::arg("arguments") = py::tuple(),                                          //
+           py::arg("propertiesObject") = py::dict(),                                    //
+           "Creates a new object with the specified prototype object and properties.")  //
+      .def("has_role_array", ForwardTo<&CJSObjectAPI::HasRoleArray>{})                  //
+      .def("has_role_function", ForwardTo<&CJSObjectAPI::HasRoleFunction>{})            //
+      .def("has_role_cljs", ForwardTo<&CJSObjectAPI::HasRoleCLJS>{})                    //
       ;
-}
-
-void exposeJSNull(py::module py_module) {
-  TRACE("exposeJSNull py_module={}", py_module);
-  // Javascript's null maps to Python's None
-  py_module.add_object("JSNull", Py_JSNull);
-}
-
-void exposeJSUndefined(py::module py_module) {
-  TRACE("exposeJSUndefined py_module={}", py_module);
-  // Javascript's undefined maps to our JSUndefined
-  py_module.add_object("JSUndefined", Py_JSUndefined);
 }
 
 void exposeJSObject(py::module py_module) {

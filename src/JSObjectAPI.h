@@ -58,6 +58,9 @@ class CJSObjectAPI : public CJSObjectBase {
   [[nodiscard]] int ColumnOffset() const;
   [[nodiscard]] std::string ResourceName() const;
   [[nodiscard]] std::string InferredName() const;
-};
 
+  [[nodiscard]] bool HasRoleArray() const;
+  [[nodiscard]] bool HasRoleFunction() const;
+  [[nodiscard]] bool HasRoleCLJS() const;
+};
 #endif

@@ -394,3 +394,15 @@ int CJSObjectAPI::ColumnOffset() const {
   TRACE("CJSObjectAPI::ColumnOffset {} => {}", THIS, result);
   return result;
 }
+
+bool CJSObjectAPI::HasRoleArray() const {
+  return HasRole(CJSObjectBase::Roles::Array);
+}
+
+bool CJSObjectAPI::HasRoleFunction() const {
+  return HasRole(CJSObjectBase::Roles::Function);
+}
+
+bool CJSObjectAPI::HasRoleCLJS() const {
+  return HasRole(CJSObjectBase::Roles::CLJS);
+}
