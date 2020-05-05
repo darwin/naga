@@ -3,11 +3,12 @@
 
 #include "Base.h"
 
+void exposeJSNull(py::module py_module);
+void exposeJSUndefined(py::module py_module);
+
 void exposeAux(py::module py_module);
 void exposeToolkit(py::module py_module);
 
-void exposeJSNull(py::module py_module);
-void exposeJSUndefined(py::module py_module);
 void exposeJSObject(py::module py_module);
 void exposeJSPlatform(py::module py_module);
 void exposeJSIsolate(py::module py_module);
