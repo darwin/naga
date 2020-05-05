@@ -5,41 +5,41 @@ import logging
 import sys
 import unittest
 
-import naga
+from naga import JSLocker, JSIsolate, JSUnlocker, JSContext
 
 
 class TestMultithread(unittest.TestCase):
     def testLocker(self):
-        with naga.JSIsolate():
-            self.assertFalse(naga.JSLocker.active)
-            self.assertFalse(naga.JSLocker.locked)
+        with JSIsolate():
+            self.assertFalse(JSLocker.active)
+            self.assertFalse(JSLocker.locked)
 
-            with naga.JSLocker() as outer_locker:
-                self.assertTrue(naga.JSLocker.active)
-                self.assertTrue(naga.JSLocker.locked)
+            with JSLocker() as outer_locker:
+                self.assertTrue(JSLocker.active)
+                self.assertTrue(JSLocker.locked)
 
                 self.assertTrue(outer_locker)
 
-                with naga.JSLocker() as inner_locker:
-                    self.assertTrue(naga.JSLocker.locked)
+                with JSLocker() as inner_locker:
+                    self.assertTrue(JSLocker.locked)
 
                     self.assertTrue(outer_locker)
                     self.assertTrue(inner_locker)
 
-                    with naga.JSUnlocker():
-                        self.assertFalse(naga.JSLocker.locked)
+                    with JSUnlocker():
+                        self.assertFalse(JSLocker.locked)
 
                         self.assertTrue(outer_locker)
                         self.assertTrue(inner_locker)
 
-                    self.assertTrue(naga.JSLocker.locked)
+                    self.assertTrue(JSLocker.locked)
 
-            self.assertTrue(naga.JSLocker.active)
-            self.assertFalse(naga.JSLocker.locked)
+            self.assertTrue(JSLocker.active)
+            self.assertFalse(JSLocker.locked)
 
-            locker = naga.JSLocker()
+            locker = JSLocker()
 
-        with naga.JSContext():
+        with JSContext():
             self.assertRaises(RuntimeError, locker.__enter__)
             self.assertRaises(RuntimeError, locker.__exit__, None, None, None)
 
@@ -62,8 +62,8 @@ class TestMultithread(unittest.TestCase):
         g = Global()
 
         def run():
-            with naga.JSIsolate():
-                with naga.JSContext(g) as ctxt:
+            with JSIsolate():
+                with JSContext(g) as ctxt:
                     ctxt.eval("""
                         started.wait();
 
@@ -96,7 +96,7 @@ class TestMultithread(unittest.TestCase):
             result = []
 
             def add(self, value):
-                with naga.JSUnlocker():
+                with JSUnlocker():
                     time.sleep(0.1)
 
                     self.result.append(value)
@@ -104,7 +104,7 @@ class TestMultithread(unittest.TestCase):
         g = Global()
 
         def run():
-            with naga.JSContext(g) as ctxt:
+            with JSContext(g) as ctxt:
                 ctxt.eval("""
                     for (i=0; i<10; i++)
                         add(i);
@@ -112,7 +112,7 @@ class TestMultithread(unittest.TestCase):
 
         threads = [threading.Thread(target=run), threading.Thread(target=run)]
 
-        with naga.JSLocker():
+        with JSLocker():
             for t in threads:
                 t.start()
 

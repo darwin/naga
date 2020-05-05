@@ -4,7 +4,7 @@ import logging
 
 from naga import JSIsolate, JSContext, JSNull
 # noinspection PyUnresolvedReferences
-from naga.aux import test_encountering_foreign_isolate
+import naga.aux as aux
 
 
 class TestIsolate(unittest.TestCase):
@@ -43,7 +43,7 @@ class TestIsolate(unittest.TestCase):
             self.assertEqual(JSNull, isolate.current_context)
 
     def testEncounteringForeignIsolate(self):
-        self.assertRaises(RuntimeError, test_encountering_foreign_isolate)
+        self.assertRaises(RuntimeError, aux.test_encountering_foreign_isolate)
 
 
 if __name__ == '__main__':

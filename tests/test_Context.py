@@ -5,16 +5,15 @@ import sys
 import unittest
 import logging
 
-import naga
-import naga.toolkit
+import naga.toolkit as toolkit
 # noinspection PyUnresolvedReferences
-from naga.aux import test_encountering_foreign_context
-from naga import JSIsolate
+import naga.aux as aux
+from naga import JSIsolate, JSContext, JSFunction
 
 
 class TestContext(unittest.TestCase):
     def testEval(self):
-        with naga.JSContext() as context:
+        with JSContext() as context:
             self.assertEqual(2, context.eval("1+1"))
             self.assertEqual('Hello world', context.eval("'Hello ' + 'world'"))
 
@@ -29,7 +28,7 @@ class TestContext(unittest.TestCase):
 
         global_scope = Global()
 
-        with naga.JSContext(global_scope) as global_ctxt:
+        with JSContext(global_scope) as global_ctxt:
             self.assertTrue(global_ctxt)
             self.assertTrue(isolate.in_context)
             self.assertTrue(isolate.current_context is global_ctxt)
@@ -40,7 +39,7 @@ class TestContext(unittest.TestCase):
 
             local_scope = Local()
 
-            with naga.JSContext(local_scope) as local_ctxt:
+            with JSContext(local_scope) as local_ctxt:
                 self.assertTrue(isolate.in_context)
                 self.assertTrue(isolate.current_context is local_ctxt)
                 self.assertEqual(local_scope.name, isolate.current_context.locals.name)
@@ -52,7 +51,7 @@ class TestContext(unittest.TestCase):
         self.assertTrue(isolate.current_context is None)
 
     def testMultiContext(self):
-        with naga.JSContext() as ctxt0:
+        with JSContext() as ctxt0:
             ctxt0.security_token = "password"
 
             global0 = ctxt0.locals
@@ -60,7 +59,7 @@ class TestContext(unittest.TestCase):
 
             self.assertEqual(1234, int(global0.custom))
 
-            with naga.JSContext() as ctxt1:
+            with JSContext() as ctxt1:
                 ctxt1.security_token = ctxt0.security_token
 
                 global1 = ctxt1.locals
@@ -72,7 +71,7 @@ class TestContext(unittest.TestCase):
                 self.assertEqual(1234, int(global1.custom))
 
     def testSecurityChecks(self):
-        with naga.JSContext() as env1:
+        with JSContext() as env1:
             env1.security_token = "foo"
 
             # Create a function in env1.
@@ -80,32 +79,32 @@ class TestContext(unittest.TestCase):
 
             spy = env1.locals.spy
 
-            self.assertTrue(isinstance(spy, naga.JSFunction))
+            self.assertTrue(isinstance(spy, JSFunction))
 
             # Create another function accessing global objects.
             env1.eval("spy2 = function(){return 123;}")
 
             spy2 = env1.locals.spy2
 
-            self.assertTrue(isinstance(spy2, naga.JSFunction))
+            self.assertTrue(isinstance(spy2, JSFunction))
 
             # Switch to env2 in the same domain and invoke spy on env2.
-            env2 = naga.JSContext()
+            env2 = JSContext()
             env2.security_token = "foo"
 
             with env2:
-                result = naga.toolkit.apply(spy, env2.locals)
-                self.assertTrue(isinstance(result, naga.JSFunction))
+                result = toolkit.apply(spy, env2.locals)
+                self.assertTrue(isinstance(result, JSFunction))
 
             env2.security_token = "bar"
 
             # FIXME
             # Call cross_domain_call, it should throw an exception
             # with env2:
-            #    self.assertRaises(naga.JSError, naga.toolkit.apply(spy2), env2.locals)
+            #    self.assertRaises(JSError, toolkit.apply(spy2), env2.locals)
 
     def testEncounteringForeignContext(self):
-        self.assertRaises(RuntimeError, test_encountering_foreign_context)
+        self.assertRaises(RuntimeError, aux.test_encountering_foreign_context)
 
 
 if __name__ == '__main__':

@@ -8,14 +8,15 @@ import logging
 import datetime
 from io import StringIO
 
-import naga
-import naga.aux
-import naga.toolkit
+from naga import JSObject, JSContext, JSClass, JSIsolate, JSFunction, JSEngine, JSError, JSUndefined, JSNull, JSArray, \
+    JSStackTrace
+import naga.aux as aux
+import naga.toolkit as toolkit
 
 
 def convert(obj):
-    if isinstance(obj, naga.JSObject):
-        if naga.toolkit.has_role_array(obj):
+    if isinstance(obj, JSObject):
+        if toolkit.has_role_array(obj):
             return [convert(v) for v in obj]
         else:
             return dict([[str(k), convert(obj.__getattr__(str(k)))] for k in obj.__dir__()])
@@ -25,18 +26,18 @@ def convert(obj):
 
 class TestWrapper(unittest.TestCase):
     def testObject(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             o = ctxt.eval("new Object()")
 
             self.assertTrue(hash(o) > 0)
 
-            o1 = naga.toolkit.clone(o)
+            o1 = toolkit.clone(o)
 
             self.assertEqual(hash(o1), hash(o))
             self.assertTrue(o != o1)
 
     def testAutoConverter(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             ctxt.eval("""
                 var_i = 1;
                 var_f = 1.0;
@@ -83,16 +84,16 @@ class TestWrapper(unittest.TestCase):
             self.assertTrue("var_f_obj" in attrs)
 
     def testExactConverter(self):
-        class MyInteger(int, naga.JSClass):
+        class MyInteger(int, JSClass):
             pass
 
-        class MyString(str, naga.JSClass):
+        class MyString(str, JSClass):
             pass
 
-        class MyDateTime(datetime.time, naga.JSClass):
+        class MyDateTime(datetime.time, JSClass):
             pass
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             var_bool = True
             var_int = 1
             var_float = 1.0
@@ -105,7 +106,7 @@ class TestWrapper(unittest.TestCase):
             var_mystr = MyString('mystr')
             var_mytime = MyDateTime()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             typename = ctxt.eval("(function (name) { return this[name].constructor.name; })")
             typeof = ctxt.eval("(function (name) { return typeof(this[name]); })")
 
@@ -126,20 +127,20 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual('function', typeof('var_mytime'))
 
     def testJavascriptWrapper(self):
-        with naga.JSContext() as ctxt:
-            self.assertEqual(type(naga.JSNull), type(ctxt.eval("null")))
-            self.assertEqual(type(naga.JSUndefined), type(ctxt.eval("undefined")))
+        with JSContext() as ctxt:
+            self.assertEqual(type(JSNull), type(ctxt.eval("null")))
+            self.assertEqual(type(JSUndefined), type(ctxt.eval("undefined")))
             self.assertEqual(bool, type(ctxt.eval("true")))
             self.assertEqual(str, type(ctxt.eval("'test'")))
             self.assertEqual(int, type(ctxt.eval("123")))
             self.assertEqual(float, type(ctxt.eval("3.14")))
             self.assertEqual(datetime.datetime, type(ctxt.eval("new Date()")))
-            self.assertEqual(naga.JSArray, type(ctxt.eval("[1, 2, 3]")))
-            self.assertEqual(naga.JSFunction, type(ctxt.eval("(function() {})")))
-            self.assertEqual(naga.JSObject, type(ctxt.eval("new Object()")))
+            self.assertEqual(JSArray, type(ctxt.eval("[1, 2, 3]")))
+            self.assertEqual(JSFunction, type(ctxt.eval("(function() {})")))
+            self.assertEqual(JSObject, type(ctxt.eval("new Object()")))
 
     def testPythonWrapper(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             typeof = ctxt.eval("(function type(value) { return typeof value; })")
             protoof = ctxt.eval("(function protoof(value) { return Object.prototype.toString.apply(value); })")
 
@@ -163,7 +164,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual('[object Function]', protoof(int))
 
     def testFunction(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             func = ctxt.eval("""
                 (function ()
                 {
@@ -182,12 +183,12 @@ class TestWrapper(unittest.TestCase):
 
             func = ctxt.eval("(function test() {})")
 
-            self.assertEqual("test", naga.toolkit.get_name(func))
-            self.assertEqual("", naga.toolkit.resource_name(func))
-            self.assertEqual(0, naga.toolkit.line_number(func))
-            self.assertEqual(14, naga.toolkit.column_number(func))
-            self.assertEqual(0, naga.toolkit.line_offset(func))
-            self.assertEqual(0, naga.toolkit.column_offset(func))
+            self.assertEqual("test", toolkit.get_name(func))
+            self.assertEqual("", toolkit.resource_name(func))
+            self.assertEqual(0, toolkit.line_number(func))
+            self.assertEqual(14, toolkit.column_number(func))
+            self.assertEqual(0, toolkit.line_offset(func))
+            self.assertEqual(0, toolkit.column_offset(func))
 
             # FIXME
             # Why the setter doesn't work?
@@ -203,32 +204,32 @@ class TestWrapper(unittest.TestCase):
             def __call__(self, name):
                 return "hello " + name
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             hello = Hello()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertEqual("hello world", ctxt.eval("hello('world')"))
 
     def testJSFunction(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             hello = ctxt.eval("(function (name) { return 'Hello ' + name; })")
 
-            self.assertTrue(isinstance(hello, naga.JSFunction))
+            self.assertTrue(isinstance(hello, JSFunction))
             self.assertEqual("Hello world", hello('world'))
-            self.assertEqual("Hello world", naga.toolkit.invoke(hello, ['world']))
+            self.assertEqual("Hello world", toolkit.invoke(hello, ['world']))
 
             obj = ctxt.eval(
                 "({ 'name': 'world', 'hello': function (name) { return 'Hello ' + name + ' from ' + this.name; }})")
             hello = obj.hello
-            self.assertTrue(isinstance(hello, naga.JSFunction))
+            self.assertTrue(isinstance(hello, JSFunction))
             self.assertEqual("Hello world from world", hello('world'))
 
             tester = ctxt.eval("({ 'name': 'tester' })")
-            self.assertEqual("Hello world from tester", naga.toolkit.apply(hello, tester, ['world']))
-            self.assertEqual("Hello world from json", naga.toolkit.apply(hello, {'name': 'json'}, ['world']))
+            self.assertEqual("Hello world from tester", toolkit.apply(hello, tester, ['world']))
+            self.assertEqual("Hello world from json", toolkit.apply(hello, {'name': 'json'}, ['world']))
 
     def testConstructor(self):
-        with naga.JSContext() as ctx:
+        with JSContext() as ctx:
             ctx.eval("""
                 var Test = function() {
                     this.trySomething();
@@ -242,33 +243,33 @@ class TestWrapper(unittest.TestCase):
                 };
                 """)
 
-            self.assertTrue(isinstance(ctx.locals.Test, naga.JSFunction))
+            self.assertTrue(isinstance(ctx.locals.Test, JSFunction))
 
-            test = naga.toolkit.create(ctx.locals.Test)
+            test = toolkit.create(ctx.locals.Test)
 
-            self.assertTrue(isinstance(ctx.locals.Test, naga.JSObject))
+            self.assertTrue(isinstance(ctx.locals.Test, JSObject))
             self.assertEqual("soirv8", test.name)
 
-            test2 = naga.toolkit.create(ctx.locals.Test2, ('John', 'Doe'))
+            test2 = toolkit.create(ctx.locals.Test2, ('John', 'Doe'))
 
             self.assertEqual("John Doe", test2.name)
 
-            test3 = naga.toolkit.create(ctx.locals.Test2, ('John', 'Doe'), {'email': 'john.doe@randommail.com'})
+            test3 = toolkit.create(ctx.locals.Test2, ('John', 'Doe'), {'email': 'john.doe@randommail.com'})
 
             self.assertEqual("john.doe@randommail.com", test3.email)
 
     def testJSError(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             # noinspection PyBroadException
             try:
                 ctxt.eval('throw "test"')
                 self.fail()
             except Exception:
-                self.assertTrue(naga.JSError, sys.exc_info()[0])
+                self.assertTrue(JSError, sys.exc_info()[0])
 
     def testErrorInfo(self):
-        with naga.JSContext():
-            with naga.JSEngine() as engine:
+        with JSContext():
+            with JSEngine() as engine:
                 try:
                     engine.compile("""
                         function hello()
@@ -278,7 +279,7 @@ class TestWrapper(unittest.TestCase):
 
                         hello();""", "test", 10, 10).run()
                     self.fail()
-                except naga.JSError as e:
+                except JSError as e:
                     self.assertTrue("JSError: Error: hello world ( test @ 14 : 28 )  ->" in str(e))
                     self.assertEqual("Error", e.name)
                     self.assertEqual("hello world", e.message)
@@ -309,7 +310,7 @@ class TestWrapper(unittest.TestCase):
             ('g', 'test2', 1, 15),
             (None, 'test3', 1, None),
             (None, 'test3', 1, 1),
-        ], naga.JSError.parse_stack("""Error: err
+        ], JSError.parse_stack("""Error: err
             at Error (unknown source)
             at test (native)
             at new <anonymous> (test0:3:5)
@@ -320,11 +321,11 @@ class TestWrapper(unittest.TestCase):
 
     def testStackTrace(self):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def getCurrentStackTrace(self, _limit):
-                return naga.JSIsolate.current.get_current_stack_trace(4, naga.JSStackTrace.Options.Detailed)
+                return JSIsolate.current.get_current_stack_trace(4, JSStackTrace.Options.Detailed)
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             st = ctxt.eval("""
                 function a()
                 {
@@ -351,11 +352,11 @@ class TestWrapper(unittest.TestCase):
 
     def testPythonException(self):
         # noinspection PyPep8Naming
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def raiseException(self):
                 raise RuntimeError("Hello")
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             ctxt.eval("""
                 msg ="";
                 try
@@ -377,7 +378,7 @@ class TestWrapper(unittest.TestCase):
             pass
 
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def raiseIndexError(self):
                 return [1, 2, 3][5]
 
@@ -398,7 +399,7 @@ class TestWrapper(unittest.TestCase):
             def raiseExceptions(self):
                 raise TestException()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             ctxt.eval("try { this.raiseIndexError(); } catch (e) { msg = e; }")
 
             self.assertEqual("RangeError: list index out of range", str(ctxt.locals.msg))
@@ -424,7 +425,7 @@ class TestWrapper(unittest.TestCase):
             self.assertRaises(TestException, ctxt.eval, "this.raiseExceptions();")
 
     def testArray(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             array = ctxt.eval("""
                 var array = new Array();
 
@@ -436,7 +437,7 @@ class TestWrapper(unittest.TestCase):
                 array;
                 """)
 
-            self.assertTrue(isinstance(array, naga.JSArray))
+            self.assertTrue(isinstance(array, JSArray))
             self.assertEqual(10, len(array))
 
             self.assertTrue(5 in array)
@@ -460,7 +461,7 @@ class TestWrapper(unittest.TestCase):
             # array[-3:-1]                         -3^^^^^^-1
             # array[0:0]    []
 
-            self.assertEqual([6, naga.JSUndefined, 4], array[4:7])
+            self.assertEqual([6, JSUndefined, 4], array[4:7])
             self.assertEqual([3, 2], array[-3:-1])
             self.assertEqual([], array[0:0])
 
@@ -479,8 +480,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual([10, None, 9, 7, 6, 8, 8, 3, 2, 1], list(array))
 
             # TODO: provide similar functionality in the future
-            # ctxt.locals.array1 = naga.JSArray(5)
-            # ctxt.locals.array2 = naga.JSArray([1, 2, 3, 4, 5])
+            # ctxt.locals.array1 = JSArray(5)
+            # ctxt.locals.array2 = JSArray([1, 2, 3, 4, 5])
             #
             # for i in range(len(ctxt.locals.array2)):
             #     ctxt.locals.array1[i] = ctxt.locals.array2[i] * 10
@@ -503,7 +504,7 @@ class TestWrapper(unittest.TestCase):
 
             args = [
                 ["a = Array(7); for(i=0; i<a.length; i++) a[i] = i; a[3] = undefined; a[a.length-1]; a", "0,1,2,,4,5,6",
-                 [0, 1, 2, naga.JSUndefined, 4, 5, 6]],
+                 [0, 1, 2, JSUndefined, 4, 5, 6]],
                 ["a = Array(7); for(i=0; i<a.length - 1; i++) a[i] = i; a[a.length-1]; a", "0,1,2,3,4,5,",
                  [0, 1, 2, 3, 4, 5, None]],
                 ["a = Array(7); for(i=1; i<a.length; i++) a[i] = i; a[a.length-1]; a", ",1,2,3,4,5,6",
@@ -517,18 +518,18 @@ class TestWrapper(unittest.TestCase):
                 self.assertEqual(arg[2], [array[i] for i in range(len(array))])
 
             # TODO: provide similar functionality in the future
-            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(naga.JSArray([1, 2, 3])))
-            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(naga.JSArray([1, 2, 3]), 1))
+            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(JSArray([1, 2, 3])))
+            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(JSArray([1, 2, 3]), 1))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(naga.JSArray([1, 2, 3])))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSArray([1, 2, 3])))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(naga.JSArray((1, 2, 3))))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSArray((1, 2, 3))))
             # self.assertEqual('[object Array]',
             # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")
-            # (naga.JSArray(list(range(3)))))
+            # (JSArray(list(range(3)))))
 
     def testArraySlices(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             array = ctxt.eval("""
                 var array = new Array();
                 array;
@@ -563,8 +564,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(len(array), 4)
             self.assertEqual(ctxt.eval('array[0]'), 7)
             self.assertEqual(ctxt.eval('array[1]'), 10)
-            self.assertEqual(ctxt.eval('array[2]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[2]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), JSUndefined)
 
             array[0:7] = [0, 1, 2]
             # array         [0, 1, 2, None, None, None, None]
@@ -572,10 +573,10 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(ctxt.eval('array[0]'), 0)
             self.assertEqual(ctxt.eval('array[1]'), 1)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[4]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[5]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[6]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[4]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[5]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[6]'), JSUndefined)
 
             array[0:7] = [0, 1, 2, 3, 4, 5, 6]
             # array         [0, 1, 2, 3, 4, 5, 6]
@@ -591,8 +592,8 @@ class TestWrapper(unittest.TestCase):
             del array[0:2]
             # array         [None, None, 2, 3, 4, 5, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[1]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[0]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
             self.assertEqual(ctxt.eval('array[3]'), 3)
             self.assertEqual(ctxt.eval('array[4]'), 4)
@@ -602,16 +603,16 @@ class TestWrapper(unittest.TestCase):
             del array[3:7:2]
             # array         [None, None, 2, None, 4, None, 6]
             self.assertEqual(len(array), 7)
-            self.assertEqual(ctxt.eval('array[0]'), naga.JSUndefined)
-            self.assertEqual(ctxt.eval('array[1]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[0]'), JSUndefined)
+            self.assertEqual(ctxt.eval('array[1]'), JSUndefined)
             self.assertEqual(ctxt.eval('array[2]'), 2)
-            self.assertEqual(ctxt.eval('array[3]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[3]'), JSUndefined)
             self.assertEqual(ctxt.eval('array[4]'), 4)
-            self.assertEqual(ctxt.eval('array[5]'), naga.JSUndefined)
+            self.assertEqual(ctxt.eval('array[5]'), JSUndefined)
             self.assertEqual(ctxt.eval('array[6]'), 6)
 
     def testMultiDimArray(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             ret = ctxt.eval("""
                 ({
                     'test': function(){
@@ -640,7 +641,7 @@ class TestWrapper(unittest.TestCase):
             for i in range(x):
                 yield i
 
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             func = ctxt.eval("""(function (k) {
                 var result = [];
                 for (var prop in k) {
@@ -658,7 +659,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(["0", "1", "2"], list(func(list(gen(3)))))
 
     def testDict(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             obj = ctxt.eval("var r = { 'a' : 1, 'b' : 2 }; r")
 
             self.assertEqual(1, obj.a)
@@ -673,8 +674,8 @@ class TestWrapper(unittest.TestCase):
                                     'float': 1.234,
                                     'obj': {'name': 'john doe'}},
                               'd': True,
-                              'e': naga.JSNull,
-                              'f': naga.JSUndefined},
+                              'e': JSNull,
+                              'f': JSUndefined},
                              convert(ctxt.eval("""var x =
                              { a: 1,
                                b: [1, 2, 3],
@@ -686,7 +687,7 @@ class TestWrapper(unittest.TestCase):
                                f: undefined}; x""")))
 
     def testDate(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             now1 = ctxt.eval("new Date();")
 
             self.assertTrue(now1)
@@ -711,7 +712,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(now3, ctxt.locals.identity(now3))
 
     def testUnicode(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             self.assertEqual(u"人", ctxt.eval(u"\"人\""))
             self.assertEqual(u"é", ctxt.eval(u"\"é\""))
 
@@ -730,20 +731,20 @@ class TestWrapper(unittest.TestCase):
             def fs(self):
                 return FileSystemWrapper()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertEqual(os.getcwd(), ctxt.eval("fs.cwd"))
 
     def testRefCount(self):
         o = object()
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             po = o
 
         g = Global()
         g_refs = sys.getrefcount(g)
 
         count = sys.getrefcount(o)
-        with naga.JSContext(g) as ctxt:
+        with JSContext(g) as ctxt:
             ctxt.eval("""
                 var hold = po;
             """)
@@ -758,11 +759,11 @@ class TestWrapper(unittest.TestCase):
 
             del ctxt
 
-        naga.aux.v8_request_gc_for_testing()
+        aux.v8_request_gc_for_testing()
         self.assertEqual(g_refs, sys.getrefcount(g))
 
     def testProperty(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self, name):
                 self._name = name
 
@@ -779,7 +780,7 @@ class TestWrapper(unittest.TestCase):
 
         g = Global('world')
 
-        with naga.JSContext(g) as ctxt:
+        with JSContext(g) as ctxt:
             self.assertEqual('world', ctxt.eval("name"))
             self.assertEqual('foobar', ctxt.eval("this.name = 'foobar';"))
             self.assertEqual('foobar', ctxt.eval("name"))
@@ -792,11 +793,11 @@ class TestWrapper(unittest.TestCase):
             # self.assertEqual('fixed', ctxt.eval("name"))
 
     def testGetterAndSetter(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self, testval):
                 self.testval = testval
 
-        with naga.JSContext(Global("Test Value A")) as ctxt:
+        with JSContext(Global("Test Value A")) as ctxt:
             self.assertEqual("Test Value A", ctxt.locals.testval)
             ctxt.eval("""
                this.__defineGetter__("test", function() {
@@ -821,7 +822,7 @@ class TestWrapper(unittest.TestCase):
             #     owner.deleted = True
 
         def test():
-            with naga.JSContext() as ctxt:
+            with JSContext() as ctxt:
                 fn = ctxt.eval("(function (obj) { obj.say(); })")
 
                 obj = Hello()
@@ -837,24 +838,24 @@ class TestWrapper(unittest.TestCase):
         test()
 
     def testNullInString(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             fn = ctxt.eval("(function (s) { return s; })")
 
             self.assertEqual("hello \0 world", fn("hello \0 world"))
 
     def testLivingObjectCache(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             i = 1
             b = True
             o = object()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertTrue(ctxt.eval("i == i"))
             self.assertTrue(ctxt.eval("b == b"))
             self.assertTrue(ctxt.eval("o == o"))
 
     def testNamedSetter(self):
-        class Obj(naga.JSClass):
+        class Obj(JSClass):
             def __init__(self):
                 self._p = None
 
@@ -866,13 +867,13 @@ class TestWrapper(unittest.TestCase):
             def p(self, value):
                 self._p = value
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self):
                 self.obj = Obj()
                 self.d = {}
                 self.p = None
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             ctxt.eval("""
             x = obj;
             x.y = 10;
@@ -884,15 +885,15 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(10, ctxt.locals.d['y'])
 
     def testWatch(self):
-        class Obj(naga.JSClass):
+        class Obj(JSClass):
             def __init__(self):
                 self.p = 1
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self):
                 self.o = Obj()
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             ctxt.eval("""
             o.watch("p", function (id, oldval, newval) {
                 return oldval + newval;
@@ -907,7 +908,7 @@ class TestWrapper(unittest.TestCase):
 
             ctxt.eval("delete o.p;")
 
-            self.assertEqual(naga.JSUndefined, ctxt.eval("o.p"))
+            self.assertEqual(JSUndefined, ctxt.eval("o.p"))
 
             ctxt.eval("o.p = 2;")
 
@@ -920,11 +921,11 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(1, ctxt.eval("o.p"))
 
     def testReferenceError(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self):
                 self.s = self
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertRaises(ReferenceError, ctxt.eval, 'x')
 
             self.assertTrue(ctxt.eval("typeof(x) === 'undefined'"))
@@ -936,46 +937,46 @@ class TestWrapper(unittest.TestCase):
             self.assertTrue(ctxt.eval("typeof(s.z) === 'undefined'"))
 
     def testRaiseExceptionInGetter(self):
-        class Document(naga.JSClass):
+        class Document(JSClass):
             def __getattr__(self, name):
                 if name == 'y':
                     raise TypeError()
 
-                return naga.JSClass.__getattr__(self, name)
+                return JSClass.__getattr__(self, name)
 
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def __init__(self):
                 self.document = Document()
 
-        with naga.JSContext(Global()) as ctxt:
-            self.assertEqual(naga.JSUndefined, ctxt.eval('document.x'))
+        with JSContext(Global()) as ctxt:
+            self.assertEqual(JSUndefined, ctxt.eval('document.x'))
             self.assertRaises(TypeError, ctxt.eval, 'document.y')
 
     def testNullAndUndefined(self):
         # noinspection PyPep8Naming,PyMethodMayBeStatic
-        class Global(naga.JSClass):
+        class Global(JSClass):
             def returnUndefined(self):
-                return naga.JSUndefined
+                return JSUndefined
 
             def returnNull(self):
-                return naga.JSNull
+                return JSNull
 
             def returnNone(self):
                 return None
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             # JSNull maps to None
             # JSUndefined maps to Py_JSUndefined (None-like)
-            self.assertEqual(naga.JSNull, None)
+            self.assertEqual(JSNull, None)
 
-            self.assertEqual(naga.JSNull, ctxt.eval("null"))
-            self.assertEqual(naga.JSUndefined, ctxt.eval("undefined"))
+            self.assertEqual(JSNull, ctxt.eval("null"))
+            self.assertEqual(JSUndefined, ctxt.eval("undefined"))
 
-            self.assertFalse(bool(naga.JSUndefined))
-            self.assertFalse(bool(naga.JSNull))
+            self.assertFalse(bool(JSUndefined))
+            self.assertFalse(bool(JSNull))
 
-            self.assertEqual("JSUndefined", str(naga.JSUndefined))
-            self.assertEqual("None", str(naga.JSNull))
+            self.assertEqual("JSUndefined", str(JSUndefined))
+            self.assertEqual("None", str(JSNull))
 
             self.assertTrue(ctxt.eval('undefined == returnUndefined()'))
             self.assertTrue(ctxt.eval('null == returnNone()'))

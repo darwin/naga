@@ -5,21 +5,22 @@ import sys
 import unittest
 import logging
 
-import naga
+from naga import JSContext, JSEngine, JSScript, JSClass, JSFunction, JSUndefined, JSIsolate
+import naga.toolkit as toolkit
 
 
 class TestEngine(unittest.TestCase):
     def testClassProperties(self):
-        with naga.JSContext():
-            self.assertTrue(str(naga.JSEngine.version).startswith("8."))
-            self.assertFalse(naga.JSEngine.dead)
+        with JSContext():
+            self.assertTrue(str(JSEngine.version).startswith("8."))
+            self.assertFalse(JSEngine.dead)
 
     def testCompile(self):
-        with naga.JSContext():
-            with naga.JSEngine() as engine:
+        with JSContext():
+            with JSEngine() as engine:
                 s = engine.compile("1+2")
 
-                self.assertTrue(isinstance(s, naga.JSScript))
+                self.assertTrue(isinstance(s, JSScript))
 
                 self.assertEqual("1+2", s.source)
                 self.assertEqual(3, int(s.run()))
@@ -27,19 +28,19 @@ class TestEngine(unittest.TestCase):
                 self.assertRaises(SyntaxError, engine.compile, "1+")
 
     def testUnicodeSource(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             var = u'测试'
 
             def __getattr__(self, name):
                 if name:
                     return self.var
 
-                return naga.JSClass.__getattr__(self, name)
+                return JSClass.__getattr__(self, name)
 
         g = Global()
 
-        with naga.JSContext(g) as ctxt:
-            with naga.JSEngine() as engine:
+        with JSContext(g) as ctxt:
+            with JSEngine() as engine:
                 src = u"""
                 function 函数() { return 变量.length; }
 
@@ -50,7 +51,7 @@ class TestEngine(unittest.TestCase):
 
                 s = engine.compile(src)
 
-                self.assertTrue(isinstance(s, naga.JSScript))
+                self.assertTrue(isinstance(s, JSScript))
 
                 self.assertEqual(src, s.source)
                 self.assertEqual(2, s.run())
@@ -61,13 +62,13 @@ class TestEngine(unittest.TestCase):
 
                 func = getattr(ctxt.locals, func_name)
 
-                self.assertTrue(isinstance(func, naga.JSFunction))
+                self.assertTrue(isinstance(func, JSFunction))
 
-                self.assertEqual(func_name, naga.toolkit.get_name(func))
-                self.assertEqual("", naga.toolkit.resource_name(func))
-                self.assertEqual(1, naga.toolkit.line_number(func))
-                self.assertEqual(0, naga.toolkit.line_offset(func))
-                self.assertEqual(0, naga.toolkit.column_offset(func))
+                self.assertEqual(func_name, toolkit.get_name(func))
+                self.assertEqual("", toolkit.resource_name(func))
+                self.assertEqual(1, toolkit.line_number(func))
+                self.assertEqual(0, toolkit.line_offset(func))
+                self.assertEqual(0, toolkit.column_offset(func))
 
                 var_name = u'变量'
 
@@ -75,17 +76,17 @@ class TestEngine(unittest.TestCase):
 
                 self.assertEqual(6, func())
 
-                self.assertEqual("func", naga.toolkit.inferred_name(ctxt.locals.func))
+                self.assertEqual("func", toolkit.inferred_name(ctxt.locals.func))
 
     def testEval(self):
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             self.assertEqual(3, int(ctxt.eval("1+2")))
 
     def testGlobal(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             version = "1.0"
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             _vars = ctxt.locals
 
             # getter
@@ -100,18 +101,18 @@ class TestEngine(unittest.TestCase):
             self.assertEqual(2.0, float(_vars.version))
 
     def testThis(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             version = 1.0
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertEqual("[object Global]", str(ctxt.eval("this")))
             self.assertEqual(1.0, float(ctxt.eval("this.version")))
 
     def testObjectBuiltInMethods(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             version = 1.0
 
-        with naga.JSContext(Global()) as ctxt:
+        with JSContext(Global()) as ctxt:
             self.assertEqual("[object Global]", str(ctxt.eval("this.toString()")))
             self.assertEqual("[object Global]", str(ctxt.eval("this.toLocaleString()")))
             self.assertEqual(Global.version, float(ctxt.eval("this.valueOf()").version))
@@ -121,13 +122,13 @@ class TestEngine(unittest.TestCase):
             self.assertFalse(ctxt.eval("this.hasOwnProperty(\"nonexistent\")"))
 
     def testPythonWrapper(self):
-        class Global(naga.JSClass):
+        class Global(JSClass):
             s = [1, 2, 3]
             d = {'a': {'b': 'c'}, 'd': ['e', 'f']}
 
         g = Global()
 
-        with naga.JSContext(g) as ctxt:
+        with JSContext(g) as ctxt:
             ctxt.eval("""
                 s[2] = s[1] + 2;
                 s[0] = s[1];
@@ -141,7 +142,7 @@ class TestEngine(unittest.TestCase):
                 delete d.d
             """)
             self.assertEqual(4, g.d['a']['q'])
-            self.assertEqual(naga.JSUndefined, ctxt.eval("d.d"))
+            self.assertEqual(JSUndefined, ctxt.eval("d.d"))
 
     def _testMemoryAllocationCallback(self):
         alloc = {}
@@ -149,46 +150,46 @@ class TestEngine(unittest.TestCase):
         def callback(space, action, size):
             alloc[(space, action)] = alloc.setdefault((space, action), 0) + size
 
-        naga.JSEngine.setMemoryAllocationCallback(callback)
+        JSEngine.setMemoryAllocationCallback(callback)
 
-        with naga.JSContext() as ctxt:
+        with JSContext() as ctxt:
             # noinspection PyUnresolvedReferences
-            self.assertFalse((naga.JSObjectSpace.Code, naga.JSAllocationAction.alloc) in alloc)
+            self.assertFalse((JSObjectSpace.Code, JSAllocationAction.alloc) in alloc)
 
             ctxt.eval("var o = new Array(1000);")
 
             # noinspection PyUnresolvedReferences
-            self.assertTrue((naga.JSObjectSpace.Code, naga.JSAllocationAction.alloc) in alloc)
+            self.assertTrue((JSObjectSpace.Code, JSAllocationAction.alloc) in alloc)
 
-        naga.JSEngine.setMemoryAllocationCallback(None)
+        JSEngine.setMemoryAllocationCallback(None)
 
     def _testOutOfMemory(self):
-        with naga.JSIsolate():
-            naga.JSEngine.setMemoryLimit(max_young_space_size=16 * 1024, max_old_space_size=4 * 1024 * 1024)
+        with JSIsolate():
+            JSEngine.setMemoryLimit(max_young_space_size=16 * 1024, max_old_space_size=4 * 1024 * 1024)
 
-            with naga.JSContext() as ctxt:
-                naga.JSEngine.ignoreOutOfMemoryException()
+            with JSContext() as ctxt:
+                JSEngine.ignoreOutOfMemoryException()
 
                 ctxt.eval("var a = new Array(); while(true) a.push(a);")
 
                 self.assertTrue(ctxt.hasOutOfMemoryException)
 
-                naga.JSEngine.setMemoryLimit()
+                JSEngine.setMemoryLimit()
 
-                naga.JSEngine.collect()
+                JSEngine.collect()
 
     def testStackLimit(self):
-        with naga.JSIsolate():
-            naga.JSEngine.set_stack_limit(256 * 1024)
+        with JSIsolate():
+            JSEngine.set_stack_limit(256 * 1024)
 
-            with naga.JSContext() as ctxt:
+            with JSContext() as ctxt:
                 old_stack_size = ctxt.eval(
                     "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
-        with naga.JSIsolate():
-            naga.JSEngine.set_stack_limit(512 * 1024)
+        with JSIsolate():
+            JSEngine.set_stack_limit(512 * 1024)
 
-            with naga.JSContext() as ctxt:
+            with JSContext() as ctxt:
                 new_stack_size = ctxt.eval(
                     "var maxStackSize = function(i){try{(function m(){++i&&m()}())}catch(e){return i}}(0); maxStackSize")
 
