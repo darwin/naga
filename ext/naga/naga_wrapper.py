@@ -29,10 +29,9 @@ if naga.config.naga_keep_backward_compatibility:
                 "JSFunction"]
 
 
-# noinspection PyPep8Naming
+# noinspection PyPep8Naming,PyAttributeOutsideInit
 class JSClass(object):
     __properties__ = {}
-    __watchpoints__ = {}
 
     def __getattr__(self, name):
         if name == 'constructor':
@@ -96,15 +95,20 @@ class JSClass(object):
 
     def watch(self, prop, handler):
         """Watches for a property to be assigned a value and runs a function when that occurs."""
+        if not hasattr(self, '__watchpoints__'):
+            self.__watchpoints__ = {}
         self.__watchpoints__[prop] = handler
 
     def unwatch(self, prop):
         """Removes a watchpoint set with the watch method."""
+        if not hasattr(self, '__watchpoints__'):
+            self.__watchpoints__ = {}
         del self.__watchpoints__[prop]
 
 
 class JSClassConstructor(JSClass):
     def __init__(self, cls):
+        super().__init__()
         self.cls = cls
 
     @property
