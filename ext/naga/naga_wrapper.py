@@ -32,27 +32,35 @@ if naga.config.naga_keep_backward_compatibility:
 # noinspection PyPep8Naming,PyAttributeOutsideInit
 class JSClass(object):
 
-    def __getattr__(self, name):
-        if name == 'constructor':
-            return JSClassConstructor(self.__class__)
+    # def __getattr__(self, name):
+    #     if name == 'constructor':
+    #         return JSClassConstructor(self.__class__)
+    #
+    #     if name == 'prototype':
+    #         return JSClassPrototype(self.__class__)
+    #
+    #     # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
+    #     #
+    #     # if prop and callable(prop[0]):
+    #     #     return prop[0]()
+    #
+    #     raise AttributeError(name)
+    #
+    # def __setattr__(self, name, value):
+    #     # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
+    #     #
+    #     # if prop and callable(prop[1]):
+    #     #     return prop[1](value)
+    #
+    #     return object.__setattr__(self, name, value)
 
-        if name == 'prototype':
-            return JSClassPrototype(self.__class__)
+    @property
+    def constructor(self):
+        return JSClassConstructor(self.__class__)
 
-        # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-        #
-        # if prop and callable(prop[0]):
-        #     return prop[0]()
-
-        raise AttributeError(name)
-
-    def __setattr__(self, name, value):
-        # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-        #
-        # if prop and callable(prop[1]):
-        #     return prop[1](value)
-
-        return object.__setattr__(self, name, value)
+    @property
+    def prototype(self):
+        return JSClassPrototype(self.__class__)
 
     def toString(self):
         """Returns a string representation of an object."""
