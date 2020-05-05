@@ -28,16 +28,14 @@ v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
 
 std::string CJSStackFrame::GetScriptName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetScriptName());
-  auto result = std::string(*v8_name, v8_name.length());
+  auto result = v8u::toStdString(m_v8_isolate, Handle()->GetScriptName());
   TRACE("CJSStackFrame::GetScriptName {} => {}", THIS, result);
   return result;
 }
 
 std::string CJSStackFrame::GetFunctionName() const {
   auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_name = v8u::toUTF(m_v8_isolate, Handle()->GetFunctionName());
-  auto result = std::string(*v8_name, v8_name.length());
+  auto result = v8u::toStdString(m_v8_isolate, Handle()->GetFunctionName());
   TRACE("CJSStackFrame::GetFunctionName {} => {}", THIS, result);
   return result;
 }

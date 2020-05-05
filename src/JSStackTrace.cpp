@@ -72,25 +72,25 @@ void CJSStackTrace::Dump(std::ostream& os) const {
 
   for (int i = 0; i < GetFrameCount(); i++) {
     auto v8_frame = GetFrame(i)->Handle();
-    auto v8_func_name = v8u::toUTF(m_v8_isolate, v8_frame->GetFunctionName());
-    auto v8_script_name = v8u::toUTF(m_v8_isolate, v8_frame->GetScriptName());
+    auto func_name = v8u::toStdString(m_v8_isolate, v8_frame->GetFunctionName());
+    auto script_name = v8u::toStdString(m_v8_isolate, v8_frame->GetScriptName());
 
     os << "\tat ";
 
-    if (v8_func_name.length()) {
-      os << std::string(*v8_func_name, v8_func_name.length())  //
-         << " (";                                              //
+    if (func_name.size()) {
+      os << func_name  //
+         << " (";      //
     }
     if (v8_frame->IsEval()) {
       os << "(eval)";
     } else {
-      os << std::string(*v8_script_name, v8_script_name.length())  //
-         << ":"                                                    //
-         << v8_frame->GetLineNumber()                              //
-         << ":"                                                    //
-         << v8_frame->GetColumn();                                 //
+      os << script_name                //
+         << ":"                        //
+         << v8_frame->GetLineNumber()  //
+         << ":"                        //
+         << v8_frame->GetColumn();     //
     }
-    if (v8_func_name.length()) {
+    if (func_name.size()) {
       os << ")";
     }
 
