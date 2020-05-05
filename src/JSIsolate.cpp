@@ -140,7 +140,6 @@ py::object CJSIsolate::GetCurrentContext() const {
 }
 
 py::bool_ CJSIsolate::InContext() const {
-  auto v8_scope = v8u::withScope(m_v8_isolate);
   auto py_result = py::bool_(m_v8_isolate->InContext());
   TRACE("CJSIsolate::InContext {} => {}", THIS, py_result);
   return py_result;

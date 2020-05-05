@@ -17,7 +17,7 @@ bool CJSLocker::IsEntered() const {
 
 void CJSLocker::Enter() {
   TRACE("CJSLocker::Enter {}", THIS);
-  withAllowedPythonThreads([&]() {
+  withAllowedPythonThreads([&] {
     auto v8_isolate = v8u::getCurrentIsolate();
     m_isolate = CJSIsolate::FromV8(v8_isolate);
     m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
@@ -26,7 +26,7 @@ void CJSLocker::Enter() {
 
 void CJSLocker::Leave() {
   TRACE("CJSLocker::Leave {}", THIS);
-  withAllowedPythonThreads([&]() {
+  withAllowedPythonThreads([&] {
     m_v8_locker.reset();
     m_isolate.reset();
   });

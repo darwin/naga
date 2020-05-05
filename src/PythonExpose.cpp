@@ -366,9 +366,6 @@ void exposeJSContext(py::module py_module) {
                              "Local variables within context")                                             //
                                                                                                            //
       .def_property_readonly_static(                                                                       //
-          "entered", [](const py::object&) { return CJSContext::GetEntered(); },                           //
-          "The last entered context.")                                                                     //
-      .def_property_readonly_static(                                                                       //
           "current", [](const py::object&) { return CJSContext::GetCurrent(); },                           //
           "The context that is on the top of the stack.")                                                  //
       .def_property_readonly_static(                                                                       //

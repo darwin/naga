@@ -188,20 +188,17 @@ class JSError(Exception):
 
 class JSLocker(naga_native.JSLocker):
     def __enter__(self):
+        if JSIsolate.current.in_context():
+            raise RuntimeError("Lock should be acquired before entering a context")
+
         self.enter()
-
-        if JSContext.entered:
-            self.leave()
-            raise RuntimeError("Lock should be acquired before enter the context")
-
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if JSContext.entered:
-            self.leave()
-            raise RuntimeError("Lock should be released after leave the context")
-
         self.leave()
+
+        if JSIsolate.current.in_context():
+            raise RuntimeError("Lock should be released after leaving a context")
 
     def __bool__(self):
         return self.entered()

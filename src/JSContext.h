@@ -29,7 +29,6 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   // TODO: consider moving this out
   static bool InContext();
 
-  static py::object GetEntered();
   static py::object GetCurrent();
   static py::object GetCalling();
 

@@ -115,23 +115,6 @@ bool CJSContext::InContext() {
   return v8_isolate->InContext();
 }
 
-py::object CJSContext::GetEntered() {
-  TRACE("CJSContext::GetEntered");
-  auto v8_isolate = v8u::getCurrentIsolate();
-  if (!v8_isolate->InContext()) {
-    return py::none();
-  }
-  auto v8_scope = v8u::withScope(v8_isolate);
-
-  auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
-  if (v8_context.IsEmpty()) {
-    return py::none();
-  }
-  auto py_result = py::cast(FromV8(v8_context));
-  TRACE("CJSContext::GetEntered => {}", py_result);
-  return py_result;
-}
-
 py::object CJSContext::GetCurrent() {
   TRACE("CJSContext::GetCurrent");
   auto v8_isolate = v8u::getCurrentIsolate();
