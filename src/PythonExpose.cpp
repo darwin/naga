@@ -237,7 +237,7 @@ void exposeJSException(py::module py_module) {
                              "The source line of error statement.")
       .def_property_readonly("stack_trace", &CJSException::GetStackTrace,
                              "The stack trace of error statement.")
-      .def("print_tb", &CJSException::PrintCallStack,
+      .def("print_stack_trace", &CJSException::PrintStackTrace,
            py::arg("file") = py::none(),
            "Print the stack trace of error statement.");
   // clang-format on

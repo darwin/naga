@@ -6,6 +6,7 @@ import os
 import unittest
 import logging
 import datetime
+from io import StringIO
 
 import naga
 import naga.aux
@@ -289,9 +290,15 @@ class TestWrapper(unittest.TestCase):
                     self.assertEqual(29, e.endcol)
                     self.assertEqual('throw Error("hello world");', e.source_line.strip())
 
-                    self.assertEqual('Error: hello world\n' +
-                                     '    at hello (test:14:35)\n' +
-                                     '    at test:17:25', e.stack_trace)
+                    expected_stack_trace = \
+                        'Error: hello world\n' \
+                        '    at hello (test:14:35)\n' \
+                        '    at test:17:25'
+                    self.assertEqual(expected_stack_trace, e.stack_trace)
+
+                    f = StringIO()
+                    e.print_stack_trace(f)
+                    self.assertEqual(expected_stack_trace, f.getvalue())
 
     def testParseStack(self):
         self.assertEqual([

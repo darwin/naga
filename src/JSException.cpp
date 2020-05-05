@@ -320,7 +320,7 @@ std::string CJSException::GetStackTrace() const {
     return std::string();
   }
 
-  v8::String::Utf8Value stack(m_v8_isolate, v8::Local<v8::String>::Cast(Stack()));
+  auto stack = v8u::toUTF(m_v8_isolate, Stack());
   auto result = std::string(*stack, stack.length());
   TRACE("CJSException::GetStackTrace {} => {}", THIS, result);
   return result;
@@ -378,15 +378,11 @@ void CJSException::Throw(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch
   throw ex;
 }
 
-void CJSException::PrintCallStack(py::object py_file) const {
-  TRACE("CJSException::PrintCallStack {} py_file={}", THIS, py_file);
-  auto py_gil = pyu::withGIL();
-
-  // TODO: move this into utility function
-  auto raw_file = py_file.is_none() ? PySys_GetObject("stdout") : py_file.ptr();
-  auto fd = PyObject_AsFileDescriptor(raw_file);
-
-  Message()->PrintCurrentStackTrace(m_v8_isolate, fdopen(fd, "w+"));
+void CJSException::PrintStackTrace(py::object py_file) const {
+  TRACE("CJSException::PrintStackTrace {} py_file={}", THIS, py_file);
+  auto stackTraceText = GetStackTrace();
+  TRACE("printing:\n{}", traceText(stackTraceText));
+  pyu::printToFileOrStdOut(stackTraceText.c_str(), py_file);
 }
 
 py::object CJSException::Str() const {

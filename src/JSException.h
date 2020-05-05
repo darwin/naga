@@ -44,7 +44,7 @@ class CJSException : public std::runtime_error {
 
   [[nodiscard]] py::object Str() const;
 
-  void PrintCallStack(py::object py_file) const;
+  void PrintStackTrace(py::object py_file) const;
   static void CheckTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
   static void Throw(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch);
 };
