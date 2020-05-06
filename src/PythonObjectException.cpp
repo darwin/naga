@@ -112,7 +112,8 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
   Py_INCREF(raw_type);
   Py_INCREF(raw_value);
 
-  hospitalizePatient(v8_error_object, [raw_type, raw_value](v8::Local<v8::Object> v8_patient) {
+  hospitalizePatient(v8_error_object, [raw_type, raw_value](decltype(v8_error_object) v8_patient) {
+    auto py_gil = pyu::withGIL();
     TRACE("doing cleanup of v8_error {} raw_type={} raw_value={}", v8_patient, raw_type, raw_value);
     // this must match Py_INCREFs above !!!
     Py_DECREF(raw_type);
