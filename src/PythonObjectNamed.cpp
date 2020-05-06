@@ -115,34 +115,20 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
   }
   auto v8_scope = v8u::withScope(v8_isolate);
 
-  auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
+  auto v8_result = withPythonErrorInterception(v8_isolate, [&] {
+    auto v8_name_utf = v8u::toUTF(v8_isolate, v8_name);
+    if (!*v8_name_utf) {
+      throw CJSException("unable to obtain attribute name", PyExc_AttributeError);
+    }
+    auto name = *v8_name_utf;
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
-    v8::String::Utf8Value v8_utf_name(v8_isolate, v8_name);
     auto py_val = wrap(v8_isolate, v8_value);
-    bool found = py::hasattr(py_obj, *v8_utf_name);
 
-
-    // TODO: revisit
-    if (!found && PyMapping_Check(py_obj.ptr())) {
-      PyMapping_SetItemString(py_obj.ptr(), *v8_utf_name, py_val.ptr());
+    if (PyMapping_Check(py_obj.ptr())) {
+      PyMapping_SetItemString(py_obj.ptr(), name, py_val.ptr());
     } else {
-      if (found) {
-        auto py_name_attr = py_obj.attr(*v8_utf_name);
-
-        if (PyObject_TypeCheck(py_name_attr.ptr(), &PyProperty_Type)) {
-          auto setter = py_name_attr.attr("fset");
-
-          if (setter.is_none()) {
-            throw CJSException("can't set attribute", PyExc_AttributeError);
-          }
-
-          setter(py_val);
-          return v8_value;
-        }
-      }
-
-      py_obj.attr(*v8_utf_name) = py_val;
+      py_obj.attr(name) = py_val;
     }
 
     return v8_value;
