@@ -122,16 +122,6 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
     auto py_val = wrap(v8_isolate, v8_value);
     bool found = py::hasattr(py_obj, *v8_utf_name);
 
-    // TODO: review this after learning about __watchpoints__
-    if (py::hasattr(py_obj, "__watchpoints__")) {
-      py::dict py_watch_points(py_obj.attr("__watchpoints__"));
-      py::str py_prop_name(*v8_utf_name, v8_utf_name.length());
-      if (py_watch_points.contains(py_prop_name)) {
-        auto py_watch_handler = py_watch_points[py_prop_name];
-        auto py_attr = found ? py::object(py_obj.attr(*v8_utf_name)) : py::none();
-        py_val = py_watch_handler(py_prop_name, py_attr, py_val);
-      }
-    }
 
     // TODO: revisit
     if (!found && PyMapping_Check(py_obj.ptr())) {

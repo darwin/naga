@@ -100,18 +100,6 @@ class JSClass(object):
     #     """Return the function bound as a setter to the specified property."""
     #     return self.__properties__.get(name, (None, None))[1]
 
-    def watch(self, prop, handler):
-        """Watches for a property to be assigned a value and runs a function when that occurs."""
-        if not hasattr(self, '__watchpoints__'):
-            self.__watchpoints__ = {}
-        self.__watchpoints__[prop] = handler
-
-    def unwatch(self, prop):
-        """Removes a watchpoint set with the watch method."""
-        if not hasattr(self, '__watchpoints__'):
-            self.__watchpoints__ = {}
-        del self.__watchpoints__[prop]
-
 
 class JSClassConstructor(JSClass):
     def __init__(self, cls):

@@ -884,42 +884,6 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(10, ctxt.eval("obj.p"))
             self.assertEqual(10, ctxt.locals.d['y'])
 
-    def testWatch(self):
-        class Obj(JSClass):
-            def __init__(self):
-                self.p = 1
-
-        class Global(JSClass):
-            def __init__(self):
-                self.o = Obj()
-
-        with JSContext(Global()) as ctxt:
-            ctxt.eval("""
-            o.watch("p", function (id, oldval, newval) {
-                return oldval + newval;
-            });
-            """)
-
-            self.assertEqual(1, ctxt.eval("o.p"))
-
-            ctxt.eval("o.p = 2;")
-
-            self.assertEqual(3, ctxt.eval("o.p"))
-
-            ctxt.eval("delete o.p;")
-
-            self.assertEqual(JSUndefined, ctxt.eval("o.p"))
-
-            ctxt.eval("o.p = 2;")
-
-            self.assertEqual(2, ctxt.eval("o.p"))
-
-            ctxt.eval("o.unwatch('p');")
-
-            ctxt.eval("o.p = 1;")
-
-            self.assertEqual(1, ctxt.eval("o.p"))
-
     def testReferenceError(self):
         class Global(JSClass):
             def __init__(self):
