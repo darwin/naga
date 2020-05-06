@@ -29,30 +29,8 @@ if naga.config.naga_keep_backward_compatibility:
                 "JSFunction"]
 
 
-# noinspection PyPep8Naming,PyAttributeOutsideInit
+# noinspection PyPep8Naming
 class JSClass(object):
-
-    # def __getattr__(self, name):
-    #     if name == 'constructor':
-    #         return JSClassConstructor(self.__class__)
-    #
-    #     if name == 'prototype':
-    #         return JSClassPrototype(self.__class__)
-    #
-    #     # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-    #     #
-    #     # if prop and callable(prop[0]):
-    #     #     return prop[0]()
-    #
-    #     raise AttributeError(name)
-    #
-    # def __setattr__(self, name, value):
-    #     # prop = self.__dict__.setdefault('__properties__', {}).get(name, None)
-    #     #
-    #     # if prop and callable(prop[1]):
-    #     #     return prop[1](value)
-    #
-    #     return object.__setattr__(self, name, value)
 
     @property
     def constructor(self):
@@ -82,23 +60,6 @@ class JSClass(object):
     def isPrototypeOf(self, obj):
         """Returns a Boolean value indicating whether an object exists in the prototype chain of another object."""
         return False
-
-    # TODO: implement this in a standards-compliant way
-    # def __defineGetter__(self, name, getter):
-    #     """Binds an object's property to a function to be called when that property is looked up."""
-    #     self.__properties__[name] = (getter, self.__lookupSetter__(name))
-    #
-    # def __lookupGetter__(self, name):
-    #     """Return the function bound as a getter to the specified property."""
-    #     return self.__properties__.get(name, (None, None))[0]
-    #
-    # def __defineSetter__(self, name, setter):
-    #     """Binds an object's property to a function to be called when an attempt is made to set that property."""
-    #     self.__properties__[name] = (self.__lookupGetter__(name), setter)
-    #
-    # def __lookupSetter__(self, name):
-    #     """Return the function bound as a setter to the specified property."""
-    #     return self.__properties__.get(name, (None, None))[1]
 
 
 class JSClassConstructor(JSClass):
