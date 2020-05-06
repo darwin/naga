@@ -47,7 +47,7 @@ void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupF
 }
 
 void CJSHospital::PatientIsAboutToDie(v8::IsolatePtr v8_isolate, HospitalRecord* record) {
-  TRACE("CJSHospital::AcceptPatient {} record={} ", THIS, (void*)record);
+  TRACE("CJSHospital::PatientIsAboutToDie {} record={} ", THIS, (void*)record);
 
   // just a sanity check that the weak callback is related to our isolate
   assert(v8_isolate == m_v8_isolate);
