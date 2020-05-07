@@ -1,10 +1,12 @@
-#include "IsolateLockerHolder.h"
+#include "V8XIsolateLockerHolder.h"
 #include "Logging.h"
 #include "Printing.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kIsolateLockingLogger), __VA_ARGS__)
+
+namespace v8x {
 
 IsolateLockerHolder::IsolateLockerHolder(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate) {
   TRACE("IsolateLocker::IsolateLocker {} v8_isolate={}", THIS, P$(m_v8_isolate));
@@ -37,3 +39,5 @@ void IsolateLockerHolder::DeleteInplaceLocker(LockerType* p) {
   // deallocation is not needed because we keep the buffer for future usage
   p->~LockerType();
 }
+
+}  // namespace v8x

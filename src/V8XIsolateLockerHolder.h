@@ -4,6 +4,8 @@
 #include "Base.h"
 #include "V8XObservedLocker.h"
 
+namespace v8x {
+
 class IsolateLockerHolder {
   using LockerType = v8x::ObservedLocker;
   v8::Isolate* m_v8_isolate;
@@ -18,5 +20,7 @@ class IsolateLockerHolder {
 
   v8x::SharedIsolateLockerPtr CreateOrShareLocker();
 };
+
+}  // namespace v8x
 
 #endif

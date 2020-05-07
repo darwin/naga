@@ -4,7 +4,7 @@
 #include "Base.h"
 #include "V8XProtectedIsolate.h"
 #include "V8XLockedIsolate.h"
-#include "IsolateLockerHolder.h"
+#include "V8XIsolateLockerHolder.h"
 
 // CJSIsolate is our wrapper of v8::Isolate which provides Python interface for exposed JSIsolate object.
 //
@@ -28,7 +28,7 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   std::unique_ptr<CTracer> m_tracer;
   std::unique_ptr<CJSHospital> m_hospital;
   std::unique_ptr<CJSEternals> m_eternals;
-  IsolateLockerHolder m_locker_holder;
+  v8x::IsolateLockerHolder m_locker_holder;
 
  public:
   CJSIsolate();

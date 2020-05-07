@@ -47,7 +47,6 @@ if (naga_verbose_build) {
 
 naga_source_files = [
   "Aux.cpp",
-  "IsolateLockerHolder.cpp",
   "JSContext.cpp",
   "JSEngine.cpp",
   "JSEternals.cpp",
@@ -85,6 +84,7 @@ naga_source_files = [
   "PythonUtils.cpp",
   "Tracer.cpp",
   "Utils.cpp",
+  "V8XIsolateLockerHolder.cpp",
   "V8XLockedIsolate.cpp",
   "V8XProtectedIsolate.cpp",
   "V8XUtils.cpp",
