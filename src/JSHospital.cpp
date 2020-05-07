@@ -24,7 +24,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-CJSHospital::CJSHospital(v8::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(v8_isolate) {
+CJSHospital::CJSHospital(v8x::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(v8_isolate) {
   TRACE("CJSHospital::CJSHospital {} v8_isolate={}", THIS, m_v8_isolate);
 }
 

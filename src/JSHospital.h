@@ -2,7 +2,7 @@
 #define NAGA_JSHOSPITAL_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 // Hospital is a place where we put V8 objects which have attached some external data which need some cleanup.
 
@@ -31,11 +31,11 @@ using HospitalRecords = std::unordered_set<HospitalRecord*>;
 void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);
 
 class CJSHospital {
-  v8::ProtectedIsolatePtr m_v8_isolate;
+  v8x::ProtectedIsolatePtr m_v8_isolate;
   HospitalRecords m_records;
 
  public:
-  explicit CJSHospital(v8::ProtectedIsolatePtr v8_isolate);
+  explicit CJSHospital(v8x::ProtectedIsolatePtr v8_isolate);
   ~CJSHospital();
 
   void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);

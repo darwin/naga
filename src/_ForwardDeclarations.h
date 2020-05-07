@@ -27,17 +27,16 @@ using CJSStackTracePtr = std::shared_ptr<CJSStackTrace>;
 using CJSStackFramePtr = std::shared_ptr<CJSStackFrame>;
 using CJSObjectPtr = std::shared_ptr<CJSObject>;
 
-namespace v8 {
-
-//using IsolatePtr = v8::Isolate*;    // __nonnull;
-using TryCatchPtr = v8::TryCatch*;  // __nonnull;
-using SharedIsolateLockerPtr = std::shared_ptr<Locker>;
-using WeakIsolateLockerPtr = std::weak_ptr<Locker>;
+namespace v8x {
 
 class LockedIsolatePtr;
 class ProtectedIsolatePtr;
 
-}  // namespace v8
+using TryCatchPtr = v8::TryCatch*;
+using SharedIsolateLockerPtr = std::shared_ptr<v8::Locker>;
+using WeakIsolateLockerPtr = std::weak_ptr<v8::Locker>;
+
+}  // namespace v8x
 
 namespace spdlog {
 
@@ -45,6 +44,6 @@ class logger;
 
 }
 
-using LoggerPtr = spdlog::logger*;  // __nonnull;
+using LoggerPtr = spdlog::logger*;
 
 #endif

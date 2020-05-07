@@ -147,6 +147,6 @@ CheckOptions:
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
   - key:             google-runtime-references.WhiteListTypes
-    value:           'v8::LockedIsolatePtr'
+    value:           'v8x::LockedIsolatePtr'
 ...
 

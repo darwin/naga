@@ -2,12 +2,12 @@
 #define NAGA_JSENGINE_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 class CJSEngine {
-  v8::ProtectedIsolatePtr m_v8_isolate;
+  v8x::ProtectedIsolatePtr m_v8_isolate;
 
-  CJSScriptPtr InternalCompile(v8::LockedIsolatePtr& v8_isolate,
+  CJSScriptPtr InternalCompile(v8x::LockedIsolatePtr& v8_isolate,
                                v8::Local<v8::String> v8_src,
                                v8::Local<v8::Value> v8_name,
                                int line,
@@ -15,7 +15,7 @@ class CJSEngine {
 
  public:
   CJSEngine();
-  explicit CJSEngine(v8::ProtectedIsolatePtr v8_isolate);
+  explicit CJSEngine(v8x::ProtectedIsolatePtr v8_isolate);
 
   static void SetFlags(const std::string& flags);
   static void SetStackLimit(uintptr_t stack_limit_size);

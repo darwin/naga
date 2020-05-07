@@ -81,10 +81,6 @@ std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& wv) {
 
 namespace v8 {
 
-std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v) {
-  return os << fmt::format("v8::ProtectedIsolatePtr {}", static_cast<void*>(v.giveMeRawIsolateAndTrustMe()));
-}
-
 template <typename T>
 static std::ostream& dumpLocalPrefix(std::ostream& os, const char* label, const Local<T>& v) {
   return os << fmt::format("{} {}", label, static_cast<void*>(*v));
@@ -111,7 +107,7 @@ std::ostream& printLocalValue(std::ostream& os, const Local<Value>& v) {
     return os << "{EMPTY}";
   }
 
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   if (v8_context.IsEmpty()) {
     return os << "{NO CONTEXT}";
@@ -121,7 +117,7 @@ std::ostream& printLocalValue(std::ostream& os, const Local<Value>& v) {
   if (v8_str.IsEmpty()) {
     return os << "{N/A}";
   } else {
-    return os << *v8u::toUTF(v8_isolate, v8_str.ToLocalChecked());
+    return os << *v8x::toUTF(v8_isolate, v8_str.ToLocalChecked());
   }
 }
 
@@ -160,6 +156,14 @@ std::ostream& operator<<(std::ostream& os, const TryCatch& v) {
 }
 
 }  // namespace v8
+
+namespace v8x {
+
+std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v) {
+  return os << fmt::format("v8x::ProtectedIsolatePtr {}", static_cast<void*>(v.giveMeRawIsolateAndTrustMe()));
+}
+
+}  // namespace v8x
 
 namespace pybind11 {
 

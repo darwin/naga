@@ -27,7 +27,7 @@ static std::string_view stripTypeInfo(std::string_view sv) {
   return sv;
 }
 
-static auto convertPythonExceptionToV8Error(v8::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
+static auto convertPythonExceptionToV8Error(v8x::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
   // It turns out it is not that easy to extract text error message from Python's "error value" object
   // because in general it could be anything, see:
   // https://stackoverflow.com/questions/1418015/how-to-get-python-exception-text
@@ -76,7 +76,7 @@ static auto convertPythonExceptionToV8Error(v8::LockedIsolatePtr& v8_isolate, co
   // [1] https://stackoverflow.com/a/6576177/84283
 
   auto msg = stripTypeInfo(getFirstLine(py_ex.what()));
-  auto v8_msg = v8u::toString(v8_isolate, msg);
+  auto v8_msg = v8x::toString(v8_isolate, msg);
   if (py_ex.matches(PyExc_IndexError)) {
     return v8::Exception::RangeError(v8_msg);
   } else if (py_ex.matches(PyExc_AttributeError)) {
@@ -90,7 +90,7 @@ static auto convertPythonExceptionToV8Error(v8::LockedIsolatePtr& v8_isolate, co
   }
 }
 
-static void attachPythonInfoToV8Error(v8::LockedIsolatePtr& v8_isolate,
+static void attachPythonInfoToV8Error(v8x::LockedIsolatePtr& v8_isolate,
                                       v8::Local<v8::Object> v8_error_object,
                                       py::handle py_type,
                                       py::handle py_value) {
@@ -104,7 +104,7 @@ static void attachPythonInfoToV8Error(v8::LockedIsolatePtr& v8_isolate,
   auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
   auto v8_exc_value_external = v8::External::New(v8_isolate, raw_value);
 
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
   v8_error_object->SetPrivate(v8_context, v8_type_api, v8_exc_type_external);
   v8_error_object->SetPrivate(v8_context, v8_value_api, v8_exc_value_external);
 
@@ -121,10 +121,10 @@ static void attachPythonInfoToV8Error(v8::LockedIsolatePtr& v8_isolate,
   });
 }
 
-void CPythonObject::ThrowJSException(v8::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
+void CPythonObject::ThrowJSException(v8x::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   // note we don't need to call PyErr_NormalizeException
   // py::error_already_set in its constructor called py::detail::error_string() which did the normalization

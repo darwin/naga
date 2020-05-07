@@ -2,7 +2,7 @@
 #include "JSObjectUtils.h"
 #include "Logging.h"
 #include "Printing.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -10,7 +10,7 @@
 
 CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
     : m_roles(Roles::Generic),
-      m_v8_obj(v8u::getCurrentIsolate(), v8_obj) {
+      m_v8_obj(v8x::getCurrentIsolate(), v8_obj) {
   m_v8_obj.AnnotateStrongRetainer("Naga JSObject");
 
   // detect supported object roles
@@ -33,7 +33,7 @@ CJSObjectBase::~CJSObjectBase() {
   m_v8_obj.Reset();
 }
 
-v8::Local<v8::Object> CJSObjectBase::ToV8(v8::LockedIsolatePtr& v8_isolate) const {
+v8::Local<v8::Object> CJSObjectBase::ToV8(v8x::LockedIsolatePtr& v8_isolate) const {
   auto v8_result = m_v8_obj.Get(v8_isolate);
   TRACE("CJSObjectBase::ToV8 {} => {}", THIS, v8_result);
   return v8_result;
@@ -48,8 +48,8 @@ CJSObjectBase::Roles CJSObjectBase::GetRoles() const {
 }
 
 void CJSObjectBase::Dump(std::ostream& os) const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_obj = ToV8(v8_isolate);
   if (v8_obj.IsEmpty()) {
@@ -60,13 +60,13 @@ void CJSObjectBase::Dump(std::ostream& os) const {
     //   Provide a string representation of this value usable for debugging.
     //   This operation has no observable side effects and will succeed
     //   unless e.g. execution is being terminated.
-    auto v8_context = v8u::getCurrentContextUnchecked(v8_isolate);
+    auto v8_context = v8x::getCurrentContextUnchecked(v8_isolate);
     if (v8_context.IsEmpty()) {
       os << "<NO CONTEXT>";
       return;
     }
     auto v8_str = v8_obj->ToDetailString(v8_context).ToLocalChecked();
-    auto v8_utf = v8u::toUTF(v8_isolate, v8_str);
+    auto v8_utf = v8x::toUTF(v8_isolate, v8_str);
     os << *v8_utf;
   }
 }

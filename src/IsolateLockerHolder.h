@@ -1,5 +1,5 @@
-#ifndef NAGA_ISOLATELOCKER_H_
-#define NAGA_ISOLATELOCKER_H_
+#ifndef NAGA_ISOLATELOCKERHOLDER_H_
+#define NAGA_ISOLATELOCKERHOLDER_H_
 
 #include "Base.h"
 
@@ -12,7 +12,7 @@ class ObservedLocker : public v8::Locker {
 class IsolateLockerHolder {
   using LockerType = ObservedLocker;
   v8::Isolate* m_v8_isolate;
-  v8::WeakIsolateLockerPtr m_v8_weak_locker;
+  v8x::WeakIsolateLockerPtr m_v8_weak_locker;
   alignas(LockerType) std::array<std::byte, sizeof(LockerType)> m_v8_locker_storage;
 
   static void DeleteInplaceLocker(LockerType* p);
@@ -21,7 +21,7 @@ class IsolateLockerHolder {
   explicit IsolateLockerHolder(v8::Isolate* v8_isolate);
   ~IsolateLockerHolder();
 
-  v8::SharedIsolateLockerPtr CreateOrShareLocker();
+  v8x::SharedIsolateLockerPtr CreateOrShareLocker();
 };
 
 #endif

@@ -1,18 +1,18 @@
-#ifndef NAGA_V8UTILSOBSERVERVEDHNADLESCOPE_H_
-#define NAGA_V8UTILSOBSERVERVEDHNADLESCOPE_H_
+#ifndef NAGA_V8OBSERVERVEDHNADLESCOPE_H_
+#define NAGA_V8OBSERVERVEDHNADLESCOPE_H_
 
 #include "Base.h"
 #include "Logging.h"
-#include "V8LockedIsolate.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XLockedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
-namespace v8u {
+namespace v8x {
 
 class ObservedHandleScope : public v8::HandleScope {
   int m_start_num_handles;
 
  public:
-  explicit ObservedHandleScope(v8::LockedIsolatePtr& v8_isolate)
+  explicit ObservedHandleScope(LockedIsolatePtr& v8_isolate)
       : v8::HandleScope(v8_isolate),
         m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "HandleScope {");
@@ -20,7 +20,7 @@ class ObservedHandleScope : public v8::HandleScope {
     increaseCurrentHandleScopeLevel(v8_isolate);
   }
   ~ObservedHandleScope() {
-    auto v8_isolate = v8::ProtectedIsolatePtr(this->GetIsolate()).lock();
+    auto v8_isolate = ProtectedIsolatePtr(this->GetIsolate()).lock();
     decreaseCurrentHandleScopeLevel(v8_isolate);
     LOGGER_INDENT_DECREASE;
     HTRACE(kHandleScopeLogger, "}} ~HandleScope (releasing {} handles)", [&] {
@@ -35,7 +35,7 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
   int m_start_num_handles;
 
  public:
-  explicit ObservedEscapableHandleScope(v8::LockedIsolatePtr& v8_isolate)
+  explicit ObservedEscapableHandleScope(LockedIsolatePtr& v8_isolate)
       : v8::EscapableHandleScope(v8_isolate),
         m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "EscapableHandleScope {");
@@ -43,7 +43,7 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
     increaseCurrentHandleScopeLevel(v8_isolate);
   }
   ~ObservedEscapableHandleScope() {
-    auto v8_isolate = v8::ProtectedIsolatePtr(this->GetIsolate()).lock();
+    auto v8_isolate = ProtectedIsolatePtr(this->GetIsolate()).lock();
     decreaseCurrentHandleScopeLevel(v8_isolate);
     LOGGER_INDENT_DECREASE;
     HTRACE(kHandleScopeLogger, "}} ~EscapableHandleScope (releasing {} handles)", [&] {
@@ -54,6 +54,6 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
   }
 };
 
-}  // namespace v8u
+}  // namespace v8x
 
 #endif

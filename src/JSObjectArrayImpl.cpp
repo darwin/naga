@@ -3,7 +3,7 @@
 #include "Wrapping.h"
 #include "JSObject.h"
 #include "Logging.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 #include "Printing.h"
 #include "PybindExtensions.h"
 
@@ -12,8 +12,8 @@
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
 size_t CJSObjectArrayImpl::Length() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
   auto result = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
   TRACE("CJSObjectArrayImpl::Length {} => {}", THIS, result);
   return result;
@@ -21,10 +21,10 @@ size_t CJSObjectArrayImpl::Length() const {
 
 py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
@@ -64,10 +64,10 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
 
 py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
   TRACE("CJSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     PyObject* values = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
@@ -149,10 +149,10 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
 
 py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   if (PySlice_Check(py_key.ptr())) {
     Py_ssize_t arrayLen = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
@@ -188,10 +188,10 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
 
 bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
   TRACE("CJSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {
     if (m_base.ToV8(v8_isolate)->Has(v8_context, i).ToChecked()) {

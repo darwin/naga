@@ -10,7 +10,7 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   CJSIsolatePtr m_isolate;
 
   // we want to keep the isolate locked between enter/leave
-  v8::SharedIsolateLockerPtr m_v8_shared_isolate_locker;
+  v8x::SharedIsolateLockerPtr m_v8_shared_isolate_locker;
   size_t m_entered_level;
 
  public:

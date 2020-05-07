@@ -3,7 +3,7 @@
 #include "PythonThreads.h"
 #include "Logging.h"
 #include "Printing.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -18,7 +18,7 @@ bool CJSLocker::IsEntered() const {
 void CJSLocker::Enter() {
   TRACE("CJSLocker::Enter {}", THIS);
   withAllowedPythonThreads([&] {
-    auto v8_isolate = v8u::getCurrentIsolate();
+    auto v8_isolate = v8x::getCurrentIsolate();
     m_isolate = CJSIsolate::FromV8(v8_isolate);
     m_v8_locker = std::make_unique<v8::Locker>(v8_isolate);
   });
@@ -33,7 +33,7 @@ void CJSLocker::Leave() {
 }
 
 bool CJSLocker::IsLocked() {
-  auto result = v8::Locker::IsLocked(v8u::getCurrentIsolate());
+  auto result = v8::Locker::IsLocked(v8x::getCurrentIsolate());
   TRACE("CJSLocker::IsLocked => {}", result);
   return result;
 }

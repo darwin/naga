@@ -7,7 +7,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSScriptLogger), __VA_ARGS__)
 
-CJSScript::CJSScript(v8::ProtectedIsolatePtr v8_protected_isolate,
+CJSScript::CJSScript(v8x::ProtectedIsolatePtr v8_protected_isolate,
                      const CJSEngine& engine,
                      v8::Local<v8::String> v8_source,
                      v8::Local<v8::Script> v8_script)
@@ -47,7 +47,7 @@ v8::Local<v8::Script> CJSScript::Script() const {
 
 std::string CJSScript::GetSource() const {
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
   v8::String::Utf8Value source(v8_isolate, Source());
   auto result = std::string(*source, source.length());
   TRACE("CJSScript::GetSource {} => {}", THIS, traceText(result));
@@ -57,7 +57,7 @@ std::string CJSScript::GetSource() const {
 py::object CJSScript::Run() const {
   TRACE("CJSScript::Run {}", THIS);
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
   auto result = m_engine.ExecuteScript(Script());
   TRACE("CJSScript::Run {} => {}", THIS, result);
   return result;

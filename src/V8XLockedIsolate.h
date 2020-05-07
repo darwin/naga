@@ -2,9 +2,9 @@
 #define NAGA_V8LOCKEDISOLATE_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
-namespace v8 {
+namespace v8x {
 
 class LockedIsolatePtr {
   v8::Isolate* m_v8_isolate;
@@ -28,6 +28,6 @@ class LockedIsolatePtr {
 #pragma clang diagnostic pop
 };
 
-}  // namespace v8
+}  // namespace v8x
 
 #endif

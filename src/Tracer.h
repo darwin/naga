@@ -73,7 +73,7 @@ using TracedRawObject = PyObject;
 using WeakRefRawObject = PyObject;
 
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
-v8::Local<v8::Object> lookupTracedWrapper(v8::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object);
+v8::Local<v8::Object> lookupTracedWrapper(v8x::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object);
 TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper);
 
 struct TracerRecord {
@@ -95,7 +95,7 @@ class CTracer {
   ~CTracer();
 
   void TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
-  v8::Local<v8::Object> LookupWrapper(v8::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object);
+  v8::Local<v8::Object> LookupWrapper(v8x::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object);
   void AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object);
   void WeakRefCallback(WeakRefRawObject* raw_weak_ref);
 

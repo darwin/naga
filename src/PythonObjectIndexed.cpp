@@ -5,7 +5,7 @@
 #include "PythonUtils.h"
 #include "Printing.h"
 #include "Utils.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -13,8 +13,8 @@
 
 void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedGetter index={} v8_info={}", index, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -61,8 +61,8 @@ void CPythonObject::IndexedSetter(uint32_t index,
                                   v8::Local<v8::Value> v8_value,
                                   const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedSetter index={} v8_value={} v8_info={}", index, v8_value, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -95,8 +95,8 @@ void CPythonObject::IndexedSetter(uint32_t index,
 
 void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::IndexedQuery index={} v8_info={}", index, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -136,8 +136,8 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
 
 void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::IndexedDeleter index={} v8_info={}", index, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -163,15 +163,15 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
 
 void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::IndexedEnumerator v8_info={}", v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
     auto len = PySequence_Check(py_obj.ptr()) ? PySequence_Size(py_obj.ptr()) : 0;
     auto v8_array = v8::Array::New(v8_isolate, len);
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
 
     for (Py_ssize_t i = 0; i < len; i++) {
       auto v8_i = v8::Integer::New(v8_isolate, i);

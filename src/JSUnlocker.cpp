@@ -17,7 +17,7 @@ bool CJSUnlocker::IsEntered() const {
 void CJSUnlocker::Enter() {
   TRACE("CJSUnlocker::Enter {}", THIS);
   withAllowedPythonThreads([&]() {
-    auto v8_isolate = v8u::getCurrentIsolate();
+    auto v8_isolate = v8x::getCurrentIsolate();
     m_isolate = CJSIsolate::FromV8(v8_isolate);
     m_v8_unlocker = std::make_unique<v8::Unlocker>(v8_isolate);
   });

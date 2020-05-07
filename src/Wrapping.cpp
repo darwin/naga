@@ -5,7 +5,7 @@
 #include "JSException.h"
 #include "JSObject.h"
 #include "Logging.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 #include "Printing.h"
 #include "PythonUtils.h"
 #include "PybindExtensions.h"
@@ -14,12 +14,12 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kWrappingLogger), __VA_ARGS__)
 
-py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
   TRACE("wrap v8_isolate={} v8_val={} v8_this={}", P$(v8_isolate), v8_val, v8_this);
 
   if (v8_val->IsFunction()) {
     // when v8_this is global, we can fall back to unbound function (later)
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     if (!v8_this->StrictEquals(v8_context->Global())) {
       // TODO: optimize this
       auto v8_fn = v8_val.As<v8::Function>();
@@ -40,11 +40,11 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, v
   return wrap(v8_isolate, v8_val);
 }
 
-py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val) {
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val) {
   TRACE("wrap v8_isolate={} v8_val={}", P$(v8_isolate), v8_val);
   assert(!v8_val.IsEmpty());
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   if (v8_val->IsNull()) {
     return py::js_null();
@@ -59,16 +59,16 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(false);
   }
   if (v8_val->IsInt32()) {
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto int32 = v8_val->Int32Value(v8_context).ToChecked();
     return py::int_(int32);
   }
   if (v8_val->IsString()) {
-    auto v8_utf = v8u::toUTF(v8_isolate, v8_val.As<v8::String>());
+    auto v8_utf = v8x::toUTF(v8_isolate, v8_val.As<v8::String>());
     return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsStringObject()) {
-    auto v8_utf = v8u::toUTF(v8_isolate, v8_val.As<v8::StringObject>()->ValueOf());
+    auto v8_utf = v8x::toUTF(v8_isolate, v8_val.As<v8::StringObject>()->ValueOf());
     return py::str(*v8_utf, v8_utf.length());
   }
   if (v8_val->IsBoolean()) {
@@ -80,17 +80,17 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val) {
     return py::bool_(val);
   }
   if (v8_val->IsNumber()) {
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto val = v8_val->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsNumberObject()) {
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto val = v8_val.As<v8::NumberObject>()->NumberValue(v8_context).ToChecked();
     return py::float_(val);
   }
   if (v8_val->IsDate()) {
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto val = v8_val.As<v8::Date>()->NumberValue(v8_context).ToChecked();
     auto ts = static_cast<time_t>(floor(val / 1000));
     auto t = localtime(&ts);
@@ -98,17 +98,17 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val) {
     return pythonFromDateAndTime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, u);
   }
 
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_obj = v8_val->ToObject(v8_context).ToLocalChecked();
   auto py_result = wrap(v8_isolate, v8_obj);
   TRACE("=> {}", py_result);
   return py_result;
 }
 
-py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj) {
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj) {
   TRACE("wrap v8_isolate={} v8_obj={}", P$(v8_isolate), v8_obj);
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   if (v8_obj.IsEmpty()) {
     throw CJSException(v8_isolate, "Unexpected empty V8 object handle.");
@@ -126,7 +126,7 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj) 
   return py_result;
 }
 
-py::object wrap(v8::LockedIsolatePtr& v8_isolate, const CJSObjectPtr& obj) {
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, const CJSObjectPtr& obj) {
   TRACE("wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();
 
@@ -135,7 +135,7 @@ py::object wrap(v8::LockedIsolatePtr& v8_isolate, const CJSObjectPtr& obj) {
   return py_result;
 }
 
-static v8::Local<v8::Value> wrapWithTracing(v8::LockedIsolatePtr& v8_isolate, py::handle py_handle) {
+static v8::Local<v8::Value> wrapWithTracing(v8x::LockedIsolatePtr& v8_isolate, py::handle py_handle) {
   TRACE("wrapWithTracing v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
 
   auto v8_wrapper = lookupTracedWrapper(v8_isolate, py_handle.ptr());
@@ -144,7 +144,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8::LockedIsolatePtr& v8_isolate, py
     return v8_wrapper;
   } else {
     // this is first time we see this object, let's create a new wrapper for it
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto v8_wrapper_template = CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8_isolate);
     auto v8_new_wrapper = v8_wrapper_template->NewInstance(v8_context).ToLocalChecked();
     assert(!v8_new_wrapper.IsEmpty());
@@ -156,7 +156,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8::LockedIsolatePtr& v8_isolate, py
   }
 }
 
-static v8::Local<v8::Value> wrapInternal(v8::LockedIsolatePtr& v8_isolate, py::handle py_handle) {
+static v8::Local<v8::Value> wrapInternal(v8x::LockedIsolatePtr& v8_isolate, py::handle py_handle) {
   TRACE("wrapInternal v8_isolate={} py_handle={}", P$(v8_isolate), py_handle);
   if (py::isinstance<py::js_null>(py_handle)) {
     return v8::Null(v8_isolate);
@@ -181,13 +181,13 @@ static v8::Local<v8::Value> wrapInternal(v8::LockedIsolatePtr& v8_isolate, py::h
     return v8::Number::New(v8_isolate, py_float);
   }
   if (py::isinstance<py::exact_str>(py_handle)) {
-    return v8u::toString(v8_isolate, py_handle);
+    return v8x::toString(v8_isolate, py_handle);
   }
   if (isExactDateTime(py_handle) || isExactDate(py_handle)) {
     tm ts = {0};
     int ms = 0;
     getPythonDateTime(py_handle, ts, ms);
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
     return v8::Date::New(v8_context, time).ToLocalChecked();
   }
@@ -195,7 +195,7 @@ static v8::Local<v8::Value> wrapInternal(v8::LockedIsolatePtr& v8_isolate, py::h
     tm ts = {0};
     int ms = 0;
     getPythonTime(py_handle, ts, ms);
-    auto v8_context = v8u::getCurrentContext(v8_isolate);
+    auto v8_context = v8x::getCurrentContext(v8_isolate);
     auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
     return v8::Date::New(v8_context, time).ToLocalChecked();
   }
@@ -211,10 +211,10 @@ static v8::Local<v8::Value> wrapInternal(v8::LockedIsolatePtr& v8_isolate, py::h
 
 v8::Local<v8::Value> wrap(const py::handle& py_handle) {
   TRACE("wrap py_handle={}", py_handle);
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = v8x::getCurrentIsolate();
   assert(v8_isolate->InContext());
-  auto v8_scope = v8u::withEscapableScope(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_scope = v8x::withEscapableScope(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto py_gil = pyu::withGIL();
   auto v8_result = wrapInternal(v8_isolate, py_handle);
   return v8_scope.Escape(v8_result);

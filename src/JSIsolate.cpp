@@ -8,7 +8,7 @@
 #include "JSIsolateRegistry.h"
 #include "Logging.h"
 #include "PybindExtensions.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -18,19 +18,19 @@ CJSIsolatePtr CJSIsolate::FromV8(v8::Isolate* v8_isolate) {
   auto isolate = lookupRegisteredIsolate(v8_isolate);
   if (!isolate) {
     auto msg = fmt::format("Cannot work with foreign V8 isolate {}", P$(v8_isolate));
-    throw CJSException(v8::ProtectedIsolatePtr(v8_isolate), msg);
+    throw CJSException(v8x::ProtectedIsolatePtr(v8_isolate), msg);
   }
   TRACE("CJSIsolate::FromV8 v8_isolate={} => {}", P$(v8_isolate), (void*)isolate);
   return isolate->shared_from_this();
 }
 
-v8::LockedIsolatePtr CJSIsolate::ToV8() {
+v8x::LockedIsolatePtr CJSIsolate::ToV8() {
   auto v8_isolate = m_v8_isolate.giveMeRawIsolateAndTrustMe();
-  return v8::LockedIsolatePtr(v8_isolate, m_locker_holder.CreateOrShareLocker());
+  return v8x::LockedIsolatePtr(v8_isolate, m_locker_holder.CreateOrShareLocker());
 }
 
 CJSIsolate::CJSIsolate()
-    : m_v8_isolate(v8u::createIsolate()),
+    : m_v8_isolate(v8x::createIsolate()),
       m_locker_holder(m_v8_isolate.giveMeRawIsolateAndTrustMe()) {
   TRACE("CJSIsolate::CJSIsolate {}", THIS);
   m_eternals = std::make_unique<CJSEternals>(m_v8_isolate);
@@ -98,7 +98,7 @@ CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrac
 }
 
 py::object CJSIsolate::GetCurrent() {
-  auto v8_isolate_or_null = v8u::getCurrentIsolateUnchecked();
+  auto v8_isolate_or_null = v8x::getCurrentIsolateUnchecked();
   auto py_result = [&] {
     if (!v8_isolate_or_null || !v8_isolate_or_null->IsInUse()) {
       return py::js_null().cast<py::object>();
@@ -131,7 +131,7 @@ void CJSIsolate::Leave() const {
 
 py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   auto py_result = [&] {
     if (v8_context.IsEmpty()) {
@@ -146,8 +146,8 @@ py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
 
 py::object CJSIsolate::GetCurrentContext() const {
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContextUnchecked(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContextUnchecked(v8_isolate);
   auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();

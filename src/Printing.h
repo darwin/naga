@@ -2,7 +2,7 @@
 #define NAGA_PRINTING_H_
 
 #include "Base.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 template <typename T>
 const void* voidThis(const T* v) {
@@ -65,8 +65,6 @@ std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& v) {
 namespace v8 {
 
 std::ostream& operator<<(std::ostream& os, const TryCatch& v);
-std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v);
-
 std::ostream& operator<<(std::ostream& os, const Local<Private>& v);
 std::ostream& operator<<(std::ostream& os, const Local<Context>& v);
 std::ostream& operator<<(std::ostream& os, const Local<Script>& v);
@@ -86,7 +84,7 @@ std::ostream& operator<<(std::ostream& os, const Local<T>& v) {
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Eternal<T>& v) {
-  return os << "v8::Eternal<" << v.Get(v8u::getCurrentIsolate()) << ">";
+  return os << "v8::Eternal<" << v.Get(v8x::getCurrentIsolate()) << ">";
 }
 
 template <typename T>
@@ -101,6 +99,12 @@ std::ostream& operator<<(std::ostream& os, FunctionCallbackInfo<T> v) {
 }
 
 }  // namespace v8
+
+namespace v8x {
+
+std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v);
+
+}  // namespace v8x
 
 namespace pybind11 {
 

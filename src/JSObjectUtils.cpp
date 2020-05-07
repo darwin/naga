@@ -1,6 +1,6 @@
 #include "JSObjectUtils.h"
 #include "Logging.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -11,9 +11,9 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
     return false;
   }
 
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
 
   // TODO: optimize this
   auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();

@@ -2,14 +2,14 @@
 #define NAGA_JSSTACKTRACE_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 class CJSStackTrace {
-  v8::ProtectedIsolatePtr m_v8_isolate;
+  v8x::ProtectedIsolatePtr m_v8_isolate;
   v8::Global<v8::StackTrace> m_v8_stack_trace;
 
  public:
-  CJSStackTrace(v8::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
+  CJSStackTrace(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace);
   CJSStackTrace(const CJSStackTrace& stack_trace);
 
   [[nodiscard]] v8::Local<v8::StackTrace> Handle() const;
@@ -17,7 +17,7 @@ class CJSStackTrace {
   [[nodiscard]] CJSStackFramePtr GetFrame(int idx) const;
 
   static CJSStackTracePtr GetCurrentStackTrace(
-      v8::LockedIsolatePtr& v8_isolate,
+      v8x::LockedIsolatePtr& v8_isolate,
       int frame_limit,
       v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview);
 

@@ -2,15 +2,15 @@
 #define NAGA_JSEXCEPTION_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 void translateException(std::exception_ptr p);
 
-v8::Eternal<v8::Private> privateAPIForType(v8::LockedIsolatePtr& v8_isolate);
-v8::Eternal<v8::Private> privateAPIForValue(v8::LockedIsolatePtr& v8_isolate);
+v8::Eternal<v8::Private> privateAPIForType(v8x::LockedIsolatePtr& v8_isolate);
+v8::Eternal<v8::Private> privateAPIForValue(v8x::LockedIsolatePtr& v8_isolate);
 
 class CJSException : public std::runtime_error {
-  v8::ProtectedIsolatePtr m_v8_isolate;
+  v8x::ProtectedIsolatePtr m_v8_isolate;
   PyObject* m_raw_type;
 
   v8::Global<v8::Value> m_v8_exception;
@@ -18,10 +18,12 @@ class CJSException : public std::runtime_error {
   v8::Global<v8::Message> m_v8_message;
 
  protected:
-  CJSException(v8::ProtectedIsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
+  CJSException(v8x::ProtectedIsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
  public:
-  CJSException(v8::ProtectedIsolatePtr v8_isolate, const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
+  CJSException(v8x::ProtectedIsolatePtr v8_isolate,
+               const std::string& msg,
+               PyObject* raw_type = PyExc_RuntimeError) noexcept;
   explicit CJSException(const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
   CJSException(const CJSException& ex) noexcept;
   ~CJSException() noexcept;
@@ -46,8 +48,8 @@ class CJSException : public std::runtime_error {
   [[nodiscard]] py::object Str() const;
 
   void PrintStackTrace(py::object py_file) const;
-  static void CheckTryCatch(v8::LockedIsolatePtr& v8_isolate, v8::TryCatchPtr v8_try_catch);
-  static void Throw(v8::LockedIsolatePtr& v8_isolate, v8::TryCatchPtr v8_try_catch);
+  static void CheckTryCatch(v8x::LockedIsolatePtr& v8_isolate, v8x::TryCatchPtr v8_try_catch);
+  static void Throw(v8x::LockedIsolatePtr& v8_isolate, v8x::TryCatchPtr v8_try_catch);
 };
 
 static_assert(std::is_nothrow_copy_constructible<CJSException>::value,

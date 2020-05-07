@@ -2,14 +2,14 @@
 #define NAGA_JSSTACKFRAME_H_
 
 #include "Base.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 class CJSStackFrame {
-  v8::ProtectedIsolatePtr m_v8_isolate;
+  v8x::ProtectedIsolatePtr m_v8_isolate;
   v8::Global<v8::StackFrame> m_v8_frame;
 
  public:
-  CJSStackFrame(v8::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
+  CJSStackFrame(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
   CJSStackFrame(const CJSStackFrame& stack_frame);
 
   [[nodiscard]] v8::Local<v8::StackFrame> Handle() const;

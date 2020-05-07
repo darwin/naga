@@ -17,7 +17,7 @@
 #include "PybindNagaModule.h"
 #include "JSObject.h"
 #include "Logging.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -291,7 +291,7 @@ void exposeJSEngine(py::module py_module) {
                     "it cannot be reinitialized.")                                                       //
                                                                                                          //
       .def_method_s(                                                                                     //
-          "low_memory", []() { v8u::getCurrentIsolate()->LowMemoryNotification(); },                     //
+          "low_memory", []() { v8x::getCurrentIsolate()->LowMemoryNotification(); },                     //
           "Optional notification that the system is running low on memory.")                             //
                                                                                                          //
       .def_method_s("set_stack_limit", &CJSEngine::SetStackLimit,                                        //

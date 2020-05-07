@@ -3,20 +3,20 @@
 #include "PythonThreads.h"
 #include "Wrapping.h"
 #include "Logging.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 #include "Printing.h"
 #include "PybindExtensions.h"
-#include "V8ProtectedIsolate.h"
+#include "V8XProtectedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSEngineLogger), __VA_ARGS__)
 
-CJSEngine::CJSEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
+CJSEngine::CJSEngine() : m_v8_isolate(v8x::getCurrentIsolate()) {
   TRACE("CJSEngine::CJSEngine");
 }
 
-CJSEngine::CJSEngine(v8::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
+CJSEngine::CJSEngine(v8x::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
   TRACE("CJSEngine::CJSEngine v8_isolate={}", m_v8_isolate);
 }
 
@@ -41,7 +41,7 @@ void CJSEngine::SetStackLimit(uintptr_t stack_limit_size) {
     return;
   }
 
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = v8x::getCurrentIsolate();
   v8_isolate->SetStackLimit(stack_limit);
 }
 
@@ -54,13 +54,13 @@ const char* CJSEngine::GetVersion() {
 
 void CJSEngine::TerminateAllThreads() {
   TRACE("CJSEngine::TerminateAllThreads");
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = v8x::getCurrentIsolate();
   v8_isolate->TerminateExecution();
 }
 
 bool CJSEngine::IsDead() {
   TRACE("CJSEngine::IsDead");
-  auto v8_isolate = v8u::getCurrentIsolate();
+  auto v8_isolate = v8x::getCurrentIsolate();
   auto result = v8_isolate->IsDead();
   TRACE("CJSEngine::IsDead => {}", result);
   return result;
@@ -68,10 +68,10 @@ bool CJSEngine::IsDead() {
 
 py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   TRACE("CJSEngine::ExecuteScript v8_script={}", v8_script);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   auto v8_result = withAllowedPythonThreads([&] { return v8_script->Run(v8_context); });
   if (v8_result.IsEmpty()) {
@@ -83,34 +83,34 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
 CJSScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
   TRACE("CJSEngine::Compile name={} line={} col={} src={}", name, line, col, traceText(src));
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  return InternalCompile(v8_isolate, v8u::toString(v8_isolate, src), v8u::toString(v8_isolate, name), line, col);
+  auto v8_scope = v8x::withScope(v8_isolate);
+  return InternalCompile(v8_isolate, v8x::toString(v8_isolate, src), v8x::toString(v8_isolate, name), line, col);
 }
 
 CJSScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) const {
   TRACE("CJSEngine::CompileW name={} line={} col={} src={}", P$(name), line, col, traceMore(P$(src)));
   auto v8_isolate = m_v8_isolate.lock();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  return InternalCompile(v8_isolate, v8u::toString(v8_isolate, src), v8u::toString(v8_isolate, name), line, col);
+  auto v8_scope = v8x::withScope(v8_isolate);
+  return InternalCompile(v8_isolate, v8x::toString(v8_isolate, src), v8x::toString(v8_isolate, name), line, col);
 }
 
-CJSScriptPtr CJSEngine::InternalCompile(v8::LockedIsolatePtr& v8_isolate,
+CJSScriptPtr CJSEngine::InternalCompile(v8x::LockedIsolatePtr& v8_isolate,
                                         v8::Local<v8::String> v8_src,
                                         v8::Local<v8::Value> v8_name,
                                         int line,
                                         int col) const {
   TRACE("CJSEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_script = withAllowedPythonThreads([&] {
-    auto v8_line = v8u::toPositiveInteger(v8_isolate, line);
-    auto v8_col = v8u::toPositiveInteger(v8_isolate, col);
-    auto v8_script_origin = v8u::createScriptOrigin(v8_name, v8_line, v8_col);
+    auto v8_line = v8x::toPositiveInteger(v8_isolate, line);
+    auto v8_col = v8x::toPositiveInteger(v8_isolate, col);
+    auto v8_script_origin = v8x::createScriptOrigin(v8_name, v8_line, v8_col);
     return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
   });
 
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
+  v8x::checkTryCatch(v8_isolate, v8_try_catch);
   return std::make_shared<CJSScript>(v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 

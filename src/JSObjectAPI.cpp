@@ -41,11 +41,11 @@ void CJSObjectAPI::DelAttr(const py::object& py_key) const {
 
 py::list CJSObjectAPI::Dir() const {
   TRACE("CJSObjectAPI::Dir {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
   auto py_gil = pyu::withGIL();
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   auto props = ToV8(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
 
@@ -106,8 +106,8 @@ bool CJSObjectAPI::Contains(const py::object& py_key) const {
 }
 
 int CJSObjectAPI::Hash() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto result = ToV8(v8_isolate)->GetIdentityHash();
   TRACE("CJSObjectAPI::Hash {} => {}", THIS, result);
@@ -115,8 +115,8 @@ int CJSObjectAPI::Hash() const {
 }
 
 CJSObjectPtr CJSObjectAPI::Clone() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto result = std::make_shared<CJSObject>(ToV8(v8_isolate)->Clone());
   TRACE("CJSObjectAPI::Clone {} => {}", THIS, result);
@@ -124,10 +124,10 @@ CJSObjectPtr CJSObjectAPI::Clone() const {
 }
 
 bool CJSObjectAPI::EQ(const CJSObjectPtr& other) const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
 
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
 
   auto result = other.get() && ToV8(v8_isolate)->Equals(v8_context, other->ToV8(v8_isolate)).ToChecked();
   TRACE("CJSObjectAPI::EQ {} other={} => {}", THIS, other, result);
@@ -140,9 +140,9 @@ bool CJSObjectAPI::NE(const CJSObjectPtr& other) const {
 
 py::object CJSObjectAPI::Int() const {
   TRACE("CJSObjectAPI::ToPythonInt {}", THIS);
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
 
   if (m_v8_obj.IsEmpty()) {
     throw CJSException("Argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
@@ -155,9 +155,9 @@ py::object CJSObjectAPI::Int() const {
 }
 
 py::object CJSObjectAPI::Float() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
 
   if (m_v8_obj.IsEmpty()) {
     throw CJSException("Argument must be a string or a number, not 'NoneType'", PyExc_TypeError);
@@ -170,8 +170,8 @@ py::object CJSObjectAPI::Float() const {
 }
 
 py::object CJSObjectAPI::Bool() const {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   bool val = false;
   if (!m_v8_obj.IsEmpty()) {
@@ -236,15 +236,15 @@ py::object CJSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwar
 }
 
 py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
-  auto v8_isolate = v8u::getCurrentIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8x::getCurrentIsolate();
+  auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_proto = proto->ToV8(v8_isolate);
   if (v8_proto.IsEmpty()) {
     throw CJSException("Object prototype may only be an Object", PyExc_TypeError);
   }
 
-  auto v8_context = v8u::getCurrentContext(v8_isolate);
-  auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
+  auto v8_context = v8x::getCurrentContext(v8_isolate);
+  auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   if (!v8_proto->IsFunction()) {
     throw CJSException("Object prototype expected to be a Function", PyExc_TypeError);
@@ -261,19 +261,19 @@ py::object CJSObjectAPI::Create(const CJSObjectPtr& proto, const py::tuple& py_a
   auto v8_result = withAllowedPythonThreads(
       [&] { return fn->NewInstance(v8_context, v8_args.size(), v8_args.data()).ToLocalChecked(); });
 
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
+  v8x::checkTryCatch(v8_isolate, v8_try_catch);
 
   auto it = py_kwds.begin();
   while (it != py_kwds.end()) {
     auto py_key = it->first;
     auto py_val = it->second;
-    auto v8_key = v8u::toString(v8_isolate, py_key);
+    auto v8_key = v8x::toString(v8_isolate, py_key);
     auto v8_val = wrap(py_val);
     v8_result->Set(v8_context, v8_key, v8_val).Check();
     it++;
   }
 
-  v8u::checkTryCatch(v8_isolate, v8_try_catch);
+  v8x::checkTryCatch(v8_isolate, v8_try_catch);
 
   return wrap(v8_isolate, v8_result);
 }

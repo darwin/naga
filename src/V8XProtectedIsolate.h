@@ -3,7 +3,7 @@
 
 #include "Base.h"
 
-namespace v8 {
+namespace v8x {
 
 class LockedIsolatePtr;
 
@@ -20,6 +20,6 @@ class ProtectedIsolatePtr {
   v8::Isolate* giveMeRawIsolateAndTrustMe() const { return m_v8_isolate; }
 };
 
-}  // namespace v8
+}  // namespace v8x
 
 #endif

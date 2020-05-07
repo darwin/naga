@@ -3,19 +3,19 @@
 
 #include "Base.h"
 #include "PythonObject.h"
-#include "V8Utils.h"
+#include "V8XUtils.h"
 
 template <typename F>
-auto withPythonErrorInterception(v8::LockedIsolatePtr& v8_isolate, F&& fn) {
+auto withPythonErrorInterception(v8x::LockedIsolatePtr& v8_isolate, F&& fn) {
   try {
     return std::optional(fn());
   } catch (const py::error_already_set& e) {
     CPythonObject::ThrowJSException(v8_isolate, e);
   } catch (const std::exception& e) {
-    auto v8_msg = v8u::toString(v8_isolate, e.what());
+    auto v8_msg = v8x::toString(v8_isolate, e.what());
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   } catch (...) {
-    auto v8_msg = v8u::toString(v8_isolate, "unknown exception when crossing boundary into Python");
+    auto v8_msg = v8x::toString(v8_isolate, "unknown exception when crossing boundary into Python");
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));
   }
   // return empty value because of exception

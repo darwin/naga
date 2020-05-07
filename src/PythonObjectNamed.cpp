@@ -42,7 +42,7 @@ void toStringImpl(const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     if (v8_name->StrictEquals(v8::Symbol::GetToStringTag(v8_isolate))) {
       toStringImpl(v8_info);
@@ -53,12 +53,12 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
     auto py_obj = wrap(v8_isolate, v8_info.Holder());
-    auto v8_utf_name = v8u::toUTF(v8_isolate, v8_name.As<v8::String>());
+    auto v8_utf_name = v8x::toUTF(v8_isolate, v8_name.As<v8::String>());
 
     // TODO: use pybind
     if (PyGen_Check(py_obj.ptr())) {
@@ -107,16 +107,16 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
                                 v8::Local<v8::Value> v8_value,
                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedSetter v8_name={} v8_value={} v8_info={}", v8_name, v8_value, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
     return;
   }
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&] {
-    auto v8_name_utf = v8u::toUTF(v8_isolate, v8_name);
+    auto v8_name_utf = v8x::toUTF(v8_isolate, v8_name);
     if (!*v8_name_utf) {
       throw CJSException("unable to obtain attribute name", PyExc_AttributeError);
     }
@@ -140,13 +140,13 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
     return;
   }
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -170,13 +170,13 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
     return;
   }
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -216,7 +216,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
 
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
-  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
+  auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();
@@ -255,7 +255,7 @@ void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v
 
       auto py_item = wrap(py::reinterpret_borrow<py::object>(raw_item));
       auto v8_i = v8::Uint32::New(v8_isolate, i);
-      auto v8_context = v8u::getCurrentContext(v8_isolate);
+      auto v8_context = v8x::getCurrentContext(v8_isolate);
       auto res = v8_array->Set(v8_context, v8_i, py_item);
       res.Check();
     }

@@ -85,9 +85,9 @@ naga_source_files = [
   "PythonUtils.cpp",
   "Tracer.cpp",
   "Utils.cpp",
-  "V8LockedIsolate.cpp",
-  "V8ProtectedIsolate.cpp",
-  "V8Utils.cpp",
+  "V8XLockedIsolate.cpp",
+  "V8XProtectedIsolate.cpp",
+  "V8XUtils.cpp",
   "Wrapping.cpp",
 ]
 
