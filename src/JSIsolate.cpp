@@ -53,20 +53,7 @@ CJSIsolate::~CJSIsolate() {
 
   unregisterIsolate(m_v8_isolate);
 
-  // TODO: get rid of this ad-hoc code, it is here because of default isolate in ext
-  {
-    auto v8_isolate = ToV8();
-
-    // isolate could be entered, we cannot dispose unless we exit it completely
-    int defensive_counter = 0;
-    while (v8_isolate->IsInUse()) {
-      v8_isolate->Exit();
-      if (++defensive_counter > 100) {
-        break;
-      }
-    }
-  }
-  m_exposed_locker = nullptr;
+  assert(m_exposed_locker_level == 0);  // someone forgot to call unlock
 
   // This is interesting v8::Isolate::Dispose is documented to be used
   // under a lock but V8 asserts in debug mode.
@@ -74,7 +61,8 @@ CJSIsolate::~CJSIsolate() {
   // associated mutexes.
 
   // below this point nobody should hold the lock
-
+  auto v8_isolate = m_v8_isolate.giveMeRawIsolateAndTrustMe();
+  assert(!v8_isolate->IsInUse());  // someone forgot to call leave
   m_v8_isolate.giveMeRawIsolateAndTrustMe()->Dispose();
 
   TRACE("CJSIsolate::~CJSIsolate {} [COMPLETED]", THIS);

@@ -3,6 +3,7 @@
 # It is imported in __init__ of the `naga` package.
 
 import re
+import atexit
 
 import naga.config
 import naga.debug_support
@@ -203,8 +204,8 @@ if naga.config.naga_keep_backward_compatibility:
 
 # -- init code --------------------------------------------------------------------------------------------------------
 
-v8_default_platform = None
-v8_default_isolate = None
+v8_default_platform: JSPlatform
+v8_default_isolate: JSIsolate
 
 
 def init_default_platform():
@@ -213,11 +214,18 @@ def init_default_platform():
     v8_default_platform.init()
 
 
+def deinit_default_isolate():
+    global v8_default_isolate
+    v8_default_isolate.leave()
+    v8_default_isolate.unlock()
+
+
 def init_default_isolate():
     global v8_default_isolate
     v8_default_isolate = JSIsolate()
     v8_default_isolate.lock()
     v8_default_isolate.enter()
+    atexit.register(deinit_default_isolate)
 
 
 def init():
