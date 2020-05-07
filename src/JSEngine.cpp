@@ -6,6 +6,7 @@
 #include "V8Utils.h"
 #include "Printing.h"
 #include "PybindExtensions.h"
+#include "V8ProtectedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -15,8 +16,8 @@ CJSEngine::CJSEngine() : m_v8_isolate(v8u::getCurrentIsolate()) {
   TRACE("CJSEngine::CJSEngine");
 }
 
-CJSEngine::CJSEngine(v8::IsolatePtr v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
-  TRACE("CJSEngine::CJSEngine v8_isolate={}", P$(m_v8_isolate));
+CJSEngine::CJSEngine(v8::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(std::move(v8_isolate)) {
+  TRACE("CJSEngine::CJSEngine v8_isolate={}", m_v8_isolate);
 }
 
 void CJSEngine::SetFlags(const std::string& flags) {
@@ -81,22 +82,24 @@ py::object CJSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
 
 CJSScriptPtr CJSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
   TRACE("CJSEngine::Compile name={} line={} col={} src={}", name, line, col, traceText(src));
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  return InternalCompile(v8u::toString(m_v8_isolate, src), v8u::toString(m_v8_isolate, name), line, col);
+  auto v8_isolate = m_v8_isolate.lock();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  return InternalCompile(v8_isolate, v8u::toString(v8_isolate, src), v8u::toString(v8_isolate, name), line, col);
 }
 
 CJSScriptPtr CJSEngine::CompileW(const std::wstring& src, const std::wstring& name, int line, int col) const {
   TRACE("CJSEngine::CompileW name={} line={} col={} src={}", P$(name), line, col, traceMore(P$(src)));
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  return InternalCompile(v8u::toString(m_v8_isolate, src), v8u::toString(m_v8_isolate, name), line, col);
+  auto v8_isolate = m_v8_isolate.lock();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  return InternalCompile(v8_isolate, v8u::toString(v8_isolate, src), v8u::toString(v8_isolate, name), line, col);
 }
 
-CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
+CJSScriptPtr CJSEngine::InternalCompile(v8::LockedIsolatePtr& v8_isolate,
+                                        v8::Local<v8::String> v8_src,
                                         v8::Local<v8::Value> v8_name,
                                         int line,
                                         int col) const {
   TRACE("CJSEngine::InternalCompile v8_name={} line={} col={} v8_src={}", v8_name, line, col, traceText(v8_src));
-  auto v8_isolate = v8u::getCurrentIsolate();
   auto v8_scope = v8u::withScope(v8_isolate);
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8u::withAutoTryCatch(v8_isolate);
@@ -107,8 +110,8 @@ CJSScriptPtr CJSEngine::InternalCompile(v8::Local<v8::String> v8_src,
     return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
   });
 
-  v8u::checkTryCatch(m_v8_isolate, v8_try_catch);
-  return std::make_shared<CJSScript>(m_v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
+  v8u::checkTryCatch(v8_isolate, v8_try_catch);
+  return std::make_shared<CJSScript>(v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
 }
 
 void CJSEngine::Dump(std::ostream& os) const {

@@ -52,7 +52,7 @@ void v8RequestGarbageCollectionForTesting() {
 
 CJSIsolatePtr testEncounteringForeignIsolate() {
   auto foreign_v8_isolate = v8u::createIsolate();
-  return CJSIsolate::FromV8(foreign_v8_isolate);
+  return CJSIsolate::FromV8(foreign_v8_isolate.lock());
 }
 
 CJSContextPtr testEncounteringForeignContext() {

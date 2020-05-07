@@ -24,8 +24,8 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<HospitalRecord>& data) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-CJSHospital::CJSHospital(v8::IsolatePtr v8_isolate) : m_v8_isolate(v8_isolate) {
-  TRACE("CJSHospital::CJSHospital {} v8_isolate={}", THIS, P$(v8_isolate));
+CJSHospital::CJSHospital(v8::ProtectedIsolatePtr v8_isolate) : m_v8_isolate(v8_isolate) {
+  TRACE("CJSHospital::CJSHospital {} v8_isolate={}", THIS, m_v8_isolate);
 }
 
 CJSHospital::~CJSHospital() {
@@ -46,11 +46,11 @@ void CJSHospital::AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupF
   record->m_v8_patient.SetWeak(record, &v8WeakCallback, v8::WeakCallbackType::kFinalizer);
 }
 
-void CJSHospital::PatientIsAboutToDie(v8::IsolatePtr v8_isolate, HospitalRecord* record) {
+void CJSHospital::PatientIsAboutToDie(v8::Isolate* v8_isolate, HospitalRecord* record) {
   TRACE("CJSHospital::PatientIsAboutToDie {} record={} ", THIS, (void*)record);
 
   // just a sanity check that the weak callback is related to our isolate
-  assert(v8_isolate == m_v8_isolate);
+  assert(v8_isolate == m_v8_isolate.giveMeRawIsolateAndTrustMe());
   assert(m_records.find(record) != m_records.end());
 
   // remove our records
@@ -63,7 +63,8 @@ void CJSHospital::UnplugPatient(HospitalRecord* record) {
   TRACE("CJSHospital::UnplugPatient {} record={} ", THIS, (void*)record);
 
   // call custom cleanup function
-  record->m_cleanup_fn(record->m_v8_patient.Get(m_v8_isolate));
+  auto v8_isolate = m_v8_isolate.lock();
+  record->m_cleanup_fn(record->m_v8_patient.Get(v8_isolate));
 
   // unplug him
   record->m_v8_patient.Reset();

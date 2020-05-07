@@ -4,6 +4,7 @@
 #include "Printing.h"
 #include "PythonUtils.h"
 #include "JSEternals.h"
+#include "V8LockedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -30,14 +31,14 @@ void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper)
   isolate->Tracer().TraceWrapper(raw_object, v8_wrapper);
 }
 
-v8::Local<v8::Object> lookupTracedWrapper(v8::IsolatePtr v8_isolate, TracedRawObject* raw_object) {
+v8::Local<v8::Object> lookupTracedWrapper(v8::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object) {
   auto isolate = CJSIsolate::FromV8(v8_isolate);
   auto v8_result = isolate->Tracer().LookupWrapper(v8_isolate, raw_object);
   TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
   return v8_result;
 }
 
-v8::Eternal<v8::Private> privateAPIForTracerPayload(v8::IsolatePtr v8_isolate) {
+v8::Eternal<v8::Private> privateAPIForTracerPayload(v8::LockedIsolatePtr& v8_isolate) {
   return v8u::createEternalPrivateAPI(v8_isolate, "Naga#CTracer##payload");
 }
 
@@ -47,7 +48,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
   if (v8_wrapper.IsEmpty()) {
     return nullptr;
   }
-  auto v8_isolate = v8_wrapper->GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_wrapper->GetIsolate());
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   if (!v8_wrapper->HasPrivate(v8_context, v8_payload_api).ToChecked()) {
@@ -64,7 +65,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
 
 static void recordTracedWrapper(v8::Local<v8::Object> v8_wrapper, TracedRawObject* raw_object) {
   TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object);
-  auto v8_isolate = v8_wrapper->GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_wrapper->GetIsolate());
   auto v8_context = v8u::getCurrentContext(v8_isolate);
   auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
   auto v8_payload = v8::External::New(v8_isolate, raw_object);
@@ -124,7 +125,7 @@ void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8
   SwitchToLiveMode(insert_point.first, false);
 }
 
-v8::Local<v8::Object> CTracer::LookupWrapper(v8::IsolatePtr v8_isolate, PyObject* raw_object) {
+v8::Local<v8::Object> CTracer::LookupWrapper(v8::LockedIsolatePtr& v8_isolate, PyObject* raw_object) {
   auto tracer_lookup = m_wrappers.find(raw_object);
   if (tracer_lookup == m_wrappers.end()) {
     TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object);

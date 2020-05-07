@@ -32,6 +32,7 @@ enum Loggers {
   kJSLandLogger,
   kPythonModuleLogger,
   kHandleScopeLogger,
+  kIsolateLockingLogger,
   kNumLoggers
 };
 
@@ -46,9 +47,9 @@ void decreaseCurrentInceptionLevel();
 InceptionLevel getCurrentInceptionLevel();
 
 using HandleScopeLevel = size_t;
-void increaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
-void decreaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
-HandleScopeLevel getCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate);
+void increaseCurrentHandleScopeLevel(v8::Isolate* v8_isolate);
+void decreaseCurrentHandleScopeLevel(v8::Isolate* v8_isolate);
+HandleScopeLevel getCurrentHandleScopeLevel(v8::Isolate* v8_isolate);
 HandleScopeLevel getTotalHandleScopeLevel();
 
 class LoggerIndent {

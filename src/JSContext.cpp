@@ -8,6 +8,7 @@
 #include "Logging.h"
 #include "Printing.h"
 #include "V8Utils.h"
+#include "V8ProtectedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -24,7 +25,8 @@ static bool areIsolatesConsistent(const v8::Global<v8::Context>& v8_context, con
 CJSContextPtr CJSContext::FromV8(v8::Local<v8::Context> v8_context) {
   // FromV8 may be called only on contexts created by our constructor
   if (v8_context->GetNumberOfEmbedderDataFields() <= kSelfEmbedderDataIndex) {
-    throw CJSException(v8_context->GetIsolate(), fmt::format("Cannot work with foreign V8 context {}", v8_context));
+    throw CJSException(v8::ProtectedIsolatePtr(v8_context->GetIsolate()),
+                       fmt::format("Cannot work with foreign V8 context {}", v8_context));
   }
   auto v8_data = v8_context->GetEmbedderData(kSelfEmbedderDataIndex);
   assert(v8_data->IsExternal());
@@ -43,7 +45,7 @@ v8::Local<v8::Context> CJSContext::ToV8() const {
   return v8_result;
 }
 
-CJSContext::CJSContext(const py::object& py_global) {
+CJSContext::CJSContext(const py::object& py_global) : m_entered_level(0) {
   TRACE("CJSContext::CJSContext {} py_global={}", THIS, py_global);
   auto v8_isolate = v8u::getCurrentIsolate();
   m_isolate = CJSIsolate::FromV8(v8_isolate);
@@ -141,20 +143,33 @@ py::object CJSContext::EvaluateW(const std::wstring& src, const std::wstring& na
   return script->Run();
 }
 
-void CJSContext::Enter() const {
+void CJSContext::Enter() {
   TRACE("CJSContext::Enter {}", THIS);
   assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
+
+  if (m_entered_level == 0) {
+    m_v8_shared_isolate_locker = v8_isolate.shareLocker();
+  }
+  m_entered_level++;
+
   ToV8()->Enter();
 }
 
-void CJSContext::Leave() const {
+void CJSContext::Leave() {
   TRACE("CJSContext::Leave {}", THIS);
   assert(areIsolatesConsistent(m_v8_context, m_isolate));
   auto v8_isolate = m_isolate->ToV8();
   auto v8_scope = v8u::withScope(v8_isolate);
+
   ToV8()->Exit();
+
+  assert(m_entered_level > 0);
+  m_entered_level--;
+  if (m_entered_level == 0) {
+    m_v8_shared_isolate_locker.reset();
+  }
 }
 
 void CJSContext::Dump(std::ostream& os) const {

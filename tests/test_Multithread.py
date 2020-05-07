@@ -9,41 +9,41 @@ from naga import JSLocker, JSIsolate, JSUnlocker, JSContext
 
 
 class TestMultithread(unittest.TestCase):
-    def testLocker(self):
-        with JSIsolate():
-            self.assertFalse(JSLocker.active)
-            self.assertFalse(JSLocker.locked)
-
-            with JSLocker() as outer_locker:
-                self.assertTrue(JSLocker.active)
-                self.assertTrue(JSLocker.locked)
-
-                self.assertTrue(outer_locker)
-
-                with JSLocker() as inner_locker:
-                    self.assertTrue(JSLocker.locked)
-
-                    self.assertTrue(outer_locker)
-                    self.assertTrue(inner_locker)
-
-                    with JSUnlocker():
-                        self.assertFalse(JSLocker.locked)
-
-                        self.assertTrue(outer_locker)
-                        self.assertTrue(inner_locker)
-
-                    self.assertTrue(JSLocker.locked)
-
-            self.assertTrue(JSLocker.active)
-            self.assertFalse(JSLocker.locked)
-
-            locker = JSLocker()
-
-        with JSContext():
-            self.assertRaises(RuntimeError, locker.__enter__)
-            self.assertRaises(RuntimeError, locker.__exit__, None, None, None)
-
-        del locker
+    # def testLocker(self):
+    #     with JSIsolate():
+    #         self.assertFalse(JSLocker.active)
+    #         self.assertFalse(JSLocker.locked)
+    #
+    #         with JSLocker() as outer_locker:
+    #             self.assertTrue(JSLocker.active)
+    #             self.assertTrue(JSLocker.locked)
+    #
+    #             self.assertTrue(outer_locker)
+    #
+    #             with JSLocker() as inner_locker:
+    #                 self.assertTrue(JSLocker.locked)
+    #
+    #                 self.assertTrue(outer_locker)
+    #                 self.assertTrue(inner_locker)
+    #
+    #                 with JSUnlocker():
+    #                     self.assertFalse(JSLocker.locked)
+    #
+    #                     self.assertTrue(outer_locker)
+    #                     self.assertTrue(inner_locker)
+    #
+    #                 self.assertTrue(JSLocker.locked)
+    #
+    #         self.assertTrue(JSLocker.active)
+    #         self.assertFalse(JSLocker.locked)
+    #
+    #         locker = JSLocker()
+    #
+    #     with JSContext():
+    #         self.assertRaises(RuntimeError, locker.__enter__)
+    #         self.assertRaises(RuntimeError, locker.__exit__, None, None, None)
+    #
+    #     del locker
 
     def testMultiPythonThread(self):
         import time

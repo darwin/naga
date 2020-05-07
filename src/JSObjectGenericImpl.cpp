@@ -9,7 +9,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectGenericImplLogger), __VA_ARGS__)
 
-static void ensureAttrExistsOrThrow(v8::IsolatePtr v8_isolate,
+static void ensureAttrExistsOrThrow(v8::LockedIsolatePtr& v8_isolate,
                                     v8::Local<v8::Object> v8_this,
                                     v8::Local<v8::String> v8_name) {
   TRACE("ensureAttrExistsOrThrow v8_name={} v8_this={}", v8_name, v8_this);

@@ -8,21 +8,30 @@
 #include "JSIsolateRegistry.h"
 #include "Logging.h"
 #include "PybindExtensions.h"
+#include "V8ProtectedIsolate.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSIsolateLogger), __VA_ARGS__)
 
-CJSIsolatePtr CJSIsolate::FromV8(v8::IsolatePtr v8_isolate) {
+CJSIsolatePtr CJSIsolate::FromV8(v8::Isolate* v8_isolate) {
   auto isolate = lookupRegisteredIsolate(v8_isolate);
   if (!isolate) {
-    throw CJSException(v8_isolate, fmt::format("Cannot work with foreign V8 isolate {}", P$(v8_isolate)));
+    auto msg = fmt::format("Cannot work with foreign V8 isolate {}", P$(v8_isolate));
+    throw CJSException(v8::ProtectedIsolatePtr(v8_isolate), msg);
   }
   TRACE("CJSIsolate::FromV8 v8_isolate={} => {}", P$(v8_isolate), (void*)isolate);
   return isolate->shared_from_this();
 }
 
-CJSIsolate::CJSIsolate() : m_v8_isolate(v8u::createIsolate()) {
+v8::LockedIsolatePtr CJSIsolate::ToV8() {
+  auto v8_isolate = m_v8_isolate.giveMeRawIsolateAndTrustMe();
+  return v8::LockedIsolatePtr(v8_isolate, m_locker_holder.CreateOrShareLocker());
+}
+
+CJSIsolate::CJSIsolate()
+    : m_v8_isolate(v8u::createIsolate()),
+      m_locker_holder(m_v8_isolate.giveMeRawIsolateAndTrustMe()) {
   TRACE("CJSIsolate::CJSIsolate {}", THIS);
   m_eternals = std::make_unique<CJSEternals>(m_v8_isolate);
   m_tracer = std::make_unique<CTracer>();
@@ -32,15 +41,16 @@ CJSIsolate::CJSIsolate() : m_v8_isolate(v8u::createIsolate()) {
 
 CJSIsolate::~CJSIsolate() {
   TRACE("CJSIsolate::~CJSIsolate {}", THIS);
+  {
+    auto v8_isolate = ToV8();
 
-  unregisterIsolate(m_v8_isolate);
-
-  // isolate could be entered, we cannot dispose unless we exit it completely
-  int defensive_counter = 0;
-  while (m_v8_isolate->IsInUse()) {
-    Leave();
-    if (++defensive_counter > 100) {
-      break;
+    // isolate could be entered, we cannot dispose unless we exit it completely
+    int defensive_counter = 0;
+    while (v8_isolate->IsInUse()) {
+      v8_isolate->Exit();
+      if (++defensive_counter > 100) {
+        break;
+      }
     }
   }
 
@@ -52,7 +62,17 @@ CJSIsolate::~CJSIsolate() {
 
   m_eternals.reset();
 
-  Dispose();
+  unregisterIsolate(m_v8_isolate);
+
+  // This is interesting v8::Isolate::Dispose is documented to be used
+  // under a lock but V8 asserts in debug mode.
+  // It is probably a mistake in their header docs because the isolate is clearly trying to destroy all
+  // associated mutexes.
+
+  // below this point nobody should hold the lock
+
+  m_v8_isolate.giveMeRawIsolateAndTrustMe()->Dispose();
+
   TRACE("CJSIsolate::~CJSIsolate {} [COMPLETED]", THIS);
 }
 
@@ -73,7 +93,8 @@ CJSEternals& CJSIsolate::Eternals() const {
 
 CJSStackTracePtr CJSIsolate::GetCurrentStackTrace(int frame_limit, v8::StackTrace::StackTraceOptions v8_options) const {
   TRACE("CJSIsolate::GetCurrentStackTrace {} frame_limit={} v8_options={:#x}", THIS, frame_limit, v8_options);
-  return CJSStackTrace::GetCurrentStackTrace(m_v8_isolate, frame_limit, v8_options);
+  auto v8_isolate = m_v8_isolate.lock();
+  return CJSStackTrace::GetCurrentStackTrace(v8_isolate, frame_limit, v8_options);
 }
 
 py::object CJSIsolate::GetCurrent() {
@@ -82,8 +103,7 @@ py::object CJSIsolate::GetCurrent() {
     if (!v8_isolate_or_null || !v8_isolate_or_null->IsInUse()) {
       return py::js_null().cast<py::object>();
     } else {
-      v8::IsolatePtr v8_isolate(v8_isolate_or_null);
-      return py::cast(FromV8(v8_isolate));
+      return py::cast(FromV8(v8_isolate_or_null));
     }
   }();
   TRACE("CJSIsolate::GetCurrent => {}", py_result);
@@ -91,29 +111,28 @@ py::object CJSIsolate::GetCurrent() {
 }
 
 bool CJSIsolate::IsLocked() const {
-  auto result = v8::Locker::IsLocked(m_v8_isolate);
+  // TODO: revisit this
+  auto result = v8::Locker::IsLocked(m_v8_isolate.giveMeRawIsolateAndTrustMe());
   TRACE("CJSIsolate::IsLocked {} => {}", THIS, result);
   return result;
 }
 
 void CJSIsolate::Enter() const {
   TRACE("CJSIsolate::Enter {}", THIS);
-  m_v8_isolate->Enter();
+  auto v8_isolate = m_v8_isolate.lock();
+  v8_isolate->Enter();
 }
 
 void CJSIsolate::Leave() const {
   TRACE("CJSIsolate::Leave {}", THIS);
-  m_v8_isolate->Exit();
-}
-
-void CJSIsolate::Dispose() const {
-  TRACE("CJSIsolate::Dispose {}", THIS);
-  m_v8_isolate->Dispose();
+  auto v8_isolate = m_v8_isolate.lock();
+  v8_isolate->Exit();
 }
 
 py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_context = m_v8_isolate->GetEnteredOrMicrotaskContext();
+  auto v8_isolate = m_v8_isolate.lock();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_context = v8_isolate->GetEnteredOrMicrotaskContext();
   auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();
@@ -126,8 +145,9 @@ py::object CJSIsolate::GetEnteredOrMicrotaskContext() const {
 }
 
 py::object CJSIsolate::GetCurrentContext() const {
-  auto v8_scope = v8u::withScope(m_v8_isolate);
-  auto v8_context = v8u::getCurrentContextUnchecked(m_v8_isolate);
+  auto v8_isolate = m_v8_isolate.lock();
+  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_context = v8u::getCurrentContextUnchecked(v8_isolate);
   auto py_result = [&] {
     if (v8_context.IsEmpty()) {
       return py::js_null().cast<py::object>();
@@ -140,7 +160,8 @@ py::object CJSIsolate::GetCurrentContext() const {
 }
 
 py::bool_ CJSIsolate::InContext() const {
-  auto py_result = py::bool_(m_v8_isolate->InContext());
+  auto v8_isolate = m_v8_isolate.lock();
+  auto py_result = py::bool_(v8_isolate->InContext());
   TRACE("CJSIsolate::InContext {} => {}", THIS, py_result);
   return py_result;
 }

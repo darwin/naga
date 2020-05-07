@@ -14,27 +14,28 @@ class CJSEternals {
   enum EternalID { kJSWrapperTemplate = 0, kJSExceptionType, kJSExceptionValue, kTracerPayload, kNumEternals };
 
   template <typename T>
-  using EternalCreateFn = v8::Eternal<T>(v8::IsolatePtr v8_isolate);
+  using EternalCreateFn = v8::Eternal<T>(v8::LockedIsolatePtr& v8_isolate);
 
  private:
-  v8::IsolatePtr m_v8_isolate;
+  v8::ProtectedIsolatePtr m_v8_isolate;
   // v8::Eternal is templated so we keep static array of std:any slots for them.
   // Initial creation might involve dynamic allocation, but lookups should be cheap.
   // We might consider implementing it as a simple array of pointers in release mode.
   std::array<std::any, kNumEternals> m_cache;
 
  public:
-  explicit CJSEternals(v8::IsolatePtr v8_isolate);
+  explicit CJSEternals(v8::ProtectedIsolatePtr v8_protected_isolate);
   ~CJSEternals();
 
   template <typename T>
   v8::Eternal<T> GetOrCreate(EternalID id, EternalCreateFn<T>* create_fn = nullptr) {
     auto& lookup = m_cache[id];
     if (!lookup.has_value()) {
-      HTRACE(kJSEternalsLogger, "CJSEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, P$(m_v8_isolate),
+      HTRACE(kJSEternalsLogger, "CJSEternals::GetOrCreate {} m_v8_isolate={} id={} creating...", THIS, m_v8_isolate,
              magic_enum::enum_name(id));
       assert(create_fn);
-      lookup = create_fn(m_v8_isolate);
+      auto v8_isolate = m_v8_isolate.lock();
+      lookup = create_fn(v8_isolate);
     }
     auto v8_result = std::any_cast<v8::Eternal<T>>(lookup);
     assert(!v8_result.IsEmpty());
@@ -44,7 +45,7 @@ class CJSEternals {
 };
 
 template <typename T>
-v8::Local<T> lookupEternal(v8::IsolatePtr v8_isolate,
+v8::Local<T> lookupEternal(v8::LockedIsolatePtr& v8_isolate,
                            CJSEternals::EternalID id,
                            CJSEternals::EternalCreateFn<T>* create_fn = nullptr) {
   HTRACE(kJSEternalsLogger, "lookupEternal v8_isolate={} id={}", P$(v8_isolate), magic_enum::enum_name(id));

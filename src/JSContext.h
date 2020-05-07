@@ -9,6 +9,10 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   // it should always be equal to m_v8_context->GetIsolate()
   CJSIsolatePtr m_isolate;
 
+  // we want to keep the isolate locked between enter/leave
+  v8::SharedIsolateLockerPtr m_v8_shared_isolate_locker;
+  size_t m_entered_level;
+
  public:
   static CJSContextPtr FromV8(v8::Local<v8::Context> v8_context);
   [[nodiscard]] v8::Local<v8::Context> ToV8() const;
@@ -23,8 +27,8 @@ class CJSContext : public std::enable_shared_from_this<CJSContext> {
   py::str GetSecurityToken() const;
   void SetSecurityToken(const py::str& py_token) const;
 
-  void Enter() const;
-  void Leave() const;
+  void Enter();
+  void Leave();
 
   static py::object GetCurrent();
 

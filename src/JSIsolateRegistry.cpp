@@ -8,12 +8,12 @@
 
 static CJSRegistry<v8::Isolate, CJSIsolate> g_isolate_registry;
 
-void registerIsolate(const v8::Isolate* v8_isolate, CJSIsolate* isolate) {
-  g_isolate_registry.Register(v8_isolate, isolate);
+void registerIsolate(const v8::ProtectedIsolatePtr v8_isolate, CJSIsolate* isolate) {
+  g_isolate_registry.Register(v8_isolate.giveMeRawIsolateAndTrustMe(), isolate);
 }
 
-void unregisterIsolate(const v8::Isolate* v8_isolate) {
-  g_isolate_registry.Unregister(v8_isolate);
+void unregisterIsolate(const v8::ProtectedIsolatePtr v8_isolate) {
+  g_isolate_registry.Unregister(v8_isolate.giveMeRawIsolateAndTrustMe());
 }
 
 CJSIsolate* lookupRegisteredIsolate(const v8::Isolate* v8_isolate) {

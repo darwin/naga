@@ -3,6 +3,8 @@
 
 #include "Base.h"
 #include "Logging.h"
+#include "V8LockedIsolate.h"
+#include "V8ProtectedIsolate.h"
 
 namespace v8u {
 
@@ -10,7 +12,7 @@ class ObservedHandleScope : public v8::HandleScope {
   int m_start_num_handles;
 
  public:
-  explicit ObservedHandleScope(v8::IsolatePtr v8_isolate)
+  explicit ObservedHandleScope(v8::LockedIsolatePtr& v8_isolate)
       : v8::HandleScope(v8_isolate),
         m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "HandleScope {");
@@ -18,12 +20,14 @@ class ObservedHandleScope : public v8::HandleScope {
     increaseCurrentHandleScopeLevel(v8_isolate);
   }
   ~ObservedHandleScope() {
-    auto v8_isolate = this->GetIsolate();
+    auto v8_isolate = v8::ProtectedIsolatePtr(this->GetIsolate()).lock();
     decreaseCurrentHandleScopeLevel(v8_isolate);
     LOGGER_INDENT_DECREASE;
-    auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
-    auto num_handles = end_num_handles - m_start_num_handles;
-    HTRACE(kHandleScopeLogger, "}} ~HandleScope (releasing {} handles)", num_handles);
+    HTRACE(kHandleScopeLogger, "}} ~HandleScope (releasing {} handles)", [&] {
+      auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
+      auto num_handles = end_num_handles - m_start_num_handles;
+      return num_handles;
+    }());
   }
 };
 
@@ -31,7 +35,7 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
   int m_start_num_handles;
 
  public:
-  explicit ObservedEscapableHandleScope(v8::IsolatePtr v8_isolate)
+  explicit ObservedEscapableHandleScope(v8::LockedIsolatePtr& v8_isolate)
       : v8::EscapableHandleScope(v8_isolate),
         m_start_num_handles(v8::HandleScope::NumberOfHandles(v8_isolate)) {
     HTRACE(kHandleScopeLogger, "EscapableHandleScope {");
@@ -39,12 +43,14 @@ class ObservedEscapableHandleScope : public v8::EscapableHandleScope {
     increaseCurrentHandleScopeLevel(v8_isolate);
   }
   ~ObservedEscapableHandleScope() {
-    auto v8_isolate = this->GetIsolate();
+    auto v8_isolate = v8::ProtectedIsolatePtr(this->GetIsolate()).lock();
     decreaseCurrentHandleScopeLevel(v8_isolate);
     LOGGER_INDENT_DECREASE;
-    auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
-    auto num_handles = end_num_handles - m_start_num_handles;
-    HTRACE(kHandleScopeLogger, "}} ~EscapableHandleScope (releasing {} handles)", num_handles);
+    HTRACE(kHandleScopeLogger, "}} ~EscapableHandleScope (releasing {} handles)", [&] {
+      auto end_num_handles = v8::HandleScope::NumberOfHandles(v8_isolate);
+      auto num_handles = end_num_handles - m_start_num_handles;
+      return num_handles;
+    }());
   }
 };
 

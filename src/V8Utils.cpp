@@ -1,9 +1,10 @@
 #include "V8Utils.h"
 #include "JSException.h"
+#include "JSIsolate.h"
 
 namespace v8u {
 
-v8::Local<v8::String> pythonBytesObjectToString(v8::IsolatePtr v8_isolate, PyObject* raw_bytes_obj) {
+v8::Local<v8::String> pythonBytesObjectToString(v8::LockedIsolatePtr& v8_isolate, PyObject* raw_bytes_obj) {
   if (!raw_bytes_obj) {
     return v8::Local<v8::String>();
   }
@@ -16,7 +17,7 @@ v8::Local<v8::String> pythonBytesObjectToString(v8::IsolatePtr v8_isolate, PyObj
   return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal, sz).ToLocalChecked();
 }
 
-std::optional<v8::Local<v8::String>> toStringDirectly(v8::IsolatePtr v8_isolate, py::handle obj) {
+std::optional<v8::Local<v8::String>> toStringDirectly(v8::LockedIsolatePtr& v8_isolate, py::handle obj) {
   if (PyUnicode_CheckExact(obj.ptr())) {
     auto raw_bytes = PyUnicode_AsUTF8String(obj.ptr());  // may be NULL
     auto py_bytes_obj = py::reinterpret_steal<py::object>(raw_bytes);
@@ -33,7 +34,7 @@ std::optional<v8::Local<v8::String>> toStringDirectly(v8::IsolatePtr v8_isolate,
   return std::nullopt;
 }
 
-v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const py::handle& py_str) {
+v8::Local<v8::String> toString(v8::LockedIsolatePtr& v8_isolate, const py::handle& py_str) {
   // first try to convert python string object directly if possible
   auto v8_str = toStringDirectly(v8_isolate, py_str);
   if (v8_str) {
@@ -52,7 +53,7 @@ v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const py::handle& py_s
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::wstring& str) {
+v8::Local<v8::String> toString(v8::LockedIsolatePtr& v8_isolate, const std::wstring& str) {
   auto raw_unicode = PyUnicode_FromWideChar(str.c_str(), str.size());  // may be NULL
   auto py_obj = py::reinterpret_steal<py::object>(raw_unicode);
   auto v8_str = toStringDirectly(v8_isolate, py_obj);
@@ -64,19 +65,19 @@ v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::wstring& st
   return v8::Local<v8::String>();
 }
 
-v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string& str) {
+v8::Local<v8::String> toString(v8::LockedIsolatePtr& v8_isolate, const std::string& str) {
   return v8::String::NewFromUtf8(v8_isolate, str.c_str(), v8::NewStringType::kNormal, str.size()).ToLocalChecked();
 }
 
-v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const char* s) {
+v8::Local<v8::String> toString(v8::LockedIsolatePtr& v8_isolate, const char* s) {
   return v8::String::NewFromUtf8(v8_isolate, s, v8::NewStringType::kNormal).ToLocalChecked();
 }
 
-v8::Local<v8::String> toString(v8::IsolatePtr v8_isolate, const std::string_view& sv) {
+v8::Local<v8::String> toString(v8::LockedIsolatePtr& v8_isolate, const std::string_view& sv) {
   return v8::String::NewFromUtf8(v8_isolate, sv.data(), v8::NewStringType::kNormal, sv.size()).ToLocalChecked();
 }
 
-v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i) {
+v8::Local<v8::Integer> toPositiveInteger(v8::LockedIsolatePtr& v8_isolate, int i) {
   if (i >= 0) {
     return v8::Integer::New(v8_isolate, i);
   } else {
@@ -84,13 +85,13 @@ v8::Local<v8::Integer> toPositiveInteger(v8::IsolatePtr v8_isolate, int i) {
   }
 }
 
-v8::String::Utf8Value toUTF(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value) {
+v8::String::Utf8Value toUTF(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_value) {
   // the Utf8Value is not copyable, so we have to construct it twice for this check (dev mode only)
   assert(*v8::String::Utf8Value(v8_isolate, v8_value));
   return v8::String::Utf8Value(v8_isolate, v8_value);
 }
 
-std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value) {
+std::string toStdString(v8::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_value) {
   if (v8_value.IsEmpty()) {
     return "";
   }
@@ -98,17 +99,17 @@ std::string toStdString(v8::IsolatePtr v8_isolate, v8::Local<v8::Value> v8_value
   return std::string{*v8_utf, v8_utf.length()};
 }
 
-v8::IsolatePtr getCurrentIsolate() {
+v8::LockedIsolatePtr getCurrentIsolate() {
   // note in debug mode there is internal check in v8::Isolate::GetCurrent(), so this fails when there is no current
   // isolate
-  return v8::Isolate::GetCurrent();
+  return lockIsolate(v8::Isolate::GetCurrent());
 }
 
 v8::Isolate* getCurrentIsolateUnchecked() {
   return v8::Isolate::GetCurrent();
 }
 
-v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate) {
+v8::Local<v8::Context> getCurrentContext(v8::LockedIsolatePtr& v8_isolate) {
   assert(hasScope(v8_isolate));
   auto v8_context = v8_isolate->GetCurrentContext();
   if (v8_context.IsEmpty()) {
@@ -117,37 +118,37 @@ v8::Local<v8::Context> getCurrentContext(v8::IsolatePtr v8_isolate) {
   return v8_context;
 }
 
-v8::Local<v8::Context> getCurrentContextUnchecked(v8::IsolatePtr v8_isolate) {
+v8::Local<v8::Context> getCurrentContextUnchecked(v8::LockedIsolatePtr& v8_isolate) {
   assert(hasScope(v8_isolate));
   return v8_isolate->GetCurrentContext();
 }
 
-ObservedHandleScope withScope(v8::IsolatePtr v8_isolate) {
+ObservedHandleScope withScope(v8::LockedIsolatePtr& v8_isolate) {
   return ObservedHandleScope(v8_isolate);
 }
 
-ObservedEscapableHandleScope withEscapableScope(v8::IsolatePtr v8_isolate) {
+ObservedEscapableHandleScope withEscapableScope(v8::LockedIsolatePtr& v8_isolate) {
   return ObservedEscapableHandleScope(v8_isolate);
 }
 
-bool hasScope(v8::IsolatePtr v8_isolate) {
+bool hasScope(v8::LockedIsolatePtr& v8_isolate) {
   return getCurrentHandleScopeLevel(v8_isolate) > 0;
 }
 
-v8::TryCatch withTryCatch(v8::IsolatePtr v8_isolate) {
+v8::TryCatch withTryCatch(v8::LockedIsolatePtr& v8_isolate) {
   return v8::TryCatch(v8_isolate);
 }
 
-void checkTryCatch(v8::IsolatePtr v8_isolate, v8::TryCatchPtr v8_try_catch) {
+void checkTryCatch(v8::LockedIsolatePtr& v8_isolate, v8::TryCatchPtr v8_try_catch) {
   CJSException::CheckTryCatch(v8_isolate, v8_try_catch);
 }
 
-v8::IsolatePtr createIsolate() {
+v8::ProtectedIsolatePtr createIsolate() {
   v8::Isolate::CreateParams v8_create_params;
   v8_create_params.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
   auto v8_isolate = v8::Isolate::New(v8_create_params);
   assert(v8_isolate);
-  return v8_isolate;
+  return v8::ProtectedIsolatePtr(v8_isolate);
 }
 
 v8::Context::Scope withContext(v8::Local<v8::Context> v8_context) {
@@ -160,10 +161,14 @@ v8::ScriptOrigin createScriptOrigin(v8::Local<v8::Value> v8_name,
   return v8::ScriptOrigin(v8_name, v8_line, v8_col);
 }
 
-v8::Eternal<v8::Private> createEternalPrivateAPI(v8::IsolatePtr v8_isolate, const char* name) {
+v8::Eternal<v8::Private> createEternalPrivateAPI(v8::LockedIsolatePtr& v8_isolate, const char* name) {
   auto v8_key = v8::String::NewFromUtf8(v8_isolate, name).ToLocalChecked();
   auto v8_private_api = v8::Private::ForApi(v8_isolate, v8_key);
   return v8::Eternal<v8::Private>(v8_isolate, v8_private_api);
+}
+
+v8::LockedIsolatePtr lockIsolate(v8::Isolate* v8_isolate) {
+  return CJSIsolate::FromV8(v8_isolate)->ToV8();
 }
 
 }  // namespace v8u

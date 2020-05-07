@@ -2,15 +2,16 @@
 #define NAGA_JSSCRIPT_H_
 
 #include "Base.h"
+#include "V8ProtectedIsolate.h"
 
 class CJSScript {
   const CJSEngine& m_engine;
-  v8::IsolatePtr m_v8_isolate;
+  v8::ProtectedIsolatePtr m_v8_isolate;
   v8::Global<v8::String> m_v8_source;
   v8::Global<v8::Script> m_v8_script;
 
  public:
-  CJSScript(v8::IsolatePtr v8_isolate,
+  CJSScript(v8::ProtectedIsolatePtr v8_isolate,
             const CJSEngine& engine,
             v8::Local<v8::String> v8_source,
             v8::Local<v8::Script> v8_script);

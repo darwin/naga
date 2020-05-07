@@ -22,7 +22,7 @@ class CJSObjectBase {
   explicit CJSObjectBase(v8::Local<v8::Object> v8_obj);
   ~CJSObjectBase();
 
-  [[nodiscard]] v8::Local<v8::Object> ToV8(v8::IsolatePtr v8_isolate) const;
+  [[nodiscard]] v8::Local<v8::Object> ToV8(v8::LockedIsolatePtr& v8_isolate) const;
 
   bool HasRole(Roles roles) const;
   Roles GetRoles() const;

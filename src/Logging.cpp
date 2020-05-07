@@ -44,12 +44,12 @@ class inception_formatter final : public spdlog::custom_flag_formatter {
   }
 };
 
-void increaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+void increaseCurrentHandleScopeLevel(v8::Isolate* v8_isolate) {
   g_totalHandleScopeLevel++;
   g_isolateHandleScopeLevels[v8_isolate]++;
 }
 
-void decreaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+void decreaseCurrentHandleScopeLevel(v8::Isolate* v8_isolate) {
   assert(g_totalHandleScopeLevel > 0);
   --g_totalHandleScopeLevel;
   auto& level = g_isolateHandleScopeLevels[v8_isolate];
@@ -57,7 +57,7 @@ void decreaseCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
   level--;
 }
 
-HandleScopeLevel getCurrentHandleScopeLevel(v8::IsolatePtr v8_isolate) {
+HandleScopeLevel getCurrentHandleScopeLevel(v8::Isolate* v8_isolate) {
   return g_isolateHandleScopeLevels[v8_isolate];
 }
 
@@ -208,6 +208,7 @@ static void initLoggers() {
   g_loggers[kJSLandLogger] = std::make_shared<spdlog::logger>("naga_jsl", logger_file_sink);
   g_loggers[kPythonModuleLogger] = std::make_shared<spdlog::logger>("naga_pml", logger_file_sink);
   g_loggers[kHandleScopeLogger] = std::make_shared<spdlog::logger>("naga_hsl", logger_file_sink);
+  g_loggers[kIsolateLockingLogger] = std::make_shared<spdlog::logger>("naga_ill", logger_file_sink);
 
   for (auto& logger : g_loggers) {
     setupLogger(logger);

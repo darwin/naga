@@ -16,8 +16,8 @@ std::string printCoerced(const std::wstring& v) {
   }
 }
 
-std::string printCoerced(v8::IsolatePtr v) {
-  return fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
+std::string printCoerced(v8::Isolate* v) {
+  return fmt::format("v8::Isolate* {}", static_cast<void*>(v));
 }
 
 std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v) {
@@ -80,6 +80,10 @@ std::ostream& operator<<(std::ostream& os, const SafePrinter<PyObject*>& wv) {
 }
 
 namespace v8 {
+
+std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v) {
+  return os << fmt::format("v8::ProtectedIsolatePtr {}", static_cast<void*>(v.giveMeRawIsolateAndTrustMe()));
+}
 
 template <typename T>
 static std::ostream& dumpLocalPrefix(std::ostream& os, const char* label, const Local<T>& v) {
@@ -153,10 +157,6 @@ std::ostream& operator<<(std::ostream& os, const Local<StackTrace>& v) {
 
 std::ostream& operator<<(std::ostream& os, const TryCatch& v) {
   return os << fmt::format("v8::TryCatch Message='{}'", v.Message());
-}
-
-std::ostream& operator<<(std::ostream& os, const IsolatePtr& v) {
-  return os << fmt::format("v8::IsolateRef {}", static_cast<void*>(v));
 }
 
 }  // namespace v8

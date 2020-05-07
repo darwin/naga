@@ -27,7 +27,7 @@ static std::string_view stripTypeInfo(std::string_view sv) {
   return sv;
 }
 
-static auto convertPythonExceptionToV8Error(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex) {
+static auto convertPythonExceptionToV8Error(v8::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
   // It turns out it is not that easy to extract text error message from Python's "error value" object
   // because in general it could be anything, see:
   // https://stackoverflow.com/questions/1418015/how-to-get-python-exception-text
@@ -90,7 +90,7 @@ static auto convertPythonExceptionToV8Error(v8::IsolatePtr v8_isolate, const py:
   }
 }
 
-static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
+static void attachPythonInfoToV8Error(v8::LockedIsolatePtr& v8_isolate,
                                       v8::Local<v8::Object> v8_error_object,
                                       py::handle py_type,
                                       py::handle py_value) {
@@ -121,7 +121,7 @@ static void attachPythonInfoToV8Error(v8::IsolatePtr v8_isolate,
   });
 }
 
-void CPythonObject::ThrowJSException(v8::IsolatePtr v8_isolate, const py::error_already_set& py_ex) {
+void CPythonObject::ThrowJSException(v8::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
   auto v8_scope = v8u::withScope(v8_isolate);

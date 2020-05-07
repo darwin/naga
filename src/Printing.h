@@ -15,7 +15,7 @@ const void* voidThis(const T* v) {
 // see https://github.com/fmtlib/fmt/issues/1621
 #define P$(...) printCoerced(__VA_ARGS__)
 std::string printCoerced(const std::wstring& v);
-std::string printCoerced(v8::IsolatePtr v);
+std::string printCoerced(v8::Isolate* v);
 
 template <typename T>
 struct SafePrinter {
@@ -65,6 +65,7 @@ std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& v) {
 namespace v8 {
 
 std::ostream& operator<<(std::ostream& os, const TryCatch& v);
+std::ostream& operator<<(std::ostream& os, const ProtectedIsolatePtr& v);
 
 std::ostream& operator<<(std::ostream& os, const Local<Private>& v);
 std::ostream& operator<<(std::ostream& os, const Local<Context>& v);

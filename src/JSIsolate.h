@@ -2,6 +2,9 @@
 #define NAGA_JSISOLATE_H_
 
 #include "Base.h"
+#include "V8ProtectedIsolate.h"
+#include "V8LockedIsolate.h"
+#include "IsolateLockerHolder.h"
 
 // CJSIsolate is our wrapper of v8::Isolate which provides Python interface for exposed JSIsolate object.
 //
@@ -21,10 +24,11 @@
 // finally dispose the isolate in V8.
 
 class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
-  v8::IsolatePtr m_v8_isolate;
+  v8::ProtectedIsolatePtr m_v8_isolate;
   std::unique_ptr<CTracer> m_tracer;
   std::unique_ptr<CJSHospital> m_hospital;
   std::unique_ptr<CJSEternals> m_eternals;
+  IsolateLockerHolder m_locker_holder;
 
  public:
   CJSIsolate();
@@ -34,8 +38,8 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   CJSHospital& Hospital() const;
   CJSEternals& Eternals() const;
 
-  static CJSIsolatePtr FromV8(v8::IsolatePtr v8_isolate);
-  [[nodiscard]] v8::IsolatePtr ToV8() const { return m_v8_isolate; }
+  static CJSIsolatePtr FromV8(v8::Isolate* v8_isolate);
+  [[nodiscard]] v8::LockedIsolatePtr ToV8();
 
   CJSStackTracePtr GetCurrentStackTrace(int frame_limit,
                                         v8::StackTrace::StackTraceOptions v8_options = v8::StackTrace::kOverview) const;
@@ -44,8 +48,6 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
 
   void Enter() const;
   void Leave() const;
-  void Dispose() const;
-
   bool IsLocked() const;
 
   py::object GetEnteredOrMicrotaskContext() const;

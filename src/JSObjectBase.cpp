@@ -33,7 +33,7 @@ CJSObjectBase::~CJSObjectBase() {
   m_v8_obj.Reset();
 }
 
-v8::Local<v8::Object> CJSObjectBase::ToV8(v8::IsolatePtr v8_isolate) const {
+v8::Local<v8::Object> CJSObjectBase::ToV8(v8::LockedIsolatePtr& v8_isolate) const {
   auto v8_result = m_v8_obj.Get(v8_isolate);
   TRACE("CJSObjectBase::ToV8 {} => {}", THIS, v8_result);
   return v8_result;

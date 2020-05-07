@@ -29,8 +29,13 @@ using CJSObjectPtr = std::shared_ptr<CJSObject>;
 
 namespace v8 {
 
-using IsolatePtr = v8::Isolate*;    // __nonnull;
+//using IsolatePtr = v8::Isolate*;    // __nonnull;
 using TryCatchPtr = v8::TryCatch*;  // __nonnull;
+using SharedIsolateLockerPtr = std::shared_ptr<Locker>;
+using WeakIsolateLockerPtr = std::weak_ptr<Locker>;
+
+class LockedIsolatePtr;
+class ProtectedIsolatePtr;
 
 }  // namespace v8
 

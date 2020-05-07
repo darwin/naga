@@ -42,7 +42,7 @@ void toStringImpl(const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
 
 void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8_info.GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     if (v8_name->StrictEquals(v8::Symbol::GetToStringTag(v8_isolate))) {
       toStringImpl(v8_info);
@@ -107,7 +107,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
                                 v8::Local<v8::Value> v8_value,
                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedSetter v8_name={} v8_value={} v8_info={}", v8_name, v8_value, v8_info);
-  auto v8_isolate = v8_info.GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
@@ -140,7 +140,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
 
 void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8_info.GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Integer>());
@@ -170,7 +170,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
 
 void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
-  auto v8_isolate = v8_info.GetIsolate();
+  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
     // ignore symbols for now, see https://github.com/area1/stpyv8/issues/8
     v8_info.GetReturnValue().Set(v8::Local<v8::Boolean>());
@@ -216,8 +216,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
 
 void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
-  auto v8_isolate = v8_info.GetIsolate();
-  auto v8_scope = v8u::withScope(v8_isolate);
+  auto v8_isolate = v8u::lockIsolate(v8_info.GetIsolate());
 
   auto v8_result = withPythonErrorInterception(v8_isolate, [&]() {
     auto py_gil = pyu::withGIL();

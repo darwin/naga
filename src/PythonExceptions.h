@@ -6,7 +6,7 @@
 #include "V8Utils.h"
 
 template <typename F>
-auto withPythonErrorInterception(v8::IsolatePtr v8_isolate, F&& fn) {
+auto withPythonErrorInterception(v8::LockedIsolatePtr& v8_isolate, F&& fn) {
   try {
     return std::optional(fn());
   } catch (const py::error_already_set& e) {
