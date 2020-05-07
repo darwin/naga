@@ -17,8 +17,6 @@ void exposeJSStackFrame(py::module py_module);
 void exposeJSStackTrace(py::module py_module);
 void exposeJSEngine(py::module py_module);
 void exposeJSScript(py::module py_module);
-void exposeJSLocker(py::module py_module);
-void exposeJSUnlocker(py::module py_module);
 void exposeJSContext(py::module py_module);
 
 #endif

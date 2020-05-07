@@ -33,8 +33,6 @@ PYBIND11_MODULE(naga_native, py_module) {
   exposeJSContext(py_module);
   exposeJSScript(py_module);
   exposeJSEngine(py_module);
-  exposeJSLocker(py_module);
-  exposeJSUnlocker(py_module);
 
   g_naga_native_module = py_module;
   // we have to make sure this global variable gets cleared before Python interpreter gets deinitialized

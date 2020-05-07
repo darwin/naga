@@ -14,15 +14,13 @@ __all__ = ["JSClass",
            "JSEngine",
            "JSError",
            "JSIsolate",
-           "JSLocker",
            "JSNull",
            "JSObject",
            "JSPlatform",
            "JSScript",
            "JSStackTrace",
            "JSStackFrame",
-           "JSUndefined",
-           "JSUnlocker"]
+           "JSUndefined"]
 
 if naga.config.naga_keep_backward_compatibility:
     __all__ += ["JSArray",
@@ -148,36 +146,6 @@ class JSError(Exception):
         return self.parse_stack(self.stackTrace)
 
 
-class JSLocker(naga_native.JSLocker):
-    def __enter__(self):
-        if JSIsolate.current.in_context:
-            raise RuntimeError("Lock should be acquired before entering a context")
-
-        self.enter()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.leave()
-
-        if JSIsolate.current.in_context:
-            raise RuntimeError("Lock should be released after leaving a context")
-
-    def __bool__(self):
-        return self.entered()
-
-
-class JSUnlocker(naga_native.JSUnlocker):
-    def __enter__(self):
-        self.enter()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.leave()
-
-    def __bool__(self):
-        return self.entered()
-
-
 class JSEngine(naga_native.JSEngine):
     def __enter__(self):
         return self
@@ -188,11 +156,13 @@ class JSEngine(naga_native.JSEngine):
 
 class JSIsolate(naga_native.JSIsolate):
     def __enter__(self):
+        self.lock()
         self.enter()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.leave()
+        self.unlock()
         del self
 
 
@@ -246,6 +216,7 @@ def init_default_platform():
 def init_default_isolate():
     global v8_default_isolate
     v8_default_isolate = JSIsolate()
+    v8_default_isolate.lock()
     v8_default_isolate.enter()
 
 

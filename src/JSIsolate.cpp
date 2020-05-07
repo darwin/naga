@@ -31,7 +31,8 @@ v8x::LockedIsolatePtr CJSIsolate::ToV8() {
 
 CJSIsolate::CJSIsolate()
     : m_v8_isolate(v8x::createIsolate()),
-      m_locker_holder(m_v8_isolate.giveMeRawIsolateAndTrustMe()) {
+      m_locker_holder(m_v8_isolate.giveMeRawIsolateAndTrustMe()),
+      m_exposed_locker_level(0) {
   TRACE("CJSIsolate::CJSIsolate {}", THIS);
   m_eternals = std::make_unique<CJSEternals>(m_v8_isolate);
   m_tracer = std::make_unique<CTracer>();
@@ -41,6 +42,18 @@ CJSIsolate::CJSIsolate()
 
 CJSIsolate::~CJSIsolate() {
   TRACE("CJSIsolate::~CJSIsolate {}", THIS);
+
+  // hospital has to die and do cleanup before we call dispose
+  m_hospital.reset();
+
+  // tracer has to die and do cleanup before we call dispose
+  m_tracer.reset();
+
+  m_eternals.reset();
+
+  unregisterIsolate(m_v8_isolate);
+
+  // TODO: get rid of this ad-hoc code, it is here because of default isolate in ext
   {
     auto v8_isolate = ToV8();
 
@@ -53,16 +66,7 @@ CJSIsolate::~CJSIsolate() {
       }
     }
   }
-
-  // hospital has to die and do cleanup before we call dispose
-  m_hospital.reset();
-
-  // tracer has to die and do cleanup before we call dispose
-  m_tracer.reset();
-
-  m_eternals.reset();
-
-  unregisterIsolate(m_v8_isolate);
+  m_exposed_locker = nullptr;
 
   // This is interesting v8::Isolate::Dispose is documented to be used
   // under a lock but V8 asserts in debug mode.
@@ -108,13 +112,6 @@ py::object CJSIsolate::GetCurrent() {
   }();
   TRACE("CJSIsolate::GetCurrent => {}", py_result);
   return py_result;
-}
-
-bool CJSIsolate::IsLocked() const {
-  // TODO: revisit this
-  auto result = v8::Locker::IsLocked(m_v8_isolate.giveMeRawIsolateAndTrustMe());
-  TRACE("CJSIsolate::IsLocked {} => {}", THIS, result);
-  return result;
 }
 
 void CJSIsolate::Enter() const {
@@ -164,4 +161,52 @@ py::bool_ CJSIsolate::InContext() const {
   auto py_result = py::bool_(v8_isolate->InContext());
   TRACE("CJSIsolate::InContext {} => {}", THIS, py_result);
   return py_result;
+}
+
+void CJSIsolate::Lock() {
+  TRACE("CJSIsolate::Lock {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
+  assert(m_exposed_locker_level >= 0);
+  if (m_exposed_locker_level == 0) {
+    m_exposed_locker = m_locker_holder.CreateOrShareLocker();
+  }
+  m_exposed_locker_level++;
+}
+
+void CJSIsolate::Unlock() {
+  TRACE("CJSIsolate::Unlock {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
+  assert(m_exposed_locker_level > 0);
+  m_exposed_locker_level--;
+  if (m_exposed_locker_level == 0) {
+    m_exposed_locker = nullptr;
+  }
+}
+
+void CJSIsolate::UnlockAll() {
+  TRACE("CJSIsolate::UnlockAll {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
+  assert(m_exposed_locker_level >= 0);
+  m_exposed_locker = nullptr;
+  m_exposed_locker_level = -m_exposed_locker_level;
+}
+
+void CJSIsolate::RelockAll() {
+  assert(m_exposed_locker_level <= 0);
+  TRACE("CJSIsolate::RelockAll {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
+
+  m_exposed_locker_level = -m_exposed_locker_level;
+  if (m_exposed_locker_level > 0) {
+    m_exposed_locker = m_locker_holder.CreateOrShareLocker();
+  }
+}
+
+int CJSIsolate::LockLevel() const {
+  return m_exposed_locker_level;
+}
+
+bool CJSIsolate::Locked() const {
+  // this returns V8's opinion about locked state
+  // please understand that the isolate could be locked because of m_exposed_locker (someone called JSIsolate.lock from
+  // Python) or because some C++ code holds the lock themselves and this function happens to be called at that point.
+  auto result = v8::Locker::IsLocked(m_v8_isolate.giveMeRawIsolateAndTrustMe());
+  TRACE("CJSIsolate::Locked {} => {}", THIS, result);
+  return result;
 }

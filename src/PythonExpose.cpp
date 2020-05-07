@@ -3,8 +3,6 @@
 #include "JSIsolate.h"
 #include "JSEngine.h"
 #include "JSScript.h"
-#include "JSLocker.h"
-#include "JSUnlocker.h"
 #include "JSContext.h"
 #include "JSNull.h"
 #include "JSUndefined.h"
@@ -171,8 +169,6 @@ void exposeJSIsolate(py::module py_module) {
           "current", StaticCall<&CJSIsolate::GetCurrent>{},                                                   //
           "Returns the entered isolate for the current thread or NULL in case there is no current isolate.")  //
                                                                                                               //
-      .def_property_r("locked", &CJSIsolate::IsLocked)                                                        //
-                                                                                                              //
       .def_method("get_current_stack_trace", &CJSIsolate::GetCurrentStackTrace)                               //
                                                                                                               //
       .def_method("enter", &CJSIsolate::Enter,                                                                //
@@ -195,6 +191,22 @@ void exposeJSIsolate(py::module py_module) {
                                                                                                               //
       .def_property_r("in_context", &CJSIsolate::InContext,                                                   //
                       "Returns true if this isolate has a current context.")                                  //
+                                                                                                              //
+      .def_method("lock", &CJSIsolate::Lock,                                                                  //
+                  "Locks isolate for current thread. Can be called multiple times for nesting.")              //
+      .def_method("unlock", &CJSIsolate::Unlock,                                                              //
+                  "Unlocks previously locked isolate.")                                                       //
+      .def_method("unlock_all", &CJSIsolate::UnlockAll,                                                       //
+                  "Temporarily release all nested locks. Call relock_all when done."                          //
+                  "Cannot be called multiple times for nesting."                                              //
+                  "Please note that lock/unlock cannot be called when in this mode.")                         //
+      .def_method("relock_all", &CJSIsolate::RelockAll,                                                       //
+                  "Restores previous lock level when done with temporary unlock_all."
+                  "Must be paired to unlock_all. Cannot be called multiple times for nesting."  //
+                  "After calling relock_all normal lock/unlock will work as before.")           //
+      .def_property_r("locked", &CJSIsolate::Locked)                                            //
+      .def_property_r("lock_level", &CJSIsolate::LockLevel,                                     //
+                      "Returns how many times lock was called without pair unlock.")            //
       ;
 }
 
@@ -321,32 +333,6 @@ void exposeJSScript(py::module py_module) {
                                                                        //
       .def_method("run", &CJSScript::Run,                              //
                   "Execute the compiled code.")                        //
-      ;
-}
-
-void exposeJSLocker(py::module py_module) {
-  TRACE("exposeJSLocker py_module={}", py_module);
-  py::naga_class<CJSLocker>(py_module, "JSLocker")                                    //
-      .def_ctor(py::init<>())                                                         //
-                                                                                      //
-      .def_property_rs("active", StaticCall<&CJSLocker::IsActive>{},                  //
-                       "whether Locker is being used by this V8 instance.")           //
-      .def_property_rs("locked", StaticCall<&CJSLocker::IsLocked>{},                  //
-                       "whether or not the locker is locked by the current thread.")  //
-                                                                                      //
-      .def_method("entered", &CJSLocker::IsEntered)                                   //
-      .def_method("enter", &CJSLocker::Enter)                                         //
-      .def_method("leave", &CJSLocker::Leave)                                         //
-      ;
-}
-
-void exposeJSUnlocker(py::module py_module) {
-  TRACE("exposeJSUnlocker py_module={}", py_module);
-  py::naga_class<CJSUnlocker>(py_module, "JSUnlocker")  //
-      .def_ctor(py::init<>())                           //
-      .def_method("entered", &CJSUnlocker::IsEntered)   //
-      .def_method("enter", &CJSUnlocker::Enter)         //
-      .def_method("leave", &CJSUnlocker::Leave)         //
       ;
 }
 

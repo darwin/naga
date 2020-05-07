@@ -29,6 +29,8 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   std::unique_ptr<CJSHospital> m_hospital;
   std::unique_ptr<CJSEternals> m_eternals;
   v8x::IsolateLockerHolder m_locker_holder;
+  v8x::SharedIsolateLockerPtr m_exposed_locker;
+  int m_exposed_locker_level;
 
  public:
   CJSIsolate();
@@ -48,7 +50,13 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
 
   void Enter() const;
   void Leave() const;
-  bool IsLocked() const;
+  bool Locked() const;
+
+  void Lock();
+  void Unlock();
+  void UnlockAll();
+  void RelockAll();
+  int LockLevel() const;
 
   py::object GetEnteredOrMicrotaskContext() const;
   py::object GetCurrentContext() const;

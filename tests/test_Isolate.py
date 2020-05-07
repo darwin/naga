@@ -9,9 +9,12 @@ import naga.aux as aux
 
 class TestIsolate(unittest.TestCase):
     def testBase(self):
-        with JSIsolate() as isolate:
+        my_isolate = JSIsolate()
+        self.assertFalse(my_isolate.locked)
+
+        with my_isolate as isolate:
             self.assertIsNotNone(isolate.current)
-            self.assertFalse(isolate.locked)
+            self.assertTrue(isolate.locked)
 
     def testEnterLeave(self):
         with JSIsolate() as isolate:

@@ -5,45 +5,76 @@ import logging
 import sys
 import unittest
 
-from naga import JSLocker, JSIsolate, JSUnlocker, JSContext
+from naga import JSIsolate, JSContext
 
 
 class TestMultithread(unittest.TestCase):
-    # def testLocker(self):
-    #     with JSIsolate():
-    #         self.assertFalse(JSLocker.active)
-    #         self.assertFalse(JSLocker.locked)
-    #
-    #         with JSLocker() as outer_locker:
-    #             self.assertTrue(JSLocker.active)
-    #             self.assertTrue(JSLocker.locked)
-    #
-    #             self.assertTrue(outer_locker)
-    #
-    #             with JSLocker() as inner_locker:
-    #                 self.assertTrue(JSLocker.locked)
-    #
-    #                 self.assertTrue(outer_locker)
-    #                 self.assertTrue(inner_locker)
-    #
-    #                 with JSUnlocker():
-    #                     self.assertFalse(JSLocker.locked)
-    #
-    #                     self.assertTrue(outer_locker)
-    #                     self.assertTrue(inner_locker)
-    #
-    #                 self.assertTrue(JSLocker.locked)
-    #
-    #         self.assertTrue(JSLocker.active)
-    #         self.assertFalse(JSLocker.locked)
-    #
-    #         locker = JSLocker()
-    #
-    #     with JSContext():
-    #         self.assertRaises(RuntimeError, locker.__enter__)
-    #         self.assertRaises(RuntimeError, locker.__exit__, None, None, None)
-    #
-    #     del locker
+    def testIsolateLocking(self):
+
+        isolate = JSIsolate()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(0, isolate.lock_level)
+        isolate.lock()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(1, isolate.lock_level)
+        isolate.unlock()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(0, isolate.lock_level)
+        isolate.lock()
+        isolate.lock()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(2, isolate.lock_level)
+        isolate.unlock()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(1, isolate.lock_level)
+        isolate.lock()
+        isolate.lock()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(3, isolate.lock_level)
+        isolate.unlock_all()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(-3, isolate.lock_level)
+        isolate.relock_all()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(3, isolate.lock_level)
+        isolate.unlock()
+        isolate.unlock()
+        isolate.unlock()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(0, isolate.lock_level)
+
+    def testIsolateWrapperAutoLocking(self):
+
+        isolate1 = JSIsolate()
+        with isolate1:
+            self.assertTrue(isolate1.locked)
+            isolate1.unlock()
+            self.assertFalse(isolate1.locked)
+            isolate1.lock()
+            self.assertTrue(isolate1.locked)
+        self.assertFalse(isolate1.locked)
+
+        isolate2 = JSIsolate()
+        with isolate2:
+            self.assertTrue(isolate2.locked)
+            isolate2.lock()
+            self.assertTrue(isolate2.locked)
+            isolate2.unlock_all()
+            self.assertFalse(isolate2.locked)
+            isolate2.relock_all()
+            self.assertTrue(isolate2.locked)
+            isolate2.unlock()
+            self.assertTrue(isolate2.locked)
+        self.assertFalse(isolate2.locked)
+
+        with JSIsolate() as isolate3:
+            self.assertTrue(isolate3.locked)
+            with JSIsolate() as isolate4:
+                self.assertTrue(isolate4.locked)
+                with JSIsolate() as isolate5:
+                    self.assertTrue(isolate5.locked)
+                self.assertTrue(isolate4.locked)
+            self.assertTrue(isolate3.locked)
 
     def testMultiPythonThread(self):
         import time
@@ -88,38 +119,38 @@ class TestMultithread(unittest.TestCase):
 
         self.assertTrue((time.time() - now) >= 1)
 
-    def _testMultiJavascriptThread(self):
-        import time
-        import threading
-
-        class Global:
-            result = []
-
-            def add(self, value):
-                with JSUnlocker():
-                    time.sleep(0.1)
-
-                    self.result.append(value)
-
-        g = Global()
-
-        def run():
-            with JSContext(g) as ctxt:
-                ctxt.eval("""
-                    for (i=0; i<10; i++)
-                        add(i);
-                """)
-
-        threads = [threading.Thread(target=run), threading.Thread(target=run)]
-
-        with JSLocker():
-            for t in threads:
-                t.start()
-
-        for t in threads:
-            t.join()
-
-        self.assertEqual(20, len(g.result))
+    # def _testMultiJavascriptThread(self):
+    #     import time
+    #     import threading
+    #
+    #     class Global:
+    #         result = []
+    #
+    #         def add(self, value):
+    #             with JSUnlocker():
+    #                 time.sleep(0.1)
+    #
+    #                 self.result.append(value)
+    #
+    #     g = Global()
+    #
+    #     def run():
+    #         with JSContext(g) as ctxt:
+    #             ctxt.eval("""
+    #                 for (i=0; i<10; i++)
+    #                     add(i);
+    #             """)
+    #
+    #     threads = [threading.Thread(target=run), threading.Thread(target=run)]
+    #
+    #     with JSLocker():
+    #         for t in threads:
+    #             t.start()
+    #
+    #     for t in threads:
+    #         t.join()
+    #
+    #     self.assertEqual(20, len(g.result))
 
 
 if __name__ == '__main__':
