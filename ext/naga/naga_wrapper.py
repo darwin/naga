@@ -204,27 +204,27 @@ if naga.config.naga_keep_backward_compatibility:
 
 # -- init code --------------------------------------------------------------------------------------------------------
 
-v8_default_platform: JSPlatform
-v8_default_isolate: JSIsolate
+default_platform: JSPlatform
+default_isolate: JSIsolate
 
 
 def init_default_platform():
-    global v8_default_platform
-    v8_default_platform = JSPlatform.instance
-    v8_default_platform.init()
+    global default_platform
+    default_platform = JSPlatform.instance
+    default_platform.init()
 
 
 def deinit_default_isolate():
-    global v8_default_isolate
-    v8_default_isolate.leave()
-    v8_default_isolate.unlock()
+    global default_isolate
+    default_isolate.leave()
+    default_isolate.unlock()
 
 
 def init_default_isolate():
-    global v8_default_isolate
-    v8_default_isolate = JSIsolate()
-    v8_default_isolate.lock()
-    v8_default_isolate.enter()
+    global default_isolate
+    default_isolate = JSIsolate()
+    default_isolate.lock()
+    default_isolate.enter()
     atexit.register(deinit_default_isolate)
 
 
