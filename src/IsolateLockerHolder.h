@@ -2,15 +2,10 @@
 #define NAGA_ISOLATELOCKERHOLDER_H_
 
 #include "Base.h"
-
-class ObservedLocker : public v8::Locker {
- public:
-  explicit ObservedLocker(v8::Isolate* v8_isolate);
-  ~ObservedLocker();
-};
+#include "V8XObservedLocker.h"
 
 class IsolateLockerHolder {
-  using LockerType = ObservedLocker;
+  using LockerType = v8x::ObservedLocker;
   v8::Isolate* m_v8_isolate;
   v8x::WeakIsolateLockerPtr m_v8_weak_locker;
   alignas(LockerType) std::array<std::byte, sizeof(LockerType)> m_v8_locker_storage;

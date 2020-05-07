@@ -6,14 +6,6 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kIsolateLockingLogger), __VA_ARGS__)
 
-ObservedLocker::ObservedLocker(v8::Isolate* v8_isolate) : v8::Locker(v8_isolate) {
-  TRACE("ObservedLocker::ObservedLocker {} v8_isolate={}", THIS, P$(v8_isolate));
-}
-
-ObservedLocker::~ObservedLocker() {
-  TRACE("ObservedLocker::~ObservedLocker {}", THIS);
-}
-
 IsolateLockerHolder::IsolateLockerHolder(v8::Isolate* v8_isolate) : m_v8_isolate(v8_isolate) {
   TRACE("IsolateLocker::IsolateLocker {} v8_isolate={}", THIS, P$(m_v8_isolate));
 }
