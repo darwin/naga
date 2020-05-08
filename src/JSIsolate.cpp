@@ -151,6 +151,7 @@ py::bool_ CJSIsolate::InContext() const {
   return py_result;
 }
 
+// TODO: do not assert below, throw python runtime errors
 void CJSIsolate::Lock() {
   TRACE("CJSIsolate::Lock {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
   assert(m_exposed_locker_level >= 0);
@@ -172,15 +173,17 @@ void CJSIsolate::Unlock() {
 void CJSIsolate::UnlockAll() {
   TRACE("CJSIsolate::UnlockAll {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
   assert(m_exposed_locker_level >= 0);
+  m_exposed_locker_levels.push(m_exposed_locker_level);
+  m_exposed_locker_level = 0;
   m_exposed_locker = nullptr;
-  m_exposed_locker_level = -m_exposed_locker_level;
 }
 
 void CJSIsolate::RelockAll() {
-  assert(m_exposed_locker_level <= 0);
+  assert(m_exposed_locker_level == 0);
   TRACE("CJSIsolate::RelockAll {} m_exposed_locker_level={}", THIS, m_exposed_locker_level);
-
-  m_exposed_locker_level = -m_exposed_locker_level;
+  assert(m_exposed_locker_levels.size() > 0);
+  m_exposed_locker_level = m_exposed_locker_levels.top();
+  m_exposed_locker_levels.pop();
   if (m_exposed_locker_level > 0) {
     m_exposed_locker = m_locker_holder.CreateOrShareLocker();
   }

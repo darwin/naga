@@ -198,15 +198,13 @@ void exposeJSIsolate(py::module py_module) {
                   "Unlocks previously locked isolate.")                                                       //
       .def_method("unlock_all", &CJSIsolate::UnlockAll,                                                       //
                   "Temporarily release all nested locks. Call relock_all when done."                          //
-                  "Cannot be called multiple times for nesting."                                              //
-                  "Please note that lock/unlock cannot be called when in this mode.")                         //
+                  "Can be called multiple times for nesting.")                                                //
       .def_method("relock_all", &CJSIsolate::RelockAll,                                                       //
                   "Restores previous lock level when done with temporary unlock_all."
-                  "Must be paired to unlock_all. Cannot be called multiple times for nesting."  //
-                  "After calling relock_all normal lock/unlock will work as before.")           //
-      .def_property_r("locked", &CJSIsolate::Locked)                                            //
-      .def_property_r("lock_level", &CJSIsolate::LockLevel,                                     //
-                      "Returns how many times lock was called without pair unlock.")            //
+                  "Must be paired to unlock_all. Can be called multiple times for nesting.")  //
+      .def_property_r("locked", &CJSIsolate::Locked)                                          //
+      .def_property_r("lock_level", &CJSIsolate::LockLevel,                                   //
+                      "Returns how many times lock was called without pair unlock.")          //
       ;
 }
 

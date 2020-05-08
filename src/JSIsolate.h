@@ -24,6 +24,7 @@
 // finally dispose the isolate in V8.
 
 class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
+  using LockerLevelStack = std::stack<int>;
   v8x::ProtectedIsolatePtr m_v8_isolate;
   std::unique_ptr<CTracer> m_tracer;
   std::unique_ptr<CJSHospital> m_hospital;
@@ -31,6 +32,7 @@ class CJSIsolate : public std::enable_shared_from_this<CJSIsolate> {
   v8x::IsolateLockerHolder m_locker_holder;
   v8x::SharedIsolateLockerPtr m_exposed_locker;
   int m_exposed_locker_level;
+  LockerLevelStack m_exposed_locker_levels;
 
  public:
   CJSIsolate();

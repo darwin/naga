@@ -10,7 +10,6 @@ from naga import JSIsolate, JSContext
 
 class TestMultithread(unittest.TestCase):
     def testIsolateLocking(self):
-
         isolate = JSIsolate()
         self.assertFalse(isolate.locked)
         self.assertEqual(0, isolate.lock_level)
@@ -33,7 +32,21 @@ class TestMultithread(unittest.TestCase):
         self.assertEqual(3, isolate.lock_level)
         isolate.unlock_all()
         self.assertFalse(isolate.locked)
-        self.assertEqual(-3, isolate.lock_level)
+        self.assertEqual(0, isolate.lock_level)
+        isolate.lock()
+        isolate.lock()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(2, isolate.lock_level)
+        isolate.unlock_all()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(0, isolate.lock_level)
+        isolate.relock_all()
+        self.assertTrue(isolate.locked)
+        self.assertEqual(2, isolate.lock_level)
+        isolate.unlock()
+        isolate.unlock()
+        self.assertFalse(isolate.locked)
+        self.assertEqual(0, isolate.lock_level)
         isolate.relock_all()
         self.assertTrue(isolate.locked)
         self.assertEqual(3, isolate.lock_level)
@@ -44,7 +57,6 @@ class TestMultithread(unittest.TestCase):
         self.assertEqual(0, isolate.lock_level)
 
     def testIsolateWrapperAutoLocking(self):
-
         isolate1 = JSIsolate()
         with isolate1:
             self.assertTrue(isolate1.locked)
