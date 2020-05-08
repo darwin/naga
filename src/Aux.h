@@ -11,7 +11,7 @@ void trigger4();
 void trigger5();
 void trace(const py::str& s);
 void v8RequestGarbageCollectionForTesting();
-CJSIsolatePtr testEncounteringForeignIsolate();
-CJSContextPtr testEncounteringForeignContext();
+SharedJSIsolatePtr testEncounteringForeignIsolate();
+SharedJSContextPtr testEncounteringForeignContext();
 
 #endif

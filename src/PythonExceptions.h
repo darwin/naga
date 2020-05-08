@@ -10,7 +10,7 @@ auto withPythonErrorInterception(v8x::LockedIsolatePtr& v8_isolate, F&& fn) {
   try {
     return std::optional(fn());
   } catch (const py::error_already_set& e) {
-    CPythonObject::ThrowJSException(v8_isolate, e);
+    PythonObject::ThrowJSException(v8_isolate, e);
   } catch (const std::exception& e) {
     auto v8_msg = v8x::toString(v8_isolate, e.what());
     v8_isolate->ThrowException(v8::Exception::Error(v8_msg));

@@ -6,12 +6,10 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSEternalsLogger), __VA_ARGS__)
 
-CJSEternals::CJSEternals(v8x::ProtectedIsolatePtr v8_protected_isolate)
-    : m_v8_isolate(v8_protected_isolate),
-      m_cache{} {
-  TRACE("CJSEternals::CJSEternals {} v8_isolate={}", THIS, m_v8_isolate);
+JSEternals::JSEternals(v8x::ProtectedIsolatePtr v8_protected_isolate) : m_v8_isolate(v8_protected_isolate), m_cache{} {
+  TRACE("JSEternals::JSEternals {} v8_isolate={}", THIS, m_v8_isolate);
 }
 
-CJSEternals::~CJSEternals() {
-  TRACE("CJSEternals::~CJSEternals {}", THIS);
+JSEternals::~JSEternals() {
+  TRACE("JSEternals::~JSEternals {}", THIS);
 }

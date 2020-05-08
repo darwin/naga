@@ -1,7 +1,7 @@
 #include "PythonObject.h"
 #include "JSException.h"
 #include "PythonExceptions.h"
-#include "Tracer.h"
+#include "JSTracer.h"
 #include "Wrapping.h"
 #include "Logging.h"
 #include "Printing.h"
@@ -40,7 +40,7 @@ void toStringImpl(const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   v8_info.GetReturnValue().Set(v8::Undefined(v8_isolate));
 }
 
-void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedGetter v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
@@ -90,7 +90,7 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
       auto getter = py_val.attr("fget");
 
       if (getter.is_none()) {
-        throw CJSException("unreadable attribute", PyExc_AttributeError);
+        throw JSException("unreadable attribute", PyExc_AttributeError);
       }
 
       py_val = getter();
@@ -103,9 +103,9 @@ void CPythonObject::NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyC
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
-                                v8::Local<v8::Value> v8_value,
-                                const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
+                               v8::Local<v8::Value> v8_value,
+                               const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::NamedSetter v8_name={} v8_value={} v8_info={}", v8_name, v8_value, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
@@ -118,7 +118,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
   auto v8_result = withPythonErrorInterception(v8_isolate, [&] {
     auto v8_name_utf = v8x::toUTF(v8_isolate, v8_name);
     if (!*v8_name_utf) {
-      throw CJSException("unable to obtain attribute name", PyExc_AttributeError);
+      throw JSException("unable to obtain attribute name", PyExc_AttributeError);
     }
     auto name = *v8_name_utf;
     auto py_gil = pyu::withGIL();
@@ -138,7 +138,7 @@ void CPythonObject::NamedSetter(v8::Local<v8::Name> v8_name,
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
+void PythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
@@ -168,7 +168,7 @@ void CPythonObject::NamedQuery(v8::Local<v8::Name> v8_name, const v8::PropertyCa
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
+void PythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::NamedQuery v8_name={} v8_info={}", v8_name, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   if (v8_name->IsSymbol()) {
@@ -194,7 +194,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
         auto py_deleter = py_name_attr.attr("fdel");
 
         if (py_deleter.is_none()) {
-          throw CJSException("can't delete attribute", PyExc_AttributeError);
+          throw JSException("can't delete attribute", PyExc_AttributeError);
         }
         auto py_result = py_deleter();
         auto py_bool_result = py::cast<py::bool_>(py_result);
@@ -214,7 +214,7 @@ void CPythonObject::NamedDeleter(v8::Local<v8::Name> v8_name, const v8::Property
 #pragma ide diagnostic ignored "bugprone-lambda-function-name"
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-void CPythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
+void PythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::NamedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
 

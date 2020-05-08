@@ -113,7 +113,7 @@ v8::Local<v8::Context> getCurrentContext(LockedIsolatePtr& v8_isolate) {
   assert(hasScope(v8_isolate));
   auto v8_context = v8_isolate->GetCurrentContext();
   if (v8_context.IsEmpty()) {
-    throw CJSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
+    throw JSException(v8_isolate, "Javascript object out of context", PyExc_UnboundLocalError);
   }
   return v8_context;
 }
@@ -140,7 +140,7 @@ v8::TryCatch withTryCatch(LockedIsolatePtr& v8_isolate) {
 }
 
 void checkTryCatch(LockedIsolatePtr& v8_isolate, TryCatchPtr v8_try_catch) {
-  CJSException::CheckTryCatch(v8_isolate, v8_try_catch);
+  JSException::CheckTryCatch(v8_isolate, v8_try_catch);
 }
 
 ProtectedIsolatePtr createIsolate() {
@@ -168,7 +168,7 @@ v8::Eternal<v8::Private> createEternalPrivateAPI(LockedIsolatePtr& v8_isolate, c
 }
 
 LockedIsolatePtr lockIsolate(v8::Isolate* v8_isolate) {
-  return CJSIsolate::FromV8(v8_isolate)->ToV8();
+  return JSIsolate::FromV8(v8_isolate)->ToV8();
 }
 
 }  // namespace v8x

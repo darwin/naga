@@ -3,9 +3,9 @@
 
 #include "Base.h"
 
-class CJSObjectFunctionImpl {
+class JSObjectFunctionImpl {
  public:
-  CJSObjectBase& m_base;
+  JSObjectBase& m_base;
 
   py::object Call(const py::list& py_args,
                   const py::dict& py_kwargs,

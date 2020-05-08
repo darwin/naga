@@ -8,7 +8,7 @@ We have 4 conceptual zones:
 
 1. Python land (PyObject* and friends)
 2. pybind land (py::object)
-3. C++ land (our stuff like CJSObject)
+3. C++ land (our stuff like JSObject)
 4. V8 land (v8::Local<v8::Object>)
 
 A lot of our code deals with converting or wrapping objects on one side and exposing them on the other

@@ -17,8 +17,8 @@ static const auto sentinel_name = "bcljs-bridge-sentinel";
 
 static inline void validateBridgeResult(v8::Local<v8::Value> v8_val, const char* fn_name) {
   if (v8_val.IsEmpty()) {
-    throw CJSException(fmt::format("Unexpected: got empty result from bcljs.bridge.{} call", fn_name),
-                       PyExc_UnboundLocalError);
+    throw JSException(fmt::format("Unexpected: got empty result from bcljs.bridge.{} call", fn_name),
+                      PyExc_UnboundLocalError);
   }
 }
 
@@ -34,12 +34,12 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
 
   if (v8_bcljs_val.IsEmpty()) {
     auto msg = "Unable to retrieve bcljs in global js context";
-    throw CJSException(msg, PyExc_UnboundLocalError);
+    throw JSException(msg, PyExc_UnboundLocalError);
   }
 
   if (!v8_bcljs_val->IsObject()) {
     auto msg = "Unexpected: bcljs in global js context in not a js object";
-    throw CJSException(msg, PyExc_UnboundLocalError);
+    throw JSException(msg, PyExc_UnboundLocalError);
   }
 
   auto v8_bcljs_obj = v8::Local<v8::Object>::Cast(v8_bcljs_val);
@@ -49,12 +49,12 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
 
   if (v8_bridge_val.IsEmpty() || v8_bridge_val->IsNullOrUndefined()) {
     auto msg = "Unable to retrieve bcljs.bridge in global js context";
-    throw CJSException(msg, PyExc_UnboundLocalError);
+    throw JSException(msg, PyExc_UnboundLocalError);
   }
 
   if (!v8_bridge_val->IsObject()) {
     auto msg = "Unexpected: bcljs.bridge in global js context in not a js object";
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   auto v8_bridge_obj = v8::Local<v8::Object>::Cast(v8_bridge_val);
@@ -64,12 +64,12 @@ static v8::Local<v8::Function> lookupBridgeFn(const char* name) {
 
   if (v8_fn_val.IsEmpty() || v8_fn_val->IsNullOrUndefined()) {
     auto msg = fmt::format("Unable to retrieve bcljs.bridge.{}", name);
-    throw CJSException(msg, PyExc_UnboundLocalError);
+    throw JSException(msg, PyExc_UnboundLocalError);
   }
 
   if (!v8_fn_val->IsFunction()) {
     auto msg = fmt::format("Unexpected: bcljs.bridge.{} must be a js function", name);
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   return v8_fn_val.As<v8::Function>();
@@ -100,7 +100,7 @@ static bool isSentinel(v8::Local<v8::Value> v8_val) {
   return v8_res_sym->SameValue(v8_sentinel);
 }
 
-size_t CJSObjectCLJSImpl::Length() const {
+size_t JSObjectCLJSImpl::Length() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -113,15 +113,15 @@ size_t CJSObjectCLJSImpl::Length() const {
 
   if (!v8_result->IsNumber()) {
     auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a number", fn_name);
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   auto result = v8_result->Uint32Value(v8_context).ToChecked();
-  TRACE("CJSObjectCLJSImpl::Length {} => {}", THIS, result);
+  TRACE("JSObjectCLJSImpl::Length {} => {}", THIS, result);
   return result;
 }
 
-py::str CJSObjectCLJSImpl::Str() const {
+py::str JSObjectCLJSImpl::Str() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -133,16 +133,16 @@ py::str CJSObjectCLJSImpl::Str() const {
 
   if (!v8_result->IsString()) {
     auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a string", fn_name);
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
   py::str py_result(*v8_utf);
-  TRACE("CJSObjectCLJSImpl::Str {} => {}", THIS, py_result);
+  TRACE("JSObjectCLJSImpl::Str {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::str CJSObjectCLJSImpl::Repr() const {
+py::str JSObjectCLJSImpl::Repr() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -154,16 +154,16 @@ py::str CJSObjectCLJSImpl::Repr() const {
 
   if (!v8_result->IsString()) {
     auto msg = fmt::format("Unexpected: bcljs.bridge.{} expected to return a string", fn_name);
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_result);
   py::str py_result(*v8_utf);
-  TRACE("CJSObjectCLJSImpl::Repr {} => {}", THIS, py_result);
+  TRACE("JSObjectCLJSImpl::Repr {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
+py::object JSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -177,14 +177,14 @@ py::object CJSObjectCLJSImpl::GetItemIndex(const py::object& py_index) const {
   validateBridgeResult(v8_result, fn_name);
 
   if (isSentinel(v8_result)) {
-    throw CJSException("CLJSType index out of bounds", PyExc_IndexError);
+    throw JSException("CLJSType index out of bounds", PyExc_IndexError);
   }
   auto py_result = wrap(v8_isolate, v8_result, m_base.ToV8(v8_isolate));
-  TRACE("CJSObjectCLJSImpl::GetItemIndex {} py_index={} => {}", THIS, py_index, py_result);
+  TRACE("JSObjectCLJSImpl::GetItemIndex {} py_index={} => {}", THIS, py_index, py_result);
   return py_result;
 }
 
-py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
+py::object JSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -194,7 +194,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
   Py_ssize_t step;
 
   if (PySlice_Unpack(py_slice.ptr(), &start, &stop, &step) < 0) {
-    CPythonObject::ThrowJSException(v8_isolate);
+    PythonObject::ThrowJSException(v8_isolate);
   }
   PySlice_AdjustIndices(length, &start, &stop, step);
 
@@ -210,7 +210,7 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
 
   if (!v8_result->IsArray()) {
     auto msg = fmt::format("Unexpected: bcljs.bridge.{} must return a js array", fn_name);
-    throw CJSException(msg, PyExc_TypeError);
+    throw JSException(msg, PyExc_TypeError);
   }
 
   auto v8_result_arr = v8_result.As<v8::Array>();
@@ -225,18 +225,18 @@ py::object CJSObjectCLJSImpl::GetItemSlice(const py::object& py_slice) const {
 
     if (v8_item.IsEmpty()) {
       auto msg = fmt::format("Got empty value at index {} when processing slice", i);
-      throw CJSException(msg, PyExc_UnboundLocalError);
+      throw JSException(msg, PyExc_UnboundLocalError);
     }
 
     auto py_item = wrap(v8_isolate, v8_item, m_base.ToV8(v8_isolate));
     py_result.append(py_item);
   }
 
-  TRACE("CJSObjectCLJSImpl::GetItemSlice {} py_slice={} => {}", THIS, py_slice, py_result);
+  TRACE("JSObjectCLJSImpl::GetItemSlice {} py_slice={} => {}", THIS, py_slice, py_result);
   return std::move(py_result);
 }
 
-py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
+py::object JSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
   assert(PyUnicode_Check(py_str.ptr()));
 
   auto v8_isolate = v8x::getCurrentIsolate();
@@ -250,7 +250,7 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
     if (v8_val.IsEmpty()) {
       auto v8_utf = v8::String::Utf8Value(v8_isolate, v8_val);
       auto msg = fmt::format("Unexpected: got empty result when accessing js property '{}'", *v8_utf);
-      throw CJSException(msg, PyExc_UnboundLocalError);
+      throw JSException(msg, PyExc_UnboundLocalError);
     }
     return wrap(v8_isolate, v8_val, m_base.ToV8(v8_isolate));
   }
@@ -266,12 +266,12 @@ py::object CJSObjectCLJSImpl::GetItemString(const py::object& py_str) const {
     return py::none();
   }
   auto py_result = wrap(v8_isolate, v8_result, m_base.ToV8(v8_isolate));
-  TRACE("CJSObjectCLJSImpl::GetItemString {} py_str={} => {}", THIS, py_str, py_result);
+  TRACE("JSObjectCLJSImpl::GetItemString {} py_str={} => {}", THIS, py_str, py_result);
   return py_result;
 }
 
-py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
-  TRACE("CJSObjectCLJSImpl::GetItem {} py_key={}", THIS, py_key);
+py::object JSObjectCLJSImpl::GetItem(const py::object& py_key) const {
+  TRACE("JSObjectCLJSImpl::GetItem {} py_key={}", THIS, py_key);
 
   if (PyLong_Check(py_key.ptr()) != 0) {
     return GetItemIndex(py_key);
@@ -281,17 +281,17 @@ py::object CJSObjectCLJSImpl::GetItem(const py::object& py_key) const {
     return GetItemSlice(py_key);
   }
 
-  throw CJSException("indices must be integers or slices", PyExc_TypeError);
+  throw JSException("indices must be integers or slices", PyExc_TypeError);
 }
 
-py::object CJSObjectCLJSImpl::GetAttr(const py::object& py_key) const {
-  TRACE("CJSObjectCLJSImpl::GetAttr {} py_key={}", THIS, py_key);
+py::object JSObjectCLJSImpl::GetAttr(const py::object& py_key) const {
+  TRACE("JSObjectCLJSImpl::GetAttr {} py_key={}", THIS, py_key);
 
   if (PyUnicode_Check(py_key.ptr()) != 0) {
     return GetItemString(py_key);
   }
 
-  throw CJSException("attr names must be strings", PyExc_TypeError);
+  throw JSException("attr names must be strings", PyExc_TypeError);
 }
 
 #pragma clang diagnostic pop

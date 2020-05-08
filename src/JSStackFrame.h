@@ -4,13 +4,13 @@
 #include "Base.h"
 #include "V8XProtectedIsolate.h"
 
-class CJSStackFrame {
+class JSStackFrame {
   v8x::ProtectedIsolatePtr m_v8_isolate;
   v8::Global<v8::StackFrame> m_v8_frame;
 
  public:
-  CJSStackFrame(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
-  CJSStackFrame(const CJSStackFrame& stack_frame);
+  JSStackFrame(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame);
+  JSStackFrame(const JSStackFrame& stack_frame);
 
   [[nodiscard]] v8::Local<v8::StackFrame> Handle() const;
 

@@ -1,31 +1,31 @@
 #ifndef NAGA_FORWARDDECLARATIONS_H_
 #define NAGA_FORWARDDECLARATIONS_H_
 
-class CJSPlatform;
-class CJSContext;
-class CJSEngine;
-class CJSIsolate;
-class CJSScript;
-class CJSStackTrace;
-class CJSStackFrame;
-class CJSException;
-class CTracer;
-class CJSHospital;
-class CJSEternals;
-class CJSObject;
-class CJSObjectBase;
-class CJSObjectGenericImpl;
-class CJSObjectFunctionImpl;
-class CJSObjectArrayImpl;
-class CJSObjectCLJSImpl;
-class CJSObjectAPI;
+class JSPlatform;
+class JSContext;
+class JSEngine;
+class JSIsolate;
+class JSScript;
+class JSStackTrace;
+class JSStackFrame;
+class JSException;
+class JSTracer;
+class JSHospital;
+class JSEternals;
+class JSObject;
+class JSObjectBase;
+class JSObjectGenericImpl;
+class JSObjectFunctionImpl;
+class JSObjectArrayImpl;
+class JSObjectCLJSImpl;
+class JSObjectAPI;
 
-using CJSContextPtr = std::shared_ptr<CJSContext>;
-using CJSIsolatePtr = std::shared_ptr<CJSIsolate>;
-using CJSScriptPtr = std::shared_ptr<CJSScript>;
-using CJSStackTracePtr = std::shared_ptr<CJSStackTrace>;
-using CJSStackFramePtr = std::shared_ptr<CJSStackFrame>;
-using CJSObjectPtr = std::shared_ptr<CJSObject>;
+using SharedJSContextPtr = std::shared_ptr<JSContext>;
+using SharedJSIsolatePtr = std::shared_ptr<JSIsolate>;
+using SharedJSScriptPtr = std::shared_ptr<JSScript>;
+using SharedJSStackTracePtr = std::shared_ptr<JSStackTrace>;
+using SharedJSStackFramePtr = std::shared_ptr<JSStackFrame>;
+using SharedJSObjectPtr = std::shared_ptr<JSObject>;
 
 namespace v8x {
 

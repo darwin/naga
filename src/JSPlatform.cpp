@@ -7,21 +7,21 @@
   SPDLOG_LOGGER_TRACE(getLogger(kJSPlatformLogger), __VA_ARGS__)
 
 // enforce singleton contract
-constexpr auto singleton_invariants = !std::is_constructible<CJSPlatform>::value &&            //
-                                      !std::is_assignable<CJSPlatform, CJSPlatform>::value &&  //
-                                      !std::is_swappable<CJSPlatform>::value;                  //
-static_assert(singleton_invariants, "CJSPlatform should be a singleton.");
+constexpr auto singleton_invariants = !std::is_constructible<JSPlatform>::value &&           //
+                                      !std::is_assignable<JSPlatform, JSPlatform>::value &&  //
+                                      !std::is_swappable<JSPlatform>::value;                 //
+static_assert(singleton_invariants, "JSPlatform should be a singleton.");
 
-CJSPlatform* CJSPlatform::Instance() {
-  static CJSPlatform g_platform;
-  TRACE("CJSPlatform::Instance => {}", (void*)&g_platform);
+JSPlatform* JSPlatform::Instance() {
+  static JSPlatform g_platform;
+  TRACE("JSPlatform::Instance => {}", (void*)&g_platform);
   return &g_platform;
 }
 
-bool CJSPlatform::Init(std::string argv) {
-  TRACE("CJSPlatform::Init {} argv='{}'", THIS, argv);
+bool JSPlatform::Init(std::string argv) {
+  TRACE("JSPlatform::Init {} argv='{}'", THIS, argv);
   if (m_initialized) {
-    TRACE("CJSPlatform::Init {} => [already initialized]", THIS);
+    TRACE("JSPlatform::Init {} => [already initialized]", THIS);
     return false;
   }
 

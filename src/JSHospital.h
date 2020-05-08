@@ -30,13 +30,13 @@ using HospitalRecords = std::unordered_set<HospitalRecord*>;
 
 void hospitalizePatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);
 
-class CJSHospital {
+class JSHospital {
   v8x::ProtectedIsolatePtr m_v8_isolate;
   HospitalRecords m_records;
 
  public:
-  explicit CJSHospital(v8x::ProtectedIsolatePtr v8_isolate);
-  ~CJSHospital();
+  explicit JSHospital(v8x::ProtectedIsolatePtr v8_isolate);
+  ~JSHospital();
 
   void AcceptPatient(v8::Local<v8::Object> v8_patient, PatientClenupFn cleanup_fn);
   void PatientIsAboutToDie(v8::Isolate* v8_isolate, HospitalRecord* record);

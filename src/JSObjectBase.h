@@ -3,7 +3,7 @@
 
 #include "Base.h"
 
-class CJSObjectBase {
+class JSObjectBase {
  public:
   using RoleFlagsType = std::uint8_t;
 
@@ -19,8 +19,8 @@ class CJSObjectBase {
   v8::Global<v8::Object> m_v8_obj;
 
  public:
-  explicit CJSObjectBase(v8::Local<v8::Object> v8_obj);
-  ~CJSObjectBase();
+  explicit JSObjectBase(v8::Local<v8::Object> v8_obj);
+  ~JSObjectBase();
 
   [[nodiscard]] v8::Local<v8::Object> ToV8(v8x::LockedIsolatePtr& v8_isolate) const;
 
@@ -30,7 +30,7 @@ class CJSObjectBase {
   void Dump(std::ostream& os) const;
 };
 
-std::ostream& operator<<(std::ostream& os, const CJSObjectBase::Roles& v);
+std::ostream& operator<<(std::ostream& os, const JSObjectBase::Roles& v);
 
 #include "JSObjectBaseAux.h"
 

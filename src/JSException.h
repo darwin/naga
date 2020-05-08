@@ -9,7 +9,7 @@ void translateException(std::exception_ptr p);
 v8::Eternal<v8::Private> privateAPIForType(v8x::LockedIsolatePtr& v8_isolate);
 v8::Eternal<v8::Private> privateAPIForValue(v8x::LockedIsolatePtr& v8_isolate);
 
-class CJSException : public std::runtime_error {
+class JSException : public std::runtime_error {
   v8x::ProtectedIsolatePtr m_v8_isolate;
   PyObject* m_raw_type;
 
@@ -18,15 +18,15 @@ class CJSException : public std::runtime_error {
   v8::Global<v8::Message> m_v8_message;
 
  protected:
-  CJSException(v8x::ProtectedIsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
+  JSException(v8x::ProtectedIsolatePtr v8_isolate, const v8::TryCatch& v8_try_catch, PyObject* raw_type);
 
  public:
-  CJSException(v8x::ProtectedIsolatePtr v8_isolate,
-               const std::string& msg,
-               PyObject* raw_type = PyExc_RuntimeError) noexcept;
-  explicit CJSException(const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
-  CJSException(const CJSException& ex) noexcept;
-  ~CJSException() noexcept;
+  JSException(v8x::ProtectedIsolatePtr v8_isolate,
+              const std::string& msg,
+              PyObject* raw_type = PyExc_RuntimeError) noexcept;
+  explicit JSException(const std::string& msg, PyObject* raw_type = PyExc_RuntimeError) noexcept;
+  JSException(const JSException& ex) noexcept;
+  ~JSException() noexcept;
 
   [[nodiscard]] PyObject* GetType() const;
 
@@ -52,7 +52,6 @@ class CJSException : public std::runtime_error {
   static void Throw(v8x::LockedIsolatePtr& v8_isolate, v8x::TryCatchPtr v8_try_catch);
 };
 
-static_assert(std::is_nothrow_copy_constructible<CJSException>::value,
-              "CJSException must be nothrow copy constructible");
+static_assert(std::is_nothrow_copy_constructible<JSException>::value, "JSException must be nothrow copy constructible");
 
 #endif

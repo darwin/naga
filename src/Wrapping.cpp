@@ -1,5 +1,5 @@
 #include "Wrapping.h"
-#include "Tracer.h"
+#include "JSTracer.h"
 #include "PythonDateTime.h"
 #include "PythonObject.h"
 #include "JSException.h"
@@ -33,7 +33,7 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, 
       auto v8_bound_fn = v8_bound_val.As<v8::Function>();
       TRACE("wrap v8_bound_fn={}", v8_bound_fn);
       // TODO: mark as function role?
-      return wrap(v8_isolate, std::make_shared<CJSObject>(v8_bound_fn));
+      return wrap(v8_isolate, std::make_shared<JSObject>(v8_bound_fn));
     }
   }
 
@@ -111,7 +111,7 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj)
   auto v8_scope = v8x::withScope(v8_isolate);
 
   if (v8_obj.IsEmpty()) {
-    throw CJSException(v8_isolate, "Unexpected empty V8 object handle.");
+    throw JSException(v8_isolate, "Unexpected empty V8 object handle.");
   }
 
   py::object py_result;
@@ -119,14 +119,14 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj)
   if (traced_raw_object) {
     py_result = py::reinterpret_borrow<py::object>(traced_raw_object);
   } else {
-    py_result = wrap(v8_isolate, std::make_shared<CJSObject>(v8_obj));
+    py_result = wrap(v8_isolate, std::make_shared<JSObject>(v8_obj));
   }
 
   TRACE("=> {}", py_result);
   return py_result;
 }
 
-py::object wrap(v8x::LockedIsolatePtr& v8_isolate, const CJSObjectPtr& obj) {
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, const SharedJSObjectPtr& obj) {
   TRACE("wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();
 
@@ -145,7 +145,7 @@ static v8::Local<v8::Value> wrapWithTracing(v8x::LockedIsolatePtr& v8_isolate, p
   } else {
     // this is first time we see this object, let's create a new wrapper for it
     auto v8_context = v8x::getCurrentContext(v8_isolate);
-    auto v8_wrapper_template = CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8_isolate);
+    auto v8_wrapper_template = PythonObject::GetOrCreateCachedJSWrapperTemplate(v8_isolate);
     auto v8_new_wrapper = v8_wrapper_template->NewInstance(v8_context).ToLocalChecked();
     assert(!v8_new_wrapper.IsEmpty());
 
@@ -199,8 +199,8 @@ static v8::Local<v8::Value> wrapInternal(v8x::LockedIsolatePtr& v8_isolate, py::
     auto time = (static_cast<double>(mktime(&ts))) * 1000 + ms / 1000;
     return v8::Date::New(v8_context, time).ToLocalChecked();
   }
-  if (py::isinstance<CJSObject>(py_handle)) {
-    auto object = py::cast<CJSObjectPtr>(py_handle);
+  if (py::isinstance<JSObject>(py_handle)) {
+    auto object = py::cast<SharedJSObjectPtr>(py_handle);
     assert(object.get());
     return object->ToV8(v8_isolate);
   }

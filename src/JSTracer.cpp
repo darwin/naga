@@ -1,4 +1,4 @@
-#include "Tracer.h"
+#include "JSTracer.h"
 #include "JSIsolate.h"
 #include "Logging.h"
 #include "Printing.h"
@@ -15,7 +15,7 @@
 static PyObject* tracerPythonWeakCallback(PyObject* raw_self, PyObject* raw_weak_ref) {
   TRACE("tracerPythonWeakCallback raw_self={} raw_weak_ref={}", raw_self, raw_weak_ref);
   auto py_self = py::cast<py::capsule>(raw_self);
-  CTracer* tracer = py_self;
+  JSTracer* tracer = py_self;
   assert(tracer);
   tracer->WeakRefCallback(raw_weak_ref);
   Py_RETURN_NONE;
@@ -27,12 +27,12 @@ static PyMethodDef g_callback_def = {"tracerPythonWeakCallback", static_cast<PyC
 void traceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
   auto v8_isolate = v8_wrapper->GetIsolate();
   TRACE("traceWrapper v8_isolate={} raw_object={} v8_wrapper={}", P$(v8_isolate), py::handle(raw_object), v8_wrapper);
-  auto isolate = CJSIsolate::FromV8(v8_isolate);
+  auto isolate = JSIsolate::FromV8(v8_isolate);
   isolate->Tracer().TraceWrapper(raw_object, v8_wrapper);
 }
 
 v8::Local<v8::Object> lookupTracedWrapper(v8x::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object) {
-  auto isolate = CJSIsolate::FromV8(v8_isolate);
+  auto isolate = JSIsolate::FromV8(v8_isolate);
   auto v8_result = isolate->Tracer().LookupWrapper(v8_isolate, raw_object);
   TRACE("lookupTracedWrapper v8_isolate={} raw_object={}", P$(v8_isolate), py::handle(raw_object), v8_result);
   return v8_result;
@@ -50,7 +50,7 @@ TracedRawObject* lookupTracedObject(v8::Local<v8::Object> v8_wrapper) {
   }
   auto v8_isolate = v8x::lockIsolate(v8_wrapper->GetIsolate());
   auto v8_context = v8x::getCurrentContext(v8_isolate);
-  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
+  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, JSEternals::kTracerPayload, privateAPIForTracerPayload);
   if (!v8_wrapper->HasPrivate(v8_context, v8_payload_api).ToChecked()) {
     return nullptr;
   }
@@ -67,7 +67,7 @@ static void recordTracedWrapper(v8::Local<v8::Object> v8_wrapper, TracedRawObjec
   TRACE("recordTracedWrapper v8_wrapper={} raw_object={}", v8_wrapper, raw_object);
   auto v8_isolate = v8x::lockIsolate(v8_wrapper->GetIsolate());
   auto v8_context = v8x::getCurrentContext(v8_isolate);
-  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kTracerPayload, privateAPIForTracerPayload);
+  auto v8_payload_api = lookupEternal<v8::Private>(v8_isolate, JSEternals::kTracerPayload, privateAPIForTracerPayload);
   auto v8_payload = v8::External::New(v8_isolate, raw_object);
   v8_wrapper->SetPrivate(v8_context, v8_payload_api, v8_payload);
 }
@@ -76,7 +76,7 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
   // note that this call may come from anywhere, so we have to grab the GIL for potential Python API calls
   auto py_gil = pyu::withGIL();
   auto v8_isolate = data.GetIsolate();
-  auto isolate = CJSIsolate::FromV8(v8_isolate);
+  auto isolate = JSIsolate::FromV8(v8_isolate);
   auto raw_object = data.GetParameter();
   TRACE("v8WeakCallback data.GetParameter={} v8_isolate={}", raw_object, P$(v8_isolate));
   isolate->Tracer().AssociatedWrapperObjectIsAboutToDie(raw_object);
@@ -84,13 +84,13 @@ static void v8WeakCallback(const v8::WeakCallbackInfo<TracedRawObject>& data) {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-CTracer::CTracer()
+JSTracer::JSTracer()
     : m_self(this, "Naga.Tracer"),
       m_callback(py::reinterpret_steal<py::object>(PyCFunction_NewEx(&g_callback_def, m_self.ptr(), nullptr))) {
   TRACE("CTracer::CTracer {} m_self={} m_callback={}", THIS, m_self, m_callback);
 }
 
-CTracer::~CTracer() {
+JSTracer::~JSTracer() {
   TRACE("CTracer::~CTracer {}", THIS);
   // make sure we release all Python objects in live mode and drop all pending weakrefs
   auto it = m_wrappers.begin();
@@ -106,7 +106,7 @@ CTracer::~CTracer() {
   }
 }
 
-void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
+void JSTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper) {
   TRACE("CTracer::TraceWrapper {} raw_object={} v8_object={}", THIS, raw_object, v8_wrapper);
 
   assert(raw_object);
@@ -125,7 +125,7 @@ void CTracer::TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8
   SwitchToLiveMode(insert_point.first, false);
 }
 
-v8::Local<v8::Object> CTracer::LookupWrapper(v8x::LockedIsolatePtr& v8_isolate, PyObject* raw_object) {
+v8::Local<v8::Object> JSTracer::LookupWrapper(v8x::LockedIsolatePtr& v8_isolate, PyObject* raw_object) {
   auto tracer_lookup = m_wrappers.find(raw_object);
   if (tracer_lookup == m_wrappers.end()) {
     TRACE("CTracer::LookupWrapper {} raw_object={} => CACHE MISS", THIS, raw_object);
@@ -144,7 +144,7 @@ v8::Local<v8::Object> CTracer::LookupWrapper(v8x::LockedIsolatePtr& v8_isolate, 
   return v8_result;
 }
 
-void CTracer::DeleteRecord(PyObject* dead_raw_object) {
+void JSTracer::DeleteRecord(PyObject* dead_raw_object) {
   // WARNING! do not use dead_raw_object, even do not attempt to print it, it may be already gone
   TRACE("CTracer::DeleteRecord {} raw_object={}", THIS, static_cast<void*>(dead_raw_object));
 
@@ -164,7 +164,7 @@ void CTracer::DeleteRecord(PyObject* dead_raw_object) {
   m_wrappers.erase(tracer_lookup);
 }
 
-void CTracer::SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cleanup) {
+void JSTracer::SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cleanup) {
   TRACE("CTracer::SwitchToLiveMode {}", THIS);
 
   auto raw_object = tracer_lookup->first;
@@ -189,7 +189,7 @@ void CTracer::SwitchToLiveMode(TrackedWrappers::iterator tracer_lookup, bool cle
   }
 }
 
-void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
+void JSTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
   TRACE("CTracer::SwitchToZombieModeOrDie {} raw_object={}", THIS, raw_object);
 
   // there must be someone else holding this object as well
@@ -211,14 +211,14 @@ void CTracer::SwitchToZombieModeOrDie(TracedRawObject* raw_object) {
   SwitchToZombieMode(tracer_lookup);
 }
 
-void CTracer::WeakRefCallback(WeakRefRawObject* raw_weak_ref) {
+void JSTracer::WeakRefCallback(WeakRefRawObject* raw_weak_ref) {
   TRACE("CTracer::WeakRefCallback {} raw_weak_ref={}", THIS, raw_weak_ref);
   auto lookup = m_weak_refs.find(raw_weak_ref);
   assert(lookup != m_weak_refs.end());
   DeleteRecord(lookup->second);
 }
 
-void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
+void JSTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
   auto raw_object = tracer_lookup->first;
   TRACE("CTracer::SwitchToZombieMode {} raw_object={}", THIS, raw_object);
 
@@ -240,7 +240,7 @@ void CTracer::SwitchToZombieMode(TrackedWrappers::iterator tracer_lookup) {
   Py_DECREF(raw_object);
 }
 
-void CTracer::AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object) {
+void JSTracer::AssociatedWrapperObjectIsAboutToDie(TracedRawObject* raw_object) {
   TRACE("CTracer::AssociatedWrapperObjectIsAboutToDie {} raw_object={}", THIS, raw_object);
 
   if (Py_REFCNT(raw_object) == 1) {

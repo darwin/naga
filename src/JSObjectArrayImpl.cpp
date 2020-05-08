@@ -11,16 +11,16 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
-size_t CJSObjectArrayImpl::Length() const {
+size_t JSObjectArrayImpl::Length() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
-  TRACE("CJSObjectArrayImpl::Length {} => {}", THIS, result);
+  TRACE("JSObjectArrayImpl::Length {} => {}", THIS, result);
   return result;
 }
 
-py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
-  TRACE("CJSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
+py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
+  TRACE("JSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -48,7 +48,7 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     auto idx = PyLong_AsUnsignedLong(py_key.ptr());
 
     if (idx >= Length()) {
-      throw CJSException("index of of range", PyExc_IndexError);
+      throw JSException("index of of range", PyExc_IndexError);
     }
 
     if (!m_base.ToV8(v8_isolate)->Has(v8_context, idx).ToChecked()) {
@@ -59,11 +59,11 @@ py::object CJSObjectArrayImpl::GetItem(const py::object& py_key) const {
     return wrap(v8_isolate, v8_value, m_base.ToV8(v8_isolate));
   }
 
-  throw CJSException("list indices must be integers", PyExc_TypeError);
+  throw JSException("list indices must be integers", PyExc_TypeError);
 }
 
-py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
-  TRACE("CJSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
+py::object JSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
+  TRACE("JSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -147,8 +147,8 @@ py::object CJSObjectArrayImpl::SetItem(const py::object& py_key, const py::objec
   return py_value;
 }
 
-py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
-  TRACE("CJSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
+py::object JSObjectArrayImpl::DelItem(const py::object& py_key) const {
+  TRACE("JSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -183,11 +183,11 @@ py::object CJSObjectArrayImpl::DelItem(const py::object& py_key) const {
     return py_result;
   }
 
-  throw CJSException("list indices must be integers", PyExc_TypeError);
+  throw JSException("list indices must be integers", PyExc_TypeError);
 }
 
-bool CJSObjectArrayImpl::Contains(const py::object& py_key) const {
-  TRACE("CJSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
+bool JSObjectArrayImpl::Contains(const py::object& py_key) const {
+  TRACE("JSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);

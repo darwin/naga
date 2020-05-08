@@ -6,77 +6,77 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackFrameLogger), __VA_ARGS__)
 
-CJSStackFrame::CJSStackFrame(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
+JSStackFrame::JSStackFrame(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackFrame> v8_stack_frame)
     : m_v8_isolate(v8_isolate),
       m_v8_frame(v8_isolate.lock(), v8_stack_frame) {
   m_v8_frame.AnnotateStrongRetainer("Naga JSStackFrame");
 
-  TRACE("CJSStackFrame::CJSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, m_v8_isolate, v8_stack_frame);
+  TRACE("JSStackFrame::JSStackFrame {} v8_isolate={} v8_stack_frame={}", THIS, m_v8_isolate, v8_stack_frame);
 }
 
-CJSStackFrame::CJSStackFrame(const CJSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
-  TRACE("CJSStackFrame::CJSStackFrame {} stack_frame={}", THIS, stack_frame);
+JSStackFrame::JSStackFrame(const JSStackFrame& stack_frame) : m_v8_isolate(stack_frame.m_v8_isolate) {
+  TRACE("JSStackFrame::JSStackFrame {} stack_frame={}", THIS, stack_frame);
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   m_v8_frame.Reset(v8_isolate, stack_frame.Handle());
   m_v8_frame.AnnotateStrongRetainer("Naga JSStackFrame");
 }
 
-v8::Local<v8::StackFrame> CJSStackFrame::Handle() const {
+v8::Local<v8::StackFrame> JSStackFrame::Handle() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto result = v8::Local<v8::StackFrame>::New(v8_isolate, m_v8_frame);
-  TRACE("CJSStackFrame::Handle {} => {}", THIS, result);
+  TRACE("JSStackFrame::Handle {} => {}", THIS, result);
   return result;
 }
 
-std::string CJSStackFrame::GetScriptName() const {
+std::string JSStackFrame::GetScriptName() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = v8x::toStdString(v8_isolate, Handle()->GetScriptName());
-  TRACE("CJSStackFrame::GetScriptName {} => {}", THIS, result);
+  TRACE("JSStackFrame::GetScriptName {} => {}", THIS, result);
   return result;
 }
 
-std::string CJSStackFrame::GetFunctionName() const {
+std::string JSStackFrame::GetFunctionName() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = v8x::toStdString(v8_isolate, Handle()->GetFunctionName());
-  TRACE("CJSStackFrame::GetFunctionName {} => {}", THIS, result);
+  TRACE("JSStackFrame::GetFunctionName {} => {}", THIS, result);
   return result;
 }
 
-int CJSStackFrame::GetLineNumber() const {
+int JSStackFrame::GetLineNumber() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = Handle()->GetLineNumber();
-  TRACE("CJSStackFrame::GetLineNumber {} => {}", THIS, result);
+  TRACE("JSStackFrame::GetLineNumber {} => {}", THIS, result);
   return result;
 }
 
-int CJSStackFrame::GetColumnNumber() const {
+int JSStackFrame::GetColumnNumber() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = Handle()->GetColumn();
-  TRACE("CJSStackFrame::GetColumnNumber {} => {}", THIS, result);
+  TRACE("JSStackFrame::GetColumnNumber {} => {}", THIS, result);
   return result;
 }
 
-bool CJSStackFrame::IsEval() const {
+bool JSStackFrame::IsEval() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = Handle()->IsEval();
-  TRACE("CJSStackFrame::IsEval {} => {}", THIS, result);
+  TRACE("JSStackFrame::IsEval {} => {}", THIS, result);
   return result;
 }
 
-bool CJSStackFrame::IsConstructor() const {
+bool JSStackFrame::IsConstructor() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = Handle()->IsConstructor();
-  TRACE("CJSStackFrame::IsConstructor {} => {}", THIS, result);
+  TRACE("JSStackFrame::IsConstructor {} => {}", THIS, result);
   return result;
 }
 
-void CJSStackFrame::Dump(std::ostream& os) const {
-  fmt::print(os, "CJSStackFrame {}", THIS);
+void JSStackFrame::Dump(std::ostream& os) const {
+  fmt::print(os, "JSStackFrame {}", THIS);
 }

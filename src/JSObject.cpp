@@ -6,10 +6,10 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
-CJSObject::CJSObject(v8::Local<v8::Object> v8_obj) : CJSObjectAPI(v8_obj) {
-  TRACE("CJSObject::CJSObject {} v8_obj={}", THIS, v8_obj);
+JSObject::JSObject(v8::Local<v8::Object> v8_obj) : JSObjectAPI(v8_obj) {
+  TRACE("JSObject::JSObject {} v8_obj={}", THIS, v8_obj);
 }
 
-CJSObject::~CJSObject() {
-  TRACE("CJSObject::~CJSObject {}", THIS);
+JSObject::~JSObject() {
+  TRACE("JSObject::~JSObject {}", THIS);
 }

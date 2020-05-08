@@ -6,7 +6,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
-v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(v8x::LockedIsolatePtr& v8_isolate) {
+v8::Local<v8::ObjectTemplate> PythonObject::CreateJSWrapperTemplate(v8x::LockedIsolatePtr& v8_isolate) {
   TRACE("CPythonObject::CreateJSWrapperTemplate");
   auto v8_template = v8::ObjectTemplate::New(v8_isolate);
   auto v8_handler_config =
@@ -18,11 +18,11 @@ v8::Local<v8::ObjectTemplate> CPythonObject::CreateJSWrapperTemplate(v8x::Locked
   return v8_template;
 }
 
-v8::Local<v8::ObjectTemplate> CPythonObject::GetOrCreateCachedJSWrapperTemplate(v8x::LockedIsolatePtr& v8_isolate) {
+v8::Local<v8::ObjectTemplate> PythonObject::GetOrCreateCachedJSWrapperTemplate(v8x::LockedIsolatePtr& v8_isolate) {
   TRACE("CPythonObject::GetOrCreateCachedJSWrapperTemplate");
   assert(v8x::hasScope(v8_isolate));
   auto v8_object_template = lookupEternal<v8::ObjectTemplate>(
-      v8_isolate, CJSEternals::kJSWrapperTemplate, [](v8x::LockedIsolatePtr& v8_isolate) {
+      v8_isolate, JSEternals::kJSWrapperTemplate, [](v8x::LockedIsolatePtr& v8_isolate) {
         auto v8_wrapper_template = CreateJSWrapperTemplate(v8_isolate);
         return v8::Eternal<v8::ObjectTemplate>(v8_isolate, v8_wrapper_template);
       });

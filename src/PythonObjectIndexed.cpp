@@ -11,7 +11,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
-void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedGetter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   auto v8_scope = v8x::withScope(v8_isolate);
@@ -57,9 +57,9 @@ void CPythonObject::IndexedGetter(uint32_t index, const v8::PropertyCallbackInfo
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::IndexedSetter(uint32_t index,
-                                  v8::Local<v8::Value> v8_value,
-                                  const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::IndexedSetter(uint32_t index,
+                                 v8::Local<v8::Value> v8_value,
+                                 const v8::PropertyCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::IndexedSetter index={} v8_value={} v8_info={}", index, v8_value, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   auto v8_scope = v8x::withScope(v8_isolate);
@@ -93,7 +93,7 @@ void CPythonObject::IndexedSetter(uint32_t index,
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
+void PythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<v8::Integer>& v8_info) {
   TRACE("CPythonObject::IndexedQuery index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   auto v8_scope = v8x::withScope(v8_isolate);
@@ -134,7 +134,7 @@ void CPythonObject::IndexedQuery(uint32_t index, const v8::PropertyCallbackInfo<
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
+void PythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& v8_info) {
   TRACE("CPythonObject::IndexedDeleter index={} v8_info={}", index, v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   auto v8_scope = v8x::withScope(v8_isolate);
@@ -161,7 +161,7 @@ void CPythonObject::IndexedDeleter(uint32_t index, const v8::PropertyCallbackInf
   v8_info.GetReturnValue().Set(v8_final_result);
 }
 
-void CPythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
+void PythonObject::IndexedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8_info) {
   TRACE("CPythonObject::IndexedEnumerator v8_info={}", v8_info);
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());
   auto v8_scope = v8x::withScope(v8_isolate);

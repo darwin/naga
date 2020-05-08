@@ -8,7 +8,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
-CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
+JSObjectBase::JSObjectBase(v8::Local<v8::Object> v8_obj)
     : m_roles(Roles::Generic),
       m_v8_obj(v8x::getCurrentIsolate(), v8_obj) {
   m_v8_obj.AnnotateStrongRetainer("Naga JSObject");
@@ -25,29 +25,29 @@ CJSObjectBase::CJSObjectBase(v8::Local<v8::Object> v8_obj)
     m_roles |= Roles::CLJS;
   }
 #endif
-  TRACE("CJSObjectBase::CJSObjectBase {} v8_obj={} roles={}", THIS, v8_obj, m_roles);
+  TRACE("JSObjectBase::JSObjectBase {} v8_obj={} roles={}", THIS, v8_obj, m_roles);
 }
 
-CJSObjectBase::~CJSObjectBase() {
-  TRACE("CJSObjectBase::~CJSObjectBase {}", THIS);
+JSObjectBase::~JSObjectBase() {
+  TRACE("JSObjectBase::~JSObjectBase {}", THIS);
   m_v8_obj.Reset();
 }
 
-v8::Local<v8::Object> CJSObjectBase::ToV8(v8x::LockedIsolatePtr& v8_isolate) const {
+v8::Local<v8::Object> JSObjectBase::ToV8(v8x::LockedIsolatePtr& v8_isolate) const {
   auto v8_result = m_v8_obj.Get(v8_isolate);
-  TRACE("CJSObjectBase::ToV8 {} => {}", THIS, v8_result);
+  TRACE("JSObjectBase::ToV8 {} => {}", THIS, v8_result);
   return v8_result;
 }
 
-bool CJSObjectBase::HasRole(Roles roles) const {
+bool JSObjectBase::HasRole(Roles roles) const {
   return (m_roles & roles) == roles;
 }
 
-CJSObjectBase::Roles CJSObjectBase::GetRoles() const {
+JSObjectBase::Roles JSObjectBase::GetRoles() const {
   return m_roles;
 }
 
-void CJSObjectBase::Dump(std::ostream& os) const {
+void JSObjectBase::Dump(std::ostream& os) const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -71,13 +71,13 @@ void CJSObjectBase::Dump(std::ostream& os) const {
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const CJSObjectBase::Roles& v) {
+std::ostream& operator<<(std::ostream& os, const JSObjectBase::Roles& v) {
   std::vector<const char*> flags;
   flags.reserve(8);
-  if ((v & CJSObjectBase::Roles::Function) == CJSObjectBase::Roles::Function) {
+  if ((v & JSObjectBase::Roles::Function) == JSObjectBase::Roles::Function) {
     flags.push_back("Function");
   }
-  if ((v & CJSObjectBase::Roles::Array) == CJSObjectBase::Roles::Array) {
+  if ((v & JSObjectBase::Roles::Array) == JSObjectBase::Roles::Array) {
     flags.push_back("Array");
   }
   return os << fmt::format("{}", fmt::join(flags, ","));

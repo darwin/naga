@@ -3,9 +3,9 @@
 
 #include "Base.h"
 
-class CJSObjectCLJSImpl {
+class JSObjectCLJSImpl {
  public:
-  CJSObjectBase& m_base;
+  JSObjectBase& m_base;
 
   size_t Length() const;
   py::str Repr() const;

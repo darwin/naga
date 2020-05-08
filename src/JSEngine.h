@@ -4,18 +4,18 @@
 #include "Base.h"
 #include "V8XProtectedIsolate.h"
 
-class CJSEngine {
+class JSEngine {
   v8x::ProtectedIsolatePtr m_v8_isolate;
 
-  CJSScriptPtr InternalCompile(v8x::LockedIsolatePtr& v8_isolate,
-                               v8::Local<v8::String> v8_src,
-                               v8::Local<v8::Value> v8_name,
-                               int line,
-                               int col) const;
+  SharedJSScriptPtr InternalCompile(v8x::LockedIsolatePtr& v8_isolate,
+                                    v8::Local<v8::String> v8_src,
+                                    v8::Local<v8::Value> v8_name,
+                                    int line,
+                                    int col) const;
 
  public:
-  CJSEngine();
-  explicit CJSEngine(v8x::ProtectedIsolatePtr v8_isolate);
+  JSEngine();
+  explicit JSEngine(v8x::ProtectedIsolatePtr v8_isolate);
 
   static void SetFlags(const std::string& flags);
   static void SetStackLimit(uintptr_t stack_limit_size);
@@ -25,14 +25,14 @@ class CJSEngine {
   static void TerminateAllThreads();
 
   [[nodiscard]] py::object ExecuteScript(v8::Local<v8::Script> v8_script) const;
-  CJSScriptPtr Compile(const std::string& src,
-                       const std::string& name = std::string(),
-                       int line = -1,
-                       int col = -1) const;
-  CJSScriptPtr CompileW(const std::wstring& src,
-                        const std::wstring& name = std::wstring(),
-                        int line = -1,
-                        int col = -1) const;
+  SharedJSScriptPtr Compile(const std::string& src,
+                            const std::string& name = std::string(),
+                            int line = -1,
+                            int col = -1) const;
+  SharedJSScriptPtr CompileW(const std::wstring& src,
+                             const std::wstring& name = std::wstring(),
+                             int line = -1,
+                             int col = -1) const;
 
   void Dump(std::ostream& os) const;
 };

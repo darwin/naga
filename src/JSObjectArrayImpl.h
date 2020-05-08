@@ -3,9 +3,9 @@
 
 #include "Base.h"
 
-class CJSObjectArrayImpl {
+class JSObjectArrayImpl {
  public:
-  CJSObjectBase& m_base;
+  JSObjectBase& m_base;
 
   size_t Length() const;
   py::object GetItem(const py::object& py_key) const;

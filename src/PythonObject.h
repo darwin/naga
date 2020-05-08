@@ -3,7 +3,7 @@
 
 #include "Base.h"
 
-class CPythonObject {
+class PythonObject {
  public:
   static void NamedGetter(v8::Local<v8::Name> v8_name, const v8::PropertyCallbackInfo<v8::Value>& v8_info);
   static void NamedSetter(v8::Local<v8::Name> v8_name,

@@ -6,9 +6,9 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSRegistryLogger), __VA_ARGS__)
 
-static CJSRegistry<v8::Isolate, CJSIsolate> g_isolate_registry;
+static JSRegistry<v8::Isolate, JSIsolate> g_isolate_registry;
 
-void registerIsolate(const v8x::ProtectedIsolatePtr v8_isolate, CJSIsolate* isolate) {
+void registerIsolate(const v8x::ProtectedIsolatePtr v8_isolate, JSIsolate* isolate) {
   g_isolate_registry.Register(v8_isolate.giveMeRawIsolateAndTrustMe(), isolate);
 }
 
@@ -16,6 +16,6 @@ void unregisterIsolate(const v8x::ProtectedIsolatePtr v8_isolate) {
   g_isolate_registry.Unregister(v8_isolate.giveMeRawIsolateAndTrustMe());
 }
 
-CJSIsolate* lookupRegisteredIsolate(const v8::Isolate* v8_isolate) {
+JSIsolate* lookupRegisteredIsolate(const v8::Isolate* v8_isolate) {
   return g_isolate_registry.LookupRegistered(v8_isolate);
 }

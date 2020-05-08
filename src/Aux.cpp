@@ -50,14 +50,14 @@ void v8RequestGarbageCollectionForTesting() {
   TRACE("v8Cleanup done");
 }
 
-CJSIsolatePtr testEncounteringForeignIsolate() {
+SharedJSIsolatePtr testEncounteringForeignIsolate() {
   auto foreign_v8_isolate = v8x::createIsolate();
-  return CJSIsolate::FromV8(foreign_v8_isolate.lock());
+  return JSIsolate::FromV8(foreign_v8_isolate.lock());
 }
 
-CJSContextPtr testEncounteringForeignContext() {
+SharedJSContextPtr testEncounteringForeignContext() {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto foreign_v8_context = v8::Context::New(v8_isolate);
-  return CJSContext::FromV8(foreign_v8_context);
+  return JSContext::FromV8(foreign_v8_context);
 }

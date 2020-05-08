@@ -24,7 +24,7 @@ struct ForwardTo {};
 
 template <typename T, typename... Args, auto (T::*F)(Args...)>
 struct ForwardTo<F> {
-  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
+  auto operator()(const SharedJSObjectPtr& obj, Args&&... args) const {
     return std::invoke(F, *obj, std::forward<Args>(args)...);
   }
 };
@@ -33,7 +33,7 @@ struct ForwardTo<F> {
 // I don't know how to share the code with a single template
 template <typename T, typename... Args, auto (T::*F)(Args...) const>
 struct ForwardTo<F> {
-  auto operator()(const CJSObjectPtr& obj, Args&&... args) const {
+  auto operator()(const SharedJSObjectPtr& obj, Args&&... args) const {
     return std::invoke(F, *obj, std::forward<Args>(args)...);
   }
 };
@@ -42,7 +42,7 @@ struct ForwardTo<F> {
 //
 // in Python: JSContext.current(arg1, arg2, ...)
 // calls (via pybind) our wrapper's operator(js_context_type_object, arg1, arg2, ...), and we in turn call
-// CJSContext::Current(arg1, arg2, ...)
+// JSContext::Current(arg1, arg2, ...)
 // note that we are not interested in js_context_type_object which is Python representation of JSContext type
 // see https://pybind11.readthedocs.io/en/stable/advanced/classes.html#static-properties
 template <auto F>

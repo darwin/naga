@@ -1,6 +1,6 @@
 #include "PythonObject.h"
 #include "PythonExceptions.h"
-#include "Tracer.h"
+#include "JSTracer.h"
 #include "Wrapping.h"
 #include "Logging.h"
 #include "PythonUtils.h"
@@ -12,7 +12,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kPythonObjectLogger), __VA_ARGS__)
 
-void CPythonObject::CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::CallWrapperAsFunction v8_info={}", v8_info);
   // "this" should be some wrapper object wrapping some callable from python land
   auto v8_this = v8_info.This();
@@ -26,7 +26,7 @@ void CPythonObject::CallWrapperAsFunction(const v8::FunctionCallbackInfo<v8::Val
   CallPythonCallable(py_callable, v8_info);
 }
 
-void CPythonObject::CallPythonCallable(const py::object& py_fn, const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
+void PythonObject::CallPythonCallable(const py::object& py_fn, const v8::FunctionCallbackInfo<v8::Value>& v8_info) {
   TRACE("CPythonObject::CallPythonCallable py_fn={} v8_info={}", S$(py_fn.ptr()), v8_info);
   assert(PyCallable_Check(py_fn.ptr()));
   auto v8_isolate = v8x::lockIsolate(v8_info.GetIsolate());

@@ -28,14 +28,14 @@ SafePrinter<T> printSafe(T v) {
   return SafePrinter<T>{v};
 }
 
-std::ostream& operator<<(std::ostream& os, const CJSStackTrace& v);
-std::ostream& operator<<(std::ostream& os, const CJSException& v);
-std::ostream& operator<<(std::ostream& os, const CJSObject& v);
-std::ostream& operator<<(std::ostream& os, const CJSObjectAPI& v);
-std::ostream& operator<<(std::ostream& os, const CJSContext& v);
-std::ostream& operator<<(std::ostream& os, const CJSEngine& v);
-std::ostream& operator<<(std::ostream& os, const CJSScript& v);
-std::ostream& operator<<(std::ostream& os, const CJSStackFrame& v);
+std::ostream& operator<<(std::ostream& os, const JSStackTrace& v);
+std::ostream& operator<<(std::ostream& os, const JSException& v);
+std::ostream& operator<<(std::ostream& os, const JSObject& v);
+std::ostream& operator<<(std::ostream& os, const JSObjectAPI& v);
+std::ostream& operator<<(std::ostream& os, const JSContext& v);
+std::ostream& operator<<(std::ostream& os, const JSEngine& v);
+std::ostream& operator<<(std::ostream& os, const JSScript& v);
+std::ostream& operator<<(std::ostream& os, const JSStackFrame& v);
 std::ostream& operator<<(std::ostream& os, PyObject* v);
 std::ostream& operator<<(std::ostream& os, PyTypeObject* v);
 // use this when it is unsafe to ask the python object for its string representation

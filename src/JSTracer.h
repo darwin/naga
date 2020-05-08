@@ -84,15 +84,15 @@ struct TracerRecord {
 using TrackedWrappers = std::unordered_map<TracedRawObject*, TracerRecord>;
 using WeakRefs = std::unordered_map<WeakRefRawObject*, TracedRawObject*>;
 
-class CTracer {
+class JSTracer {
   TrackedWrappers m_wrappers;
   WeakRefs m_weak_refs;
   py::capsule m_self;
   py::object m_callback;
 
  public:
-  CTracer();
-  ~CTracer();
+  JSTracer();
+  ~JSTracer();
 
   void TraceWrapper(TracedRawObject* raw_object, v8::Local<v8::Object> v8_wrapper);
   v8::Local<v8::Object> LookupWrapper(v8x::LockedIsolatePtr& v8_isolate, TracedRawObject* raw_object);

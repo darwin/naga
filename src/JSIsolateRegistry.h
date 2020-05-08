@@ -3,10 +3,10 @@
 
 #include "Base.h"
 
-using TIsolateRegistry = std::unordered_map<const v8::Isolate*, CJSIsolate*>;
+using JSIsolateRegistry = std::unordered_map<const v8::Isolate*, JSIsolate*>;
 
-void registerIsolate(const v8x::ProtectedIsolatePtr v8_isolate, CJSIsolate* isolate);
+void registerIsolate(const v8x::ProtectedIsolatePtr v8_isolate, JSIsolate* isolate);
 void unregisterIsolate(const v8x::ProtectedIsolatePtr v8_isolate);
-CJSIsolate* lookupRegisteredIsolate(const v8::Isolate* v8_isolate);
+JSIsolate* lookupRegisteredIsolate(const v8::Isolate* v8_isolate);
 
 #endif

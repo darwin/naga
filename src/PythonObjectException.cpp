@@ -98,8 +98,8 @@ static void attachPythonInfoToV8Error(v8x::LockedIsolatePtr& v8_isolate,
   auto raw_type = py_type.ptr();
   auto raw_value = py_value.ptr();
 
-  auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionType, privateAPIForType);
-  auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, CJSEternals::kJSExceptionValue, privateAPIForValue);
+  auto v8_type_api = lookupEternal<v8::Private>(v8_isolate, JSEternals::kJSExceptionType, privateAPIForType);
+  auto v8_value_api = lookupEternal<v8::Private>(v8_isolate, JSEternals::kJSExceptionValue, privateAPIForValue);
 
   auto v8_exc_type_external = v8::External::New(v8_isolate, raw_type);
   auto v8_exc_value_external = v8::External::New(v8_isolate, raw_value);
@@ -121,7 +121,7 @@ static void attachPythonInfoToV8Error(v8x::LockedIsolatePtr& v8_isolate,
   });
 }
 
-void CPythonObject::ThrowJSException(v8x::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
+void PythonObject::ThrowJSException(v8x::LockedIsolatePtr& v8_isolate, const py::error_already_set& py_ex) {
   TRACE("CPythonObject::ThrowJSException");
   auto py_gil = pyu::withGIL();
   auto v8_scope = v8x::withScope(v8_isolate);

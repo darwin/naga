@@ -3,9 +3,9 @@
 
 #include "Base.h"
 
-class CJSObjectGenericImpl {
+class JSObjectGenericImpl {
  public:
-  CJSObjectBase& m_base;
+  JSObjectBase& m_base;
 
   py::str Str() const;
   py::str Repr() const;

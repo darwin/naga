@@ -3,22 +3,22 @@
 
 #include "Base.h"
 
-class CJSContext : public std::enable_shared_from_this<CJSContext> {
+class JSContext : public std::enable_shared_from_this<JSContext> {
   v8::Global<v8::Context> m_v8_context;
   // this smart pointer is important to ensure that associated isolate outlives our context
   // it should always be equal to m_v8_context->GetIsolate()
-  CJSIsolatePtr m_isolate;
+  SharedJSIsolatePtr m_isolate;
 
   // we want to keep the isolate locked between enter/leave
   v8x::SharedIsolateLockerPtr m_v8_shared_isolate_locker;
   size_t m_entered_level;
 
  public:
-  static CJSContextPtr FromV8(v8::Local<v8::Context> v8_context);
+  static SharedJSContextPtr FromV8(v8::Local<v8::Context> v8_context);
   [[nodiscard]] v8::Local<v8::Context> ToV8() const;
 
-  explicit CJSContext(const py::object& py_global);
-  ~CJSContext();
+  explicit JSContext(const py::object& py_global);
+  ~JSContext();
 
   void Dump(std::ostream& os) const;
 

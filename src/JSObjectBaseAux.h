@@ -3,19 +3,19 @@
 
 #include "Base.h"
 
-// these are utility operators to enable bit-wise operations on CJSObjectBase::Roles
+// these are utility operators to enable bit-wise operations on JSObjectBase::Roles
 
-constexpr CJSObjectBase::Roles operator|(CJSObjectBase::Roles left, CJSObjectBase::Roles right) {
-  return static_cast<CJSObjectBase::Roles>(static_cast<CJSObjectBase::RoleFlagsType>(left) |
-                                           static_cast<CJSObjectBase::RoleFlagsType>(right));
+constexpr JSObjectBase::Roles operator|(JSObjectBase::Roles left, JSObjectBase::Roles right) {
+  return static_cast<JSObjectBase::Roles>(static_cast<JSObjectBase::RoleFlagsType>(left) |
+                                          static_cast<JSObjectBase::RoleFlagsType>(right));
 }
 
-constexpr CJSObjectBase::Roles operator&(CJSObjectBase::Roles left, CJSObjectBase::Roles right) {
-  return static_cast<CJSObjectBase::Roles>(static_cast<CJSObjectBase::RoleFlagsType>(left) &
-                                           static_cast<CJSObjectBase::RoleFlagsType>(right));
+constexpr JSObjectBase::Roles operator&(JSObjectBase::Roles left, JSObjectBase::Roles right) {
+  return static_cast<JSObjectBase::Roles>(static_cast<JSObjectBase::RoleFlagsType>(left) &
+                                          static_cast<JSObjectBase::RoleFlagsType>(right));
 }
 
-inline CJSObjectBase::Roles& operator|=(CJSObjectBase::Roles& receiver, CJSObjectBase::Roles right) {
+inline JSObjectBase::Roles& operator|=(JSObjectBase::Roles& receiver, JSObjectBase::Roles right) {
   receiver = receiver | right;
   return receiver;
 }

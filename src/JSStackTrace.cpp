@@ -8,71 +8,71 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__)
 
-py::object CJSStackTrace::Str() const {
+py::object JSStackTrace::Str() const {
   std::stringstream ss;
   ss << *this;
   auto result = py::cast(ss.str());
-  TRACE("CJSStackTrace::Str {} => {}", THIS, traceText(result));
+  TRACE("JSStackTrace::Str {} => {}", THIS, traceText(result));
   return result;
 }
 
-CJSStackTracePtr CJSStackTrace::GetCurrentStackTrace(v8x::LockedIsolatePtr& v8_isolate,
-                                                     int frame_limit,
-                                                     v8::StackTrace::StackTraceOptions v8_options) {
-  TRACE("CJSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}", P$(v8_isolate),
-        frame_limit, v8_options);
+SharedJSStackTracePtr JSStackTrace::GetCurrentStackTrace(v8x::LockedIsolatePtr& v8_isolate,
+                                                         int frame_limit,
+                                                         v8::StackTrace::StackTraceOptions v8_options) {
+  TRACE("JSStackTrace::GetCurrentStackTrace v8_isolate={} frame_limit={} v8_options={:#x}", P$(v8_isolate), frame_limit,
+        v8_options);
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_stack_trace = v8::StackTrace::CurrentStackTrace(v8_isolate, frame_limit, v8_options);
-  return std::make_shared<CJSStackTrace>(v8_isolate, v8_stack_trace);
+  return std::make_shared<JSStackTrace>(v8_isolate, v8_stack_trace);
 }
 
-int CJSStackTrace::GetFrameCount() const {
+int JSStackTrace::GetFrameCount() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = Handle()->GetFrameCount();
-  TRACE("CJSStackTrace::GetFrameCount {} => {}", THIS, result);
+  TRACE("JSStackTrace::GetFrameCount {} => {}", THIS, result);
   return result;
 }
 
-CJSStackFramePtr CJSStackTrace::GetFrame(int idx) const {
-  TRACE("CJSStackTrace::GetFrame {} idx={}", THIS, idx);
+SharedJSStackFramePtr JSStackTrace::GetFrame(int idx) const {
+  TRACE("JSStackTrace::GetFrame {} idx={}", THIS, idx);
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   if (idx >= Handle()->GetFrameCount()) {
-    throw CJSException("index of of range", PyExc_IndexError);
+    throw JSException("index of of range", PyExc_IndexError);
   }
   auto v8_stack_frame = Handle()->GetFrame(v8_isolate, idx);
 
-  auto result = std::make_shared<CJSStackFrame>(v8_isolate, v8_stack_frame);
-  TRACE("CJSStackTrace::GetFrame {} => {}", THIS, result);
+  auto result = std::make_shared<JSStackFrame>(v8_isolate, v8_stack_frame);
+  TRACE("JSStackTrace::GetFrame {} => {}", THIS, result);
   return result;
 }
 
-CJSStackTrace::CJSStackTrace(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
+JSStackTrace::JSStackTrace(v8x::ProtectedIsolatePtr v8_isolate, v8::Local<v8::StackTrace> v8_stack_trace)
     : m_v8_isolate(v8_isolate),
       m_v8_stack_trace(v8_isolate.lock(), v8_stack_trace) {
   m_v8_stack_trace.AnnotateStrongRetainer("Naga JSStackTrace");
-  TRACE("CJSStackTrace::CJSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, v8_isolate, v8_stack_trace);
+  TRACE("JSStackTrace::JSStackTrace {} v8_isolate={} v8_stack_trace={}", THIS, v8_isolate, v8_stack_trace);
 }
 
-CJSStackTrace::CJSStackTrace(const CJSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
-  TRACE("CJSStackTrace::CJSStackTrace {} stack_trace={}", THIS, stack_trace);
+JSStackTrace::JSStackTrace(const JSStackTrace& stack_trace) : m_v8_isolate(stack_trace.m_v8_isolate) {
+  TRACE("JSStackTrace::JSStackTrace {} stack_trace={}", THIS, stack_trace);
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
   m_v8_stack_trace.Reset(v8_isolate, stack_trace.Handle());
   m_v8_stack_trace.AnnotateStrongRetainer("Naga JSStackTrace");
 }
 
-v8::Local<v8::StackTrace> CJSStackTrace::Handle() const {
+v8::Local<v8::StackTrace> JSStackTrace::Handle() const {
   auto v8_isolate = m_v8_isolate.lock();
   auto result = v8::Local<v8::StackTrace>::New(v8_isolate, m_v8_stack_trace);
-  TRACE("CJSStackTrace::Handle {} => {}", THIS, result);
+  TRACE("JSStackTrace::Handle {} => {}", THIS, result);
   return result;
 }
 
-void CJSStackTrace::Dump(std::ostream& os) const {
+void JSStackTrace::Dump(std::ostream& os) const {
   auto v8_isolate = m_v8_isolate.lock();
   auto v8_scope = v8x::withScope(v8_isolate);
 
