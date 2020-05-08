@@ -63,7 +63,7 @@ CJSIsolate::~CJSIsolate() {
   // below this point nobody should hold the lock
   auto v8_isolate = m_v8_isolate.giveMeRawIsolateAndTrustMe();
   assert(!v8_isolate->IsInUse());  // someone forgot to call leave
-  m_v8_isolate.giveMeRawIsolateAndTrustMe()->Dispose();
+  v8_isolate->Dispose();
 
   TRACE("CJSIsolate::~CJSIsolate {} [COMPLETED]", THIS);
 }

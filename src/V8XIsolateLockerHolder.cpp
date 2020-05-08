@@ -16,7 +16,7 @@ IsolateLockerHolder::~IsolateLockerHolder() {
   TRACE("IsolateLocker::~IsolateLocker {} v8_isolate={}", THIS, P$(m_v8_isolate));
 }
 
-v8x::SharedIsolateLockerPtr IsolateLockerHolder::CreateOrShareLocker() {
+SharedIsolateLockerPtr IsolateLockerHolder::CreateOrShareLocker() {
   // if locker already exists, just share it
   if (auto shared_locker = m_v8_weak_locker.lock()) {
     TRACE("IsolateLocker::CreateOrShareLocker {} v8_isolate={} sharing existing locker {}", THIS, P$(m_v8_isolate),
@@ -25,7 +25,7 @@ v8x::SharedIsolateLockerPtr IsolateLockerHolder::CreateOrShareLocker() {
   } else {
     // else create new locker inplace and share it
     auto v8_locker_ptr = new (m_v8_locker_storage.data()) LockerType(m_v8_isolate);
-    auto new_shared_locker = v8x::SharedIsolateLockerPtr(v8_locker_ptr, DeleteInplaceLocker);
+    auto new_shared_locker = SharedIsolateLockerPtr(v8_locker_ptr, DeleteInplaceLocker);
     TRACE("IsolateLocker::CreateOrShareLocker {} v8_isolate={} creating new locker {}", THIS, P$(m_v8_isolate),
           (void*)new_shared_locker.get());
     m_v8_weak_locker = new_shared_locker;

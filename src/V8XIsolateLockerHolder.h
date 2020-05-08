@@ -7,9 +7,9 @@
 namespace v8x {
 
 class IsolateLockerHolder {
-  using LockerType = v8x::ObservedLocker;
+  using LockerType = ObservedLocker;
   v8::Isolate* m_v8_isolate;
-  v8x::WeakIsolateLockerPtr m_v8_weak_locker;
+  WeakIsolateLockerPtr m_v8_weak_locker;
   alignas(LockerType) std::array<std::byte, sizeof(LockerType)> m_v8_locker_storage;
 
   static void DeleteInplaceLocker(LockerType* p);
@@ -18,7 +18,7 @@ class IsolateLockerHolder {
   explicit IsolateLockerHolder(v8::Isolate* v8_isolate);
   ~IsolateLockerHolder();
 
-  v8x::SharedIsolateLockerPtr CreateOrShareLocker();
+  SharedIsolateLockerPtr CreateOrShareLocker();
 };
 
 }  // namespace v8x
