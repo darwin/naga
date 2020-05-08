@@ -25,8 +25,7 @@ CJSIsolatePtr CJSIsolate::FromV8(v8::Isolate* v8_isolate) {
 }
 
 v8x::LockedIsolatePtr CJSIsolate::ToV8() {
-  auto v8_isolate = m_v8_isolate.giveMeRawIsolateAndTrustMe();
-  return v8x::LockedIsolatePtr(v8_isolate, m_locker_holder.CreateOrShareLocker());
+  return m_locker_holder.GetLockedIsolate();
 }
 
 CJSIsolate::CJSIsolate()

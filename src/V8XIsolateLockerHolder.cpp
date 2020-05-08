@@ -40,4 +40,8 @@ void IsolateLockerHolder::DeleteInplaceLocker(LockerType* p) {
   p->~LockerType();
 }
 
+LockedIsolatePtr IsolateLockerHolder::GetLockedIsolate() {
+  return LockedIsolatePtr(m_v8_isolate, CreateOrShareLocker());
+}
+
 }  // namespace v8x

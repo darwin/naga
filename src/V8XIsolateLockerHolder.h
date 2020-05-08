@@ -19,6 +19,7 @@ class IsolateLockerHolder {
   ~IsolateLockerHolder();
 
   SharedIsolateLockerPtr CreateOrShareLocker();
+  LockedIsolatePtr GetLockedIsolate();
 };
 
 }  // namespace v8x
