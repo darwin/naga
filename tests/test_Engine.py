@@ -5,7 +5,7 @@ import sys
 import unittest
 import logging
 
-from naga import JSContext, JSEngine, JSScript, JSClass, JSFunction, JSUndefined, JSIsolate
+from naga import JSContext, JSEngine, JSScript, JSClass, JSObject, JSUndefined, JSIsolate
 import naga.toolkit as toolkit
 
 
@@ -62,7 +62,7 @@ class TestEngine(unittest.TestCase):
 
                 func = getattr(ctxt.locals, func_name)
 
-                self.assertTrue(isinstance(func, JSFunction))
+                self.assertTrue(isinstance(func, JSObject))
 
                 self.assertEqual(func_name, toolkit.get_name(func))
                 self.assertEqual("", toolkit.resource_name(func))

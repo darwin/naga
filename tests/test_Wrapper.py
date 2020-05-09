@@ -8,7 +8,7 @@ import logging
 import datetime
 from io import StringIO
 
-from naga import JSObject, JSContext, JSClass, JSIsolate, JSFunction, JSEngine, JSError, JSUndefined, JSNull, JSArray, \
+from naga import JSObject, JSContext, JSClass, JSIsolate, JSEngine, JSError, JSUndefined, JSNull, \
     JSStackTrace
 import naga.aux as aux
 import naga.toolkit as toolkit
@@ -135,8 +135,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(int, type(ctxt.eval("123")))
             self.assertEqual(float, type(ctxt.eval("3.14")))
             self.assertEqual(datetime.datetime, type(ctxt.eval("new Date()")))
-            self.assertEqual(JSArray, type(ctxt.eval("[1, 2, 3]")))
-            self.assertEqual(JSFunction, type(ctxt.eval("(function() {})")))
+            self.assertEqual(JSObject, type(ctxt.eval("[1, 2, 3]")))
+            self.assertEqual(JSObject, type(ctxt.eval("(function() {})")))
             self.assertEqual(JSObject, type(ctxt.eval("new Object()")))
 
     def testPythonWrapper(self):
@@ -210,18 +210,18 @@ class TestWrapper(unittest.TestCase):
         with JSContext(Global()) as ctxt:
             self.assertEqual("hello world", ctxt.eval("hello('world')"))
 
-    def testJSFunction(self):
+    def testJSObject(self):
         with JSContext() as ctxt:
             hello = ctxt.eval("(function (name) { return 'Hello ' + name; })")
 
-            self.assertTrue(isinstance(hello, JSFunction))
+            self.assertTrue(isinstance(hello, JSObject))
             self.assertEqual("Hello world", hello('world'))
             self.assertEqual("Hello world", toolkit.invoke(hello, ['world']))
 
             obj = ctxt.eval(
                 "({ 'name': 'world', 'hello': function (name) { return 'Hello ' + name + ' from ' + this.name; }})")
             hello = obj.hello
-            self.assertTrue(isinstance(hello, JSFunction))
+            self.assertTrue(isinstance(hello, JSObject))
             self.assertEqual("Hello world from world", hello('world'))
 
             tester = ctxt.eval("({ 'name': 'tester' })")
@@ -243,7 +243,7 @@ class TestWrapper(unittest.TestCase):
                 };
                 """)
 
-            self.assertTrue(isinstance(ctx.locals.Test, JSFunction))
+            self.assertTrue(isinstance(ctx.locals.Test, JSObject))
 
             test = toolkit.create(ctx.locals.Test)
 
@@ -437,7 +437,7 @@ class TestWrapper(unittest.TestCase):
                 array;
                 """)
 
-            self.assertTrue(isinstance(array, JSArray))
+            self.assertTrue(isinstance(array, JSObject))
             self.assertEqual(10, len(array))
 
             self.assertTrue(5 in array)
@@ -480,8 +480,8 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual([10, None, 9, 7, 6, 8, 8, 3, 2, 1], list(array))
 
             # TODO: provide similar functionality in the future
-            # ctxt.locals.array1 = JSArray(5)
-            # ctxt.locals.array2 = JSArray([1, 2, 3, 4, 5])
+            # ctxt.locals.array1 = JSObject(5)
+            # ctxt.locals.array2 = JSObject([1, 2, 3, 4, 5])
             #
             # for i in range(len(ctxt.locals.array2)):
             #     ctxt.locals.array1[i] = ctxt.locals.array2[i] * 10
@@ -518,15 +518,15 @@ class TestWrapper(unittest.TestCase):
                 self.assertEqual(arg[2], [array[i] for i in range(len(array))])
 
             # TODO: provide similar functionality in the future
-            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(JSArray([1, 2, 3])))
-            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(JSArray([1, 2, 3]), 1))
+            # self.assertEqual(3, ctxt.eval("(function (arr) { return arr.length; })")(JSObject([1, 2, 3])))
+            # self.assertEqual(2, ctxt.eval("(function (arr, idx) { return arr[idx]; })")(JSObject([1, 2, 3]), 1))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSArray([1, 2, 3])))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSObject([1, 2, 3])))
             # self.assertEqual('[object Array]',
-            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSArray((1, 2, 3))))
+            # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")(JSObject((1, 2, 3))))
             # self.assertEqual('[object Array]',
             # ctxt.eval("(function (arr) { return Object.prototype.toString.call(arr); })")
-            # (JSArray(list(range(3)))))
+            # (JSObject(list(range(3)))))
 
     def testArraySlices(self):
         with JSContext() as ctxt:

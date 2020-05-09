@@ -8,7 +8,7 @@ import logging
 import naga.toolkit as toolkit
 # noinspection PyUnresolvedReferences
 import naga.aux as aux
-from naga import JSIsolate, JSContext, JSFunction
+from naga import JSIsolate, JSContext, JSObject
 
 
 class TestContext(unittest.TestCase):
@@ -79,14 +79,14 @@ class TestContext(unittest.TestCase):
 
             spy = env1.locals.spy
 
-            self.assertTrue(isinstance(spy, JSFunction))
+            self.assertTrue(isinstance(spy, JSObject))
 
             # Create another function accessing global objects.
             env1.eval("spy2 = function(){return 123;}")
 
             spy2 = env1.locals.spy2
 
-            self.assertTrue(isinstance(spy2, JSFunction))
+            self.assertTrue(isinstance(spy2, JSObject))
 
             # Switch to env2 in the same domain and invoke spy on env2.
             env2 = JSContext()
@@ -94,7 +94,7 @@ class TestContext(unittest.TestCase):
 
             with env2:
                 result = toolkit.apply(spy, env2.locals)
-                self.assertTrue(isinstance(result, JSFunction))
+                self.assertTrue(isinstance(result, JSObject))
 
             env2.security_token = "bar"
 
