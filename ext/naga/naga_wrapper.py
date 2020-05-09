@@ -23,10 +23,6 @@ __all__ = ["JSClass",
            "JSStackFrame",
            "JSUndefined"]
 
-if naga.config.naga_keep_backward_compatibility:
-    __all__ += ["JSArray",
-                "JSFunction"]
-
 
 # noinspection PyPep8Naming
 class JSClass(object):
@@ -197,10 +193,6 @@ JSObject = naga_native.JSObject
 JSPlatform = naga_native.JSPlatform
 JSScript = naga_native.JSScript
 JSStackFrame = naga_native.JSStackFrame
-
-if naga.config.naga_keep_backward_compatibility:
-    JSArray = naga_native.JSObject
-    JSFunction = naga_native.JSObject
 
 # -- init code --------------------------------------------------------------------------------------------------------
 

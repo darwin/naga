@@ -3,7 +3,6 @@
 
 import os
 
-naga_keep_backward_compatibility = True
 naga_auto_init = True
 
 naga_wait_for_debugger = False
