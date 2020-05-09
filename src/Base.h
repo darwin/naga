@@ -19,6 +19,7 @@
 #include <vector>
 #include <codecvt>
 #include <any>
+#include <stack>
 
 #include <Python.h>
 
