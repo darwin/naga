@@ -352,9 +352,8 @@ static SupportedError g_supported_errors[] = {{"RangeError", PyExc_IndexError},
                                               {"TypeError", PyExc_TypeError}};
 
 void JSException::CheckTryCatch(v8x::LockedIsolatePtr& v8_isolate, v8x::TryCatchPtr v8_try_catch) {
-  // TODO: revisit this CanContinue test, it is suspicious
   TRACE("CheckTryCatch v8_isolate={} v8_try_catch={}", P$(v8_isolate), *v8_try_catch);
-  if (!v8_try_catch->HasCaught() || !v8_try_catch->CanContinue()) {
+  if (!v8_try_catch->HasCaught()) {
     return;
   }
   Throw(v8_isolate, v8_try_catch);
