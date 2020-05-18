@@ -6,6 +6,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 
 cd "$ROOT_DIR"
 
+# unset GIT_CACHE_PATH, it does not play well with initial depot fetch
+unset GIT_CACHE_PATH
+
 # see https://v8.dev/docs/source-code
 V8_HOME_PARENT="$V8_HOME/.."
 if [[ ! -d "$V8_HOME" ]]; then
