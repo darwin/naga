@@ -69,6 +69,7 @@ py::object JSObjectArrayImpl::SetItem(const py::object& py_key, const py::object
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
+  // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
     PyObject* values = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
 
@@ -154,6 +155,7 @@ py::object JSObjectArrayImpl::DelItem(const py::object& py_key) const {
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
+  // TODO: rewrite this using pybind
   if (PySlice_Check(py_key.ptr())) {
     Py_ssize_t arrayLen = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
     Py_ssize_t start;
@@ -192,14 +194,14 @@ bool JSObjectArrayImpl::Contains(const py::object& py_key) const {
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
+  auto v8_this_obj = m_base.ToV8(v8_isolate);
 
   for (size_t i = 0; i < Length(); i++) {
-    if (m_base.ToV8(v8_isolate)->Has(v8_context, i).ToChecked()) {
-      auto v8_i = v8::Integer::New(v8_isolate, i);
-      auto v8_val = m_base.ToV8(v8_isolate)->Get(v8_context, v8_i).ToLocalChecked();
+    if (v8_this_obj->Has(v8_context, i).ToChecked()) {
+      auto v8_val = v8_this_obj->Get(v8_context, i).ToLocalChecked();
 
       // TODO: could this be optimized without wrapping?
-      if (py_key.is(wrap(v8_isolate, v8_val, m_base.ToV8(v8_isolate)))) {
+      if (py_key.is(wrap(v8_isolate, v8_val, v8_this_obj))) {
         return true;
       }
     }
