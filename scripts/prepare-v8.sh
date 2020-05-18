@@ -7,9 +7,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/_config.sh"
 cd "$ROOT_DIR"
 
 # see https://v8.dev/docs/source-code
-
+V8_HOME_PARENT="$V8_HOME/.."
 if [[ ! -d "$V8_HOME" ]]; then
-  V8_HOME_PARENT="$V8_HOME/.."
   if [[ ! -d "$V8_HOME_PARENT" ]]; then
     echo_cmd mkdir -p "$V8_HOME_PARENT"
   fi
