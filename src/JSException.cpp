@@ -126,11 +126,7 @@ static void translateJavascriptException(const JSException& e) {
   }
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "performance-unnecessary-value-param"
-// TODO: raise question in pybind issues
-// clang-tidy suggests "const std::exception_ptr& p" signature but register_exception_translator won't accept it
-void translateException(std::exception_ptr p) {
+void translateException(const std::exception_ptr& p) {
   TRACE("translateException");
   try {
     if (p) {
@@ -140,7 +136,6 @@ void translateException(std::exception_ptr p) {
     translateJavascriptException(e);
   }
 }
-#pragma clang diagnostic pop
 
 JSException::JSException(v8x::ProtectedIsolatePtr v8_protected_isolate,
                          const v8::TryCatch& v8_try_catch,

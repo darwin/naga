@@ -4,7 +4,7 @@
 #include "Base.h"
 #include "V8XProtectedIsolate.h"
 
-void translateException(std::exception_ptr p);
+void translateException(const std::exception_ptr& p);
 
 v8::Eternal<v8::Private> privateAPIForType(v8x::LockedIsolatePtr& v8_isolate);
 v8::Eternal<v8::Private> privateAPIForValue(v8x::LockedIsolatePtr& v8_isolate);

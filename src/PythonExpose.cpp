@@ -211,7 +211,7 @@ void exposeJSIsolate(py::module py_module) {
 void exposeJSException(py::module py_module) {
   TRACE("exposeJSError py_module={}", py_module);
 
-  py::register_exception_translator(&translateException);
+  py::register_exception_translator([](std::exception_ptr p) { return translateException(p); });
 
   py::naga_class<JSException>(py_module, "JSException")                                                   //
       .def_method("__str__", &JSException::Str)                                                           //
