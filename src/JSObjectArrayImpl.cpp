@@ -5,7 +5,6 @@
 #include "Logging.h"
 #include "V8XUtils.h"
 #include "Printing.h"
-#include "PybindExtensions.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
