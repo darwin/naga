@@ -41,15 +41,18 @@ py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
       return py::none();
     }
 
-    // TODO: optimize this
-    py::list py_result;
+    py::size_t len = slice_length;
+    py::list py_result(len);
+    py::size_t n = 0;
     for (py::ssize_t i = slice_start; i < slice_stop; i += slice_step) {
       uint32_t index = i;
-      auto v8_value = v8_this_array->Get(v8_context, index).ToLocalChecked();
-      auto py_value = wrap(v8_isolate, v8_value, v8_this_array);
-      py_result.append(py_value);
+      auto v8_item = v8_this_array->Get(v8_context, index).ToLocalChecked();
+      auto py_item = wrap(v8_isolate, v8_item, v8_this_array);
+      py_result[n] = py_item;
+      n++;
     }
-    return std::move(py_result);
+    assert(n == len);
+    return py_result.cast<py::object>();
   } else if (py::isinstance<py::int_>(py_key)) {
     auto py_int = py::cast<py::int_>(py_key);
     uint32_t index = py_int;
@@ -62,8 +65,9 @@ py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
       return py::none();
     }
 
-    auto v8_value = v8_this_array->Get(v8_context, index).ToLocalChecked();
-    return wrap(v8_isolate, v8_value, v8_this_array);
+    auto v8_val = v8_this_array->Get(v8_context, index).ToLocalChecked();
+    auto py_result = wrap(v8_isolate, v8_val, v8_this_array);
+    return py_result;
   }
 
   throw JSException("list indices must be integers", PyExc_TypeError);
