@@ -11,7 +11,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
-size_t JSObjectArrayImpl::Length() const {
+uint32_t JSObjectArrayImpl::Length() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto result = m_base.ToV8(v8_isolate).As<v8::Array>()->Length();
@@ -196,14 +196,14 @@ bool JSObjectArrayImpl::Contains(const py::object& py_key) const {
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_this_obj = m_base.ToV8(v8_isolate);
 
-  for (size_t i = 0; i < Length(); i++) {
-    if (v8_this_obj->Has(v8_context, i).ToChecked()) {
-      auto v8_val = v8_this_obj->Get(v8_context, i).ToLocalChecked();
-
-      // TODO: could this be optimized without wrapping?
-      if (py_key.is(wrap(v8_isolate, v8_val, v8_this_obj))) {
-        return true;
-      }
+  for (uint32_t i = 0; i < Length(); i++) {
+    auto v8_maybe_val = v8_this_obj->Get(v8_context, i);
+    if (v8_maybe_val.IsEmpty()) {
+      continue;
+    }
+    auto v8_val = v8_maybe_val.ToLocalChecked();
+    if (py_key.is(wrap(v8_isolate, v8_val, v8_this_obj))) {
+      return true;
     }
   }
 

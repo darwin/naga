@@ -7,7 +7,7 @@ class JSObjectArrayImpl {
  public:
   JSObjectBase& m_base;
 
-  size_t Length() const;
+  uint32_t Length() const;
   py::object GetItem(const py::object& py_key) const;
   py::object SetItem(const py::object& py_key, const py::object& py_value) const;
   py::object DelItem(const py::object& py_key) const;
