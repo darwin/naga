@@ -11,7 +11,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
-uint32_t JSObjectArrayImpl::Length() const {
+py::ssize_t JSObjectArrayImpl::Length() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
@@ -28,36 +28,41 @@ py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
 
-  // TODO: rewrite this using pybind
-  if (PySlice_Check(py_key.ptr())) {
-    Py_ssize_t arrayLen = v8_this_array->Length();
-    Py_ssize_t start;
-    Py_ssize_t stop;
-    Py_ssize_t step;
-    Py_ssize_t sliceLen;
+  if (py::isinstance<py::slice>(py_key)) {
+    auto py_slice = py::cast<py::slice>(py_key);
+    py::ssize_t array_length = v8_this_array->Length();
+    py::ssize_t slice_start;
+    py::ssize_t slice_stop;
+    py::ssize_t slice_step;
+    py::ssize_t slice_length;
 
-    if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
-      py::list slice;
-
-      for (Py_ssize_t idx = start; idx < stop; idx += step) {
-        auto v8_value = v8_this_array->Get(v8_context, idx).ToLocalChecked();
-        slice.append(wrap(v8_isolate, v8_value, v8_this_array));
-      }
-
-      return std::move(slice);
+    if (!py_slice.compute(array_length, &slice_start, &slice_stop, &slice_step, &slice_length)) {
+      assert(PyErr_Occurred());
+      return py::none();
     }
-  } else if (PyLong_Check(py_key.ptr())) {
-    auto idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    if (idx >= Length()) {
+    // TODO: optimize this
+    py::list py_result;
+    for (py::ssize_t i = slice_start; i < slice_stop; i += slice_step) {
+      uint32_t index = i;
+      auto v8_value = v8_this_array->Get(v8_context, index).ToLocalChecked();
+      auto py_value = wrap(v8_isolate, v8_value, v8_this_array);
+      py_result.append(py_value);
+    }
+    return std::move(py_result);
+  } else if (py::isinstance<py::int_>(py_key)) {
+    auto py_int = py::cast<py::int_>(py_key);
+    uint32_t index = py_int;
+
+    if (index >= Length()) {
       throw JSException("index of of range", PyExc_IndexError);
     }
 
-    if (!v8_this_array->Has(v8_context, idx).ToChecked()) {
-      return py::js_null();
+    if (!v8_this_array->Has(v8_context, index).ToChecked()) {
+      return py::none();
     }
 
-    auto v8_value = v8_this_array->Get(v8_context, idx).ToLocalChecked();
+    auto v8_value = v8_this_array->Get(v8_context, index).ToLocalChecked();
     return wrap(v8_isolate, v8_value, v8_this_array);
   }
 
@@ -72,78 +77,94 @@ py::object JSObjectArrayImpl::SetItem(const py::object& py_key, const py::object
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
 
-  // TODO: rewrite this using pybind
-  if (PySlice_Check(py_key.ptr())) {
-    PyObject* values = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
+  if (py::isinstance<py::slice>(py_key)) {
+    auto py_slice = py::cast<py::slice>(py_key);
 
-    if (values) {
-      Py_ssize_t itemSize = PySequence_Fast_GET_SIZE(py_value.ptr());
-      PyObject** items = PySequence_Fast_ITEMS(py_value.ptr());
+    py::ssize_t array_length = v8_this_array->Length();
+    py::ssize_t slice_start;
+    py::ssize_t slice_stop;
+    py::ssize_t slice_step;
+    py::ssize_t slice_length;
 
-      Py_ssize_t arrayLen = v8_this_array->Length();
-      Py_ssize_t start, stop, step, sliceLen;
+    // TODO: is there a pybind alternative to this code?
+    PyObject* py_fast_sequence = PySequence_Fast(py_value.ptr(), "can only assign an iterable");
+    if (!py_fast_sequence) {
+      assert(PyErr_Occurred());
+      return py::none();
+    }
+    py::ssize_t items_count = PySequence_Fast_GET_SIZE(py_fast_sequence);
+    PyObject** py_items = PySequence_Fast_ITEMS(py_fast_sequence);
 
-      PySlice_Unpack(py_key.ptr(), &start, &stop, &step);
+    if (PySlice_Unpack(py_slice.ptr(), &slice_start, &slice_stop, &slice_step) != 0) {
+      assert(PyErr_Occurred());
+      return py::none();
+    }
 
-      /*
-       * If the slice start is greater than the array length we append null elements
-       * to the tail of the array to fill the gap
-       */
-      if (start > arrayLen) {
-        for (Py_ssize_t idx = arrayLen; idx < start; idx++) {
-          v8_this_array->Set(v8_context, static_cast<uint32_t>(arrayLen + idx), v8::Null(v8_isolate)).Check();
-        }
+    // TODO: there must be a simpler way how to set a slice...
 
-        arrayLen = v8_this_array->Length();
+    // If the slice start is greater than the array length we append null elements
+    // to the tail of the array to fill the gap
+    if (slice_start > array_length) {
+      for (py::ssize_t i = array_length; i < slice_start; i++) {
+        uint32_t index = array_length + i;
+        v8_this_array->Set(v8_context, index, v8::Null(v8_isolate)).Check();
       }
 
-      /*
-       * If the slice stop is greater than the array length (which was potentially
-       * modified by the previous check) we append null elements to the tail of the
-       * array. This step guarantees that the length of the array will always be
-       * greater or equal than stop
-       */
-      if (stop > arrayLen) {
-        for (Py_ssize_t idx = arrayLen; idx < stop; idx++) {
-          v8_this_array->Set(v8_context, static_cast<uint32_t>(idx), v8::Null(v8_isolate)).Check();
-        }
+      array_length = v8_this_array->Length();
+    }
 
-        arrayLen = v8_this_array->Length();
+    // If the slice stop is greater than the array length (which was potentially
+    // modified by the previous check) we append null elements to the tail of the
+    // array. This step guarantees that the length of the array will always be
+    // greater or equal than stop
+    if (slice_stop > array_length) {
+      for (py::ssize_t i = array_length; i < slice_stop; i++) {
+        uint32_t index = i;
+        v8_this_array->Set(v8_context, index, v8::Null(v8_isolate)).Check();
       }
 
-      if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
-        if (itemSize != sliceLen) {
-          if (itemSize < sliceLen) {
-            Py_ssize_t diff = sliceLen - itemSize;
+      array_length = v8_this_array->Length();
+    }
 
-            for (Py_ssize_t idx = start + itemSize; idx < arrayLen - diff; idx++) {
-              auto js_obj = v8_this_array->Get(v8_context, static_cast<uint32_t>(idx + diff)).ToLocalChecked();
-              v8_this_array->Set(v8_context, idx, js_obj).Check();
-            }
-            for (Py_ssize_t idx = arrayLen - 1; idx > arrayLen - diff - 1; idx--) {
-              v8_this_array->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
-            }
-          } else if (itemSize > sliceLen) {
-            Py_ssize_t diff = itemSize - sliceLen;
+    if (!py_slice.compute(array_length, &slice_start, &slice_stop, &slice_step, &slice_length)) {
+      assert(PyErr_Occurred());
+      return py::none();
+    }
 
-            for (Py_ssize_t idx = arrayLen + diff - 1; idx > stop - 1; idx--) {
-              auto js_obj = v8_this_array->Get(v8_context, static_cast<uint32_t>(idx - diff)).ToLocalChecked();
-              v8_this_array->Set(v8_context, idx, js_obj).Check();
-            }
-          }
+    if (items_count != slice_length) {
+      if (items_count < slice_length) {
+        py::ssize_t diff = slice_length - items_count;
+        py::ssize_t i;
+        for (i = slice_start + items_count; i < array_length - diff; i++) {
+          uint32_t index = i + diff;
+          auto v8_val = v8_this_array->Get(v8_context, index).ToLocalChecked();
+          v8_this_array->Set(v8_context, i, v8_val).Check();
         }
-
-        for (Py_ssize_t idx = 0; idx < itemSize; idx++) {
-          auto py_item(py::reinterpret_borrow<py::object>(items[idx]));
-          auto item = wrap(py_item);
-          v8_this_array->Set(v8_context, static_cast<uint32_t>(start + idx * step), item).Check();
+        for (i = array_length - 1; i > array_length - diff - 1; i--) {
+          uint32_t index = i;
+          v8_this_array->Delete(v8_context, index).Check();
+        }
+      } else if (items_count > slice_length) {
+        py::ssize_t diff = items_count - slice_length;
+        for (py::ssize_t i = array_length + diff - 1; i > slice_stop - 1; i--) {
+          uint32_t index = i - diff;
+          auto v8_val = v8_this_array->Get(v8_context, index).ToLocalChecked();
+          v8_this_array->Set(v8_context, i, v8_val).Check();
         }
       }
     }
-  } else if (PyLong_Check(py_key.ptr())) {
-    uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
 
-    v8_this_array->Set(v8_context, v8::Integer::New(v8_isolate, idx), wrap(py_value)).Check();
+    for (py::ssize_t i = 0; i < items_count; i++) {
+      auto py_item = py::reinterpret_borrow<py::object>(py_items[i]);
+      auto v8_item = wrap(py_item);
+      uint32_t index = slice_start + i * slice_step;
+      v8_this_array->Set(v8_context, index, v8_item).Check();
+    }
+  } else if (py::isinstance<py::int_>(py_key)) {
+    auto py_int = py::cast<py::int_>(py_key);
+    uint32_t index = py_int;
+    auto v8_value = wrap(py_value);
+    v8_this_array->Set(v8_context, index, v8_value).Check();
   }
 
   return py_value;
@@ -157,33 +178,34 @@ py::object JSObjectArrayImpl::DelItem(const py::object& py_key) const {
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
 
-  // TODO: rewrite this using pybind
-  if (PySlice_Check(py_key.ptr())) {
-    Py_ssize_t arrayLen = v8_this_array->Length();
-    Py_ssize_t start;
-    Py_ssize_t stop;
-    Py_ssize_t step;
-    Py_ssize_t sliceLen;
+  if (py::isinstance<py::slice>(py_key)) {
+    auto py_slice = py::cast<py::slice>(py_key);
+    py::ssize_t array_length = v8_this_array->Length();
+    py::ssize_t slice_start;
+    py::ssize_t slice_stop;
+    py::ssize_t slice_step;
+    py::ssize_t slice_length;
 
-    if (0 == PySlice_GetIndicesEx(py_key.ptr(), arrayLen, &start, &stop, &step, &sliceLen)) {
-      for (Py_ssize_t idx = start; idx < stop; idx += step) {
-        v8_this_array->Delete(v8_context, static_cast<uint32_t>(idx)).Check();
-      }
+    if (!py_slice.compute(array_length, &slice_start, &slice_stop, &slice_step, &slice_length)) {
+      assert(PyErr_Occurred());
+      return py::none();
+    }
+
+    for (py::ssize_t i = slice_start; i < slice_stop; i += slice_step) {
+      uint32_t index = i;
+      v8_this_array->Delete(v8_context, index).Check();
     }
 
     return py::none();
-  } else if (PyLong_Check(py_key.ptr())) {
-    uint32_t idx = PyLong_AsUnsignedLong(py_key.ptr());
-
-    py::object py_result;  // = py::none/py::js_null by default
-
-    if (v8_this_array->Has(v8_context, idx).ToChecked()) {
-      auto v8_idx = v8::Integer::New(v8_isolate, idx);
-      auto v8_obj = v8_this_array->Get(v8_context, v8_idx).ToLocalChecked();
-      py_result = wrap(v8_isolate, v8_obj, v8_this_array);
+  } else if (py::isinstance<py::int_>(py_key)) {
+    auto py_int = py::cast<py::int_>(py_key);
+    uint32_t index = py_int;
+    if (!v8_this_array->Has(v8_context, index).ToChecked()) {
+      return py::none();
     }
-
-    v8_this_array->Delete(v8_context, idx).Check();
+    auto v8_val = v8_this_array->Get(v8_context, index).ToLocalChecked();
+    auto py_result = wrap(v8_isolate, v8_val, v8_this_array);
+    v8_this_array->Delete(v8_context, index).Check();
     return py_result;
   }
 
@@ -198,7 +220,7 @@ bool JSObjectArrayImpl::Contains(const py::object& py_key) const {
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
   auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
 
-  for (uint32_t i = 0; i < Length(); i++) {
+  for (py::ssize_t i = 0; i < Length(); i++) {
     auto v8_maybe_val = v8_this_array->Get(v8_context, i);
     if (v8_maybe_val.IsEmpty()) {
       continue;
