@@ -1,10 +1,23 @@
 #include "JSObjectUtils.h"
 #include "Logging.h"
 #include "V8XUtils.h"
+#include "JSEternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
+
+static auto createEternalString(v8x::LockedIsolatePtr& v8_isolate, const char* s) {
+  return v8::Eternal<v8::String>(v8_isolate, v8x::toString(v8_isolate, s));
+}
+
+static auto createConstructorString(v8x::LockedIsolatePtr& v8_isolate) {
+  return createEternalString(v8_isolate, "constructor");
+}
+
+static auto createCLJSTypeString(v8x::LockedIsolatePtr& v8_isolate) {
+  return createEternalString(v8_isolate, "cljs$lang$type");
+}
 
 bool isCLJSType(v8::Local<v8::Object> v8_obj) {
   if (v8_obj.IsEmpty()) {
@@ -15,8 +28,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
 
-  // TODO: optimize this
-  auto v8_ctor_key = v8::String::NewFromUtf8(v8_isolate, "constructor").ToLocalChecked();
+  auto v8_ctor_key = lookupEternal<v8::String>(v8_isolate, JSEternals::kConstructorString, createConstructorString);
   auto v8_ctor = v8_obj->Get(v8_context, v8_ctor_key);
 
   if (v8_ctor.IsEmpty()) {
@@ -29,7 +41,7 @@ bool isCLJSType(v8::Local<v8::Object> v8_obj) {
   }
 
   auto v8_ctor_obj = v8_ctor_val.As<v8::Object>();
-  auto v8_cljs_key = v8::String::NewFromUtf8(v8_isolate, "cljs$lang$type").ToLocalChecked();
+  auto v8_cljs_key = lookupEternal<v8::String>(v8_isolate, JSEternals::kCLJSLangTypeString, createCLJSTypeString);
   auto v8_cljs_val = v8_ctor_obj->Get(v8_context, v8_cljs_key).ToLocalChecked();
 
   return !(v8_cljs_val.IsEmpty() || !v8_cljs_val->IsBoolean());

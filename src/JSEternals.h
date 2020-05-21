@@ -11,7 +11,15 @@
 
 class JSEternals {
  public:
-  enum EternalID { kJSWrapperTemplate = 0, kJSExceptionType, kJSExceptionValue, kTracerPayload, kNumEternals };
+  enum EternalID {
+    kJSWrapperTemplate = 0,
+    kJSExceptionType,
+    kJSExceptionValue,
+    kTracerPayload,
+    kConstructorString,
+    kCLJSLangTypeString,
+    kNumEternals
+  };
 
   template <typename T>
   using EternalCreateFn = v8::Eternal<T>(v8x::LockedIsolatePtr& v8_isolate);
