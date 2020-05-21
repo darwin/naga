@@ -36,7 +36,6 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, 
       assert(v8_bound_val->IsFunction());
       auto v8_bound_fn = v8_bound_val.As<v8::Function>();
       TRACE("wrap v8_bound_fn={}", v8_bound_fn);
-      // TODO: mark as function role?
       return wrap(v8_isolate, std::make_shared<JSObject>(v8_bound_fn));
     }
   }

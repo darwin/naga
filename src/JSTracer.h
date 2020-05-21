@@ -59,7 +59,6 @@
 // JS objects (C++ objects) when crossing into Python land.
 // Internally they have similar mechanism which keeps track of wrappers created and keeps them alive as needed.
 // I'm not sure how this works exactly and if the wrappers generation/usage is optimal with our code.
-// TODO: learn more
 //
 // There is definitely one case when we have to assist. We have to prevent double-wrapping.
 // We want to detect cases when a JS wrapper is crossing the boundary back into Python land (lookupTracedObject).

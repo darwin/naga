@@ -33,7 +33,6 @@ namespace pybind11 {
 // 2. make_expose_wrapper first converts the callable to a functor (to get unified "type shape" which is easier to wrap)
 // 3. operator() in expose_wrapper makes use of the passed guard factory before invoking the call
 //
-// TODO: this should be only used in dev builds, make sure this gets properly elided in release builds
 
 // note we want to do private inheritance here so we don't miss any usage and cover all active uses with our wrapper
 template <typename type_, typename... options>

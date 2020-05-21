@@ -4,8 +4,6 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "hicpp-signed-bitwise"
 
-// TODO: revisit this and maybe use pybind chrono
-
 static bool initPythonDateTime() {
   try {
     PyDateTime_IMPORT;
