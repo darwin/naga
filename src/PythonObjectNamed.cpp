@@ -230,8 +230,7 @@ void PythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8
       keys = py::reinterpret_steal<py::list>(PyMapping_Keys(py_obj.ptr()));
     } else if (PyGen_CheckExact(py_obj.ptr())) {
       auto py_iter(py::reinterpret_steal<py::object>(PyObject_GetIter(py_obj.ptr())));
-      PyObject* raw_item = nullptr;
-      while (nullptr != (raw_item = PyIter_Next(py_iter.ptr()))) {
+      while (auto raw_item = PyIter_Next(py_iter.ptr())) {
         keys.append(py::reinterpret_steal<py::object>(raw_item));
       }
     } else {
