@@ -18,6 +18,8 @@ v8::Local<v8::String> toString(LockedIsolatePtr& v8_isolate, const std::string_v
 v8::Local<v8::String> toString(LockedIsolatePtr& v8_isolate, const std::wstring& str);
 v8::Local<v8::String> toString(LockedIsolatePtr& v8_isolate, const py::handle& py_str);
 
+v8::Eternal<v8::String> createEternalString(LockedIsolatePtr& v8_isolate, const char* s);
+
 v8::Local<v8::Integer> toPositiveInteger(LockedIsolatePtr& v8_isolate, int i);
 
 v8::String::Utf8Value toUTF(LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_value);

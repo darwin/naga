@@ -7,16 +7,12 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
-static auto createEternalString(v8x::LockedIsolatePtr& v8_isolate, const char* s) {
-  return v8::Eternal<v8::String>(v8_isolate, v8x::toString(v8_isolate, s));
-}
-
 static auto createConstructorString(v8x::LockedIsolatePtr& v8_isolate) {
-  return createEternalString(v8_isolate, "constructor");
+  return v8x::createEternalString(v8_isolate, "constructor");
 }
 
 static auto createCLJSTypeString(v8x::LockedIsolatePtr& v8_isolate) {
-  return createEternalString(v8_isolate, "cljs$lang$type");
+  return v8x::createEternalString(v8_isolate, "cljs$lang$type");
 }
 
 bool isCLJSType(v8::Local<v8::Object> v8_obj) {

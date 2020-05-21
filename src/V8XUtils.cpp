@@ -171,4 +171,8 @@ LockedIsolatePtr lockIsolate(v8::Isolate* v8_isolate) {
   return JSIsolate::FromV8(v8_isolate)->ToV8();
 }
 
+v8::Eternal<v8::String> createEternalString(LockedIsolatePtr& v8_isolate, const char* s) {
+  return v8::Eternal<v8::String>(v8_isolate, toString(v8_isolate, s));
+}
+
 }  // namespace v8x
