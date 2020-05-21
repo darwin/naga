@@ -18,6 +18,7 @@ class JSEternals {
     kTracerPayload,
     kConstructorString,
     kCLJSLangTypeString,
+    kBindString,
     kNumEternals
   };
 

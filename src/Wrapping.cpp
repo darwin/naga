@@ -9,10 +9,15 @@
 #include "Printing.h"
 #include "PythonUtils.h"
 #include "PybindExtensions.h"
+#include "JSEternals.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kWrappingLogger), __VA_ARGS__)
+
+static auto createBindString(v8x::LockedIsolatePtr& v8_isolate) {
+  return v8x::createEternalString(v8_isolate, "bind");
+}
 
 py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, v8::Local<v8::Object> v8_this) {
   TRACE("wrap v8_isolate={} v8_val={} v8_this={}", P$(v8_isolate), v8_val, v8_this);
@@ -21,9 +26,8 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Value> v8_val, 
     // when v8_this is global, we can fall back to unbound function (later)
     auto v8_context = v8x::getCurrentContext(v8_isolate);
     if (!v8_this->StrictEquals(v8_context->Global())) {
-      // TODO: optimize this
       auto v8_fn = v8_val.As<v8::Function>();
-      auto v8_bind_key = v8::String::NewFromUtf8(v8_isolate, "bind").ToLocalChecked();
+      auto v8_bind_key = lookupEternal<v8::String>(v8_isolate, JSEternals::kBindString, createBindString);
       auto v8_bind_val = v8_fn->Get(v8_context, v8_bind_key).ToLocalChecked();
       assert(v8_bind_val->IsFunction());
       auto v8_bind_fn = v8_bind_val.As<v8::Function>();
