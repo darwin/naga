@@ -14,6 +14,8 @@ class JSTracer;
 class JSHospital;
 class JSEternals;
 class JSObject;
+class JSObjectIterator;
+class JSObjectArrayIterator;
 class JSObjectBase;
 class JSObjectGenericImpl;
 class JSObjectFunctionImpl;
@@ -28,6 +30,8 @@ using SharedJSStackTracePtr = std::shared_ptr<JSStackTrace>;
 using SharedJSStackTraceIteratorPtr = std::shared_ptr<JSStackTraceIterator>;
 using SharedJSStackFramePtr = std::shared_ptr<JSStackFrame>;
 using SharedJSObjectPtr = std::shared_ptr<JSObject>;
+using SharedJSObjectIteratorPtr = std::shared_ptr<JSObjectIterator>;
+using SharedJSObjectArrayIteratorPtr = std::shared_ptr<JSObjectArrayIterator>;
 
 namespace v8x {
 

@@ -10,6 +10,8 @@
 
 // this class maintains JSObject API exposed to Python
 class JSObjectAPI : public JSObjectBase {
+  friend JSObjectArrayIterator;
+
  protected:
   JSObjectGenericImpl m_generic_impl;
   JSObjectFunctionImpl m_function_impl;
@@ -45,6 +47,7 @@ class JSObjectAPI : public JSObjectBase {
   [[nodiscard]] py::object Bool() const;
   [[nodiscard]] py::str Str() const;
   [[nodiscard]] py::str Repr() const;
+  [[nodiscard]] py::object Iter();
 
   [[nodiscard]] bool EQ(const SharedJSObjectPtr& other) const;
   [[nodiscard]] bool NE(const SharedJSObjectPtr& other) const;

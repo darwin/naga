@@ -23,7 +23,7 @@
 // [1] https://github.com/area1/stpyv8/issues/8#issuecomment-606702978
 // [2] https://stackoverflow.com/a/44941059/84283
 
-class JSObject final : public JSObjectAPI {
+class JSObject final : public std::enable_shared_from_this<JSObject>, public JSObjectAPI {
  public:
   explicit JSObject(v8::Local<v8::Object> v8_obj);
   ~JSObject();

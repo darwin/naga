@@ -1,4 +1,6 @@
 #include "JSObject.h"
+#include "JSObjectIterator.h"
+#include "JSObjectArrayIterator.h"
 #include "JSException.h"
 #include "PythonThreads.h"
 #include "Wrapping.h"
@@ -207,6 +209,15 @@ py::str JSObjectAPI::Repr() const {
 
   TRACE("JSObjectAPI::Repr {} => {}", THIS, py_result);
   return py_result;
+}
+
+py::object JSObjectAPI::Iter() {
+  TRACE("JSObjectAPI::Iter {}", THIS);
+  if (HasRoleArray()) {
+    return py::cast(std::make_shared<JSObjectArrayIterator>(static_cast<JSObject*>(this)->shared_from_this()));
+  } else {
+    return py::cast(std::make_shared<JSObjectIterator>(static_cast<JSObject*>(this)->shared_from_this()));
+  }
 }
 
 size_t JSObjectAPI::Len() const {
