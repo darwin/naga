@@ -665,8 +665,7 @@ class TestWrapper(unittest.TestCase):
             self.assertEqual(1, obj.a)
             self.assertEqual(2, obj.b)
 
-            # TODO: re-enable after we implement __iter__ support
-            # self.assertEqual({ 'a' : 1, 'b' : 2 }, dict(obj))
+            self.assertEqual({ 'a' : 1, 'b' : 2 }, dict(obj))
 
             self.assertEqual({'a': 1,
                               'b': [1, 2, 3],

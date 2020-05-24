@@ -1,5 +1,5 @@
 #include "JSObject.h"
-#include "JSObjectIterator.h"
+#include "JSObjectKVIterator.h"
 #include "JSObjectArrayIterator.h"
 #include "JSObjectGenericImpl.h"
 #include "JSObjectArrayImpl.h"
@@ -221,7 +221,7 @@ py::object JSObject::Iter() {
   if (HasRoleArray()) {
     return py::cast(std::make_shared<JSObjectArrayIterator>(static_cast<JSObject*>(this)->shared_from_this()));
   } else {
-    return py::cast(std::make_shared<JSObjectIterator>(static_cast<JSObject*>(this)->shared_from_this()));
+    return py::cast(std::make_shared<JSObjectKVIterator>(static_cast<JSObject*>(this)->shared_from_this()));
   }
 }
 

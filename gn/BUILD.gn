@@ -62,7 +62,7 @@ naga_source_files = [
   "JSObjectCLJSImpl.cpp",
   "JSObjectFunctionImpl.cpp",
   "JSObjectGenericImpl.cpp",
-  "JSObjectIterator.cpp",
+  "JSObjectKVIterator.cpp",
   "JSObjectUtils.cpp",
   "JSPlatform.cpp",
   "JSScript.cpp",

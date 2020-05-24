@@ -7,7 +7,7 @@
 #include "JSNull.h"
 #include "JSUndefined.h"
 #include "JSObject.h"
-#include "JSObjectIterator.h"
+#include "JSObjectKVIterator.h"
 #include "JSObjectArrayIterator.h"
 #include "JSStackTrace.h"
 #include "JSStackTraceIterator.h"
@@ -137,17 +137,11 @@ void exposeJSObject(py::module py_module) {
       .def_method("__ne__", &JSObject::NE)              //
       .def_method("__call__", &JSObject::Call)          //
       .def_method("__iter__", &JSObject::Iter)          //
-      //
-      // Emulating dict object
-      // TODO: I'm not sure about this, revisit
-      // this should go away when we implement __iter__
-      //      .def("keys", &JSObject::Dir,
-      //           "Get a list of the object attributes.")
       ;
 
-  py::naga_class<JSObjectIterator, SharedJSObjectIteratorPtr>(py_module, "JSObjectIterator")  //
-      .def_method("__next__", &JSObjectIterator::Next)                                        //
-      .def_method("__iter__", &JSObjectIterator::Iter)                                        //
+  py::naga_class<JSObjectKVIterator, SharedJSObjectKVIteratorPtr>(py_module, "JSObjectKVIterator")  //
+      .def_method("__next__", &JSObjectKVIterator::Next)                                            //
+      .def_method("__iter__", &JSObjectKVIterator::Iter)                                            //
       ;
 
   py::naga_class<JSObjectArrayIterator, SharedJSObjectArrayIteratorPtr>(py_module, "JSObjectArrayIterator")  //

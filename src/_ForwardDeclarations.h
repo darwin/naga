@@ -14,7 +14,7 @@ class JSTracer;
 class JSHospital;
 class JSEternals;
 class JSObject;
-class JSObjectIterator;
+class JSObjectKVIterator;
 class JSObjectArrayIterator;
 
 using SharedJSContextPtr = std::shared_ptr<JSContext>;
@@ -24,7 +24,7 @@ using SharedJSStackTracePtr = std::shared_ptr<JSStackTrace>;
 using SharedJSStackTraceIteratorPtr = std::shared_ptr<JSStackTraceIterator>;
 using SharedJSStackFramePtr = std::shared_ptr<JSStackFrame>;
 using SharedJSObjectPtr = std::shared_ptr<JSObject>;
-using SharedJSObjectIteratorPtr = std::shared_ptr<JSObjectIterator>;
+using SharedJSObjectKVIteratorPtr = std::shared_ptr<JSObjectKVIterator>;
 using SharedJSObjectArrayIteratorPtr = std::shared_ptr<JSObjectArrayIterator>;
 
 namespace v8x {
