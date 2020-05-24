@@ -23,8 +23,17 @@ void JSObjectKVIterator::Init() {
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_this = m_shared_object_ptr->ToV8(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
-  // TODO: fine-tune GetPropertyNames call
-  auto v8_property_names = v8_this->GetPropertyNames(v8_context).ToLocalChecked();
+  auto v8_key_collection_mode = v8::KeyCollectionMode::kIncludePrototypes;
+  auto v8_property_filter = static_cast<v8::PropertyFilter>(v8::PropertyFilter::ONLY_ENUMERABLE |  //
+                                                            v8::PropertyFilter::SKIP_SYMBOLS);
+  auto v8_index_filter = v8::IndexFilter::kSkipIndices;
+  auto v8_conversion_mode = v8::KeyConversionMode::kNoNumbers;
+  auto v8_maybe_property_names = v8_this->GetPropertyNames(v8_context,              //
+                                                           v8_key_collection_mode,  //
+                                                           v8_property_filter,      //
+                                                           v8_index_filter,         //
+                                                           v8_conversion_mode);
+  auto v8_property_names = v8_maybe_property_names.ToLocalChecked();
   m_v8_property_names.Reset(v8_isolate, v8_property_names);
   m_count = v8_property_names->Length();
   assert(Initialized());
