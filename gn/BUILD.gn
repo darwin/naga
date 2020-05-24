@@ -67,6 +67,7 @@ naga_source_files = [
   "JSScript.cpp",
   "JSStackFrame.cpp",
   "JSStackTrace.cpp",
+  "JSStackTraceIterator.cpp",
   "JSTracer.cpp",
   "JSUndefined.cpp",
   "Logging.cpp",

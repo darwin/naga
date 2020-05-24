@@ -8,6 +8,7 @@
 #include "JSUndefined.h"
 #include "JSObjectAPI.h"
 #include "JSStackTrace.h"
+#include "JSStackTraceIterator.h"
 #include "JSStackFrame.h"
 #include "JSException.h"
 #include "Aux.h"
@@ -258,11 +259,14 @@ void exposeJSStackTrace(py::module py_module) {
   py::naga_class<JSStackTrace, SharedJSStackTracePtr>(py_module, "JSStackTrace")  //
       .def_method("__len__", &JSStackTrace::GetFrameCount)                        //
       .def_method("__getitem__", &JSStackTrace::GetFrame)                         //
-                                                                                  //
-      // TODO: .def("__iter__", py::range(&CJavascriptStackTrace::begin,
-      // &CJavascriptStackTrace::end))
-      //
-      .def_method("__str__", &JSStackTrace::Str);  //
+      .def_method("__str__", &JSStackTrace::Str)                                  //
+      .def_method("__iter__", &JSStackTrace::Iter)                                //
+      ;
+
+  py::naga_class<JSStackTraceIterator, SharedJSStackTraceIteratorPtr>(py_module, "JSStackTraceIterator")  //
+      .def_method("__next__", &JSStackTraceIterator::Next)                                                //
+      .def_method("__iter__", &JSStackTraceIterator::Iter)                                                //
+      ;
 
   py::enum_<v8::StackTrace::StackTraceOptions>(py_module, "JSStackTraceOptions")  //
       .value("LineNumber", v8::StackTrace::kLineNumber)                           //
