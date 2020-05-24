@@ -26,7 +26,7 @@ class JSStackTrace : public std::enable_shared_from_this<JSStackTrace> {
   [[nodiscard]] int GetFrameCount() const;
   [[nodiscard]] SharedJSStackFramePtr GetFrame(int idx) const;
   [[nodiscard]] py::object Str() const;
-  [[nodiscard]] SharedConstJSStackTraceIteratorPtr Iter() const;
+  [[nodiscard]] SharedJSStackTraceIteratorPtr Iter();
 };
 
 #endif

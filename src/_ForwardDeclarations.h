@@ -25,9 +25,7 @@ using SharedJSContextPtr = std::shared_ptr<JSContext>;
 using SharedJSIsolatePtr = std::shared_ptr<JSIsolate>;
 using SharedJSScriptPtr = std::shared_ptr<JSScript>;
 using SharedJSStackTracePtr = std::shared_ptr<JSStackTrace>;
-using SharedConstJSStackTracePtr = std::shared_ptr<const JSStackTrace>;
 using SharedJSStackTraceIteratorPtr = std::shared_ptr<JSStackTraceIterator>;
-using SharedConstJSStackTraceIteratorPtr = std::shared_ptr<const JSStackTraceIterator>;
 using SharedJSStackFramePtr = std::shared_ptr<JSStackFrame>;
 using SharedJSObjectPtr = std::shared_ptr<JSObject>;
 

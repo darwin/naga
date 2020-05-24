@@ -7,7 +7,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSStackTraceLogger), __VA_ARGS__)
 
-JSStackTraceIterator::JSStackTraceIterator(SharedConstJSStackTracePtr stack_trace_ptr)
+JSStackTraceIterator::JSStackTraceIterator(SharedJSStackTracePtr stack_trace_ptr)
     : m_shared_stack_trace_ptr(stack_trace_ptr),
       m_index(0) {
   TRACE("JSStackTraceIterator::JSStackTraceIterator {} stack_trace_ptr={}", THIS, stack_trace_ptr);
@@ -17,7 +17,7 @@ JSStackTraceIterator::~JSStackTraceIterator() {
   TRACE("JSStackTraceIterator::~JSStackTraceIterator {}", THIS);
 }
 
-SharedConstJSStackTraceIteratorPtr JSStackTraceIterator::Iter() const {
+SharedJSStackTraceIteratorPtr JSStackTraceIterator::Iter() {
   TRACE("JSStackTraceIterator::Iter {}", THIS);
   return shared_from_this();
 }

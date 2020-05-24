@@ -109,7 +109,7 @@ py::object JSStackTrace::Str() const {
   return result;
 }
 
-SharedConstJSStackTraceIteratorPtr JSStackTrace::Iter() const {
+SharedJSStackTraceIteratorPtr JSStackTrace::Iter() {
   TRACE("JSStackTrace::Iter {}", THIS);
   return std::make_shared<JSStackTraceIterator>(this->shared_from_this());
 }

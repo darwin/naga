@@ -4,14 +4,14 @@
 #include "Base.h"
 
 class JSStackTraceIterator : public std::enable_shared_from_this<JSStackTraceIterator> {
-  const SharedConstJSStackTracePtr m_shared_stack_trace_ptr;
+  const SharedJSStackTracePtr m_shared_stack_trace_ptr;
   int m_index;
 
  public:
-  explicit JSStackTraceIterator(SharedConstJSStackTracePtr stack_trace_ptr);
+  explicit JSStackTraceIterator(SharedJSStackTracePtr stack_trace_ptr);
   ~JSStackTraceIterator();
 
-  [[nodiscard]] SharedConstJSStackTraceIteratorPtr Iter() const;
+  [[nodiscard]] SharedJSStackTraceIteratorPtr Iter();
   [[nodiscard]] SharedJSStackFramePtr Next();
 };
 
