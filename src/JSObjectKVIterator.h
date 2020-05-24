@@ -1,5 +1,5 @@
-#ifndef NAGA_JSObjectKVIterator_H_
-#define NAGA_JSObjectKVIterator_H_
+#ifndef NAGA_JSOBJECTKVITERATOR_H_
+#define NAGA_JSOBJECTKVITERATOR_H_
 
 #include "Base.h"
 
