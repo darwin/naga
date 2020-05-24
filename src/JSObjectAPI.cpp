@@ -219,9 +219,9 @@ py::str JSObject::Repr() const {
 py::object JSObject::Iter() {
   TRACE("JSObject::Iter {}", THIS);
   if (HasRoleArray()) {
-    return py::cast(std::make_shared<JSObjectArrayIterator>(static_cast<JSObject*>(this)->shared_from_this()));
+    return py::cast(std::make_shared<JSObjectArrayIterator>(this->shared_from_this()));
   } else {
-    return py::cast(std::make_shared<JSObjectKVIterator>(static_cast<JSObject*>(this)->shared_from_this()));
+    return py::cast(std::make_shared<JSObjectKVIterator>(this->shared_from_this()));
   }
 }
 
