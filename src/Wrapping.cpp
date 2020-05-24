@@ -129,6 +129,10 @@ py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Object> v8_obj)
   return py_result;
 }
 
+py::object wrap(v8x::LockedIsolatePtr& v8_isolate, v8::Local<v8::Array> v8_array) {
+  return wrap(v8_isolate, v8_array.As<v8::Object>());
+}
+
 py::object wrap(v8x::LockedIsolatePtr& v8_isolate, const SharedJSObjectPtr& obj) {
   TRACE("wrap v8_isolate={} obj={}", P$(v8_isolate), obj);
   auto py_gil = pyu::withGIL();

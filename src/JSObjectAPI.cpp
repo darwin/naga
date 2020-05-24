@@ -45,21 +45,23 @@ py::list JSObjectAPI::Dir() const {
   TRACE("JSObjectAPI::Dir {}", THIS);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
-  auto py_gil = pyu::withGIL();
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-
-  auto props = ToV8(v8_isolate)->GetPropertyNames(v8_context).ToLocalChecked();
-
-  py::list attrs;
-  for (size_t i = 0; i < props->Length(); i++) {
-    auto v8_i = v8::Integer::New(v8_isolate, i);
-    auto v8_prop = props->Get(v8_context, v8_i).ToLocalChecked();
-    attrs.append(wrap(v8_isolate, v8_prop));
-  }
-
-  TRACE("JSObjectAPI::Dir {} => {}", THIS, attrs);
-  return attrs;
+  auto v8_this = ToV8(v8_isolate);
+  auto v8_key_collection_mode = v8::KeyCollectionMode::kIncludePrototypes;
+  auto v8_property_filter = static_cast<v8::PropertyFilter>(v8::PropertyFilter::ONLY_ENUMERABLE |  //
+                                                            v8::PropertyFilter::SKIP_SYMBOLS);
+  auto v8_index_filter = v8::IndexFilter::kSkipIndices;
+  auto v8_conversion_mode = v8::KeyConversionMode::kNoNumbers;
+  auto v8_maybe_property_names = v8_this->GetPropertyNames(v8_context,              //
+                                                           v8_key_collection_mode,  //
+                                                           v8_property_filter,      //
+                                                           v8_index_filter,         //
+                                                           v8_conversion_mode);
+  auto v8_property_names = v8_maybe_property_names.ToLocalChecked();
+  auto py_names = wrap(v8_isolate, v8_property_names);
+  TRACE("JSObjectAPI::Dir {} => {}", THIS, py_names);
+  return py_names;
 }
 
 py::object JSObjectAPI::GetItem(const py::object& py_key) const {
