@@ -253,9 +253,8 @@ void PythonObject::NamedEnumerator(const v8::PropertyCallbackInfo<v8::Array>& v8
       }
 
       auto py_item = wrap(py::reinterpret_borrow<py::object>(raw_item));
-      auto v8_i = v8::Uint32::New(v8_isolate, i);
       auto v8_context = v8x::getCurrentContext(v8_isolate);
-      auto res = v8_array->Set(v8_context, v8_i, py_item);
+      auto res = v8_array->Set(v8_context, i, py_item);
       res.Check();
     }
     return v8_array;
