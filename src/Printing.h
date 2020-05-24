@@ -32,7 +32,6 @@ SafePrinter<T> printSafe(T v) {
 std::ostream& operator<<(std::ostream& os, const JSStackTrace& v);
 std::ostream& operator<<(std::ostream& os, const JSException& v);
 std::ostream& operator<<(std::ostream& os, const JSObject& v);
-std::ostream& operator<<(std::ostream& os, const JSObjectAPI& v);
 std::ostream& operator<<(std::ostream& os, const JSContext& v);
 std::ostream& operator<<(std::ostream& os, const JSEngine& v);
 std::ostream& operator<<(std::ostream& os, const JSScript& v);

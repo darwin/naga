@@ -1,6 +1,10 @@
 #include "JSObject.h"
 #include "JSObjectIterator.h"
 #include "JSObjectArrayIterator.h"
+#include "JSObjectGenericImpl.h"
+#include "JSObjectArrayImpl.h"
+#include "JSObjectFunctionImpl.h"
+#include "JSObjectCLJSImpl.h"
 #include "JSException.h"
 #include "PythonThreads.h"
 #include "Wrapping.h"
@@ -11,7 +15,7 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectLogger), __VA_ARGS__)
 
-py::object JSObjectAPI::GetAttr(const py::object& py_key) const {
+py::object JSObject::GetAttr(const py::object& py_key) const {
   py::object py_result;
   if (HasRoleArray()) {
     throw JSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
@@ -20,11 +24,11 @@ py::object JSObjectAPI::GetAttr(const py::object& py_key) const {
   } else {
     py_result = JSObjectGenericGetAttr(Self(), py_key);
   }
-  TRACE("JSObjectAPI::GetAttr {} => {}", THIS, py_result);
+  TRACE("JSObject::GetAttr {} => {}", THIS, py_result);
   return py_result;
 }
 
-void JSObjectAPI::SetAttr(const py::object& py_key, const py::object& py_obj) const {
+void JSObject::SetAttr(const py::object& py_key, const py::object& py_obj) const {
   if (HasRoleArray()) {
     throw JSException("__setattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
@@ -32,7 +36,7 @@ void JSObjectAPI::SetAttr(const py::object& py_key, const py::object& py_obj) co
   }
 }
 
-void JSObjectAPI::DelAttr(const py::object& py_key) const {
+void JSObject::DelAttr(const py::object& py_key) const {
   if (HasRoleArray()) {
     throw JSException("__delattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
@@ -40,8 +44,8 @@ void JSObjectAPI::DelAttr(const py::object& py_key) const {
   }
 }
 
-py::list JSObjectAPI::Dir() const {
-  TRACE("JSObjectAPI::Dir {}", THIS);
+py::list JSObject::Dir() const {
+  TRACE("JSObject::Dir {}", THIS);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -59,11 +63,11 @@ py::list JSObjectAPI::Dir() const {
                                                            v8_conversion_mode);
   auto v8_property_names = v8_maybe_property_names.ToLocalChecked();
   auto py_names = wrap(v8_isolate, v8_property_names);
-  TRACE("JSObjectAPI::Dir {} => {}", THIS, py_names);
+  TRACE("JSObject::Dir {} => {}", THIS, py_names);
   return py_names;
 }
 
-py::object JSObjectAPI::GetItem(const py::object& py_key) const {
+py::object JSObject::GetItem(const py::object& py_key) const {
   py::object py_result;
   if (HasRoleArray()) {
     py_result = JSObjectArrayGetItem(Self(), py_key);
@@ -73,11 +77,11 @@ py::object JSObjectAPI::GetItem(const py::object& py_key) const {
     // TODO: do robust arg checking here
     py_result = JSObjectGenericGetAttr(Self(), py::cast<py::str>(py_key));
   }
-  TRACE("JSObjectAPI::GetItem {} => {}", THIS, py_result);
+  TRACE("JSObject::GetItem {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::SetItem(const py::object& py_key, const py::object& py_value) const {
+py::object JSObject::SetItem(const py::object& py_key, const py::object& py_value) const {
   if (HasRoleArray()) {
     return JSObjectArraySetItem(Self(), py_key, py_value);
   } else {
@@ -87,7 +91,7 @@ py::object JSObjectAPI::SetItem(const py::object& py_key, const py::object& py_v
   }
 }
 
-py::object JSObjectAPI::DelItem(const py::object& py_key) const {
+py::object JSObject::DelItem(const py::object& py_key) const {
   if (HasRoleArray()) {
     return JSObjectArrayDelItem(Self(), py_key);
   } else {
@@ -97,52 +101,52 @@ py::object JSObjectAPI::DelItem(const py::object& py_key) const {
   }
 }
 
-bool JSObjectAPI::Contains(const py::object& py_key) const {
+bool JSObject::Contains(const py::object& py_key) const {
   bool result;
   if (HasRoleArray()) {
     result = JSObjectArrayContains(Self(), py_key);
   } else {
     result = JSObjectGenericContains(Self(), py_key);
   }
-  TRACE("JSObjectAPI::Contains {} => {}", THIS, result);
+  TRACE("JSObject::Contains {} => {}", THIS, result);
   return result;
 }
 
-int JSObjectAPI::Hash() const {
+int JSObject::Hash() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
   auto result = ToV8(v8_isolate)->GetIdentityHash();
-  TRACE("JSObjectAPI::Hash {} => {}", THIS, result);
+  TRACE("JSObject::Hash {} => {}", THIS, result);
   return result;
 }
 
-SharedJSObjectPtr JSObjectAPI::Clone() const {
+SharedJSObjectPtr JSObject::Clone() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
   auto result = std::make_shared<JSObject>(ToV8(v8_isolate)->Clone());
-  TRACE("JSObjectAPI::Clone {} => {}", THIS, result);
+  TRACE("JSObject::Clone {} => {}", THIS, result);
   return result;
 }
 
-bool JSObjectAPI::EQ(const SharedJSObjectPtr& other) const {
+bool JSObject::EQ(const SharedJSObjectPtr& other) const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_context = v8x::getCurrentContext(v8_isolate);
 
   auto result = other.get() && ToV8(v8_isolate)->Equals(v8_context, other->ToV8(v8_isolate)).ToChecked();
-  TRACE("JSObjectAPI::EQ {} other={} => {}", THIS, other, result);
+  TRACE("JSObject::EQ {} other={} => {}", THIS, other, result);
   return result;
 }
 
-bool JSObjectAPI::NE(const SharedJSObjectPtr& other) const {
+bool JSObject::NE(const SharedJSObjectPtr& other) const {
   return !EQ(other);
 }
 
-py::object JSObjectAPI::Int() const {
-  TRACE("JSObjectAPI::ToPythonInt {}", THIS);
+py::object JSObject::Int() const {
+  TRACE("JSObject::ToPythonInt {}", THIS);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -153,11 +157,11 @@ py::object JSObjectAPI::Int() const {
 
   auto val = ToV8(v8_isolate)->Int32Value(v8_context).ToChecked();
   auto py_result = py::cast(val);
-  TRACE("JSObjectAPI::Int {} => {}", THIS, py_result);
+  TRACE("JSObject::Int {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::Float() const {
+py::object JSObject::Float() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -168,11 +172,11 @@ py::object JSObjectAPI::Float() const {
 
   auto val = ToV8(v8_isolate)->NumberValue(v8_context).ToChecked();
   auto py_result = py::cast(val);
-  TRACE("JSObjectAPI::Float {} => {}", THIS, py_result);
+  TRACE("JSObject::Float {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::Bool() const {
+py::object JSObject::Bool() const {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
@@ -182,11 +186,11 @@ py::object JSObjectAPI::Bool() const {
   }
 
   auto py_result = py::cast(val);
-  TRACE("JSObjectAPI::Bool {} => {}", THIS, py_result);
+  TRACE("JSObject::Bool {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::str JSObjectAPI::Str() const {
+py::str JSObject::Str() const {
   auto py_result = [&] {
     if (HasRoleCLJS()) {
       return JSObjectCLJSStr(Self());
@@ -195,11 +199,11 @@ py::str JSObjectAPI::Str() const {
     }
   }();
 
-  TRACE("JSObjectAPI::Str {} => {}", THIS, py_result);
+  TRACE("JSObject::Str {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::str JSObjectAPI::Repr() const {
+py::str JSObject::Repr() const {
   auto py_result = [&] {
     if (HasRoleCLJS()) {
       return JSObjectCLJSRepr(Self());
@@ -208,12 +212,12 @@ py::str JSObjectAPI::Repr() const {
     }
   }();
 
-  TRACE("JSObjectAPI::Repr {} => {}", THIS, py_result);
+  TRACE("JSObject::Repr {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::Iter() {
-  TRACE("JSObjectAPI::Iter {}", THIS);
+py::object JSObject::Iter() {
+  TRACE("JSObject::Iter {}", THIS);
   if (HasRoleArray()) {
     return py::cast(std::make_shared<JSObjectArrayIterator>(static_cast<JSObject*>(this)->shared_from_this()));
   } else {
@@ -221,7 +225,7 @@ py::object JSObjectAPI::Iter() {
   }
 }
 
-size_t JSObjectAPI::Len() const {
+size_t JSObject::Len() const {
   auto result = [&]() {
     if (HasRoleArray()) {
       return JSObjectArrayLength(Self());
@@ -232,11 +236,11 @@ size_t JSObjectAPI::Len() const {
     }
   }();
 
-  TRACE("JSObjectAPI::Len {} => {}", THIS, result);
+  TRACE("JSObject::Len {} => {}", THIS, result);
   return result;
 }
 
-py::object JSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwargs) {
+py::object JSObject::Call(const py::args& py_args, const py::kwargs& py_kwargs) {
   py::object py_result;
   if (HasRoleFunction()) {
     py_result = JSObjectFunctionCall(Self(), py_args, py_kwargs);
@@ -244,11 +248,11 @@ py::object JSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwarg
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::Call {} => {}", THIS, py_result);
+  TRACE("JSObject::Call {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::Create(const SharedJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
+py::object JSObject::Create(const SharedJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_proto = proto->ToV8(v8_isolate);
@@ -291,7 +295,7 @@ py::object JSObjectAPI::Create(const SharedJSObjectPtr& proto, const py::tuple& 
   return wrap(v8_isolate, v8_result);
 }
 
-py::object JSObjectAPI::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
+py::object JSObject::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
   if (HasRoleFunction()) {
     py_result = JSObjectFunctionApply(Self(), py_self, py_args, py_kwds);
@@ -299,11 +303,11 @@ py::object JSObjectAPI::Apply(const py::object& py_self, const py::list& py_args
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::Apply {} => {}", THIS, py_result);
+  TRACE("JSObject::Apply {} => {}", THIS, py_result);
   return py_result;
 }
 
-py::object JSObjectAPI::Invoke(const py::list& py_args, const py::dict& py_kwds) {
+py::object JSObject::Invoke(const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
   if (HasRoleFunction()) {
     py_result = JSObjectFunctionCall(Self(), py_args, py_kwds);
@@ -311,11 +315,11 @@ py::object JSObjectAPI::Invoke(const py::list& py_args, const py::dict& py_kwds)
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::Invoke {} => {}", THIS, py_result);
+  TRACE("JSObject::Invoke {} => {}", THIS, py_result);
   return py_result;
 }
 
-std::string JSObjectAPI::GetName() const {
+std::string JSObject::GetName() const {
   std::string result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetName(Self());
@@ -323,12 +327,12 @@ std::string JSObjectAPI::GetName() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::GetName {} => {}", THIS, result);
+  TRACE("JSObject::GetName {} => {}", THIS, result);
   return result;
 }
 
-void JSObjectAPI::SetName(const std::string& name) {
-  TRACE("JSObjectAPI::SetName {} name={}", THIS, name);
+void JSObject::SetName(const std::string& name) {
+  TRACE("JSObject::SetName {} name={}", THIS, name);
   if (HasRoleFunction()) {
     JSObjectFunctionSetName(Self(), name);
   } else {
@@ -336,7 +340,7 @@ void JSObjectAPI::SetName(const std::string& name) {
   }
 }
 
-int JSObjectAPI::LineNumber() const {
+int JSObject::LineNumber() const {
   int result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetLineNumber(Self());
@@ -344,11 +348,11 @@ int JSObjectAPI::LineNumber() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::LineNumber {} => {}", THIS, result);
+  TRACE("JSObject::LineNumber {} => {}", THIS, result);
   return result;
 }
 
-int JSObjectAPI::ColumnNumber() const {
+int JSObject::ColumnNumber() const {
   int result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetColumnNumber(Self());
@@ -356,11 +360,11 @@ int JSObjectAPI::ColumnNumber() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::ColumnNumber {} => {}", THIS, result);
+  TRACE("JSObject::ColumnNumber {} => {}", THIS, result);
   return result;
 }
 
-std::string JSObjectAPI::ResourceName() const {
+std::string JSObject::ResourceName() const {
   std::string result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetResourceName(Self());
@@ -368,11 +372,11 @@ std::string JSObjectAPI::ResourceName() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::ResourceName {} => {}", THIS, result);
+  TRACE("JSObject::ResourceName {} => {}", THIS, result);
   return result;
 }
 
-std::string JSObjectAPI::InferredName() const {
+std::string JSObject::InferredName() const {
   std::string result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetInferredName(Self());
@@ -380,11 +384,11 @@ std::string JSObjectAPI::InferredName() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::InferredName {} => {}", THIS, result);
+  TRACE("JSObject::InferredName {} => {}", THIS, result);
   return result;
 }
 
-int JSObjectAPI::LineOffset() const {
+int JSObject::LineOffset() const {
   int result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetLineOffset(Self());
@@ -392,11 +396,11 @@ int JSObjectAPI::LineOffset() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::LineOffset {} => {}", THIS, result);
+  TRACE("JSObject::LineOffset {} => {}", THIS, result);
   return result;
 }
 
-int JSObjectAPI::ColumnOffset() const {
+int JSObject::ColumnOffset() const {
   int result;
   if (HasRoleFunction()) {
     result = JSObjectFunctionGetColumnOffset(Self());
@@ -404,18 +408,18 @@ int JSObjectAPI::ColumnOffset() const {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
 
-  TRACE("JSObjectAPI::ColumnOffset {} => {}", THIS, result);
+  TRACE("JSObject::ColumnOffset {} => {}", THIS, result);
   return result;
 }
 
-bool JSObjectAPI::HasRoleArray() const {
-  return HasRole(JSObjectBase::Roles::Array);
+bool JSObject::HasRoleArray() const {
+  return HasRole(Roles::Array);
 }
 
-bool JSObjectAPI::HasRoleFunction() const {
-  return HasRole(JSObjectBase::Roles::Function);
+bool JSObject::HasRoleFunction() const {
+  return HasRole(Roles::Function);
 }
 
-bool JSObjectAPI::HasRoleCLJS() const {
-  return HasRole(JSObjectBase::Roles::CLJS);
+bool JSObject::HasRoleCLJS() const {
+  return HasRole(Roles::CLJS);
 }

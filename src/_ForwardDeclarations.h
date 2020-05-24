@@ -16,12 +16,6 @@ class JSEternals;
 class JSObject;
 class JSObjectIterator;
 class JSObjectArrayIterator;
-class JSObjectBase;
-class JSObjectGenericImpl;
-class JSObjectFunctionImpl;
-class JSObjectArrayImpl;
-class JSObjectCLJSImpl;
-class JSObjectAPI;
 
 using SharedJSContextPtr = std::shared_ptr<JSContext>;
 using SharedJSIsolatePtr = std::shared_ptr<JSIsolate>;

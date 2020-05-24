@@ -35,11 +35,6 @@ std::ostream& operator<<(std::ostream& os, const JSObject& v) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const JSObjectAPI& v) {
-  v.Dump(os);
-  return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const JSContext& v) {
   v.Dump(os);
   return os;

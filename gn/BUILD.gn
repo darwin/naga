@@ -59,7 +59,6 @@ naga_source_files = [
   "JSObjectAPI.cpp",
   "JSObjectArrayImpl.cpp",
   "JSObjectArrayIterator.cpp",
-  "JSObjectBase.cpp",
   "JSObjectCLJSImpl.cpp",
   "JSObjectFunctionImpl.cpp",
   "JSObjectGenericImpl.cpp",

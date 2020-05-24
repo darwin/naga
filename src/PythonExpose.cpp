@@ -6,7 +6,7 @@
 #include "JSContext.h"
 #include "JSNull.h"
 #include "JSUndefined.h"
-#include "JSObjectAPI.h"
+#include "JSObject.h"
 #include "JSObjectIterator.h"
 #include "JSObjectArrayIterator.h"
 #include "JSStackTrace.h"
@@ -16,7 +16,6 @@
 #include "Aux.h"
 #include "PybindNagaClass.h"
 #include "PybindNagaModule.h"
-#include "JSObject.h"
 #include "Logging.h"
 #include "V8XUtils.h"
 
@@ -55,51 +54,51 @@ void exposeToolkit(py::module py_module) {
   TRACE("exposeToolkit py_module={}", py_module);
   auto doc = "Javascript Toolkit";
   py::naga_module(py_module.def_submodule("toolkit", doc))                              //
-      .def("line_number", ForwardTo<&JSObjectAPI::LineNumber>{},                        //
+      .def("line_number", ForwardTo<&JSObject::LineNumber>{},                           //
            py::arg("this"),                                                             //
            "The line number of function in the script")                                 //
-      .def("column_number", ForwardTo<&JSObjectAPI::ColumnNumber>{},                    //
+      .def("column_number", ForwardTo<&JSObject::ColumnNumber>{},                       //
            py::arg("this"),                                                             //
            "The column number of function in the script")                               //
-      .def("resource_name", ForwardTo<&JSObjectAPI::ResourceName>{},                    //
+      .def("resource_name", ForwardTo<&JSObject::ResourceName>{},                       //
            py::arg("this"),                                                             //
            "The resource name of script")                                               //
-      .def("inferred_name", ForwardTo<&JSObjectAPI::InferredName>{},                    //
+      .def("inferred_name", ForwardTo<&JSObject::InferredName>{},                       //
            py::arg("this"),                                                             //
            "Name inferred from variable or property assignment of this function")       //
-      .def("line_offset", ForwardTo<&JSObjectAPI::LineOffset>{},                        //
+      .def("line_offset", ForwardTo<&JSObject::LineOffset>{},                           //
            py::arg("this"),                                                             //
            "The line offset of function in the script")                                 //
-      .def("column_offset", ForwardTo<&JSObjectAPI::ColumnOffset>{},                    //
+      .def("column_offset", ForwardTo<&JSObject::ColumnOffset>{},                       //
            py::arg("this"),                                                             //
            "The column offset of function in the script")                               //
-      .def("set_name", ForwardTo<&JSObjectAPI::SetName>{},                              //
+      .def("set_name", ForwardTo<&JSObject::SetName>{},                                 //
            py::arg("this"),                                                             //
            py::arg("name"))                                                             //
-      .def("get_name", ForwardTo<&JSObjectAPI::GetName>{},                              //
+      .def("get_name", ForwardTo<&JSObject::GetName>{},                                 //
            py::arg("this"))                                                             //
-      .def("apply", ForwardTo<&JSObjectAPI::Apply>{},                                   //
+      .def("apply", ForwardTo<&JSObject::Apply>{},                                      //
            py::arg("this"),                                                             //
            py::arg("self"),                                                             //
            py::arg("args") = py::list(),                                                //
            py::arg("kwds") = py::dict(),                                                //
            "Performs a function call using the parameters.")                            //
-      .def("invoke", ForwardTo<&JSObjectAPI::Invoke>{},                                 //
+      .def("invoke", ForwardTo<&JSObject::Invoke>{},                                    //
            py::arg("this"),                                                             //
            py::arg("args") = py::list(),                                                //
            py::arg("kwds") = py::dict(),                                                //
            "Performs a binding method call using the parameters.")                      //
-      .def("clone", ForwardTo<&JSObjectAPI::Clone>{},                                   //
+      .def("clone", ForwardTo<&JSObject::Clone>{},                                      //
            py::arg("this"),                                                             //
            "Clone the object.")                                                         //
-      .def("create", &JSObjectAPI::Create,                                              //
+      .def("create", &JSObject::Create,                                                 //
            py::arg("constructor"),                                                      //
            py::arg("arguments") = py::tuple(),                                          //
            py::arg("propertiesObject") = py::dict(),                                    //
            "Creates a new object with the specified prototype object and properties.")  //
-      .def("has_role_array", ForwardTo<&JSObjectAPI::HasRoleArray>{})                   //
-      .def("has_role_function", ForwardTo<&JSObjectAPI::HasRoleFunction>{})             //
-      .def("has_role_cljs", ForwardTo<&JSObjectAPI::HasRoleCLJS>{})                     //
+      .def("has_role_array", ForwardTo<&JSObject::HasRoleArray>{})                      //
+      .def("has_role_function", ForwardTo<&JSObject::HasRoleFunction>{})                //
+      .def("has_role_cljs", ForwardTo<&JSObject::HasRoleCLJS>{})                        //
       ;
 }
 
@@ -114,35 +113,35 @@ void exposeJSObject(py::module py_module) {
       //
       // solution: If you want to expose additional functionality, do it as a plain helper function in toolkit module.
       //           The helper can take instance as the first argument and operate on it.
-      .def_method("__getattr__", &JSObjectAPI::GetAttr)    //
-      .def_method("__setattr__", &JSObjectAPI::SetAttr)    //
-      .def_method("__delattr__", &JSObjectAPI::DelAttr)    //
-                                                           //
-      .def_method("__hash__", &JSObjectAPI::Hash)          //
-      .def_method("__dir__", &JSObjectAPI::Dir)            //
-                                                           //
-      .def_method("__getitem__", &JSObjectAPI::GetItem)    //
-      .def_method("__setitem__", &JSObjectAPI::SetItem)    //
-      .def_method("__delitem__", &JSObjectAPI::DelItem)    //
-      .def_method("__contains__", &JSObjectAPI::Contains)  //
-                                                           //
-      .def_method("__len__", &JSObjectAPI::Len)            //
-                                                           //
-      .def_method("__int__", &JSObjectAPI::Int)            //
-      .def_method("__float__", &JSObjectAPI::Float)        //
-      .def_method("__str__", &JSObjectAPI::Str)            //
-      .def_method("__repr__", &JSObjectAPI::Repr)          //
-      .def_method("__bool__", &JSObjectAPI::Bool)          //
-                                                           //
-      .def_method("__eq__", &JSObjectAPI::EQ)              //
-      .def_method("__ne__", &JSObjectAPI::NE)              //
-      .def_method("__call__", &JSObjectAPI::Call)          //
-      .def_method("__iter__", &JSObjectAPI::Iter)          //
+      .def_method("__getattr__", &JSObject::GetAttr)    //
+      .def_method("__setattr__", &JSObject::SetAttr)    //
+      .def_method("__delattr__", &JSObject::DelAttr)    //
+                                                        //
+      .def_method("__hash__", &JSObject::Hash)          //
+      .def_method("__dir__", &JSObject::Dir)            //
+                                                        //
+      .def_method("__getitem__", &JSObject::GetItem)    //
+      .def_method("__setitem__", &JSObject::SetItem)    //
+      .def_method("__delitem__", &JSObject::DelItem)    //
+      .def_method("__contains__", &JSObject::Contains)  //
+                                                        //
+      .def_method("__len__", &JSObject::Len)            //
+                                                        //
+      .def_method("__int__", &JSObject::Int)            //
+      .def_method("__float__", &JSObject::Float)        //
+      .def_method("__str__", &JSObject::Str)            //
+      .def_method("__repr__", &JSObject::Repr)          //
+      .def_method("__bool__", &JSObject::Bool)          //
+                                                        //
+      .def_method("__eq__", &JSObject::EQ)              //
+      .def_method("__ne__", &JSObject::NE)              //
+      .def_method("__call__", &JSObject::Call)          //
+      .def_method("__iter__", &JSObject::Iter)          //
       //
       // Emulating dict object
       // TODO: I'm not sure about this, revisit
       // this should go away when we implement __iter__
-      //      .def("keys", &JSObjectAPI::Dir,
+      //      .def("keys", &JSObject::Dir,
       //           "Get a list of the object attributes.")
       ;
 
