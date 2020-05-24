@@ -3,15 +3,10 @@
 
 #include "Base.h"
 
-class JSObjectArrayImpl {
- public:
-  JSObjectBase& m_base;
-
-  py::ssize_t Length() const;
-  py::object GetItem(const py::object& py_key) const;
-  py::object SetItem(const py::object& py_key, const py::object& py_value) const;
-  py::object DelItem(const py::object& py_key) const;
-  bool Contains(const py::object& py_key) const;
-};
+py::ssize_t JSObjectArrayLength(const JSObject& self);
+py::object JSObjectArrayGetItem(const JSObject& self, const py::object& py_key);
+py::object JSObjectArraySetItem(const JSObject& self, const py::object& py_key, const py::object& py_value);
+py::object JSObjectArrayDelItem(const JSObject& self, const py::object& py_key);
+bool JSObjectArrayContains(const JSObject& self, const py::object& py_key);
 
 #endif

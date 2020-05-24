@@ -6,7 +6,6 @@
 #include "Wrapping.h"
 #include "Logging.h"
 #include "Printing.h"
-#include "PythonUtils.h"
 
 #define TRACE(...) \
   LOGGER_INDENT;   \
@@ -14,30 +13,30 @@
 
 py::object JSObjectAPI::GetAttr(const py::object& py_key) const {
   py::object py_result;
-  if (HasRole(Roles::Array)) {
+  if (HasRoleArray()) {
     throw JSException("__getattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
-  } else if (HasRole(Roles::Array)) {
-    py_result = m_cljs_impl.GetAttr(py_key);
+  } else if (HasRoleArray()) {
+    py_result = JSObjectCLJSGetAttr(Self(), py_key);
   } else {
-    py_result = m_generic_impl.GetAttr(py_key);
+    py_result = JSObjectGenericGetAttr(Self(), py_key);
   }
   TRACE("JSObjectAPI::GetAttr {} => {}", THIS, py_result);
   return py_result;
 }
 
 void JSObjectAPI::SetAttr(const py::object& py_key, const py::object& py_obj) const {
-  if (HasRole(Roles::Array)) {
+  if (HasRoleArray()) {
     throw JSException("__setattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
-    m_generic_impl.SetAttr(py_key, py_obj);
+    JSObjectGenericSetAttr(Self(), py_key, py_obj);
   }
 }
 
 void JSObjectAPI::DelAttr(const py::object& py_key) const {
-  if (HasRole(Roles::Array)) {
+  if (HasRoleArray()) {
     throw JSException("__delattr__ not implemented for JSObjects with Array role", PyExc_AttributeError);
   } else {
-    m_generic_impl.DelAttr(py_key);
+    JSObjectGenericDelAttr(Self(), py_key);
   }
 }
 
@@ -66,44 +65,44 @@ py::list JSObjectAPI::Dir() const {
 
 py::object JSObjectAPI::GetItem(const py::object& py_key) const {
   py::object py_result;
-  if (HasRole(Roles::Array)) {
-    py_result = m_array_impl.GetItem(py_key);
-  } else if (HasRole(Roles::CLJS)) {
-    py_result = m_cljs_impl.GetItem(py_key);
+  if (HasRoleArray()) {
+    py_result = JSObjectArrayGetItem(Self(), py_key);
+  } else if (HasRoleCLJS()) {
+    py_result = JSObjectCLJSGetItem(Self(), py_key);
   } else {
     // TODO: do robust arg checking here
-    py_result = m_generic_impl.GetAttr(py::cast<py::str>(py_key));
+    py_result = JSObjectGenericGetAttr(Self(), py::cast<py::str>(py_key));
   }
   TRACE("JSObjectAPI::GetItem {} => {}", THIS, py_result);
   return py_result;
 }
 
 py::object JSObjectAPI::SetItem(const py::object& py_key, const py::object& py_value) const {
-  if (HasRole(Roles::Array)) {
-    return m_array_impl.SetItem(py_key, py_value);
+  if (HasRoleArray()) {
+    return JSObjectArraySetItem(Self(), py_key, py_value);
   } else {
     // TODO: do robust arg checking here
-    m_generic_impl.SetAttr(py::cast<py::str>(py_key), py_value);
+    JSObjectGenericSetAttr(Self(), py::cast<py::str>(py_key), py_value);
     return py::none();
   }
 }
 
 py::object JSObjectAPI::DelItem(const py::object& py_key) const {
-  if (HasRole(Roles::Array)) {
-    return m_array_impl.DelItem(py_key);
+  if (HasRoleArray()) {
+    return JSObjectArrayDelItem(Self(), py_key);
   } else {
     // TODO: do robust arg checking here
-    m_generic_impl.DelAttr(py::cast<py::str>(py_key));
+    JSObjectGenericDelAttr(Self(), py::cast<py::str>(py_key));
     return py::none();
   }
 }
 
 bool JSObjectAPI::Contains(const py::object& py_key) const {
   bool result;
-  if (HasRole(Roles::Array)) {
-    result = m_array_impl.Contains(py_key);
+  if (HasRoleArray()) {
+    result = JSObjectArrayContains(Self(), py_key);
   } else {
-    result = m_generic_impl.Contains(py_key);
+    result = JSObjectGenericContains(Self(), py_key);
   }
   TRACE("JSObjectAPI::Contains {} => {}", THIS, result);
   return result;
@@ -189,10 +188,10 @@ py::object JSObjectAPI::Bool() const {
 
 py::str JSObjectAPI::Str() const {
   auto py_result = [&] {
-    if (HasRole(Roles::CLJS)) {
-      return m_cljs_impl.Str();
+    if (HasRoleCLJS()) {
+      return JSObjectCLJSStr(Self());
     } else {
-      return m_generic_impl.Str();
+      return JSObjectGenericStr(Self());
     }
   }();
 
@@ -202,10 +201,10 @@ py::str JSObjectAPI::Str() const {
 
 py::str JSObjectAPI::Repr() const {
   auto py_result = [&] {
-    if (HasRole(Roles::CLJS)) {
-      return m_cljs_impl.Repr();
+    if (HasRoleCLJS()) {
+      return JSObjectCLJSRepr(Self());
     } else {
-      return m_generic_impl.Repr();
+      return JSObjectGenericRepr(Self());
     }
   }();
 
@@ -223,14 +222,15 @@ py::object JSObjectAPI::Iter() {
 }
 
 size_t JSObjectAPI::Len() const {
-  size_t result;
-  if (HasRole(Roles::Array)) {
-    result = m_array_impl.Length();
-  } else if (HasRole(Roles::CLJS)) {
-    result = m_cljs_impl.Length();
-  } else {
-    result = 0;
-  }
+  auto result = [&]() {
+    if (HasRoleArray()) {
+      return JSObjectArrayLength(Self());
+    } else if (HasRoleCLJS()) {
+      return JSObjectCLJSLength(Self());
+    } else {
+      return py::ssize_t{0};
+    }
+  }();
 
   TRACE("JSObjectAPI::Len {} => {}", THIS, result);
   return result;
@@ -238,8 +238,8 @@ size_t JSObjectAPI::Len() const {
 
 py::object JSObjectAPI::Call(const py::args& py_args, const py::kwargs& py_kwargs) {
   py::object py_result;
-  if (HasRole(Roles::Function)) {
-    py_result = m_function_impl.Call(py_args, py_kwargs);
+  if (HasRoleFunction()) {
+    py_result = JSObjectFunctionCall(Self(), py_args, py_kwargs);
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -293,8 +293,8 @@ py::object JSObjectAPI::Create(const SharedJSObjectPtr& proto, const py::tuple& 
 
 py::object JSObjectAPI::Apply(const py::object& py_self, const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
-  if (HasRole(Roles::Function)) {
-    py_result = m_function_impl.Apply(py_self, py_args, py_kwds);
+  if (HasRoleFunction()) {
+    py_result = JSObjectFunctionApply(Self(), py_self, py_args, py_kwds);
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -305,8 +305,8 @@ py::object JSObjectAPI::Apply(const py::object& py_self, const py::list& py_args
 
 py::object JSObjectAPI::Invoke(const py::list& py_args, const py::dict& py_kwds) {
   py::object py_result;
-  if (HasRole(Roles::Function)) {
-    py_result = m_function_impl.Call(py_args, py_kwds);
+  if (HasRoleFunction()) {
+    py_result = JSObjectFunctionCall(Self(), py_args, py_kwds);
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -317,8 +317,8 @@ py::object JSObjectAPI::Invoke(const py::list& py_args, const py::dict& py_kwds)
 
 std::string JSObjectAPI::GetName() const {
   std::string result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetName();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetName(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -329,8 +329,8 @@ std::string JSObjectAPI::GetName() const {
 
 void JSObjectAPI::SetName(const std::string& name) {
   TRACE("JSObjectAPI::SetName {} name={}", THIS, name);
-  if (HasRole(Roles::Function)) {
-    m_function_impl.SetName(name);
+  if (HasRoleFunction()) {
+    JSObjectFunctionSetName(Self(), name);
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -338,8 +338,8 @@ void JSObjectAPI::SetName(const std::string& name) {
 
 int JSObjectAPI::LineNumber() const {
   int result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetLineNumber();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetLineNumber(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -350,8 +350,8 @@ int JSObjectAPI::LineNumber() const {
 
 int JSObjectAPI::ColumnNumber() const {
   int result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetColumnNumber();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetColumnNumber(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -362,8 +362,8 @@ int JSObjectAPI::ColumnNumber() const {
 
 std::string JSObjectAPI::ResourceName() const {
   std::string result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetResourceName();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetResourceName(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -374,8 +374,8 @@ std::string JSObjectAPI::ResourceName() const {
 
 std::string JSObjectAPI::InferredName() const {
   std::string result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetInferredName();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetInferredName(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -386,8 +386,8 @@ std::string JSObjectAPI::InferredName() const {
 
 int JSObjectAPI::LineOffset() const {
   int result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetLineOffset();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetLineOffset(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }
@@ -398,8 +398,8 @@ int JSObjectAPI::LineOffset() const {
 
 int JSObjectAPI::ColumnOffset() const {
   int result;
-  if (HasRole(Roles::Function)) {
-    result = m_function_impl.GetColumnOffset();
+  if (HasRoleFunction()) {
+    result = JSObjectFunctionGetColumnOffset(Self());
   } else {
     throw JSException("Expected JSObject with Function role", PyExc_TypeError);
   }

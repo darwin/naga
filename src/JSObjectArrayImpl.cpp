@@ -10,22 +10,22 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectArrayImplLogger), __VA_ARGS__)
 
-py::ssize_t JSObjectArrayImpl::Length() const {
+py::ssize_t JSObjectArrayLength(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
-  auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this_array = self.ToV8(v8_isolate).As<v8::Array>();
   auto result = v8_this_array->Length();
-  TRACE("JSObjectArrayImpl::Length {} => {}", THIS, result);
+  TRACE("JSObjectArrayLength {} => {}", SELF, result);
   return result;
 }
 
-py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
-  TRACE("JSObjectArrayImpl::GetItem {} py_key={}", THIS, py_key);
+py::object JSObjectArrayGetItem(const JSObject& self, const py::object& py_key) {
+  TRACE("JSObjectArrayGetItem {} py_key={}", SELF, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this_array = self.ToV8(v8_isolate).As<v8::Array>();
 
   if (py::isinstance<py::slice>(py_key)) {
     auto py_slice = py::cast<py::slice>(py_key);
@@ -56,7 +56,7 @@ py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
     auto py_int = py::cast<py::int_>(py_key);
     uint32_t index = py_int;
 
-    if (index >= Length()) {
+    if (index >= JSObjectArrayLength(self)) {
       throw JSException("index of of range", PyExc_IndexError);
     }
 
@@ -72,13 +72,13 @@ py::object JSObjectArrayImpl::GetItem(const py::object& py_key) const {
   throw JSException("list indices must be integers", PyExc_TypeError);
 }
 
-py::object JSObjectArrayImpl::SetItem(const py::object& py_key, const py::object& py_value) const {
-  TRACE("JSObjectArrayImpl::SetItem {} py_key={} py_value={}", THIS, py_key, py_value);
+py::object JSObjectArraySetItem(const JSObject& self, const py::object& py_key, const py::object& py_value) {
+  TRACE("JSObjectArraySetItem {} py_key={} py_value={}", SELF, py_key, py_value);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this_array = self.ToV8(v8_isolate).As<v8::Array>();
 
   if (py::isinstance<py::slice>(py_key)) {
     auto py_slice = py::cast<py::slice>(py_key);
@@ -173,13 +173,13 @@ py::object JSObjectArrayImpl::SetItem(const py::object& py_key, const py::object
   return py_value;
 }
 
-py::object JSObjectArrayImpl::DelItem(const py::object& py_key) const {
-  TRACE("JSObjectArrayImpl::DelItem {} py_key={}", THIS, py_key);
+py::object JSObjectArrayDelItem(const JSObject& self, const py::object& py_key) {
+  TRACE("JSObjectArrayDelItem {} py_key={}", SELF, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this_array = self.ToV8(v8_isolate).As<v8::Array>();
 
   if (py::isinstance<py::slice>(py_key)) {
     auto py_slice = py::cast<py::slice>(py_key);
@@ -215,15 +215,15 @@ py::object JSObjectArrayImpl::DelItem(const py::object& py_key) const {
   throw JSException("list indices must be integers", PyExc_TypeError);
 }
 
-bool JSObjectArrayImpl::Contains(const py::object& py_key) const {
-  TRACE("JSObjectArrayImpl::Contains {} py_key={}", THIS, py_key);
+bool JSObjectArrayContains(const JSObject& self, const py::object& py_key) {
+  TRACE("JSObjectArrayContains {} py_key={}", SELF, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_this_array = m_base.ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this_array = self.ToV8(v8_isolate).As<v8::Array>();
 
-  for (py::ssize_t i = 0; i < Length(); i++) {
+  for (py::ssize_t i = 0; i < JSObjectArrayLength(self); i++) {
     auto v8_maybe_val = v8_this_array->Get(v8_context, i);
     if (v8_maybe_val.IsEmpty()) {
       continue;

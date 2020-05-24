@@ -10,21 +10,12 @@
 
 // this class maintains JSObject API exposed to Python
 class JSObjectAPI : public JSObjectBase {
-  friend JSObjectArrayIterator;
-
- protected:
-  JSObjectGenericImpl m_generic_impl;
-  JSObjectFunctionImpl m_function_impl;
-  JSObjectArrayImpl m_array_impl;
-  JSObjectCLJSImpl m_cljs_impl;
+  // this is dirty but we know that each JSObjectAPI instance is also full JSObject instance
+  JSObject& Self() { return *static_cast<JSObject*>(static_cast<void*>(this)); }
+  const JSObject& Self() const { return *static_cast<const JSObject*>(static_cast<const void*>(this)); }
 
  public:
-  explicit JSObjectAPI(v8::Local<v8::Object> v8_obj)
-      : JSObjectBase(v8_obj),
-        m_generic_impl{*this},
-        m_function_impl{*this},
-        m_array_impl{*this},
-        m_cljs_impl{*this} {}
+  explicit JSObjectAPI(v8::Local<v8::Object> v8_obj) : JSObjectBase(v8_obj) {}
 
   static py::object Create(const SharedJSObjectPtr& proto, const py::tuple& py_args, const py::dict& py_kwds);
 

@@ -27,25 +27,25 @@ static void ensureAttrExistsOrThrow(v8x::LockedIsolatePtr& v8_isolate,
   }
 }
 
-py::object JSObjectGenericImpl::GetAttr(const py::object& py_key) const {
-  TRACE("JSObjectGenericImpl::GetAttr {} name={}", THIS, py_key);
+py::object JSObjectGenericGetAttr(const JSObject& self, const py::object& py_key) {
+  TRACE("JSObjectGenericGetAttr {} name={}", SELF, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8x::toString(v8_isolate, py_key);
-  auto v8_this = m_base.ToV8(v8_isolate);
+  auto v8_this = self.ToV8(v8_isolate);
   ensureAttrExistsOrThrow(v8_isolate, v8_this, v8_attr_name);
   auto v8_attr_value = v8_this->Get(v8_context, v8_attr_name).ToLocalChecked();
 
   auto py_result = wrap(v8_isolate, v8_attr_value, v8_this);
-  TRACE("JSObjectGenericImpl::ObjectGetAttr {} => {}", THIS, py_result);
+  TRACE("JSObjectGenericObjectGetAttr {} => {}", SELF, py_result);
   return py_result;
 }
 
-void JSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& py_obj) const {
-  TRACE("JSObjectGenericImpl::SetAttr {} name={} py_obj={}", THIS, py_key, py_obj);
+void JSObjectGenericSetAttr(const JSObject& self, const py::object& py_key, const py::object& py_obj) {
+  TRACE("JSObjectGenericSetAttr {} name={} py_obj={}", SELF, py_key, py_obj);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
@@ -54,40 +54,40 @@ void JSObjectGenericImpl::SetAttr(const py::object& py_key, const py::object& py
   auto v8_attr_name = v8x::toString(v8_isolate, py_key);
   auto v8_attr_obj = wrap(std::move(py_obj));
 
-  auto v8_this = m_base.ToV8(v8_isolate);
+  auto v8_this = self.ToV8(v8_isolate);
   v8_this->Set(v8_context, v8_attr_name, v8_attr_obj).Check();
 }
 
-void JSObjectGenericImpl::DelAttr(const py::object& py_key) const {
-  TRACE("JSObjectGenericImpl::DelAttr {} name={}", THIS, py_key);
+void JSObjectGenericDelAttr(const JSObject& self, const py::object& py_key) {
+  TRACE("JSObjectGenericDelAttr {} name={}", SELF, py_key);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
   auto v8_attr_name = v8x::toString(v8_isolate, py_key);
-  auto v8_this = m_base.ToV8(v8_isolate);
+  auto v8_this = self.ToV8(v8_isolate);
   ensureAttrExistsOrThrow(v8_isolate, v8_this, v8_attr_name);
 
   v8_this->Delete(v8_context, v8_attr_name).Check();
 }
 
-bool JSObjectGenericImpl::Contains(const py::object& py_key) const {
+bool JSObjectGenericContains(const JSObject& self, const py::object& py_key) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
-  auto v8_this = m_base.ToV8(v8_isolate);
+  auto v8_this = self.ToV8(v8_isolate);
   bool result = v8_this->Has(v8_context, v8x::toString(v8_isolate, py_key)).ToChecked();
-  TRACE("JSObjectGenericImpl::Contains {} py_key={} => {}", THIS, py_key, result);
+  TRACE("JSObjectGenericContains {} py_key={} => {}", SELF, py_key, result);
   return result;
 }
 
-py::str JSObjectGenericImpl::Str() const {
+py::str JSObjectGenericStr(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
-  auto v8_this = m_base.ToV8(v8_isolate);
+  auto v8_this = self.ToV8(v8_isolate);
   auto py_result = [&] {
     if (v8_this.IsEmpty()) {
       return py::str("<EMPTY>");
@@ -99,15 +99,15 @@ py::str JSObjectGenericImpl::Str() const {
     }
   }();
 
-  TRACE("JSObjectGenericImpl::Str {} => {}", THIS, py_result);
+  TRACE("JSObjectGenericStr {} => {}", SELF, py_result);
   return py_result;
 }
 
-py::str JSObjectGenericImpl::Repr() const {
+py::str JSObjectGenericRepr(const JSObject& self) {
   std::ostringstream ss;
-  m_base.Dump(ss);
-  auto str = fmt::format("JSObject[{}] {}", m_base.GetRoles(), ss.str());
+  self.Dump(ss);
+  auto str = fmt::format("JSObject[{}] {}", self.GetRoles(), ss.str());
   py::str py_result(str);
-  TRACE("JSObjectGenericImpl::Repr {} => {}", THIS, py_result);
+  TRACE("JSObjectGenericRepr {} => {}", SELF, py_result);
   return py_result;
 }

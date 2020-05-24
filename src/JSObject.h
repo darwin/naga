@@ -15,15 +15,13 @@
 //
 // On the other hand we want to structure our code in a sane way and don't want to dump all functionality
 // into a single class. So for readability reasons we break JSObject into multiple C++ classes.
-// We want to keep role-specific functionality in separate implementation classes and compose them later.
-// But keep in mind that exposed wrapper is only the final composite JSObject.
-//
-// Technically we wanted to avoid virtual inheritance of JSObjectBase, so we adopted this idea [2]
+// We want to keep role-specific functionality in separate implementation files.
+// But keep in mind that exposed wrapper is only this final composite JSObject.
 //
 // [1] https://github.com/area1/stpyv8/issues/8#issuecomment-606702978
-// [2] https://stackoverflow.com/a/44941059/84283
 
-class JSObject final : public std::enable_shared_from_this<JSObject>, public JSObjectAPI {
+class JSObject final : public JSObjectAPI,  // must go first because of JSObjectAPI::Self dirty casts
+                       public std::enable_shared_from_this<JSObject> {
  public:
   explicit JSObject(v8::Local<v8::Object> v8_obj);
   ~JSObject();

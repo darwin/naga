@@ -10,6 +10,7 @@ const void* voidThis(const T* v) {
 }
 
 #define THIS voidThis(this)
+#define SELF voidThis(&self)
 
 // for types which we cannot easily create operator<< we use printCoerced, ideally via P$ macro
 // see https://github.com/fmtlib/fmt/issues/1621

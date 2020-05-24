@@ -1,5 +1,4 @@
 #include "JSObjectFunctionImpl.h"
-#include "JSException.h"
 #include "PythonThreads.h"
 #include "Wrapping.h"
 #include "JSObject.h"
@@ -10,15 +9,16 @@
   LOGGER_INDENT;   \
   SPDLOG_LOGGER_TRACE(getLogger(kJSObjectFunctionImplLogger), __VA_ARGS__)
 
-py::object JSObjectFunctionImpl::Call(const py::list& py_args,
-                                      const py::dict& py_kwargs,
-                                      std::optional<v8::Local<v8::Object>> opt_v8_this) const {
-  TRACE("JSObjectFunctionImpl::Call {} py_args={} py_kwargs={}", THIS, py_args, py_kwargs);
+py::object JSObjectFunctionCall(const JSObject& self,
+                                const py::list& py_args,
+                                const py::dict& py_kwargs,
+                                std::optional<v8::Local<v8::Object>> opt_v8_this) {
+  TRACE("JSObjectFunctionCall {} py_args={} py_kwargs={}", SELF, py_args, py_kwargs);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_fn = m_base.ToV8(v8_isolate).As<v8::Function>();
+  auto v8_fn = self.ToV8(v8_isolate).As<v8::Function>();
 
   auto args_count = py_args.size();
   auto kwargs_count = py_kwargs.size();
@@ -56,107 +56,108 @@ py::object JSObjectFunctionImpl::Call(const py::list& py_args,
   return wrap(v8_isolate, v8_result.ToLocalChecked());
 }
 
-py::object JSObjectFunctionImpl::Apply(const py::object& py_self,
-                                       const py::list& py_args,
-                                       const py::dict& py_kwds) const {
-  TRACE("JSObjectFunctionImpl::Apply {} py_self={} py_args={} py_kwds={}", THIS, py_self, py_args, py_kwds);
+py::object JSObjectFunctionApply(const JSObject& self,
+                                 const py::object& py_self,
+                                 const py::list& py_args,
+                                 const py::dict& py_kwds) {
+  TRACE("JSObjectFunctionApply {} py_self={} py_args={} py_kwds={}", SELF, py_self, py_args, py_kwds);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_this = wrap(std::move(py_self))->ToObject(v8_context).ToLocalChecked();
-  return Call(py_args, py_kwds, v8_this);
+  return JSObjectFunctionCall(self, py_args, py_kwds, v8_this);
 }
 
-std::string JSObjectFunctionImpl::GetName() const {
-  TRACE("JSObjectFunctionImpl::GetName {}", THIS);
+std::string JSObjectFunctionGetName(const JSObject& self) {
+  TRACE("JSObjectFunctionGetName {}", SELF);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetName()));
 
   return std::string(*name, name.length());
 }
 
-void JSObjectFunctionImpl::SetName(const std::string& name) const {
-  TRACE("JSObjectFunctionImpl::SetName {} => {}", THIS, name);
+void JSObjectFunctionSetName(const JSObject& self, const std::string& name) {
+  TRACE("JSObjectFunctionSetName {} => {}", SELF, name);
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   func->SetName(
       v8::String::NewFromUtf8(v8_isolate, name.c_str(), v8::NewStringType::kNormal, name.size()).ToLocalChecked());
 }
 
-int JSObjectFunctionImpl::GetLineNumber() const {
+int JSObjectFunctionGetLineNumber(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   auto result = func->GetScriptLineNumber();
-  TRACE("JSObjectFunctionImpl::GetLineNumber {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetLineNumber {} => {}", SELF, result);
   return result;
 }
 
-int JSObjectFunctionImpl::GetColumnNumber() const {
+int JSObjectFunctionGetColumnNumber(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   auto result = func->GetScriptColumnNumber();
-  TRACE("JSObjectFunctionImpl::GetColumnNumber {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetColumnNumber {} => {}", SELF, result);
   return result;
 }
 
-int JSObjectFunctionImpl::GetLineOffset() const {
+int JSObjectFunctionGetLineOffset(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   auto result = func->GetScriptOrigin().ResourceLineOffset()->Value();
-  TRACE("JSObjectFunctionImpl::GetLineOffset {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetLineOffset {} => {}", SELF, result);
   return result;
 }
 
-int JSObjectFunctionImpl::GetColumnOffset() const {
+int JSObjectFunctionGetColumnOffset(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   auto result = func->GetScriptOrigin().ResourceColumnOffset()->Value();
-  TRACE("JSObjectFunctionImpl::GetColumnOffset {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetColumnOffset {} => {}", SELF, result);
   return result;
 }
 
-std::string JSObjectFunctionImpl::GetResourceName() const {
+std::string JSObjectFunctionGetResourceName(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetScriptOrigin().ResourceName()));
 
   auto result = std::string(*name, name.length());
-  TRACE("JSObjectFunctionImpl::GetResourceName {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetResourceName {} => {}", SELF, result);
   return result;
 }
 
-std::string JSObjectFunctionImpl::GetInferredName() const {
+std::string JSObjectFunctionGetInferredName(const JSObject& self) {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
 
-  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(m_base.ToV8(v8_isolate));
+  v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(self.ToV8(v8_isolate));
 
   v8::String::Utf8Value name(v8_isolate, v8::Local<v8::String>::Cast(func->GetInferredName()));
 
   auto result = std::string(*name, name.length());
-  TRACE("JSObjectFunctionImpl::GetInferredName {} => {}", THIS, result);
+  TRACE("JSObjectFunctionGetInferredName {} => {}", SELF, result);
   return result;
 }

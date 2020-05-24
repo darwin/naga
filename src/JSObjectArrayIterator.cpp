@@ -28,7 +28,8 @@ py::object JSObjectArrayIterator::Next() {
   auto v8_isolate = v8x::getCurrentIsolate();
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_this_array = m_shared_object_ptr->ToV8(v8_isolate).As<v8::Array>();
+  auto v8_this = m_shared_object_ptr->ToV8(v8_isolate);
+  auto v8_this_array = v8_this.As<v8::Array>();
   auto length = v8_this_array->Length();
 
   if (m_index >= length) {

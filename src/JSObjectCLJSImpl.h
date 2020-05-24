@@ -3,20 +3,13 @@
 
 #include "Base.h"
 
-class JSObjectCLJSImpl {
- public:
-  JSObjectBase& m_base;
-
-  size_t Length() const;
-  py::str Repr() const;
-  py::str Str() const;
-  py::object GetItem(const py::object& py_key) const;
-  py::object GetAttr(const py::object& py_key) const;
-
- private:
-  py::object GetItemSlice(const py::object& py_slice) const;
-  py::object GetItemIndex(const py::object& py_index) const;
-  py::object GetItemString(const py::object& py_str) const;
-};
+py::ssize_t JSObjectCLJSLength(const JSObject& self);
+py::str JSObjectCLJSRepr(const JSObject& self);
+py::str JSObjectCLJSStr(const JSObject& self);
+py::object JSObjectCLJSGetItem(const JSObject& self, const py::object& py_key);
+py::object JSObjectCLJSGetAttr(const JSObject& self, const py::object& py_key);
+py::object JSObjectCLJSGetItemSlice(const JSObject& self, const py::object& py_slice);
+py::object JSObjectCLJSGetItemIndex(const JSObject& self, const py::object& py_index);
+py::object JSObjectCLJSGetItemString(const JSObject& self, const py::object& py_str);
 
 #endif
