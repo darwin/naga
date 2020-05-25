@@ -1,6 +1,6 @@
 #include "JSEngine.h"
 #include "JSScript.h"
-#include "PythonThreads.h"
+#include "PythonUtils.h"
 #include "Wrapping.h"
 #include "Logging.h"
 #include "V8XUtils.h"
@@ -73,11 +73,16 @@ py::object JSEngine::ExecuteScript(v8::Local<v8::Script> v8_script) const {
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
 
-  auto v8_result = withAllowedPythonThreads([&] { return v8_script->Run(v8_context); });
-  if (v8_result.IsEmpty()) {
+  v8::MaybeLocal<v8::Value> v8_maybe_result;
+  {
+    auto _ = pyu::withoutGIL();
+    v8_maybe_result = v8_script->Run(v8_context);
+  }
+
+  if (v8_maybe_result.IsEmpty()) {
     return py::js_null();
   }
-  return wrap(v8_isolate, v8_result.ToLocalChecked());
+  return wrap(v8_isolate, v8_maybe_result.ToLocalChecked());
 }
 
 SharedJSScriptPtr JSEngine::Compile(const std::string& src, const std::string& name, int line, int col) const {
@@ -103,15 +108,17 @@ SharedJSScriptPtr JSEngine::InternalCompile(v8x::LockedIsolatePtr& v8_isolate,
   auto v8_scope = v8x::withScope(v8_isolate);
   auto v8_context = v8x::getCurrentContext(v8_isolate);
   auto v8_try_catch = v8x::withAutoTryCatch(v8_isolate);
-  auto v8_script = withAllowedPythonThreads([&] {
+  v8::MaybeLocal<v8::Script> v8_maybe_script;
+  {
+    auto _ = pyu::withoutGIL();
     auto v8_line = v8x::toPositiveInteger(v8_isolate, line);
     auto v8_col = v8x::toPositiveInteger(v8_isolate, col);
     auto v8_script_origin = v8x::createScriptOrigin(v8_name, v8_line, v8_col);
-    return v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
-  });
+    v8_maybe_script = v8::Script::Compile(v8_context, v8_src, &v8_script_origin);
+  }
 
   v8x::checkTryCatch(v8_isolate, v8_try_catch);
-  return std::make_shared<JSScript>(v8_isolate, *this, v8_src, v8_script.ToLocalChecked());
+  return std::make_shared<JSScript>(v8_isolate, *this, v8_src, v8_maybe_script.ToLocalChecked());
 }
 
 void JSEngine::Dump(std::ostream& os) const {

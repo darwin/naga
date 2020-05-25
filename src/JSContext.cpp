@@ -1,6 +1,5 @@
 #include "JSContext.h"
 #include "JSEngine.h"
-#include "JSObject.h"
 #include "JSScript.h"
 #include "JSIsolate.h"
 #include "JSException.h"

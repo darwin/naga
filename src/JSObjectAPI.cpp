@@ -6,7 +6,6 @@
 #include "JSObjectFunctionImpl.h"
 #include "JSObjectCLJSImpl.h"
 #include "JSException.h"
-#include "PythonThreads.h"
 #include "Wrapping.h"
 #include "Logging.h"
 #include "Printing.h"
@@ -275,8 +274,7 @@ py::object JSObject::Create(const SharedJSObjectPtr& proto, const py::tuple& py_
     v8_args.push_back(wrap(py_args[i]));
   }
 
-  auto v8_result = withAllowedPythonThreads(
-      [&] { return fn->NewInstance(v8_context, v8_args.size(), v8_args.data()).ToLocalChecked(); });
+  auto v8_result = fn->NewInstance(v8_context, v8_args.size(), v8_args.data()).ToLocalChecked();
 
   v8x::checkTryCatch(v8_isolate, v8_try_catch);
 

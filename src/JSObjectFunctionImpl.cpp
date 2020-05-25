@@ -1,5 +1,5 @@
 #include "JSObjectFunctionImpl.h"
-#include "PythonThreads.h"
+#include "PythonUtils.h"
 #include "Wrapping.h"
 #include "JSObject.h"
 #include "Logging.h"
@@ -38,22 +38,24 @@ py::object JSObjectFunctionCall(const JSObject& self,
     it++;
   }
 
-  auto v8_result = withAllowedPythonThreads([&] {
+  v8::MaybeLocal<v8::Value> v8_maybe_result;
+  {
+    auto _ = pyu::withoutGIL();
     if (!opt_v8_this) {
-      return v8_fn->Call(v8_context, v8_context->Global(), v8_params.size(), v8_params.data());
+      v8_maybe_result = v8_fn->Call(v8_context, v8_context->Global(), v8_params.size(), v8_params.data());
     } else {
       auto v8_unbound_val = v8_fn->GetBoundFunction();
       if (v8_unbound_val->IsUndefined()) {
-        return v8_fn->Call(v8_context, *opt_v8_this, v8_params.size(), v8_params.data());
+        v8_maybe_result = v8_fn->Call(v8_context, *opt_v8_this, v8_params.size(), v8_params.data());
       } else {
         assert(v8_unbound_val->IsFunction());
         auto v8_unbound_fn = v8_unbound_val.As<v8::Function>();
-        return v8_unbound_fn->Call(v8_context, *opt_v8_this, v8_params.size(), v8_params.data());
+        v8_maybe_result = v8_unbound_fn->Call(v8_context, *opt_v8_this, v8_params.size(), v8_params.data());
       }
     }
-  });
+  }
 
-  return wrap(v8_isolate, v8_result.ToLocalChecked());
+  return wrap(v8_isolate, v8_maybe_result.ToLocalChecked());
 }
 
 py::object JSObjectFunctionApply(const JSObject& self,
